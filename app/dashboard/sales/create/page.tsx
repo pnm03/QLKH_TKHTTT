@@ -48,12 +48,30 @@ export default function CreateOrderPage() {
   const [quantityErrors, setQuantityErrors] = useState<{[key: number]: boolean}>({})
   const [successMessage, setSuccessMessage] = useState('')
 
-  // State cho popup bán hàng nhanh
+  // State cho popup bán hàng nhanh và gửi đơn hàng
   const [showQuickSalePopup, setShowQuickSalePopup] = useState(false)
+  const [showShippingPopup, setShowShippingPopup] = useState(false)
   const [paymentMethods, setPaymentMethods] = useState<{payment_id: number, payment_method_name: string, description?: string, image?: string}[]>([])
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<number | null>(null)
   const [customerPaid, setCustomerPaid] = useState<string>('')
   const [discount, setDiscount] = useState<string>('0')
+
+  // State cho thông tin gửi hàng
+  const [recipientName, setRecipientName] = useState('')
+  const [recipientPhone, setRecipientPhone] = useState('')
+  const [recipientAddress, setRecipientAddress] = useState('')
+  const [recipientDistrict, setRecipientDistrict] = useState('')
+  const [recipientWard, setRecipientWard] = useState('')
+  const [shippingWeight, setShippingWeight] = useState('500')
+  const [shippingUnit, setShippingUnit] = useState('gram')
+  const [packageLength, setPackageLength] = useState('10')
+  const [packageWidth, setPackageWidth] = useState('10')
+  const [packageHeight, setPackageHeight] = useState('10')
+  const [dimensionUnit, setDimensionUnit] = useState('cm')
+  const [codAmount, setCodAmount] = useState(true)
+  const [customerPrepaid, setCustomerPrepaid] = useState('0') // Số tiền khách trả trước
+  const [currentUser, setCurrentUser] = useState<any>(null) // Thông tin người tạo đơn hàng
+  const [orderCreationTime, setOrderCreationTime] = useState(new Date()) // Thời gian tạo đơn hàng
 
   // Đã loại bỏ việc cập nhật tồn kho thủ công vì sử dụng trigger trong cơ sở dữ liệu
 
@@ -138,7 +156,77 @@ export default function CreateOrderPage() {
   useEffect(() => {
     fetchDefaultProducts()
     fetchPaymentMethods()
+    fetchCurrentUser()
   }, [fetchDefaultProducts, fetchPaymentMethods])
+
+  // Lấy thông tin người dùng hiện tại hoặc sử dụng giá trị mặc định
+  const fetchCurrentUser = async () => {
+    try {
+      // Tạo một đối tượng người dùng mặc định
+      // Sử dụng giá trị mặc định cho user_id
+      const defaultUser = {
+        user_id: '00000000-0000-0000-0000-000000000000', // UUID mặc định
+        email: 'default@example.com',
+        full_name: 'Người dùng mặc định',
+        auth_id: '00000000-0000-0000-0000-000000000000'
+      }
+
+      // Thử lấy thông tin người dùng hiện tại
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+
+        if (user) {
+          console.log('Thông tin người dùng từ auth:', user)
+
+          // Lấy thông tin chi tiết từ bảng users
+          const { data: userData, error: userError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('user_id', user.id)
+            .maybeSingle()
+
+          if (userError) {
+            console.log('Không tìm thấy trong bảng users, sử dụng thông tin từ auth')
+          }
+
+          // Nếu tìm thấy trong bảng users, sử dụng dữ liệu từ đó
+          // Nếu không, sử dụng thông tin từ auth
+          const userInfo = userData || {
+            user_id: user.id,
+            email: user.email,
+            full_name: user.user_metadata?.full_name || user.email,
+            auth_id: user.id
+          }
+
+          console.log('Thông tin người dùng để sử dụng:', userInfo)
+
+          // Cập nhật state và trả về dữ liệu
+          setCurrentUser(userInfo)
+          return userInfo
+        }
+      } catch (authError) {
+        console.log('Lỗi khi lấy thông tin người dùng từ auth:', authError)
+      }
+
+      // Nếu không thể lấy thông tin người dùng, sử dụng giá trị mặc định
+      console.log('Sử dụng thông tin người dùng mặc định')
+      setCurrentUser(defaultUser)
+      return defaultUser
+    } catch (error) {
+      console.error('Lỗi khi lấy thông tin người dùng:', error)
+
+      // Trả về giá trị mặc định trong trường hợp có lỗi
+      const defaultUser = {
+        user_id: '00000000-0000-0000-0000-000000000000',
+        email: 'default@example.com',
+        full_name: 'Người dùng mặc định',
+        auth_id: '00000000-0000-0000-0000-000000000000'
+      }
+
+      setCurrentUser(defaultUser)
+      return defaultUser
+    }
+  }
 
 
   // Hàm tìm kiếm sản phẩm
@@ -925,23 +1013,262 @@ export default function CreateOrderPage() {
     }
   };
 
+  // Mở popup gửi đơn hàng
+  const openShippingPopup = () => {
+    // Kiểm tra tồn kho trước khi mở popup
+    if (!validateStockBeforeCheckout()) {
+      return;
+    }
+
+    if (!validateOrder()) return;
+
+    // Tính lại tổng tiền cho tất cả các hóa đơn để đảm bảo dữ liệu mới nhất
+    const updatedInvoices = [...invoices];
+
+    // Cập nhật tổng tiền cho từng hóa đơn
+    updatedInvoices.forEach(invoice => {
+      const subtotal = invoice.products.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      const totalDiscount = invoice.products.reduce((sum, item) => sum + item.discount, 0);
+
+      invoice.totalAmount = subtotal;
+      invoice.totalDiscount = totalDiscount;
+      invoice.amountToPay = subtotal - totalDiscount;
+    });
+
+    setInvoices(updatedInvoices);
+
+    // Đặt giá trị mặc định cho các trường
+    const totalAmountToPay = calculateTotalAllInvoices().amountToPay;
+    setCodAmount(true);
+    setShowShippingPopup(true);
+  };
+
+  // Đóng popup gửi đơn hàng
+  const closeShippingPopup = () => {
+    setShowShippingPopup(false);
+  };
+
   // Xử lý tạo đơn hàng
   const handleCreateOrder = async () => {
+    // Mở popup gửi đơn hàng thay vì xử lý trực tiếp
+    openShippingPopup();
+  }
+
+  // Tạo ID đơn hàng ngẫu nhiên
+  const generateOrderId = () => {
+    // Tạo mã đơn hàng với định dạng: ORD-YYYYMMDD-XXXXX
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const dateStr = `${year}${month}${day}`;
+
+    // Tạo 5 ký tự ngẫu nhiên
+    const randomChars = Math.random().toString(36).substring(2, 7).toUpperCase();
+
+    return `ORD-${dateStr}-${randomChars}`;
+  };
+
+  // Tạo ID vận chuyển ngẫu nhiên
+  const generateShippingId = () => {
+    // Tạo mã vận chuyển với định dạng: SHP-YYYYMMDD-XXXXX
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const dateStr = `${year}${month}${day}`;
+
+    // Tạo 5 ký tự ngẫu nhiên
+    const randomChars = Math.random().toString(36).substring(2, 7).toUpperCase();
+
+    return `SHP-${dateStr}-${randomChars}`;
+  };
+
+  // Tạo ID chi tiết đơn hàng ngẫu nhiên
+  const generateOrderDetailId = () => {
+    // Tạo UUID ngẫu nhiên
+    const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+    return uuid;
+  };
+
+  // Xử lý gửi đơn hàng
+  const handleShipOrder = async () => {
     if (!validateOrder()) return;
 
     setLoading(true);
 
     try {
-      // Đây là nơi sẽ gửi dữ liệu lên server
-      // TODO: Thêm code tạo đơn hàng thực tế ở đây
+      const supabase = createClient();
 
-      // Mock API call - sẽ thay thế bằng API thực tế sau
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Lấy thông tin người dùng trực tiếp từ hàm fetchCurrentUser
+      const userData = await fetchCurrentUser();
 
-      alert('Đơn hàng đã được tạo thành công!')
+      if (!userData) {
+        throw new Error('Không tìm thấy thông tin người dùng');
+      }
+
+      // Sử dụng user_id từ userData
+      const userId = userData.user_id;
+      if (!userId) {
+        throw new Error('Không tìm thấy ID người dùng');
+      }
+
+      console.log('Thông tin người dùng:', userData);
+
+      // 1. Tạo ID đơn hàng và ID vận chuyển mới
+      const orderId = generateOrderId();
+      const shippingId = generateShippingId();
+
+      console.log('ID đơn hàng mới:', orderId);
+      console.log('ID vận chuyển mới:', shippingId);
+
+      // Tính tổng giá trị đơn hàng từ tất cả các hóa đơn
+      const totalOrderAmount = calculateTotalAllInvoices().amountToPay;
+
+      // Tính toán số tiền khách trả trước và số tiền còn lại
+      const prepaidAmount = parseFloat(customerPrepaid) || 0;
+      const remainingAmount = Math.max(0, totalOrderAmount - prepaidAmount);
+
+      // Xác định trạng thái thanh toán
+      const paymentStatus = prepaidAmount >= totalOrderAmount ? 'paid' : 'unpaid';
+
+      // 2. Tạo đơn hàng trước
+      console.log('Bắt đầu tạo đơn hàng...');
+
+      // Tạo đối tượng đơn hàng phù hợp với cấu trúc bảng orders
+      const orderObject = {
+        order_id: orderId,
+        customer_id: userId, // Sử dụng userId từ currentUser
+        order_date: new Date().toISOString(),
+        price: totalOrderAmount,
+        status: paymentStatus, // Trạng thái dựa trên số tiền đã trả
+        is_shipping: true, // Đây là đơn vận chuyển
+        payment_method: null // Chưa có phương thức thanh toán
+      };
+
+      console.log('Thông tin đơn hàng:', orderObject);
+
+      const { data: orderData, error: orderError } = await supabase
+        .from('orders')
+        .insert(orderObject);
+
+      if (orderError) {
+        throw new Error('Không thể tạo đơn hàng: ' + orderError.message);
+      }
+
+      console.log('Đơn hàng đã được tạo thành công!');
+
+      // 3. Tạo chi tiết đơn hàng cho từng sản phẩm
+      console.log('Bắt đầu tạo chi tiết đơn hàng...');
+
+      const orderDetails = [];
+
+      // Lặp qua tất cả các hóa đơn và sản phẩm
+      for (const invoice of invoices) {
+        for (const product of invoice.products) {
+          // Tạo ID ngẫu nhiên cho chi tiết đơn hàng
+          const orderDetailId = generateOrderDetailId();
+
+          // Tạo đối tượng chi tiết đơn hàng phù hợp với cấu trúc bảng orderdetails
+          orderDetails.push({
+            orderdetail_id: orderDetailId, // Thêm trường orderdetail_id
+            order_id: orderId,
+            product_id: product.product_id,
+            name_product: product.product_name,
+            name_check: invoice.name,
+            quantity: product.quantity,
+            unit_price: product.price,
+            subtotal: product.price * product.quantity - product.discount
+          });
+        }
+      }
+
+      console.log('Chi tiết đơn hàng:', orderDetails);
+
+      // Thêm chi tiết đơn hàng vào cơ sở dữ liệu
+      console.log('Gửi dữ liệu chi tiết đơn hàng lên server:', JSON.stringify(orderDetails, null, 2));
+
+      // Kiểm tra xem có sản phẩm nào trong đơn hàng không
+      if (orderDetails.length === 0) {
+        throw new Error('Không có sản phẩm nào trong đơn hàng');
+      }
+
+      // Kiểm tra từng sản phẩm trong đơn hàng
+      for (const detail of orderDetails) {
+        console.log('Kiểm tra chi tiết sản phẩm:', detail);
+        if (!detail.order_id || !detail.product_id) {
+          throw new Error('Thiếu thông tin order_id hoặc product_id trong chi tiết đơn hàng');
+        }
+      }
+
+      // Sử dụng bảng orderdetails (chữ thường) thay vì order_details
+      console.log('Sử dụng bảng orderdetails (chữ thường)');
+      const { data: detailsData, error: detailsError } = await supabase
+        .from('orderdetails')
+        .insert(orderDetails)
+        .select();
+
+      console.log('Kết quả tạo chi tiết đơn hàng:', { detailsData, detailsError });
+
+      if (detailsError) {
+        throw new Error('Không thể tạo chi tiết đơn hàng: ' + detailsError.message);
+      }
+
+      console.log('Chi tiết đơn hàng đã được tạo thành công!');
+
+      // 4. Cuối cùng, tạo thông tin vận chuyển
+      console.log('Bắt đầu tạo thông tin vận chuyển...');
+
+      // Tạo đối tượng vận chuyển
+      const shippingObject = {
+        shipping_id: shippingId, // Sử dụng ID vận chuyển đã tạo
+        order_id: orderId, // Liên kết với đơn hàng đã tạo
+        carrier: 'Giao hàng tiêu chuẩn',
+        tracking_number: `TRK-${Date.now()}`,
+        shipping_address: `${recipientAddress}, ${recipientWard}, ${recipientDistrict}`,
+        shipping_cost: 0, // Có thể tính phí vận chuyển sau
+        actual_delivery_date: null,
+        delivery_date: null,
+        status: 'pending', // Trạng thái mặc định là đang chờ xử lý
+        created_at: new Date().toISOString(),
+        // Thêm các trường mới
+        name_customer: recipientName,
+        phone_customer: recipientPhone,
+        weight: parseFloat(shippingWeight) || 0,
+        unit_weight: shippingUnit,
+        long: parseFloat(packageLength) || 0,
+        wide: parseFloat(packageWidth) || 0,
+        hight: parseFloat(packageHeight) || 0,
+        unit_size: dimensionUnit,
+        cod_shipping: codAmount
+      };
+
+      console.log('Thông tin vận chuyển:', shippingObject);
+
+      const { error: shippingError } = await supabase
+        .from('shippings')
+        .insert(shippingObject);
+
+      if (shippingError) {
+        throw new Error('Không thể tạo thông tin vận chuyển: ' + shippingError.message);
+      }
+
+      console.log('Thông tin vận chuyển đã được tạo thành công!');
+      console.log('Hoàn tất quá trình tạo đơn hàng vận chuyển!');
+
+      // Hiển thị thông báo thành công
+      setSuccessMessage('Đơn hàng đã được tạo thành công!');
+      setTimeout(() => {
+        setSuccessMessage('');
+      }, 2000); // Tự động ẩn sau 2 giây
+
+      setShowShippingPopup(false);
 
       // Reset thông tin hóa đơn hiện tại
-      const updatedInvoices = [...invoices]
+      let updatedInvoices = [...invoices]
       updatedInvoices[activeInvoiceIndex] = {
         ...updatedInvoices[activeInvoiceIndex],
         products: [],
@@ -952,11 +1279,29 @@ export default function CreateOrderPage() {
       }
       setInvoices(updatedInvoices)
 
+      // Tải lại dữ liệu sản phẩm để cập nhật thông tin tồn kho mới nhất
+      console.log('Tải lại dữ liệu sản phẩm để cập nhật thông tin tồn kho mới nhất');
+      fetchDefaultProducts();
+
+      // Đóng popup và reset form
+      setShowShippingPopup(false);
+
+      // Reset thông tin hóa đơn hiện tại
+      let resetInvoices = [...invoices];
+      resetInvoices[activeInvoiceIndex] = {
+        ...resetInvoices[activeInvoiceIndex],
+        products: [],
+        note: '',
+        totalAmount: 0,
+        totalDiscount: 0,
+        amountToPay: 0
+      };
+      setInvoices(resetInvoices);
     } catch (error) {
-      console.error('Lỗi khi tạo đơn hàng:', error)
-      alert('Có lỗi xảy ra khi tạo đơn hàng')
+      console.error('Lỗi khi tạo đơn hàng:', error);
+      alert('Có lỗi xảy ra khi tạo đơn hàng: ' + (error instanceof Error ? error.message : 'Lỗi không xác định'));
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
@@ -1407,6 +1752,260 @@ export default function CreateOrderPage() {
                     </svg>
                     Thanh toán
                   </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Popup gửi đơn hàng */}
+      {showShippingPopup && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="absolute inset-0 bg-black opacity-10" onClick={closeShippingPopup}></div>
+          <div className={`bg-white rounded-lg shadow-xl w-full max-w-4xl p-6 border-2 border-red-500 relative max-h-[90vh] overflow-y-auto`}>
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h3 className="text-xl font-semibold">Tạo đơn gửi đi</h3>
+                {currentUser && (
+                  <div className="text-sm text-gray-500 mt-1">
+                    <p>Người tạo: {currentUser.fullname || currentUser.email}</p>
+                    <p>Thời gian: {new Date().toLocaleString('vi-VN')}</p>
+                  </div>
+                )}
+              </div>
+              <button
+                onClick={closeShippingPopup}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <XMarkIcon className="h-6 w-6" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h4 className="font-medium text-lg mb-3">Thông tin người nhận</h4>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Tên người nhận:
+                  </label>
+                  <input
+                    type="text"
+                    value={recipientName}
+                    onChange={(e) => setRecipientName(e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Nhập tên người nhận"
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Số điện thoại:
+                  </label>
+                  <input
+                    type="text"
+                    value={recipientPhone}
+                    onChange={(e) => setRecipientPhone(e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Nhập số điện thoại"
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Địa chỉ chi tiết (Số nhà, ngõ, đường):
+                  </label>
+                  <input
+                    type="text"
+                    value={recipientAddress}
+                    onChange={(e) => setRecipientAddress(e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Nhập địa chỉ chi tiết"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Tỉnh/TP - Quận/Huyện:
+                    </label>
+                    <input
+                      type="text"
+                      value={recipientDistrict}
+                      onChange={(e) => setRecipientDistrict(e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Nhập quận/huyện"
+                    />
+                  </div>
+
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Phường/Xã:
+                    </label>
+                    <input
+                      type="text"
+                      value={recipientWard}
+                      onChange={(e) => setRecipientWard(e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Nhập phường/xã"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="font-medium text-lg mb-3">Thông tin gói hàng</h4>
+
+                <div className="flex items-center mb-4">
+                  <div className="flex-grow mr-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Trọng lượng:
+                    </label>
+                    <input
+                      type="text"
+                      value={shippingWeight}
+                      onChange={(e) => setShippingWeight(e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Nhập trọng lượng"
+                    />
+                  </div>
+                  <div className="w-24">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Đơn vị:
+                    </label>
+                    <select
+                      value={shippingUnit}
+                      onChange={(e) => setShippingUnit(e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="gram">gram</option>
+                      <option value="kg">kg</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 mb-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Dài:
+                    </label>
+                    <input
+                      type="text"
+                      value={packageLength}
+                      onChange={(e) => setPackageLength(e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Rộng:
+                    </label>
+                    <input
+                      type="text"
+                      value={packageWidth}
+                      onChange={(e) => setPackageWidth(e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Cao:
+                    </label>
+                    <input
+                      type="text"
+                      value={packageHeight}
+                      onChange={(e) => setPackageHeight(e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Đơn vị kích thước:
+                  </label>
+                  <select
+                    value={dimensionUnit}
+                    onChange={(e) => setDimensionUnit(e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="cm">cm</option>
+                    <option value="mm">mm</option>
+                    <option value="inch">inch</option>
+                  </select>
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Khách trả trước:
+                  </label>
+                  <input
+                    type="number"
+                    value={customerPrepaid}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setCustomerPrepaid(value);
+
+                      // Tự động bỏ tích thu tiền hộ nếu khách trả đủ hoặc hơn
+                      const prepaidAmount = parseFloat(value) || 0;
+                      const totalAmount = calculateTotalAllInvoices().amountToPay;
+
+                      if (prepaidAmount >= totalAmount) {
+                        setCodAmount(false);
+                      } else {
+                        setCodAmount(true);
+                      }
+                    }}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Nhập số tiền khách trả trước"
+                  />
+                </div>
+
+                <div className="flex justify-between mb-2 mt-4 text-lg font-bold">
+                  <span>Khách cần trả:</span>
+                  <span>
+                    {formatCurrency(Math.max(0, calculateTotalAllInvoices().amountToPay - (parseFloat(customerPrepaid) || 0)))}
+                  </span>
+                </div>
+
+                <div className="mb-4">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={codAmount}
+                      onChange={(e) => setCodAmount(e.target.checked)}
+                      disabled={parseFloat(customerPrepaid) >= calculateTotalAllInvoices().amountToPay}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded disabled:opacity-50"
+                    />
+                    <span className="ml-2 text-sm text-gray-700">Thu hộ tiền (COD)</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={closeShippingPopup}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleShipOrder}
+                disabled={loading || !recipientName || !recipientPhone || !recipientAddress}
+                className={`px-5 py-2 text-white rounded-md disabled:bg-gray-400 transition-colors duration-200 flex items-center ${currentTheme?.buttonBg || 'bg-blue-600'} ${currentTheme?.buttonHoverBg || 'hover:bg-blue-700'}`}
+              >
+                {loading ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Đang xử lý...
+                  </>
+                ) : (
+                  'Gửi đơn hàng'
                 )}
               </button>
             </div>

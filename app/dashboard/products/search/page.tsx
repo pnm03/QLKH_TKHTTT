@@ -120,19 +120,19 @@ const ProductDetail = ({ product, onClose, onDelete, theme }: ProductDetailProps
                       {product.product_name}
                     </h3>
                     <div className="mt-4 space-y-3">
-                      <div className="flex items-center">
+                      <div key="price" className="flex items-center">
                         <CurrencyDollarIcon className="h-5 w-5 text-gray-400 mr-2" />
                         <span className="text-gray-700 font-medium">{formatCurrency(product.price)}</span>
                       </div>
-                      <div className="flex items-center">
+                      <div key="color" className="flex items-center">
                         <SwatchIcon className="h-5 w-5 text-gray-400 mr-2" />
                         <span className="text-gray-700">Màu: {product.color || 'Không có'}</span>
                       </div>
-                      <div className="flex items-center">
+                      <div key="size" className="flex items-center">
                         <TagIcon className="h-5 w-5 text-gray-400 mr-2" />
                         <span className="text-gray-700">Kích thước: {product.size || 'Không có'}</span>
                       </div>
-                      <div className="flex items-center">
+                      <div key="stock" className="flex items-center">
                         <ArchiveBoxIcon className="h-5 w-5 text-gray-400 mr-2" />
                         <span className="text-gray-700">Tồn kho: {product.stock_quantity}</span>
                       </div>
@@ -142,8 +142,8 @@ const ProductDetail = ({ product, onClose, onDelete, theme }: ProductDetailProps
                       <p className="mt-1 text-sm text-gray-500">{product.description || 'Không có mô tả'}</p>
                     </div>
                     <div className="mt-4 text-xs text-gray-500">
-                      <p>Ngày tạo: {formatDate(product.created_at)}</p>
-                      <p>Cập nhật: {formatDate(product.updated_at)}</p>
+                      <p key="created-date">Ngày tạo: {formatDate(product.created_at)}</p>
+                      <p key="updated-date">Cập nhật: {formatDate(product.updated_at)}</p>
                     </div>
                   </div>
                 </div>

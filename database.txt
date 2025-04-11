@@ -60,7 +60,7 @@ Lưu thông tin về đơn hàng.
 
 order_id (text, PK, Auto) – Khóa chính.
 
-customer_id (INT, FK) – Khóa ngoại tham chiếu đến Users.user_id.
+customer_id (INT, FK) – Khóa ngoại tham chiếu đến Users.user_id - Người tạo.
 
 order_date (TIMESTAMPTZ) – Ngày tạo đơn hàng.
 
@@ -68,7 +68,7 @@ price (NUMERIC(10,2)) – Tiền đơn hàng.
 
 status (ENUM) – Trạng thái (Đã thanh toán, Chưa thanh toán).
 
-shipping_id (INT, FK) – Khóa ngoại đến Shippings.shipping_id.
+is_shipping (bookbook) – Nếu là đơn vận chuyển thì là truetrue
 
 payment_method (INT, FK) – Khóa ngoại đến Payments.payment_id.
 
@@ -92,9 +92,20 @@ subtotal (NUMERIC(10,2)) – Tổng tiền (quantity * unit_price).
 6. Vận chuyển (Shippings)
 Lưu thông tin về quá trình vận chuyển.
 
-shipping_id (SERIAL, PK) – Khóa chính.
+shipping_id (text, PK) – Khóa chính.
 
 order_id (INT, FK, UNIQUE) – Khóa ngoại đến Orders.order_id.
+
+name_customer (text) - tên khách hàng
+phone_customer (VARCHAR(12)) - Số điện thoại khách hàng
+weight (NUMERIC(10,2)) - Cân nặng của đơn hàng
+unit_weight (varchar(10))- đơn vị của trọng lượng (kg, g)
+long (NUMERIC(10,2)) - 
+wide (NUMERIC(10,2)) - 
+hight (NUMERIC(10,2)) - 
+unit_size (varchar(10))- đơn vị của kích thức (cm, mm, inch)
+cod_shipping (bool) - Xác nhận thu tiền hộhộ
+
 
 carrier (VARCHAR(100)) – Đơn vị vận chuyển.
 

@@ -7,6 +7,7 @@ import { ArrowLeftIcon } from '@heroicons/react/24/outline'
 import { useTheme, themeColors } from '@/app/context/ThemeContext'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { use } from 'react'
+import { convertImageToBase64, validateImage } from '@/app/utils/imageUtils'
 
 interface ProductFormData {
   product_name: string
@@ -134,20 +135,31 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
   }
 
   // Handle image upload
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0]
+
+      // Sử dụng hàm validateImage để kiểm tra file
+      const validation = validateImage(file)
+      if (!validation.valid) {
+        setError(validation.error)
+        return
+      }
+
       setFormData({
         ...formData,
         image: file
       })
 
-      // Create preview URL
-      const reader = new FileReader()
-      reader.onload = () => {
-        setPreviewUrl(reader.result as string)
+      try {
+        // Sử dụng hàm convertImageToBase64 để chuyển đổi file thành base64
+        const base64String = await convertImageToBase64(file)
+        setPreviewUrl(base64String as string)
+        setError(null) // Xóa lỗi nếu có
+      } catch (error) {
+        console.error('Lỗi khi chuyển đổi ảnh:', error)
+        setError('Không thể đọc file ảnh')
       }
-      reader.readAsDataURL(file)
     }
   }
 
@@ -173,28 +185,13 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
         throw new Error('Số lượng tồn kho không thể là số âm')
       }
 
+      // Sử dụng base64 đã lưu trong previewUrl nếu có ảnh mới
       let imageUrl = formData.imageUrl
 
-      // Upload image if a new one is selected
-      if (formData.image) {
-        const fileExt = formData.image.name.split('.').pop()
-        const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`
-        const filePath = `products/${fileName}`
-
-        const { error: uploadError, data: uploadData } = await supabase.storage
-          .from('images')
-          .upload(filePath, formData.image)
-
-        if (uploadError) {
-          throw new Error(`Lỗi khi tải ảnh lên: ${uploadError.message}`)
-        }
-
-        // Get public URL for the uploaded image
-        const { data: { publicUrl } } = supabase.storage
-          .from('images')
-          .getPublicUrl(filePath)
-
-        imageUrl = publicUrl
+      if (formData.image && previewUrl) {
+        // Sử dụng trực tiếp chuỗi base64 đã được tạo trong handleImageChange
+        imageUrl = previewUrl
+        console.log('Sử dụng ảnh base64')
       }
 
       // Update product data in database

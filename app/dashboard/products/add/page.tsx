@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useTheme, themeColors } from '@/app/context/ThemeContext'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import Image from 'next/image'
+import { convertImageToBase64, validateImage } from '@/app/utils/imageUtils'
 
 interface ProductFormData {
   product_name: string
@@ -36,6 +37,7 @@ export default function AddProductPage() {
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
   // Set mounted = true sau khi component được render ở client
   useEffect(() => {
@@ -51,7 +53,7 @@ export default function AddProductPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
-    
+
     // Xử lý riêng cho các trường số
     if (name === 'price' || name === 'stock_quantity') {
       // Chỉ cho phép nhập số
@@ -68,18 +70,13 @@ export default function AddProductPage() {
     }
   }
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      // Kiểm tra kích thước file (tối đa 10MB)
-      if (file.size > 10 * 1024 * 1024) {
-        setError('Kích thước ảnh không được vượt quá 10MB')
-        return
-      }
-
-      // Kiểm tra định dạng file
-      if (!file.type.startsWith('image/')) {
-        setError('File phải là định dạng ảnh')
+      // Sử dụng hàm validateImage để kiểm tra file
+      const validation = validateImage(file)
+      if (!validation.valid) {
+        setError(validation.error)
         return
       }
 
@@ -87,17 +84,16 @@ export default function AddProductPage() {
         ...prev,
         image: file
       }))
-      
-      // Tạo URL để xem trước ảnh
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setPreviewUrl(reader.result as string)
+
+      try {
+        // Sử dụng hàm convertImageToBase64 để chuyển đổi file thành base64
+        const base64String = await convertImageToBase64(file)
+        setPreviewUrl(base64String as string)
         setError(null) // Xóa lỗi nếu có
-      }
-      reader.onerror = () => {
+      } catch (error) {
+        console.error('Lỗi khi chuyển đổi ảnh:', error)
         setError('Không thể đọc file ảnh')
       }
-      reader.readAsDataURL(file)
     }
   }
 
@@ -107,24 +103,12 @@ export default function AddProductPage() {
     setError(null)
 
     try {
-      // Upload image to Supabase Storage if exists
+      // Sử dụng base64 đã lưu trong previewUrl nếu có ảnh
       let imageUrl = null
-      if (formData.image) {
-        const fileExt = formData.image.name.split('.').pop()
-        const fileName = `${Math.random()}.${fileExt}`
-        const filePath = `products/${fileName}`
-
-        const { error: uploadError } = await supabase.storage
-          .from('products')
-          .upload(filePath, formData.image)
-
-        if (uploadError) throw uploadError
-
-        const { data: { publicUrl } } = supabase.storage
-          .from('products')
-          .getPublicUrl(filePath)
-
-        imageUrl = publicUrl
+      if (formData.image && previewUrl) {
+        // Sử dụng trực tiếp chuỗi base64 đã được tạo trong handleImageChange
+        imageUrl = previewUrl
+        console.log('Sử dụng ảnh base64')
       }
 
       // Insert product data into database
@@ -144,8 +128,27 @@ export default function AddProductPage() {
 
       if (insertError) throw insertError
 
-      router.push('/dashboard/products')
-      router.refresh()
+      // Hiển thị thông báo thành công
+      setSuccessMessage('Thêm sản phẩm thành công!')
+
+      // Tự động ẩn thông báo sau 3 giây
+      setTimeout(() => {
+        setSuccessMessage(null)
+      }, 3000)
+
+      // Làm mới các ô thông tin để tiếp tục thêm sản phẩm mới
+      setFormData({
+        product_name: '',
+        description: '',
+        color: '',
+        size: '',
+        price: 0,
+        stock_quantity: 0,
+        image: null
+      })
+
+      // Xóa ảnh xem trước
+      setPreviewUrl(null)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Có lỗi xảy ra khi thêm sản phẩm')
     } finally {
@@ -159,6 +162,16 @@ export default function AddProductPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
+      {/* Thông báo thành công */}
+      {successMessage && (
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded shadow-md flex items-center">
+          <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+          </svg>
+          <span>{successMessage}</span>
+        </div>
+      )}
+
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
           <div className="px-6 py-8 border-b border-gray-200">
@@ -362,7 +375,32 @@ export default function AddProductPage() {
               </div>
             )}
 
-            <div className="flex justify-end">
+            <div className="flex justify-end space-x-4">
+              <button
+                type="button"
+                onClick={() => {
+                  // Làm mới các ô thông tin
+                  setFormData({
+                    product_name: '',
+                    description: '',
+                    color: '',
+                    size: '',
+                    price: 0,
+                    stock_quantity: 0,
+                    image: null
+                  })
+
+                  // Xóa ảnh xem trước
+                  setPreviewUrl(null)
+
+                  // Xóa thông báo lỗi nếu có
+                  setError(null)
+                }}
+                className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                Làm mới
+              </button>
+
               <button
                 type="submit"
                 disabled={loading}
@@ -386,4 +424,4 @@ export default function AddProductPage() {
       </div>
     </div>
   )
-} 
+}
