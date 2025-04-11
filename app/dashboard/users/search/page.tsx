@@ -1,0 +1,1472 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { MagnifyingGlassIcon, PencilIcon, KeyIcon, ArrowUpIcon, ArrowDownIcon, FunnelIcon, XMarkIcon, UserIcon, UserCircleIcon, EnvelopeIcon, PhoneIcon, CalendarIcon, MapPinIcon, ClockIcon, ShieldCheckIcon, TrashIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
+import { ChevronDownIcon } from '@heroicons/react/20/solid'
+import { useTheme, themeColors } from '@/app/context/ThemeContext'
+import { createClient } from '@/utils/supabase/client'
+import Image from 'next/image'
+
+// Định nghĩa kiểu dữ liệu cho người dùng
+interface User {
+  id: string
+  name: string
+  email: string
+  role: string
+  status: string
+  created_at: string
+  // Thêm các trường chi tiết người dùng
+  phone?: string | null
+  hometown?: string | null
+  birth_date?: string | null
+  updated_at?: string | null
+  last_login?: string | null
+}
+
+// Thêm kiểu dữ liệu cho người dùng từ Supabase
+interface SupabaseUser {
+  user_id: string
+  email: string
+  full_name: string | null
+  created_at: string
+  // Thêm các trường chi tiết
+  phone: string | null
+  hometown: string | null
+  birth_date: string | null
+  updated_at: string | null
+}
+
+// Thêm kiểu dữ liệu cho tài khoản từ Supabase
+interface SupabaseAccount {
+  user_id: string
+  role: string
+  status: string
+  last_login: string | null
+}
+
+type SortField = 'name' | 'email' | 'role' | 'status' | 'created_at'
+type SortOrder = 'asc' | 'desc'
+
+// Mapping vai trò hiển thị thân thiện
+const ROLE_MAPPING: Record<string, string> = {
+  'admin': 'Quản trị viên',
+  'NVBH': 'Nhân viên bán hàng',
+  'NVK': 'Nhân viên kho'
+};
+
+// Mapping trạng thái hiển thị thân thiện
+const STATUS_MAPPING: Record<string, string> = {
+  'active': 'Đang hoạt động',
+  'inactive': 'Không hoạt động'
+};
+
+export default function UserSearchPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  
+  // State cho tìm kiếm và lọc
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('q') || '')
+  const [roleFilter, setRoleFilter] = useState<string>(searchParams.get('role') || 'all')
+  const [statusFilter, setStatusFilter] = useState<string>(searchParams.get('status') || 'all')
+  const [dateFilter, setDateFilter] = useState<string>(searchParams.get('date') || 'all')
+  const [showFilters, setShowFilters] = useState(false)
+  
+  // State cho sắp xếp và dữ liệu
+  const [sortField, setSortField] = useState<SortField>('name')
+  const [sortOrder, setSortOrder] = useState<SortOrder>('asc')
+  const [showSortMenu, setShowSortMenu] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const [users, setUsers] = useState<User[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  
+  // State cho modal chi tiết người dùng
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [userDetailLoading, setUserDetailLoading] = useState(false);
+  const [userDetail, setUserDetail] = useState<any>(null);
+  const [userDetailError, setUserDetailError] = useState<string | null>(null);
+  
+  // Thêm state cho kiểm tra quyền admin
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [accessDenied, setAccessDenied] = useState(false);
+  
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [captchaInput, setCaptchaInput] = useState('');
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deleteSuccess, setDeleteSuccess] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  
+  // Thêm state hiển thị thông báo thành công trong kết quả tìm kiếm
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  
+  // Lấy thông tin theme từ context
+  const themeContext = useTheme()
+  const [themeState, setThemeState] = useState({
+    theme: themeColors.indigo
+  })
+  
+  // Đánh dấu component đã mounted
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Cập nhật theme khi context thay đổi
+  useEffect(() => {
+    if (mounted) {
+      setThemeState({
+        theme: themeContext.currentTheme || themeColors.indigo
+      })
+    }
+  }, [mounted, themeContext.currentTheme])
+  
+  // Đảm bảo theme luôn có giá trị mặc định
+  useEffect(() => {
+    if (!themeState.theme || !themeState.theme.textColor) {
+      setThemeState({
+        theme: {
+          ...themeColors.indigo,
+          textColor: 'text-indigo-600',
+          name: 'indigo',
+          buttonBg: 'bg-indigo-600',
+          buttonHoverBg: 'hover:bg-indigo-700'
+        }
+      });
+    }
+  }, [themeState.theme]);
+
+  // Kiểm tra quyền truy cập (chỉ admin được phép sử dụng trang này)
+  useEffect(() => {
+    if (mounted) {
+      const checkAdminPermission = async () => {
+        try {
+          const supabase = createClient();
+          
+          // Kiểm tra phiên đăng nhập
+          const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+          
+          if (sessionError || !session) {
+            console.error('Không có phiên đăng nhập hợp lệ:', sessionError?.message);
+            await supabase.auth.signOut();
+            router.push('/auth/signin?redirectTo=/dashboard/users/search');
+            return;
+          }
+          
+          // Lưu ID người dùng hiện tại
+          setCurrentUserId(session.user.id);
+          
+          // Kiểm tra quyền admin
+          const { data: accountData, error: accountError } = await supabase
+            .from('accounts')
+            .select('role')
+            .eq('user_id', session.user.id)
+            .maybeSingle();
+          
+          if (accountError) {
+            console.error('Lỗi khi lấy vai trò người dùng:', accountError);
+            setError('Không thể xác minh quyền của bạn. Vui lòng đăng nhập lại.');
+            setAccessDenied(true);
+            setLoading(false);
+            return;
+          }
+          
+          if (!accountData) {
+            setError('Không tìm thấy thông tin tài khoản của bạn.');
+            setAccessDenied(true);
+            setLoading(false);
+            return;
+          }
+          
+          // Nếu không phải admin, từ chối truy cập
+          if (accountData.role !== 'admin') {
+            const friendlyRoleName = ROLE_MAPPING[accountData.role] || accountData.role;
+            setError(`Truy cập bị từ chối. Bạn là ${friendlyRoleName}, chỉ admin mới có quyền tìm kiếm và quản lý người dùng.`);
+            setAccessDenied(true);
+            setLoading(false);
+          } else {
+            setIsAdmin(true);
+            // Tải danh sách người dùng
+            fetchUsers();
+          }
+        } catch (error: any) {
+          console.error('Lỗi khi kiểm tra quyền:', error);
+          setError('Đã xảy ra lỗi khi kiểm tra quyền. Vui lòng thử lại sau.');
+          setAccessDenied(true);
+          setLoading(false);
+        }
+      };
+      
+      checkAdminPermission();
+    }
+  }, [mounted, router]);
+  
+  // Function hiển thị tên vai trò thân thiện
+  const getFriendlyRole = (role: string) => ROLE_MAPPING[role] || role;
+  
+  // Function lọc theo ngày
+  const filterByDate = (dateStr: string, filterType: string): boolean => {
+    const date = new Date(dateStr);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    const weekStart = new Date(today);
+    weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+    
+    const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+    
+    switch (filterType) {
+      case 'today':
+        return date >= today;
+      case 'yesterday':
+        return date >= yesterday && date < today;
+      case 'week':
+        return date >= weekStart;
+      case 'month':
+        return date >= monthStart;
+      default:
+        return true;
+    }
+  };
+  
+  // Tải dữ liệu người dùng từ Supabase
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const supabase = createClient();
+      
+      // Lấy danh sách người dùng
+      const { data: usersData, error: usersError } = await supabase
+        .from('users')
+        .select(`
+          user_id,
+          email,
+          full_name,
+          created_at,
+          phone,
+          hometown,
+          birth_date,
+          updated_at
+        `)
+        .order('created_at', { ascending: false });
+      
+      if (usersError) {
+        throw usersError;
+      }
+      
+      if (usersData && usersData.length > 0) {
+        // Lấy thông tin tài khoản tương ứng
+        const { data: accountsData, error: accountsError } = await supabase
+          .from('accounts')
+          .select('user_id, role, status, last_login');
+        
+        if (accountsError) {
+          throw accountsError;
+        }
+        
+        // Tạo map từ user_id đến thông tin tài khoản để dễ dàng tra cứu
+        const accountsMap = new Map();
+        if (accountsData) {
+          accountsData.forEach((account: SupabaseAccount) => {
+            accountsMap.set(account.user_id, {
+              role: account.role,
+              status: account.status,
+              last_login: account.last_login
+            });
+          });
+        }
+        
+        // Kết hợp dữ liệu từ hai bảng
+        const formattedUsers: User[] = usersData.map((user: SupabaseUser) => {
+          const account = accountsMap.get(user.user_id);
+          return {
+            id: user.user_id,
+            name: user.full_name || 'Chưa cập nhật',
+            email: user.email,
+            role: account?.role || 'Đã xóa tài khoản',
+            status: account?.status || 'inactive',
+            created_at: user.created_at,
+            phone: user.phone,
+            hometown: user.hometown,
+            birth_date: user.birth_date,
+            updated_at: user.updated_at,
+            last_login: account?.last_login || null
+          };
+        });
+        
+        setUsers(formattedUsers);
+      } else {
+        setUsers([]);
+      }
+    } catch (error: any) {
+      console.error('Lỗi khi tải dữ liệu người dùng:', error);
+      setError(error.message || 'Đã xảy ra lỗi khi tải dữ liệu người dùng');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  // Cập nhật URL khi các bộ lọc thay đổi
+  useEffect(() => {
+    if (mounted) {
+      // Xây dựng URL mới dựa trên bộ lọc hiện tại
+      const params = new URLSearchParams();
+      
+      if (searchTerm) params.set('q', searchTerm);
+      if (roleFilter !== 'all') params.set('role', roleFilter);
+      if (statusFilter !== 'all') params.set('status', statusFilter);
+      if (dateFilter !== 'all') params.set('date', dateFilter);
+      
+      // Cập nhật URL không làm mới trang
+      const newUrl = `/dashboard/users/search?${params.toString()}`;
+      window.history.pushState({}, '', newUrl);
+    }
+  }, [searchTerm, roleFilter, statusFilter, dateFilter, mounted]);
+  
+  // Xử lý sắp xếp
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      // Nếu đang sắp xếp theo field này rồi, đảo chiều sắp xếp
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Nếu là field mới, mặc định sắp xếp tăng dần
+      setSortField(field);
+      setSortOrder('asc');
+    }
+    setShowSortMenu(false);
+  };
+  
+  // Xử lý gửi form tìm kiếm
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Cập nhật URL và làm mới trang để lấy dữ liệu mới
+    const params = new URLSearchParams();
+    if (searchTerm) params.set('q', searchTerm);
+    if (roleFilter !== 'all') params.set('role', roleFilter);
+    if (statusFilter !== 'all') params.set('status', statusFilter);
+    if (dateFilter !== 'all') params.set('date', dateFilter);
+    
+    router.push(`/dashboard/users/search?${params.toString()}`);
+  };
+  
+  // Xóa tất cả bộ lọc
+  const clearAllFilters = () => {
+    setSearchTerm('');
+    setRoleFilter('all');
+    setStatusFilter('all');
+    setDateFilter('all');
+    router.push('/dashboard/users/search');
+  };
+  
+  // Lọc và sắp xếp users
+  const filteredUsers = [...users]
+    .filter(user => {
+      // Lọc theo văn bản tìm kiếm
+      const matchesSearch = searchTerm ? 
+        (user.name ? user.name.toLowerCase().includes(searchTerm.toLowerCase()) : false) ||
+        (user.email ? user.email.toLowerCase().includes(searchTerm.toLowerCase()) : false) ||
+        (user.role ? getFriendlyRole(user.role).toLowerCase().includes(searchTerm.toLowerCase()) : false)
+        : true;
+      
+      // Lọc theo vai trò
+      const matchesRole = roleFilter === 'all' || user.role === roleFilter;
+      
+      // Lọc theo trạng thái
+      const matchesStatus = statusFilter === 'all' || user.status === statusFilter;
+      
+      // Lọc theo ngày
+      const matchesDate = dateFilter === 'all' || filterByDate(user.created_at, dateFilter);
+      
+      return matchesSearch && matchesRole && matchesStatus && matchesDate;
+    })
+    .sort((a, b) => {
+      const compareValueA = a[sortField] || '';
+      const compareValueB = b[sortField] || '';
+      
+      if (sortOrder === 'asc') {
+        return compareValueA.localeCompare(compareValueB);
+      } else {
+        return compareValueB.localeCompare(compareValueA);
+      }
+    });
+ 
+  // Component cho dấu sắp xếp
+  const SortIndicator = ({ currentField }: { currentField: SortField }) => {
+    if (sortField !== currentField) return null;
+    
+    return sortOrder === 'asc' 
+      ? <ArrowUpIcon className="h-4 w-4 inline ml-1" /> 
+      : <ArrowDownIcon className="h-4 w-4 inline ml-1" />;
+  };
+
+  // Format ngày tạo người dùng
+  const formatDate = (dateString?: string): string => {
+    if (!dateString) return 'Chưa cập nhật';
+    
+    try {
+      const date = new Date(dateString);
+      // Kiểm tra nếu date không hợp lệ (Invalid Date)
+      if (isNaN(date.getTime())) {
+        return 'Không hợp lệ';
+      }
+      
+      return new Intl.DateTimeFormat('vi-VN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      }).format(date);
+    } catch (error) {
+      console.error('Lỗi format ngày:', error);
+      return 'Không hợp lệ';
+    }
+  };
+
+  // Hàm mở modal và lấy thông tin chi tiết người dùng
+  const openUserDetail = async (user: User) => {
+    setSelectedUser(user);
+    setShowUserModal(true);
+    setUserDetailLoading(true);
+    setUserDetailError(null);
+    setUserDetail(null);
+    
+    try {
+      console.log('Hiển thị thông tin chi tiết cho user ID:', user.id);
+      
+      // Dữ liệu user đã bao gồm đầy đủ thông tin từ khi tải ban đầu
+      const userDetailInfo = {
+        user_id: user.id,
+        full_name: user.name,
+        email: user.email,
+        role: user.role,
+        status: user.status,
+        created_at: user.created_at,
+        phone: user.phone || null,
+        hometown: user.hometown || null,
+        birth_date: user.birth_date || null,
+        updated_at: user.updated_at || null,
+        last_login: user.last_login || null
+      };
+      
+      console.log('Thông tin chi tiết người dùng:', userDetailInfo);
+      
+      // Log thêm thông tin để debug
+      console.log('Thông tin người dùng hiện tại:', currentUserId);
+      console.log('Vai trò người dùng cần xóa:', userDetailInfo.role);
+      console.log('Điều kiện hiển thị nút xóa:', userDetailInfo.role !== 'admin' && userDetailInfo.user_id !== currentUserId);
+      
+      // Tạo hiệu ứng loading trong 0.5 giây để UI mượt mà hơn
+      setTimeout(() => {
+        // Hiển thị thông tin chi tiết user sau khi đã loading
+        setUserDetail(userDetailInfo);
+        setUserDetailLoading(false);
+      }, 300);
+      
+    } catch (error: any) {
+      console.error('Lỗi khi xử lý thông tin người dùng:', error);
+      // Tạo hiệu ứng loading cho cả trường hợp lỗi để tránh UI giật
+      setTimeout(() => {
+        setUserDetailError(error.message || 'Đã xảy ra lỗi khi hiển thị thông tin người dùng');
+        setUserDetailLoading(false);
+      }, 500);
+    }
+  };
+  
+  // Hàm đóng modal
+  const closeUserDetail = () => {
+    setShowUserModal(false);
+    setSelectedUser(null);
+    setUserDetail(null);
+  };
+  
+  // Hàm format ngày sinh
+  const formatBirthDate = (dateString?: string): string => {
+    if (!dateString) return 'Chưa cập nhật';
+    
+    try {
+      const date = new Date(dateString);
+      return new Intl.DateTimeFormat('vi-VN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }).format(date);
+    } catch (error) {
+      return 'Không hợp lệ';
+    }
+  };
+
+  // Mở modal xác nhận xóa người dùng
+  const openDeleteConfirmation = (e: React.MouseEvent, user: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Đảm bảo việc click vào nút xóa không mở modal thông tin người dùng
+    setSelectedUser(user);
+    
+    // Ẩn modal thông tin người dùng
+    setShowUserModal(false);
+    
+    // Hiển thị modal xác nhận xóa
+    setUserDetail(user);
+    setShowDeleteConfirmation(true);
+    setCaptchaInput('');
+    setDeleteError(null);
+    setDeleteSuccess(null);
+    
+    console.log('Mở modal xác nhận xóa cho người dùng:', user.user_id, user.full_name);
+  };
+
+  // Đóng modal xác nhận xóa
+  const closeDeleteConfirmation = () => {
+    // Nếu xóa thành công, không hiển thị lại modal thông tin người dùng
+    if (!deleteSuccess) {
+      setShowUserModal(true);
+    }
+    
+    setShowDeleteConfirmation(false);
+  };
+
+  // Hàm xóa người dùng
+  const deleteUser = async () => {
+    if (!userDetail) return;
+    
+    setIsDeleting(true);
+    setDeleteError(null);
+    
+    try {
+      // Kiểm tra CAPTCHA
+      if (captchaInput !== 'XACNHAN') {
+        setDeleteError('Mã xác nhận không đúng. Vui lòng nhập "XACNHAN"');
+        setIsDeleting(false);
+        return;
+      }
+      
+      // Debug: Hiển thị thông tin người dùng đang xóa
+      console.log('Attempting to delete user:', userDetail.user_id, userDetail.full_name);
+      
+      // Sử dụng API route để xóa người dùng (cách này an toàn hơn vì sử dụng admin API)
+      const response = await fetch('/api/admin/users/delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          userId: userDetail.user_id
+        })
+      });
+      
+      const result = await response.json();
+      
+      // Debug: Log kết quả từ API
+      console.log('Delete API response:', result);
+      
+      if (!response.ok) {
+        throw new Error(result.error || 'Lỗi không xác định khi xóa người dùng');
+      }
+      
+      // Hiển thị thông báo thành công
+      const message = `Đã xóa người dùng ${userDetail.full_name} thành công`;
+      setDeleteSuccess(message);
+      
+      // Đóng dialog xác nhận xóa sau 1 giây
+      setTimeout(() => {
+        setShowDeleteConfirmation(false);
+        // Làm mới danh sách người dùng và hiển thị thông báo thành công toàn cục
+        setSuccessMessage(message);
+        setShowSuccessAlert(true);
+        fetchUsers(); // Làm mới danh sách người dùng
+        
+        // Tự động ẩn thông báo sau 3 giây
+        setTimeout(() => {
+          setShowSuccessAlert(false);
+        }, 3000);
+      }, 1000);
+      
+    } catch (error: any) {
+      // Xử lý lỗi toàn diện hơn
+      console.error('Lỗi khi xóa người dùng:', error);
+      
+      // Kiểm tra loại lỗi và hiển thị thông báo phù hợp
+      let errorMessage = 'Không thể xóa người dùng: ';
+      
+      if (error?.message) {
+        errorMessage += error.message;
+      } else if (typeof error === 'object') {
+        errorMessage += JSON.stringify(error);
+      } else {
+        errorMessage += 'Lỗi không xác định';
+      }
+      
+      setDeleteError(errorMessage);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // Hiển thị modal xác nhận xóa
+  const renderDeleteConfirmationModal = () => {
+    if (!showDeleteConfirmation) return null;
+    
+    return (
+      <div className="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+          <div className="fixed inset-0 backdrop-brightness-[0.5] backdrop-blur-[0.8px]" aria-hidden="true"></div>
+          <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+          <div className="inline-block align-bottom bg-white rounded-xl border-2 border-red-200 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+              <div className="sm:flex sm:items-start">
+                <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                  <svg className="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+                <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                    Xác nhận xóa người dùng
+                  </h3>
+                  <div className="mt-2">
+                    <p className="text-sm text-gray-500">
+                      Bạn có chắc chắn muốn xóa người dùng <span className="font-semibold text-red-600">{userDetail?.full_name}</span>? Hành động này không thể hoàn tác.
+                    </p>
+                    
+                    {/* Thông tin chi tiết về người dùng */}
+                    <div className="mt-3 pt-3 border-t border-gray-200">
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <div className="text-gray-500">Email:</div>
+                        <div className="font-medium">{userDetail?.email}</div>
+                      </div>
+                      {userDetail?.role && (
+                        <div className="grid grid-cols-2 gap-2 text-sm mt-1">
+                          <div className="text-gray-500">Vai trò:</div>
+                          <div className="font-medium">
+                            {(() => {
+                              switch(userDetail?.role) {
+                                case 'admin': return 'Quản trị viên';
+                                case 'NVBH': return 'Nhân viên bán hàng';
+                                case 'NVK': return 'Nhân viên kho';
+                                default: return userDetail?.role;
+                              }
+                            })()}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* CAPTCHA xác nhận */}
+                  <div className="mt-4">
+                    <label htmlFor="captcha" className="block text-sm font-medium text-gray-700 mb-1">
+                      Nhập "XACNHAN" để xác nhận xóa
+                    </label>
+                    <input
+                      type="text"
+                      id="captcha"
+                      value={captchaInput}
+                      onChange={(e) => setCaptchaInput(e.target.value)}
+                      className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                      placeholder="XACNHAN"
+                    />
+                  </div>
+                  
+                  {/* Hiển thị lỗi */}
+                  {deleteError && (
+                    <div className="mt-4 bg-red-50 border-l-4 border-red-400 p-4">
+                      <div className="flex">
+                        <div className="flex-shrink-0">
+                          <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <div className="ml-3">
+                          <p className="text-sm text-red-700">
+                            {deleteError}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Hiển thị thành công */}
+                  {deleteSuccess && (
+                    <div className="mt-4 bg-green-50 border-l-4 border-green-400 p-4">
+                      <div className="flex">
+                        <div className="flex-shrink-0">
+                          <svg className="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.707a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <div className="ml-3">
+                          <p className="text-sm text-green-700">
+                            {deleteSuccess}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+              <button 
+                type="button" 
+                className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm ${
+                  deleteSuccess ? 'bg-gray-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700 focus:ring-red-500'
+                }`}
+                onClick={deleteUser}
+                disabled={isDeleting || !!deleteSuccess}
+              >
+                {isDeleting ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Đang xử lý...
+                  </>
+                ) : deleteSuccess ? 'Đã xóa' : 'Xóa người dùng'}
+              </button>
+              <button 
+                type="button" 
+                className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                onClick={closeDeleteConfirmation}
+              >
+                {deleteSuccess ? 'Đóng' : 'Hủy'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  if (!mounted) {
+    return null;
+  }
+
+  const { theme } = themeState;
+  const themeColor = theme.textColor.split('-')[1];
+
+  return (
+    <div className="space-y-8">
+      {/* Header và content */}
+      <div className="flex flex-col md:flex-row gap-4 md:items-center md:justify-between">
+        <h1 className="text-2xl font-bold text-gray-900">Tìm kiếm người dùng</h1>
+      </div>
+
+      {/* Thông báo xóa thành công */}
+      {showSuccessAlert && (
+        <div className="fixed top-4 right-4 z-50 bg-green-50 border border-green-200 rounded-lg p-4 shadow-lg animate-fadeIn">
+          <div className="flex items-start">
+            <CheckCircleIcon className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm text-green-700">{successMessage}</p>
+            </div>
+            <button 
+              onClick={() => setShowSuccessAlert(false)}
+              className="ml-4 text-gray-400 hover:text-gray-500"
+            >
+              <XMarkIcon className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {accessDenied ? (
+        <div className="py-10 text-center bg-white rounded-lg shadow overflow-hidden">
+          <div className="p-6">
+            <XCircleIcon className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-red-800 mb-2">Truy cập bị từ chối</h3>
+            <p className="text-sm text-gray-500 mb-4">{error}</p>
+            <button
+              onClick={() => router.push('/dashboard')}
+              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+            >
+              Quay lại Trang chủ
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="mt-6 bg-white rounded-lg shadow overflow-hidden">
+            <div className="p-4 border-b border-gray-200">
+              <form onSubmit={handleSearch} className="space-y-4">
+                {/* Thanh tìm kiếm chính */}
+                <div className="flex rounded-md shadow-sm">
+                  <div className="relative flex-grow focus-within:z-10">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+                    </div>
+                    <input
+                      type="text"
+                      name="search"
+                      id="search"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className={`focus:ring-${themeColor}-500 focus:border-${themeColor}-500 block w-full rounded-md pl-10 py-3 border-gray-300 shadow-sm text-sm placeholder-gray-400`}
+                      placeholder="Tìm kiếm theo tên, email hoặc vai trò..."
+                    />
+                    {searchTerm && (
+                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                        <button
+                          type="button"
+                          onClick={() => setSearchTerm('')}
+                          className="text-gray-400 hover:text-gray-500 focus:outline-none"
+                        >
+                          <XMarkIcon className="h-5 w-5" aria-hidden="true" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowFilters(!showFilters)}
+                    className={`ml-2 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-gray-50 hover:bg-gray-100 shadow-sm`}
+                  >
+                    <FunnelIcon className="h-5 w-5 mr-1" />
+                    Bộ lọc
+                    <ChevronDownIcon className={`h-4 w-4 ml-1 transform ${showFilters ? 'rotate-180' : ''}`} />
+                  </button>
+                  <button
+                    type="submit"
+                    className={`ml-2 relative inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white ${theme.buttonBg} ${theme.buttonHoverBg} shadow-sm`}
+                  >
+                    Tìm
+                  </button>
+                </div>
+                
+                {/* Bộ lọc nâng cao */}
+                {showFilters && (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-md">
+                    <div>
+                      <label htmlFor="role-filter" className="block text-sm font-medium text-gray-700 mb-1">Vai trò</label>
+                      <select
+                        id="role-filter"
+                        value={roleFilter}
+                        onChange={(e) => setRoleFilter(e.target.value)}
+                        className={`block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-${themeColor}-500 focus:border-${themeColor}-500 sm:text-sm rounded-md`}
+                      >
+                        <option value="all">Tất cả vai trò</option>
+                        <option value="admin">Quản trị viên</option>
+                        <option value="NVBH">Nhân viên bán hàng</option>
+                        <option value="NVK">Nhân viên kho</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="status-filter" className="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
+                      <select
+                        id="status-filter"
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                        className={`block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-${themeColor}-500 focus:border-${themeColor}-500 sm:text-sm rounded-md`}
+                      >
+                        <option value="all">Tất cả trạng thái</option>
+                        <option value="active">Đang hoạt động</option>
+                        <option value="inactive">Không hoạt động</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="date-filter" className="block text-sm font-medium text-gray-700 mb-1">Ngày tạo</label>
+                      <select
+                        id="date-filter"
+                        value={dateFilter}
+                        onChange={(e) => setDateFilter(e.target.value)}
+                        className={`block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-${themeColor}-500 focus:border-${themeColor}-500 sm:text-sm rounded-md`}
+                      >
+                        <option value="all">Tất cả thời gian</option>
+                        <option value="today">Hôm nay</option>
+                        <option value="yesterday">Hôm qua</option>
+                        <option value="week">Tuần này</option>
+                        <option value="month">Tháng này</option>
+                      </select>
+                    </div>
+                    
+                    <div className="md:col-span-3 flex justify-end">
+                      <button
+                        type="button"
+                        onClick={clearAllFilters}
+                        className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
+                      >
+                        <XMarkIcon className="h-4 w-4 mr-1" />
+                        Xóa bộ lọc
+                      </button>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Thẻ bộ lọc đã chọn */}
+                {(roleFilter !== 'all' || statusFilter !== 'all' || dateFilter !== 'all') && (
+                  <div className="flex flex-wrap gap-2 pt-2">
+                    <span className="text-sm text-gray-500">Bộ lọc đã chọn:</span>
+                    
+                    {roleFilter !== 'all' && (
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-${themeColor}-100 text-${themeColor}-800`}>
+                        Vai trò: {getFriendlyRole(roleFilter)}
+                        <button
+                          type="button"
+                          onClick={(e) => setRoleFilter('all')}
+                          className="ml-1 inline-flex items-center justify-center h-4 w-4 rounded-full focus:outline-none"
+                        >
+                          <XMarkIcon className="h-3 w-3" />
+                        </button>
+                      </span>
+                    )}
+                    
+                    {statusFilter !== 'all' && (
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-${themeColor}-100 text-${themeColor}-800`}>
+                        Trạng thái: {STATUS_MAPPING[statusFilter]}
+                        <button
+                          type="button"
+                          onClick={(e) => setStatusFilter('all')}
+                          className="ml-1 inline-flex items-center justify-center h-4 w-4 rounded-full focus:outline-none"
+                        >
+                          <XMarkIcon className="h-3 w-3" />
+                        </button>
+                      </span>
+                    )}
+                    
+                    {dateFilter !== 'all' && (
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-${themeColor}-100 text-${themeColor}-800`}>
+                        Ngày tạo: {
+                          dateFilter === 'today' ? 'Hôm nay' :
+                          dateFilter === 'yesterday' ? 'Hôm qua' :
+                          dateFilter === 'week' ? 'Tuần này' :
+                          dateFilter === 'month' ? 'Tháng này' : ''
+                        }
+                        <button
+                          type="button"
+                          onClick={(e) => setDateFilter('all')}
+                          className="ml-1 inline-flex items-center justify-center h-4 w-4 rounded-full focus:outline-none"
+                        >
+                          <XMarkIcon className="h-3 w-3" />
+                        </button>
+                      </span>
+                    )}
+                  </div>
+                )}
+              </form>
+            </div>
+
+            {/* Kết quả tìm kiếm */}
+            {loading ? (
+              <div className="py-20 text-center">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900"></div>
+                <p className="mt-2 text-gray-500">Đang tải dữ liệu...</p>
+              </div>
+            ) : error ? (
+              <div className="py-10 text-center border-t border-gray-200">
+                <p className="text-red-500">{error}</p>
+                <button 
+                  onClick={() => window.location.reload()} 
+                  className={`mt-2 px-4 py-2 border text-sm font-medium rounded-md text-white ${theme.buttonBg} ${theme.buttonHoverBg}`}
+                >
+                  Thử lại
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center justify-between px-6 py-3 border-b border-gray-200 bg-gray-50">
+                  <div>
+                    <span className="text-sm text-gray-700">
+                      Hiển thị <span className="font-medium">{filteredUsers.length}</span> kết quả
+                    </span>
+                  </div>
+                  <div className="flex-shrink-0 relative">
+                    <button
+                      type="button"
+                      className={`inline-flex justify-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-${themeColor}-500 focus:ring-offset-2`}
+                      onClick={() => setShowSortMenu(!showSortMenu)}
+                    >
+                      Sắp xếp: {
+                        sortField === 'name' ? 'Tên' :
+                        sortField === 'email' ? 'Email' :
+                        sortField === 'role' ? 'Vai trò' : 
+                        sortField === 'status' ? 'Trạng thái' : 'Ngày tạo'
+                      } {sortOrder === 'asc' ? '↑' : '↓'}
+                    </button>
+                    
+                    {showSortMenu && (
+                      <div className="absolute right-0 z-10 mt-1 w-48 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                        <div className="py-1">
+                          <button
+                            onClick={() => handleSort('name')}
+                            className="w-full text-left hover:bg-gray-100 hover:text-gray-900 text-gray-700 flex justify-between px-4 py-2 text-sm"
+                          >
+                            <span>Tên</span>
+                            {sortField === 'name' && (
+                              <span>{sortOrder === 'asc' ? '↑' : '↓'}</span>
+                            )}
+                          </button>
+                          <button
+                            onClick={() => handleSort('email')}
+                            className="w-full text-left hover:bg-gray-100 hover:text-gray-900 text-gray-700 flex justify-between px-4 py-2 text-sm"
+                          >
+                            <span>Email</span>
+                            {sortField === 'email' && (
+                              <span>{sortOrder === 'asc' ? '↑' : '↓'}</span>
+                            )}
+                          </button>
+                          <button
+                            onClick={() => handleSort('role')}
+                            className="w-full text-left hover:bg-gray-100 hover:text-gray-900 text-gray-700 flex justify-between px-4 py-2 text-sm"
+                          >
+                            <span>Vai trò</span>
+                            {sortField === 'role' && (
+                              <span>{sortOrder === 'asc' ? '↑' : '↓'}</span>
+                            )}
+                          </button>
+                          <button
+                            onClick={() => handleSort('status')}
+                            className="w-full text-left hover:bg-gray-100 hover:text-gray-900 text-gray-700 flex justify-between px-4 py-2 text-sm"
+                          >
+                            <span>Trạng thái</span>
+                            {sortField === 'status' && (
+                              <span>{sortOrder === 'asc' ? '↑' : '↓'}</span>
+                            )}
+                          </button>
+                          <button
+                            onClick={() => handleSort('created_at')}
+                            className="w-full text-left hover:bg-gray-100 hover:text-gray-900 text-gray-700 flex justify-between px-4 py-2 text-sm"
+                          >
+                            <span>Ngày tạo</span>
+                            {sortField === 'created_at' && (
+                              <span>{sortOrder === 'asc' ? '↑' : '↓'}</span>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th 
+                          scope="col" 
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                          onClick={() => handleSort('name')}
+                        >
+                          <span className="inline-flex items-center">
+                            Người dùng
+                            <SortIndicator currentField="name" />
+                          </span>
+                        </th>
+                        <th 
+                          scope="col" 
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                          onClick={() => handleSort('role')}
+                        >
+                          <span className="inline-flex items-center">
+                            Vai trò
+                            <SortIndicator currentField="role" />
+                          </span>
+                        </th>
+                        <th 
+                          scope="col" 
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                          onClick={() => handleSort('status')}
+                        >
+                          <span className="inline-flex items-center">
+                            Trạng thái
+                            <SortIndicator currentField="status" />
+                          </span>
+                        </th>
+                        <th 
+                          scope="col" 
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                          onClick={() => handleSort('created_at')}
+                        >
+                          <span className="inline-flex items-center">
+                            Ngày tạo
+                            <SortIndicator currentField="created_at" />
+                          </span>
+                        </th>
+                        <th scope="col" className="relative px-6 py-3">
+                          <span className="sr-only">Actions</span>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {filteredUsers.map((user) => (
+                        <tr 
+                          key={user.id} 
+                          className="hover:bg-gray-50 cursor-pointer transition-colors duration-150"
+                          onClick={() => openUserDetail(user)}
+                        >
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className="flex-shrink-0 h-10 w-10 relative">
+                                <div className={`h-10 w-10 bg-${themeColor}-100 rounded-full flex items-center justify-center border-[1px] border-${themeColor}-300 overflow-hidden shadow-sm`}>
+                                  <span className={`text-${themeColor}-800 font-medium relative z-10`}>
+                                    {user.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase() : ''}
+                                  </span>
+                                  <div className={`absolute inset-0 bg-${themeColor}-200 opacity-30 rounded-full`}></div>
+                                </div>
+                              </div>
+                              <div className="ml-4">
+                                <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                                <div className="text-sm text-gray-500">{user.email}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">{getFriendlyRole(user.role)}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                              user.status === 'active' 
+                                ? 'bg-green-100 text-green-800' 
+                                : 'bg-red-100 text-red-800'
+                            }`}>
+                              {user.status === 'active' ? 'Đang hoạt động' : 'Không hoạt động'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {formatDate(user.created_at)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div className="flex space-x-2 justify-end" onClick={(e) => e.stopPropagation()}>
+                              <Link
+                                href={`/dashboard/users/edit/${user.id}`}
+                                className={theme.textColor}
+                                title="Chỉnh sửa thông tin"
+                              >
+                                <PencilIcon className="h-5 w-5" aria-hidden="true" />
+                              </Link>
+                              <Link
+                                href={`/dashboard/users/permissions/${user.id}`}
+                                className={theme.textColor}
+                                title="Quản lý quyền"
+                              >
+                                <KeyIcon className="h-5 w-5" aria-hidden="true" />
+                              </Link>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {filteredUsers.length === 0 && (
+                  <div className="py-10 text-center border-t border-gray-200">
+                    <p className="text-gray-500">Không tìm thấy người dùng nào phù hợp.</p>
+                    <button
+                      onClick={clearAllFilters}
+                      className="mt-2 inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                    >
+                      Xóa bộ lọc
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* Modal chi tiết người dùng - Với nền hoàn toàn trong suốt */}
+          {showUserModal && (
+            <>
+              {/* Overlay để làm tối nền bên dưới, nhưng không có màu xám */}
+              <div className="fixed inset-0 z-40 backdrop-brightness-[0.5] backdrop-blur-[0.8px]" onClick={closeUserDetail}></div>
+              
+              <div className="fixed inset-0 z-41" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                <div className="flex items-center justify-center min-h-screen p-4">
+                  {/* Modal panel với viền đậm 2px theo màu chủ đạo */}
+                  <div 
+                    style={{ 
+                      borderWidth: '2px',
+                      borderStyle: 'solid', 
+                      borderColor: themeColor === 'indigo' ? '#818cf8' : 
+                                  themeColor === 'blue' ? '#60a5fa' : 
+                                  themeColor === 'red' ? '#f87171' : 
+                                  themeColor === 'green' ? '#6ee7b7' : 
+                                  themeColor === 'purple' ? '#c084fc' : 
+                                  themeColor === 'pink' ? '#f472b6' : 
+                                  themeColor === 'yellow' ? '#fcd34d' : 
+                                  themeColor === 'orange' ? '#fb923c' : '#818cf8' /* mặc định indigo */
+                    }}
+                    className="bg-white rounded-xl overflow-hidden shadow-lg transform transition-all w-full max-w-3xl mx-auto" 
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {/* Modal header - Cải thiện style */}
+                    <div className="bg-white px-6 py-4 border-b border-gray-100 sm:px-6 flex justify-between items-center">
+                      <h3 className="text-xl leading-6 font-medium text-gray-900 flex items-center">
+                        <UserCircleIcon className="h-6 w-6 mr-2 text-gray-500" />
+                        Chi tiết người dùng
+                      </h3>
+                      <button
+                        type="button"
+                        className="rounded-full p-1 hover:bg-gray-100 text-gray-400 hover:text-gray-500 focus:outline-none transition-colors"
+                        onClick={closeUserDetail}
+                      >
+                        <span className="sr-only">Đóng</span>
+                        <XMarkIcon className="h-6 w-6" aria-hidden="true" />
+                      </button>
+                    </div>
+                    
+                    {/* Modal content - Cải thiện padding và style */}
+                    <div className="bg-white px-6 py-5">
+                      {userDetailLoading ? (
+                        <div className="py-16 text-center">
+                          <div className="inline-flex flex-col items-center">
+                            <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
+                            <div className="mt-4 bg-gray-100 rounded-full px-4 py-1 animate-pulse">
+                              <p className="text-sm text-gray-600">Đang tải thông tin...</p>
+                            </div>
+                          </div>
+                        </div>
+                      ) : userDetailError ? (
+                        <div className="py-8 text-center">
+                          <XCircleIcon className="h-12 w-12 text-red-500 mx-auto mb-3" />
+                          <h3 className="text-lg font-medium text-red-800">Không thể tải thông tin</h3>
+                          <p className="mt-2 text-sm text-gray-500">{userDetailError}</p>
+                          <div className="mt-4 p-4 bg-gray-50 rounded-lg text-sm text-gray-600 text-left overflow-auto max-h-40">
+                            <p className="font-medium">Chi tiết lỗi:</p>
+                            <pre className="mt-2 whitespace-pre-wrap">{JSON.stringify(userDetailError, null, 2)}</pre>
+                          </div>
+                        </div>
+                      ) : userDetail ? (
+                        <div>
+                          {/* Thông tin cơ bản - Cải thiện style */}
+                          <div className="border-b border-gray-100 pb-6 flex items-start md:items-center flex-col md:flex-row">
+                            <div className="flex-shrink-0 mb-4 md:mb-0">
+                              <div className={`h-24 w-24 bg-${themeColor}-100 rounded-full flex items-center justify-center border-[1px] border-${themeColor}-300 overflow-hidden shadow-md`}>
+                                <span className={`text-${themeColor}-800 text-3xl font-medium relative z-10`}>
+                                  {userDetail.full_name ? userDetail.full_name.split(' ').map((n: string) => n[0]).join('').toUpperCase() : ''}
+                                </span>
+                                <div className={`absolute inset-0 bg-${themeColor}-200 opacity-30 rounded-full`}></div>
+                              </div>
+                            </div>
+                            
+                            <div className="md:ml-8">
+                              <h2 className="text-2xl font-bold text-gray-900">{userDetail.full_name || 'Chưa cập nhật'}</h2>
+                              <p className="text-sm text-gray-500 mt-1 flex items-center">
+                                <EnvelopeIcon className="h-4 w-4 mr-1" /> {userDetail.email}
+                              </p>
+                              <div className="mt-3 flex flex-wrap gap-2">
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                  userDetail.status === 'active' 
+                                    ? 'bg-green-100 text-green-800' 
+                                    : 'bg-red-100 text-red-800'
+                                }`}>
+                                  {userDetail.status === 'active' ? 'Đang hoạt động' : 'Không hoạt động'}
+                                </span>
+                                
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800`}>
+                                  {ROLE_MAPPING[userDetail.role] || userDetail.role}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Chi tiết thông tin - Cải thiện layout */}
+                          <div className="mt-6">
+                            <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                              <UserIcon className="h-5 w-5 mr-2 text-gray-500" />
+                              Thông tin chi tiết
+                            </h3>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-4 rounded-lg">
+                              <div>
+                                <dl className="space-y-4">
+                                  <div className="flex">
+                                    <dt className="flex items-center text-sm font-medium text-gray-500 w-32">
+                                      <UserCircleIcon className="h-5 w-5 mr-2 text-gray-400" />
+                                      Họ và tên
+                                    </dt>
+                                    <dd className="text-sm text-gray-900 font-medium">{userDetail.full_name || 'Chưa cập nhật'}</dd>
+                                  </div>
+                                  
+                                  <div className="flex">
+                                    <dt className="flex items-center text-sm font-medium text-gray-500 w-32">
+                                      <EnvelopeIcon className="h-5 w-5 mr-2 text-gray-400" />
+                                      Email
+                                    </dt>
+                                    <dd className="text-sm text-gray-900">{userDetail.email}</dd>
+                                  </div>
+                                  
+                                  <div className="flex">
+                                    <dt className="flex items-center text-sm font-medium text-gray-500 w-32">
+                                      <PhoneIcon className="h-5 w-5 mr-2 text-gray-400" />
+                                      Điện thoại
+                                    </dt>
+                                    <dd className="text-sm text-gray-900">{userDetail.phone || 'Chưa cập nhật'}</dd>
+                                  </div>
+                                  
+                                  <div className="flex">
+                                    <dt className="flex items-center text-sm font-medium text-gray-500 w-32">
+                                      <CalendarIcon className="h-5 w-5 mr-2 text-gray-400" />
+                                      Ngày sinh
+                                    </dt>
+                                    <dd className="text-sm text-gray-900">{userDetail.birth_date ? formatBirthDate(userDetail.birth_date) : 'Chưa cập nhật'}</dd>
+                                  </div>
+                                  
+                                  <div className="flex">
+                                    <dt className="flex items-center text-sm font-medium text-gray-500 w-32">
+                                      <MapPinIcon className="h-5 w-5 mr-2 text-gray-400" />
+                                      Địa chỉ
+                                    </dt>
+                                    <dd className="text-sm text-gray-900">{userDetail.hometown || 'Chưa cập nhật'}</dd>
+                                  </div>
+                                </dl>
+                              </div>
+                              
+                              <div>
+                                <dl className="space-y-4">
+                                  <div className="flex">
+                                    <dt className="flex items-center text-sm font-medium text-gray-500 w-32">
+                                      <ShieldCheckIcon className="h-5 w-5 mr-2 text-gray-400" />
+                                      Vai trò
+                                    </dt>
+                                    <dd className="text-sm text-gray-900 font-medium">{ROLE_MAPPING[userDetail.role] || userDetail.role}</dd>
+                                  </div>
+                                  
+                                  <div className="flex">
+                                    <dt className="flex items-center text-sm font-medium text-gray-500 w-32">
+                                      <ClockIcon className="h-5 w-5 mr-2 text-gray-400" />
+                                      Trạng thái
+                                    </dt>
+                                    <dd className="flex items-center">
+                                      {userDetail.status === 'active' ? (
+                                        <>
+                                          <CheckCircleIcon className="h-5 w-5 text-green-500 mr-1.5" />
+                                          <span className="text-sm text-gray-900">Đang hoạt động</span>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <XCircleIcon className="h-5 w-5 text-red-500 mr-1.5" />
+                                          <span className="text-sm text-gray-900">Không hoạt động</span>
+                                        </>
+                                      )}
+                                    </dd>
+                                  </div>
+                                  
+                                  <div className="flex">
+                                    <dt className="flex items-center text-sm font-medium text-gray-500 w-32">
+                                      <ClockIcon className="h-5 w-5 mr-2 text-gray-400" />
+                                      Ngày tạo
+                                    </dt>
+                                    <dd className="text-sm text-gray-900">{formatDate(userDetail.created_at)}</dd>
+                                  </div>
+                                  
+                                  <div className="flex">
+                                    <dt className="flex items-center text-sm font-medium text-gray-500 w-32">
+                                      <ClockIcon className="h-5 w-5 mr-2 text-gray-400" />
+                                      Cập nhật
+                                    </dt>
+                                    <dd className="text-sm text-gray-900">{formatDate(userDetail.updated_at)}</dd>
+                                  </div>
+                                  
+                                  <div className="flex">
+                                    <dt className="flex items-center text-sm font-medium text-gray-500 w-32">
+                                      <ClockIcon className="h-5 w-5 mr-2 text-gray-400" />
+                                      Đăng nhập
+                                    </dt>
+                                    <dd className="text-sm text-gray-900">{formatDate(userDetail.last_login)}</dd>
+                                  </div>
+                                </dl>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="py-8 text-center">
+                          <p className="text-gray-500">Không có thông tin người dùng</p>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Modal footer - Thêm nút xóa người dùng */}
+                    <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-between">
+                      <div className="flex space-x-3">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            closeUserDetail();
+                          }}
+                          className="min-w-[100px] py-2 px-4 bg-gray-200 hover:bg-gray-300 rounded text-gray-800 font-medium text-center"
+                        >
+                          Đóng
+                        </button>
+                      </div>
+                      
+                      <div className="flex space-x-3 relative z-10">
+                        {/* Nút Xóa người dùng - Chỉ hiển thị khi người dùng không phải admin và không phải chính người đang đăng nhập */}
+                        {userDetail && !userDetailLoading && !userDetailError && 
+                          userDetail.role !== 'admin' && userDetail.user_id !== currentUserId && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              openDeleteConfirmation(e, userDetail);
+                            }}
+                            id="btn-delete-user"
+                            className="min-w-[100px] py-2 px-4 bg-red-600 hover:bg-red-700 rounded text-white font-medium text-center flex items-center justify-center relative z-10"
+                          >
+                            <TrashIcon className="h-4 w-4 mr-2" />
+                            Xóa
+                          </button>
+                        )}
+                        
+                        {/* Nút Quản lý quyền */}
+                        {userDetail && !userDetailLoading && !userDetailError && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              router.push(`/dashboard/users/permissions/${userDetail.user_id}`);
+                            }}
+                            className={`min-w-[150px] py-2 px-4 ${theme.buttonBg} ${theme.buttonHoverBg} border border-transparent rounded text-white font-medium text-center flex items-center justify-center`}
+                          >
+                            <KeyIcon className="h-4 w-4 mr-2" />
+                            Quản lý quyền
+                          </button>
+                        )}
+                        
+                        {/* Nút Chỉnh sửa thông tin người dùng */}
+                        {userDetail && !userDetailLoading && !userDetailError && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              router.push(`/dashboard/users/edit/${userDetail.user_id}`);
+                            }}
+                            className={`min-w-[150px] py-2 px-4 ${theme.buttonBg} ${theme.buttonHoverBg} border border-transparent rounded text-white font-medium text-center flex items-center justify-center`}
+                          >
+                            <PencilIcon className="h-4 w-4 mr-2" />
+                            Chỉnh sửa
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Modal xác nhận xóa người dùng */}
+          {renderDeleteConfirmationModal()}
+        </>
+      )}
+    </div>
+  )
+} 

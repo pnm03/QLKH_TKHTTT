@@ -1,0 +1,1418 @@
+'use client'
+
+import { useState, useEffect, useCallback } from 'react'
+import { createClient } from '@/utils/supabase/client'
+import { PlusIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { useTheme } from '@/app/context/ThemeContext'
+// Đã loại bỏ việc import các hàm cập nhật tồn kho vì sử dụng trigger trong cơ sở dữ liệu
+
+interface ProductInOrder {
+  product_id: string
+  product_name: string
+  price: number
+  quantity: number
+  discount: number
+  total: number
+  stock_quantity?: number
+  color?: string
+  size?: string
+}
+
+interface Invoice {
+  id: string
+  name: string
+  products: ProductInOrder[]
+  note: string
+  totalAmount: number
+  totalDiscount: number
+  amountToPay: number
+}
+
+export default function CreateOrderPage() {
+  const [searchTerm, setSearchTerm] = useState('')
+  const [searchResults, setSearchResults] = useState<ProductInOrder[]>([])
+  const [invoices, setInvoices] = useState<Invoice[]>([
+    {
+      id: '1',
+      name: 'Hóa đơn 1',
+      products: [],
+      note: '',
+      totalAmount: 0,
+      totalDiscount: 0,
+      amountToPay: 0
+    }
+  ])
+  const [activeInvoiceIndex, setActiveInvoiceIndex] = useState(0)
+  const [loading, setLoading] = useState(false)
+  const [searchFocused, setSearchFocused] = useState(false)
+  const [quantityErrors, setQuantityErrors] = useState<{[key: number]: boolean}>({})
+  const [successMessage, setSuccessMessage] = useState('')
+
+  // State cho popup bán hàng nhanh
+  const [showQuickSalePopup, setShowQuickSalePopup] = useState(false)
+  const [paymentMethods, setPaymentMethods] = useState<{payment_id: number, payment_method_name: string, description?: string, image?: string}[]>([])
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<number | null>(null)
+  const [customerPaid, setCustomerPaid] = useState<string>('')
+  const [discount, setDiscount] = useState<string>('0')
+
+  // Đã loại bỏ việc cập nhật tồn kho thủ công vì sử dụng trigger trong cơ sở dữ liệu
+
+  const { currentTheme } = useTheme()
+  const supabase = createClient()
+
+  // Hàm tính toán tổng tiền cho hóa đơn hiện tại
+  const calculateTotals = useCallback(() => {
+    const invoice = invoices[activeInvoiceIndex]
+    if (invoice && invoice.products) {
+      const subtotal = invoice.products.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+      const discount = invoice.products.reduce((sum, item) => sum + item.discount, 0)
+
+      invoice.totalAmount = subtotal
+      invoice.totalDiscount = discount
+      invoice.amountToPay = subtotal - discount
+    }
+  }, [invoices, activeInvoiceIndex])
+
+  // Lấy hóa đơn hiện tại
+  const currentInvoice = invoices[activeInvoiceIndex]
+
+  // Mỗi khi hóa đơn hiện tại thay đổi, tính lại tổng tiền
+  useEffect(() => {
+    if (currentInvoice) {
+      calculateTotals()
+    }
+  }, [currentInvoice, calculateTotals])
+
+  // Đã loại bỏ việc xóa danh sách sản phẩm cần cập nhật tồn kho vì sử dụng trigger trong cơ sở dữ liệu
+
+  // Lấy 5 sản phẩm mặc định để hiển thị
+  const fetchDefaultProducts = useCallback(async () => {
+    try {
+      if (!supabase) {
+        console.error('Supabase client chưa được khởi tạo')
+        return
+      }
+
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .limit(5)
+
+      if (error) {
+        console.error('Lỗi khi lấy sản phẩm mặc định:', error.message)
+        return
+      }
+
+      console.log('Sản phẩm mặc định:', data)
+      setSearchResults(data || [])
+    } catch (error) {
+      console.error('Lỗi khi lấy sản phẩm mặc định:', error)
+    }
+  }, [supabase])
+
+  // Lấy danh sách phương thức thanh toán
+  const fetchPaymentMethods = useCallback(async () => {
+    try {
+      if (!supabase) {
+        console.error('Supabase client chưa được khởi tạo')
+        return
+      }
+
+      const { data, error } = await supabase
+        .from('payments')
+        .select('*')
+        .order('payment_method_name', { ascending: true })
+
+      if (error) {
+        console.error('Lỗi khi lấy phương thức thanh toán:', error.message)
+        return
+      }
+
+      setPaymentMethods(data || [])
+    } catch (error) {
+      console.error('Lỗi khi lấy phương thức thanh toán:', error)
+    }
+  }, [supabase])
+
+  // Tìm kiếm sản phẩm mặc định và phương thức thanh toán khi trang load
+  useEffect(() => {
+    fetchDefaultProducts()
+    fetchPaymentMethods()
+  }, [fetchDefaultProducts, fetchPaymentMethods])
+
+
+  // Hàm tìm kiếm sản phẩm
+  const searchProducts = useCallback(async () => {
+    try {
+      // Kiểm tra xem đã khởi tạo client Supabase chưa
+      if (!supabase) {
+        console.error('Supabase client chưa được khởi tạo')
+        return
+      }
+
+      console.log('Đang tìm kiếm với từ khóa:', searchTerm)
+
+      let query = supabase
+        .from('products')
+        .select('*')
+
+      // Nếu có từ khóa tìm kiếm, thêm điều kiện tìm kiếm
+      if (searchTerm) {
+        query = query.ilike('product_name', `%${searchTerm}%`)
+      }
+
+      // Giới hạn kết quả
+      query = query.limit(5)
+
+      const { data, error } = await query
+
+      if (error) {
+        console.error('Lỗi Supabase:', error.message, error.details, error.hint)
+        throw error
+      }
+
+      console.log('Kết quả tìm kiếm:', data)
+      setSearchResults(data || [])
+    } catch (error) {
+      console.error('Lỗi khi tìm kiếm sản phẩm:', error)
+      // Không hiển thị thông báo lỗi lên UI, chỉ log ra console
+      setSearchResults([])
+    }
+  }, [searchTerm, supabase])
+
+
+  // Theo dõi thay đổi ở ô tìm kiếm - phản hồi nhanh hơn
+  useEffect(() => {
+    const delaySearch = setTimeout(() => {
+      searchProducts()
+    }, 100) // Giảm delay xuống 100ms để phản hồi nhanh hơn
+
+    return () => clearTimeout(delaySearch)
+  }, [searchTerm, searchProducts])
+
+  // Thêm sản phẩm vào đơn hàng hiện tại
+  const addProductToOrder = (product: ProductInOrder) => {
+    const updatedInvoices = [...invoices]
+    const currentInvoice = updatedInvoices[activeInvoiceIndex]
+
+    const existingProductIndex = currentInvoice.products.findIndex(p => p.product_id === product.product_id)
+
+    if (existingProductIndex >= 0) {
+      // Nếu sản phẩm đã tồn tại, tăng số lượng
+      currentInvoice.products[existingProductIndex].quantity += 1
+      currentInvoice.products[existingProductIndex].total =
+        currentInvoice.products[existingProductIndex].price *
+        currentInvoice.products[existingProductIndex].quantity -
+        currentInvoice.products[existingProductIndex].discount
+
+      // Đã loại bỏ việc cập nhật tồn kho thủ công vì sử dụng trigger trong cơ sở dữ liệu
+    } else {
+      // Nếu sản phẩm chưa có, thêm mới
+      const newProduct: ProductInOrder = {
+        product_id: product.product_id || '',
+        product_name: product.product_name || '',
+        price: parseFloat(product.price) || 0,
+        quantity: 1,
+        discount: 0,
+        total: parseFloat(product.price) || 0,
+        stock_quantity: product.stock_quantity || 0,
+        color: product.color || '',
+        size: product.size || ''
+      }
+      currentInvoice.products.push(newProduct)
+
+      // Đã loại bỏ việc cập nhật tồn kho thủ công vì sử dụng trigger trong cơ sở dữ liệu
+    }
+
+    // Tính lại tổng tiền ngay sau khi thêm sản phẩm
+    const subtotal = currentInvoice.products.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+    const discount = currentInvoice.products.reduce((sum, item) => sum + item.discount, 0)
+
+    currentInvoice.totalAmount = subtotal
+    currentInvoice.totalDiscount = discount
+    currentInvoice.amountToPay = subtotal - discount
+
+    setInvoices(updatedInvoices)
+    // Xóa kết quả tìm kiếm và reset ô tìm kiếm
+    setSearchTerm('')
+  }
+
+  // Sử dụng hàm addToStockUpdateList từ stockUpdateHelper.js
+
+  // Cập nhật số lượng sản phẩm
+  const updateQuantity = (index: number, newQuantity: number) => {
+    if (newQuantity < 1) return
+
+    const updatedInvoices = [...invoices]
+    const currentInvoice = updatedInvoices[activeInvoiceIndex]
+    const stockQuantity = currentInvoice.products[index].stock_quantity || 0
+
+    // Kiểm tra nếu số lượng vượt quá tồn kho
+    if (newQuantity > stockQuantity) {
+      // Cập nhật state lỗi
+      setQuantityErrors({...quantityErrors, [index]: true})
+    } else {
+      // Xóa lỗi nếu số lượng hợp lệ
+      const updatedErrors = {...quantityErrors}
+      delete updatedErrors[index]
+      setQuantityErrors(updatedErrors)
+    }
+
+    // Đã loại bỏ việc cập nhật tồn kho thủ công vì sử dụng trigger trong cơ sở dữ liệu
+
+    currentInvoice.products[index].quantity = newQuantity
+    currentInvoice.products[index].total =
+      currentInvoice.products[index].price * newQuantity -
+      currentInvoice.products[index].discount
+
+    // Tính lại tổng tiền ngay sau khi cập nhật số lượng
+    const subtotal = currentInvoice.products.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+    const discount = currentInvoice.products.reduce((sum, item) => sum + item.discount, 0)
+
+    currentInvoice.totalAmount = subtotal
+    currentInvoice.totalDiscount = discount
+    currentInvoice.amountToPay = subtotal - discount
+
+    setInvoices(updatedInvoices)
+  }
+
+  // Cập nhật giảm giá
+  const updateDiscount = (index: number, discount: number) => {
+    if (isNaN(discount)) discount = 0
+    if (discount < 0) discount = 0
+
+    const updatedInvoices = [...invoices]
+    const currentInvoice = updatedInvoices[activeInvoiceIndex]
+
+    currentInvoice.products[index].discount = discount
+    currentInvoice.products[index].total =
+      currentInvoice.products[index].price *
+      currentInvoice.products[index].quantity - discount
+
+    // Tính lại tổng tiền ngay sau khi cập nhật giảm giá
+    const subtotal = currentInvoice.products.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+    const totalDiscount = currentInvoice.products.reduce((sum, item) => sum + item.discount, 0)
+
+    currentInvoice.totalAmount = subtotal
+    currentInvoice.totalDiscount = totalDiscount
+    currentInvoice.amountToPay = subtotal - totalDiscount
+
+    setInvoices(updatedInvoices)
+  }
+
+  // Xóa sản phẩm khỏi đơn hàng
+  const removeProduct = (index: number) => {
+    const updatedInvoices = [...invoices]
+    const currentInvoice = updatedInvoices[activeInvoiceIndex]
+
+    // Đã loại bỏ việc lấy thông tin sản phẩm trước khi xóa vì không cần cập nhật tồn kho thủ công nữa
+
+    // Đã loại bỏ việc cập nhật tồn kho thủ công vì sử dụng trigger trong cơ sở dữ liệu
+
+    currentInvoice.products.splice(index, 1)
+
+    // Tính lại tổng tiền ngay sau khi xóa sản phẩm
+    const subtotal = currentInvoice.products.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+    const discount = currentInvoice.products.reduce((sum, item) => sum + item.discount, 0)
+
+    currentInvoice.totalAmount = subtotal
+    currentInvoice.totalDiscount = discount
+    currentInvoice.amountToPay = subtotal - discount
+
+    setInvoices(updatedInvoices)
+  }
+
+  // Cập nhật ghi chú cho hóa đơn hiện tại
+  const updateNote = (note: string) => {
+    const updatedInvoices = [...invoices]
+    updatedInvoices[activeInvoiceIndex].note = note
+    setInvoices(updatedInvoices)
+  }
+
+  // Tạo đơn hàng mới
+  const createNewInvoice = () => {
+    // Tìm ID lớn nhất hiện tại và tăng lên 1 để tạo ID mới
+    const maxId = invoices.reduce((max, invoice) => {
+      const currentId = parseInt(invoice.id)
+      return currentId > max ? currentId : max
+    }, 0)
+
+    const newId = (maxId + 1).toString()
+    const newInvoice: Invoice = {
+      id: newId,
+      name: `Hóa đơn ${newId}`,
+      products: [],
+      note: '',
+      totalAmount: 0,
+      totalDiscount: 0,
+      amountToPay: 0
+    }
+
+    setInvoices([...invoices, newInvoice])
+    setActiveInvoiceIndex(invoices.length)
+    // Xóa các lỗi khi chuyển hóa đơn
+    setQuantityErrors({})
+  }
+
+  // Xóa hóa đơn
+  const deleteInvoice = (index: number, event: React.MouseEvent) => {
+    // Ngăn chặn sự kiện click lan sang button hóa đơn
+    event.stopPropagation()
+
+    // Không cho phép xóa nếu chỉ còn 1 hóa đơn
+    if (invoices.length <= 1) {
+      alert('Không thể xóa hóa đơn cuối cùng')
+      return
+    }
+
+    // Xóa hóa đơn
+    const updatedInvoices = [...invoices]
+    updatedInvoices.splice(index, 1)
+    setInvoices(updatedInvoices)
+
+    // Điều chỉnh active index nếu cần
+    if (index === activeInvoiceIndex) {
+      // Nếu xóa hóa đơn đang active, chuyển active về hóa đơn đầu tiên
+      setActiveInvoiceIndex(0)
+    } else if (index < activeInvoiceIndex) {
+      // Nếu xóa hóa đơn trước hóa đơn active, giảm index xuống 1
+      setActiveInvoiceIndex(activeInvoiceIndex - 1)
+    }
+
+    // Xóa các lỗi khi chuyển hóa đơn
+    setQuantityErrors({})
+  }
+
+  // Định dạng tiền tệ
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount)
+  }
+
+  // Thêm hàm formatProductName để định dạng tên sản phẩm với màu và size
+  const formatProductName = (product: ProductInOrder) => {
+    let formattedName = product.product_name || '';
+
+    // Nếu có thông tin màu hoặc size, thêm vào trong ngoặc
+    if (product.color || product.size) {
+      const details = [];
+      if (product.color) details.push(product.color);
+      if (product.size) details.push(product.size);
+
+      formattedName += ` (${details.join(', ')})`;
+    }
+
+    return formattedName;
+  };
+
+  // Thêm validation trước khi tạo đơn hàng
+  const validateOrder = () => {
+    // Kiểm tra nếu có sản phẩm nào vượt quá tồn kho
+    if (Object.keys(quantityErrors).length > 0) {
+      alert('Vui lòng kiểm tra lại số lượng sản phẩm. Một số sản phẩm có số lượng vượt quá tồn kho.');
+      return false;
+    }
+
+    if (currentInvoice.products.length === 0) {
+      alert('Vui lòng thêm ít nhất một sản phẩm vào đơn hàng');
+      return false;
+    }
+
+    return true;
+  };
+
+  // Mở popup bán hàng nhanh
+  const openQuickSalePopup = () => {
+    // Kiểm tra tồn kho trước khi mở popup
+    if (!validateStockBeforeCheckout()) {
+      return;
+    }
+
+    if (!validateOrder()) return;
+
+    // Tính lại tổng tiền cho tất cả các hóa đơn để đảm bảo dữ liệu mới nhất
+    const updatedInvoices = [...invoices];
+
+    // Cập nhật tổng tiền cho từng hóa đơn
+    updatedInvoices.forEach(invoice => {
+      const subtotal = invoice.products.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      const totalDiscount = invoice.products.reduce((sum, item) => sum + item.discount, 0);
+
+      invoice.totalAmount = subtotal;
+      invoice.totalDiscount = totalDiscount;
+      invoice.amountToPay = subtotal - totalDiscount;
+    });
+
+    setInvoices(updatedInvoices);
+
+    // Đặt giá trị mặc định cho số tiền khách trả bằng tổng tiền cần thanh toán của tất cả hóa đơn
+    const totalAmountToPay = calculateTotalAllInvoices().amountToPay;
+    setCustomerPaid(totalAmountToPay.toString());
+    setSelectedPaymentMethod(null);
+    setDiscount('0');
+    setShowQuickSalePopup(true);
+  };
+
+  // Kiểm tra tồn kho trước khi thanh toán
+  const validateStockBeforeCheckout = () => {
+    // Tạo một Map để theo dõi tổng số lượng cần mua cho mỗi sản phẩm
+    const productQuantities = new Map();
+
+    // Tính tổng số lượng cần mua cho mỗi sản phẩm
+    for (const invoice of invoices) {
+      for (const product of invoice.products) {
+        const productId = product.product_id;
+        const quantity = product.quantity || 1;
+
+        if (productQuantities.has(productId)) {
+          productQuantities.set(productId, productQuantities.get(productId) + quantity);
+        } else {
+          productQuantities.set(productId, quantity);
+        }
+      }
+    }
+
+    // Kiểm tra tồn kho cho từng sản phẩm
+    let hasStockError = false;
+    const stockErrors = [];
+
+    for (const invoice of invoices) {
+      for (const product of invoice.products) {
+        const productId = product.product_id;
+        const totalQuantity = productQuantities.get(productId);
+        const stockQuantity = product.stock_quantity || 0;
+
+        if (totalQuantity > stockQuantity) {
+          hasStockError = true;
+          stockErrors.push({
+            productId,
+            productName: product.product_name,
+            required: totalQuantity,
+            available: stockQuantity
+          });
+        }
+      }
+    }
+
+    // Hiển thị thông báo lỗi nếu có sản phẩm vượt quá tồn kho
+    if (hasStockError) {
+      let errorMessage = 'Không đủ tồn kho cho các sản phẩm sau:\n\n';
+
+      stockErrors.forEach(error => {
+        errorMessage += `- ${error.productName}: Cần ${error.required}, chỉ còn ${error.available} trong kho\n`;
+      });
+
+      errorMessage += '\nVui lòng điều chỉnh số lượng hoặc chọn sản phẩm khác.';
+
+      alert(errorMessage);
+      return false;
+    }
+
+    return true;
+  };
+
+  // Đóng popup bán hàng nhanh
+  const closeQuickSalePopup = () => {
+    setShowQuickSalePopup(false);
+  };
+
+  // Xử lý khi thay đổi giảm giá - hiện tại không sử dụng
+  // const handleDiscountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const value = e.target.value;
+  //   // Chỉ cho phép nhập số
+  //   if (/^\d*$/.test(value)) {
+  //     setDiscount(value);
+  //   }
+  // };
+
+  // Xử lý khi thay đổi số tiền khách trả
+  const handleCustomerPaidChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Loại bỏ tất cả các ký tự không phải số
+    const numericValue = value.replace(/\D/g, '');
+
+    if (numericValue) {
+      // Định dạng số với dấu chấm phân cách hàng nghìn
+      // Không cần lưu giá trị định dạng vì chúng ta sử dụng giá trị gốc
+      new Intl.NumberFormat('vi-VN', {
+        style: 'decimal',
+        useGrouping: true,
+        maximumFractionDigits: 0
+      }).format(parseInt(numericValue));
+
+      setCustomerPaid(numericValue); // Lưu giá trị số nguyên không có dấu chấm
+    } else {
+      setCustomerPaid('');
+    }
+  };
+
+  // Tính số tiền cần trả lại khách
+  const calculateChange = () => {
+    const amountToPay = calculateTotalAllInvoices().amountToPay;
+    const paid = parseInt(customerPaid) || 0;
+    return Math.max(0, paid - amountToPay);
+  };
+
+  // Tính tổng tiền của tất cả các hóa đơn
+  const calculateTotalAllInvoices = () => {
+    const totalAmount = invoices.reduce((sum, invoice) => sum + invoice.totalAmount, 0);
+    const totalDiscount = invoices.reduce((sum, invoice) => sum + invoice.totalDiscount, 0);
+    const amountToPay = totalAmount - totalDiscount;
+
+    return {
+      totalAmount,
+      totalDiscount,
+      amountToPay
+    };
+  };
+
+  // Xử lý thanh toán nhanh
+  const handleQuickSale = async () => {
+    if (!selectedPaymentMethod) {
+      alert('Vui lòng chọn phương thức thanh toán');
+      return;
+    }
+
+    // Kiểm tra tồn kho trước khi thanh toán
+    if (!validateStockBeforeCheckout()) {
+      return;
+    }
+
+    const totalAmountToPay = calculateTotalAllInvoices().amountToPay;
+    const paid = parseInt(customerPaid) || 0;
+
+    if (paid < totalAmountToPay) {
+      alert('Số tiền khách trả không đủ');
+      return;
+    }
+
+    // Đã loại bỏ việc cập nhật tồn kho thủ công vì sử dụng trigger trong cơ sở dữ liệu
+
+    setLoading(true);
+
+    try {
+      // Tạo đơn hàng mới trong cơ sở dữ liệu
+      // Lấy thông tin người dùng hiện tại
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        console.error('Lỗi khi lấy thông tin người dùng đăng nhập:', userError);
+        throw new Error('Không tìm thấy thông tin người dùng đăng nhập');
+      }
+
+      console.log('Đã tìm thấy user auth id:', user.id);
+
+      // Sử dụng trực tiếp user.id làm customer_id
+      // user.id là GUID của người dùng trong Supabase Auth, cũng là user_id trong bảng users
+      const customerId = user.id;
+
+      console.log('Sử dụng user.id làm customer_id:', customerId);
+
+      // Tạo order_id ngẫu nhiên
+      const generateOrderId = () => {
+        // Tạo mã đơn hàng với định dạng: ORD-YYYYMMDD-XXXXX
+        const date = new Date();
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const dateStr = `${year}${month}${day}`;
+
+        // Tạo 5 ký tự ngẫu nhiên
+        const randomChars = Math.random().toString(36).substring(2, 7).toUpperCase();
+
+        return `ORD-${dateStr}-${randomChars}`;
+      };
+
+      // Tạo order_id mới
+      const orderId = generateOrderId();
+      console.log('Đã tạo order_id mới:', orderId);
+
+      // Tạo đơn hàng với customer_id hợp lệ và order_id ngẫu nhiên
+      console.log('Đang tạo đơn hàng với customer_id:', customerId);
+
+      // Tính tổng giá trị đơn hàng từ tất cả các hóa đơn
+      const totalOrderAmount = calculateTotalAllInvoices().amountToPay;
+      console.log('Tổng giá trị đơn hàng:', totalOrderAmount);
+
+      const orderData = {
+        order_id: orderId,
+        customer_id: customerId,
+        order_date: new Date().toISOString(),
+        price: totalOrderAmount, // Lưu tổng giá trị đơn hàng
+        status: 'paid', // Sử dụng giá trị enum chính xác: paid (đã thanh toán)
+        shipping_id: null,
+        payment_method: selectedPaymentMethod
+      };
+
+      console.log('Dữ liệu đơn hàng:', orderData);
+
+      // Tạo đơn hàng mới với order_id đã tạo
+      const { error: orderError } = await supabase
+        .from('orders')
+        .insert(orderData);
+
+      if (orderError) {
+        console.error('Lỗi khi tạo đơn hàng:', orderError);
+        throw new Error(`Không thể tạo đơn hàng: ${orderError.message}`);
+      }
+
+      console.log('Đơn hàng đã được tạo với ID:', orderId);
+
+      // Tạo chi tiết đơn hàng cho từng sản phẩm trong tất cả các hóa đơn
+      console.log('Bắt đầu tạo chi tiết đơn hàng...');
+
+      try {
+        // Đã loại bỏ việc cập nhật tồn kho thủ công vì sử dụng trigger trong cơ sở dữ liệu
+
+        // Theo thông tin mới nhất, tên bảng là orderdetails (chữ thường)
+        console.log('Sử dụng bảng orderdetails (chữ thường)');
+        await processOrderDetails('orderdetails');
+
+        // Đã loại bỏ việc cập nhật tồn kho thủ công vì sử dụng trigger trong cơ sở dữ liệu
+      } catch (error) {
+        console.error('Lỗi khi xử lý chi tiết đơn hàng:', error);
+        alert('Đã xảy ra lỗi khi tạo chi tiết đơn hàng, nhưng đơn hàng đã được tạo. Vui lòng kiểm tra lại.');
+      }
+
+      // Hàm xử lý chi tiết đơn hàng
+      async function processOrderDetails(tableName: string) {
+        console.log(`Bắt đầu xử lý chi tiết đơn hàng cho bảng ${tableName}`);
+
+        // Kiểm tra tồn kho trước khi xử lý
+        if (!validateStockBeforeCheckout()) {
+          console.error('Không đủ tồn kho cho một số sản phẩm');
+          return false;
+        }
+
+        // Mảng để lưu các chi tiết đơn hàng đã thêm thành công
+        const successfulDetails = [];
+
+        // Xử lý từng hóa đơn
+        for (const invoice of invoices) {
+          console.log(`Xử lý hóa đơn: ${invoice.name} với ${invoice.products.length} sản phẩm`);
+
+          // Xử lý từng sản phẩm trong hóa đơn
+          for (const product of invoice.products) {
+            if (!product.product_id) {
+              console.error('Sản phẩm không có product_id:', product);
+              continue;
+            }
+
+            try {
+              console.log(`Thêm sản phẩm: ${product.product_name} (ID: ${product.product_id}), SL: ${product.quantity}, Hóa đơn: ${invoice.name}`);
+
+              // Tính subtotal đúng cách
+              const quantity = product.quantity || 1;
+              const price = product.price || 0;
+
+              // Tạo ID ngẫu nhiên cho chi tiết đơn hàng
+              const generateOrderDetailId = () => {
+                // Tạo UUID ngẫu nhiên
+                const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                  const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+                  return v.toString(16);
+                });
+                return uuid;
+              };
+
+              // Tính subtotal
+              const subtotal = quantity * price;
+
+              // Tạo chi tiết đơn hàng mới
+              const orderDetail = {
+                orderdetail_id: generateOrderDetailId(), // Tạo ID ngẫu nhiên
+                order_id: orderId,
+                product_id: parseInt(product.product_id),
+                name_product: product.product_name || 'Không có tên',
+                name_check: invoice.name || 'Hóa đơn không tên',
+                quantity: quantity,
+                unit_price: price,
+                subtotal: subtotal // Thêm subtotal
+              };
+
+              // Thêm chi tiết đơn hàng vào cơ sở dữ liệu
+              try {
+                console.log(`Thêm chi tiết đơn hàng với ID: ${orderDetail.orderdetail_id}`);
+
+                // Thêm chi tiết đơn hàng mới
+                const { error: insertError } = await supabase
+                  .from(tableName)
+                  .insert(orderDetail);
+
+                if (insertError) {
+                  console.error(`Lỗi khi thêm chi tiết đơn hàng:`, insertError);
+                  console.error('Chi tiết lỗi:', JSON.stringify(insertError));
+                } else {
+                  console.log(`Đã thêm chi tiết đơn hàng thành công với ID: ${orderDetail.orderdetail_id}`);
+
+                  // Thêm vào danh sách chi tiết thành công
+                  successfulDetails.push(orderDetail);
+                }
+              } catch (error) {
+                console.error(`Lỗi khi thêm chi tiết đơn hàng:`, error);
+              }
+
+              // Ghi nhận sản phẩm cần cập nhật tồn kho sau khi thêm chi tiết đơn hàng thành công
+              console.log(`Ghi nhận sản phẩm ID: ${product.product_id} cần cập nhật tồn kho, Số lượng: ${quantity}`);
+
+              // Thông tin sản phẩm đã được lưu khi thêm vào đơn hàng
+              // Không cần thực hiện thêm hành động nào ở đây
+            } catch (error) {
+              console.error(`Lỗi không xác định khi xử lý sản phẩm ${product.product_id}:`, error);
+            }
+          }
+        }
+
+        // Tồn kho sẽ được cập nhật sau khi thêm chi tiết đơn hàng thành công
+        console.log('Chi tiết đơn hàng đã được thêm, chuẩn bị cập nhật tồn kho...');
+
+        console.log(`Đã thêm thành công ${successfulDetails.length} chi tiết đơn hàng`);
+        console.log('Đã hoàn thành việc thêm tất cả chi tiết đơn hàng và cập nhật tồn kho');
+        return true;
+      }
+
+      // Hàm cập nhật số lượng tồn kho - không sử dụng vì đã cập nhật trực tiếp
+      /*
+      async function updateProductStock(productId: number, quantity: number) {
+        try {
+          console.log(`Cập nhật tồn kho cho sản phẩm ID: ${productId}, Số lượng cần giảm: ${quantity}`);
+
+          // Lấy số lượng tồn kho hiện tại
+          const { data: productData, error: productError } = await supabase
+            .from('products')
+            .select('stock_quantity, product_name')
+            .eq('product_id', productId)
+            .single();
+
+          if (productError) {
+            console.error('Lỗi khi lấy thông tin sản phẩm:', productError);
+            return false;
+          }
+
+          if (!productData) {
+            console.error(`Không tìm thấy sản phẩm với ID: ${productId}`);
+            return false;
+          }
+
+          // Tính toán số lượng tồn kho mới - đảm bảo là số
+          const currentStock = Number(productData.stock_quantity) || 0;
+          const quantityToReduce = Number(quantity) || 0;
+
+          // Đảm bảo không giảm quá số lượng hiện có
+          const newStockQuantity = Math.max(0, currentStock - quantityToReduce);
+
+          console.log(`Sản phẩm: ${productData.product_name} (ID: ${productId})`);
+          console.log(`Tồn kho hiện tại: ${currentStock}`);
+          console.log(`Số lượng mua: ${quantity}`);
+          console.log(`Số lượng giảm: ${quantityToReduce}`);
+          console.log(`Tồn kho mới: ${newStockQuantity}`);
+
+          // Cập nhật số lượng tồn kho - sử dụng cách tiếp cận khác
+          console.log(`Cập nhật tồn kho cho sản phẩm ID: ${productId} thành ${newStockQuantity}`);
+
+          // Sử dụng SQL trực tiếp để cập nhật
+          const updateQuery = `
+            UPDATE products
+            SET stock_quantity = ${newStockQuantity},
+                updated_at = '${new Date().toISOString()}'
+            WHERE product_id = ${productId}
+          `;
+
+          console.log(`SQL Query: ${updateQuery}`);
+
+          // Thực hiện cập nhật
+          const { error: updateError } = await supabase
+            .from('products')
+            .update({
+              stock_quantity: newStockQuantity,
+              updated_at: new Date().toISOString()
+            })
+            .eq('product_id', productId);
+
+          if (updateError) {
+            console.error('Lỗi khi cập nhật tồn kho:', updateError);
+            return false;
+          } else {
+            console.log(`Đã cập nhật tồn kho thành công cho sản phẩm ID: ${productId}`);
+            console.log(`Tồn kho mới: ${newStockQuantity}`);
+
+            // Kiểm tra lại tồn kho sau khi cập nhật
+            const { data: updatedProduct, error: checkError } = await supabase
+              .from('products')
+              .select('stock_quantity, product_name')
+              .eq('product_id', productId)
+              .single();
+
+            if (checkError) {
+              console.error('Lỗi khi kiểm tra tồn kho sau cập nhật:', checkError);
+            } else if (updatedProduct) {
+              console.log(`Tồn kho sau khi cập nhật: ${updatedProduct.stock_quantity}`);
+
+              // Kiểm tra xem tồn kho có thực sự được cập nhật không
+              const updatedStock = updatedProduct.stock_quantity !== undefined ? Number(updatedProduct.stock_quantity) : null;
+              console.log(`Kiểm tra tồn kho sau cập nhật: Mong đợi: ${newStockQuantity}, Thực tế: ${updatedStock}`);
+
+              if (updatedStock === null || updatedStock !== newStockQuantity) {
+                console.log(`Tồn kho cần được cập nhật lại. Mong đợi: ${newStockQuantity}, Thực tế: ${updatedStock}`);
+
+                // Thử cập nhật lại một lần nữa với cách khác
+                console.log('Thử cập nhật lại tồn kho với cách khác...');
+
+                // Sử dụng cách cập nhật khác
+                const { error: retryError } = await supabase
+                  .from('products')
+                  .update({
+                    stock_quantity: newStockQuantity,
+                    updated_at: new Date().toISOString()
+                  })
+                  .eq('product_id', productId)
+                  .select();
+
+                if (retryError) {
+                  console.error('Lỗi khi cập nhật lại tồn kho:', retryError);
+                } else {
+                  console.log(`Đã cập nhật lại tồn kho thành công cho sản phẩm ID: ${productId}`);
+                }
+              }
+            }
+
+            return true;
+          }
+        } catch (error) {
+          console.error('Lỗi khi xử lý cập nhật tồn kho:', error);
+          return false;
+        }
+      }
+      */
+
+      console.log('Đã hoàn thành quá trình tạo chi tiết đơn hàng');
+
+      // Tồn kho đã được cập nhật sau khi thêm chi tiết đơn hàng
+      console.log('Đã hoàn thành cập nhật số lượng tồn kho');
+
+      // Hiển thị thông báo thành công
+      setSuccessMessage('Thanh toán thành công!');
+      setTimeout(() => {
+        setSuccessMessage('');
+      }, 2000); // Tự động ẩn sau 2 giây
+
+      setShowQuickSalePopup(false);
+      setLoading(false);
+
+      // Reset tất cả các hóa đơn sau khi thanh toán
+      const resetInvoices = invoices.map(invoice => ({
+        ...invoice,
+        products: [],
+        note: '',
+        totalAmount: 0,
+        totalDiscount: 0,
+        amountToPay: 0
+      }));
+
+      // Chỉ giữ lại hóa đơn đầu tiên và đặt nó làm active
+      setInvoices([resetInvoices[0]]);
+      setActiveInvoiceIndex(0);
+
+      // Tải lại dữ liệu sản phẩm để cập nhật thông tin tồn kho mới nhất
+      console.log('Tải lại dữ liệu sản phẩm để cập nhật thông tin tồn kho mới nhất');
+      fetchDefaultProducts();
+
+      // Danh sách sản phẩm cần cập nhật tồn kho đã được xóa trong hàm updateStockQuantities
+      // Không cần xóa lại ở đây
+    } catch (error) {
+      console.error('Lỗi khi thanh toán:', error);
+      alert('Có lỗi xảy ra khi thanh toán: ' + (error instanceof Error ? error.message : 'Lỗi không xác định'));
+      setLoading(false);
+    }
+  };
+
+  // Xử lý tạo đơn hàng
+  const handleCreateOrder = async () => {
+    if (!validateOrder()) return;
+
+    setLoading(true);
+
+    try {
+      // Đây là nơi sẽ gửi dữ liệu lên server
+      // TODO: Thêm code tạo đơn hàng thực tế ở đây
+
+      // Mock API call - sẽ thay thế bằng API thực tế sau
+      await new Promise(resolve => setTimeout(resolve, 1000))
+
+      alert('Đơn hàng đã được tạo thành công!')
+
+      // Reset thông tin hóa đơn hiện tại
+      const updatedInvoices = [...invoices]
+      updatedInvoices[activeInvoiceIndex] = {
+        ...updatedInvoices[activeInvoiceIndex],
+        products: [],
+        note: '',
+        totalAmount: 0,
+        totalDiscount: 0,
+        amountToPay: 0
+      }
+      setInvoices(updatedInvoices)
+
+    } catch (error) {
+      console.error('Lỗi khi tạo đơn hàng:', error)
+      alert('Có lỗi xảy ra khi tạo đơn hàng')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Chuyển sang hóa đơn khác
+  const switchInvoice = (index: number) => {
+    setActiveInvoiceIndex(index)
+    // Xóa các lỗi khi chuyển hóa đơn
+    setQuantityErrors({})
+  }
+
+  return (
+    <div className="container mx-auto p-4">
+      {/* Thông báo thành công */}
+      {successMessage && (
+        <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-md shadow-lg z-50">
+          {successMessage}
+        </div>
+      )}
+
+      <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+        {/* Header - tìm kiếm và chọn hóa đơn */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+          <div className="w-full md:w-1/3">
+            <div className="relative flex">
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Tìm hàng hóa"
+                onFocus={() => {
+                  setSearchFocused(true)
+                  if (searchResults.length === 0) fetchDefaultProducts()
+                }}
+                onBlur={() => {
+                  // Delay để người dùng có thể click vào kết quả tìm kiếm trước khi nó biến mất
+                  setTimeout(() => setSearchFocused(false), 200)
+                }}
+              />
+              <button
+                onClick={() => {
+                  // Tải lại dữ liệu sản phẩm để cập nhật thông tin tồn kho mới nhất
+                  console.log('Tải lại dữ liệu sản phẩm');
+                  fetchDefaultProducts();
+                  setSuccessMessage('Tải lại dữ liệu thành công!');
+                  setTimeout(() => setSuccessMessage(''), 2000);
+                }}
+                className={`p-2 border border-l-0 border-gray-300 rounded-r-md ${currentTheme?.buttonBg || 'bg-blue-600'} text-white`}
+                title="Tải lại dữ liệu"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </button>
+              {searchFocused && searchResults.length > 0 && (
+                <div
+                  className="absolute z-10 w-full bg-white shadow-lg border border-gray-200 rounded-md mt-1 max-h-80 overflow-auto"
+                  onMouseDown={(e) => {
+                    // Ngăn sự kiện onBlur của input kích hoạt trước khi click được xử lý
+                    e.preventDefault();
+                  }}
+                >
+                  {searchResults.map((product) => (
+                    <div
+                      key={product.product_id}
+                      className="p-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100 flex justify-between"
+                      onMouseDown={() => {
+                        addProductToOrder(product);
+                        setSearchFocused(false);
+                      }}
+                    >
+                      <div className="flex flex-col">
+                        <span className="font-medium">{product.product_name}</span>
+                        <span className="text-xs text-gray-500">
+                          {product.color && `Màu: ${product.color}`}{product.size && `, Size: ${product.size}`}
+                        </span>
+                      </div>
+                      <span className="text-gray-600">{formatCurrency(product.price)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex gap-2 w-full md:w-auto">
+            {invoices.map((invoice, index) => (
+              <div key={invoice.id} className="relative group">
+                <button
+                  onClick={() => switchInvoice(index)}
+                  className={`px-3 py-1 text-sm ${
+                    index === activeInvoiceIndex
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-200 text-gray-700'
+                  } rounded flex items-center`}
+                >
+                  {invoice.name}
+                  <span
+                    onClick={(e) => deleteInvoice(index, e)}
+                    className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                  >
+                    <XMarkIcon className="h-4 w-4" />
+                  </span>
+                </button>
+              </div>
+            ))}
+            <button
+              onClick={createNewInvoice}
+              className="p-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+            >
+              <PlusIcon className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Danh sách sản phẩm */}
+          <div className="md:col-span-2">
+            <div className="overflow-x-auto">
+              {currentInvoice.products.length > 0 ? (
+                currentInvoice.products.map((item, index) => (
+                  <div
+                    key={index}
+                    className="mb-4 border border-gray-200 rounded-lg overflow-hidden shadow-sm bg-white"
+                  >
+                    <table className="min-w-full">
+                      <thead>
+                        <tr className="bg-blue-50">
+                          <th className="py-2 px-3 text-left text-sm font-medium text-blue-800">Mã sản phẩm</th>
+                          <th className="py-2 px-3 text-left text-sm font-medium text-blue-800">Tên sản phẩm</th>
+                          <th className="py-2 px-3 text-left text-sm font-medium text-blue-800">Tồn kho</th>
+                          <th className="py-2 px-3 text-center text-sm font-medium text-blue-800">
+                            <button
+                              onClick={() => removeProduct(index)}
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              <XMarkIcon className="h-5 w-5" />
+                            </button>
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td className="py-2 px-3 text-sm text-gray-700">{item.product_id}</td>
+                          <td className="py-2 px-3 text-sm text-gray-700">{formatProductName(item)}</td>
+                          <td className="py-2 px-3 text-sm text-gray-700">{item.stock_quantity || 0}</td>
+                          <td className="py-2 px-3 text-center"></td>
+                        </tr>
+                        <tr className="border-t border-gray-100">
+                          <td className="py-2 px-3 text-sm text-gray-700">
+                            <div className="flex items-center">
+                              <span className="mr-2">Số lượng:</span>
+                              <input
+                                type="number"
+                                value={item.quantity || 0}
+                                onChange={(e) => updateQuantity(index, parseInt(e.target.value) || 0)}
+                                className={`w-16 p-1 text-center border ${quantityErrors[index] ? 'border-red-500 bg-red-50' : 'border-gray-300'} rounded`}
+                                min="1"
+                                max={item.stock_quantity || 999}
+                              />
+                            </div>
+                          </td>
+                          <td className="py-2 px-3 text-sm text-gray-700">
+                            <div className="flex items-center">
+                              <span className="mr-2">Giảm giá:</span>
+                              <input
+                                type="number"
+                                value={item.discount || 0}
+                                onChange={(e) => updateDiscount(index, parseInt(e.target.value) || 0)}
+                                className="w-16 p-1 text-center border border-gray-300 rounded bg-gray-100"
+                                min="0"
+                                disabled
+                              />
+                            </div>
+                          </td>
+                          <td colSpan={2} className="py-2 px-3 text-sm text-gray-700">
+                            <div className="flex items-center">
+                              <span className="mr-2">Thành tiền:</span>
+                              <span className="font-medium">{formatCurrency(item.price * item.quantity - (item.discount || 0))}</span>
+                            </div>
+                          </td>
+                        </tr>
+                        {quantityErrors[index] && (
+                          <tr className="border-t border-gray-100">
+                            <td colSpan={4} className="py-2 px-3 text-sm text-red-500">
+                              Vượt quá tồn kho ({item.stock_quantity})
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center p-8 bg-gray-50 rounded-lg">
+                  <p className="text-gray-500">Chưa có sản phẩm nào được thêm vào đơn hàng</p>
+                  <p className="text-sm text-gray-400 mt-1">Tìm kiếm và thêm sản phẩm từ ô tìm kiếm</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Thông tin thanh toán và ghi chú */}
+          <div className="md:col-span-1">
+            <div className="bg-gray-50 p-4 rounded-lg mb-4">
+              <h3 className="text-lg font-medium mb-3">Ghi chú đơn hàng</h3>
+              <textarea
+                value={currentInvoice.note}
+                onChange={(e) => updateNote(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md"
+                rows={5}
+              ></textarea>
+            </div>
+
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <div className="space-y-2 mb-4">
+                <div className="flex justify-between">
+                  <span>Tổng tiền</span>
+                  <span className="font-medium">{formatCurrency(currentInvoice.totalAmount)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Giảm giá</span>
+                  <span className="font-medium">{formatCurrency(currentInvoice.totalDiscount)}</span>
+                </div>
+                <div className="flex justify-between text-lg font-bold">
+                  <span>Khách cần trả</span>
+                  <span>{formatCurrency(currentInvoice.amountToPay)}</span>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <button
+                  onClick={handleCreateOrder}
+                  disabled={currentInvoice.products.length === 0 || loading}
+                  className="w-full py-2 px-4 bg-green-600 text-white text-center rounded-md hover:bg-green-700 disabled:bg-gray-400"
+                >
+                  Tạo đơn gửi đi
+                </button>
+
+                <button
+                  onClick={openQuickSalePopup}
+                  disabled={currentInvoice.products.length === 0 || loading}
+                  className="w-full py-2 px-4 bg-blue-600 text-white text-center rounded-md hover:bg-blue-700 disabled:bg-gray-400"
+                >
+                  Bán hàng nhanh
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Popup thanh toán nhanh */}
+      {showQuickSalePopup && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="absolute inset-0 bg-black opacity-10" onClick={closeQuickSalePopup}></div>
+          <div className={`bg-white rounded-lg shadow-xl w-full max-w-4xl p-6 border-2 ${currentTheme?.borderColor || 'border-blue-500'} relative max-h-[90vh] overflow-y-auto`}>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-semibold">Thanh toán nhanh</h3>
+              <button
+                onClick={closeQuickSalePopup}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <XMarkIcon className="h-6 w-6" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-3 gap-6">
+              <div className="col-span-2 mb-4 max-h-[60vh] overflow-y-auto pr-1">
+                {/* Hiển thị thông tin từng hóa đơn */}
+                {invoices.map((invoice, index) => (
+                  <div key={invoice.id} className={`mb-4 pb-3 ${index < invoices.length - 1 ? 'border-b border-gray-200' : ''}`}>
+                    <div className="flex items-center mb-2">
+                      <div className={`w-2 h-2 rounded-full mr-2 ${currentTheme?.textColor || 'bg-blue-500'}`}></div>
+                      <h4 className="font-semibold text-gray-800">{invoice.name}</h4>
+                      <div className="ml-2 text-xs px-2 py-0.5 bg-gray-100 rounded-full">
+                        {invoice.products.length} sản phẩm
+                      </div>
+                    </div>
+
+                    <div className="ml-4">
+                      <div className="flex justify-between mb-1 text-sm">
+                        <span className="text-gray-600">Tổng tiền hàng:</span>
+                        <span>{formatCurrency(invoice.totalAmount)}</span>
+                      </div>
+                      <div className="flex justify-between mb-1 text-sm">
+                        <span className="text-gray-600">Giảm giá sản phẩm:</span>
+                        <span>{formatCurrency(invoice.totalDiscount)}</span>
+                      </div>
+                      <div className="flex justify-between mb-1 text-sm font-medium">
+                        <span className="text-gray-700">Tổng tiền:</span>
+                        <span className={`font-semibold ${currentTheme?.textColor || 'text-blue-600'}`}>
+                          {formatCurrency(invoice.amountToPay)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Hiển thị tổng của tất cả hóa đơn */}
+                <div className={`mt-4 pt-3 border-t-2 ${currentTheme?.borderColor || 'border-blue-500'}`}>
+                  <div className="flex items-center mb-2">
+                    <svg className="w-5 h-5 mr-2 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                    </svg>
+                    <h4 className="font-bold text-gray-900">Tổng hóa đơn ({invoices.length})</h4>
+                  </div>
+
+                  <div className="ml-4">
+                    <div className="flex justify-between mb-1">
+                      <span className="font-medium">Tổng tiền hàng:</span>
+                      <span>{formatCurrency(calculateTotalAllInvoices().totalAmount)}</span>
+                    </div>
+                    <div className="flex justify-between mb-1">
+                      <span className="font-medium">Giảm giá sản phẩm:</span>
+                      <span>{formatCurrency(calculateTotalAllInvoices().totalDiscount)}</span>
+                    </div>
+                    <div className="flex justify-between mb-2 text-lg font-bold">
+                      <span>Tổng tiền:</span>
+                      <span className={currentTheme?.textColor || 'text-blue-600'}>
+                        {formatCurrency(calculateTotalAllInvoices().amountToPay)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Giảm giá thêm:
+                  </label>
+                  <input
+                    type="text"
+                    value={discount}
+                    disabled
+                    className="w-full p-2 border border-gray-200 rounded-md bg-gray-100 text-gray-500 cursor-not-allowed"
+                    placeholder="Tính năng đang phát triển"
+                  />
+                </div>
+
+                <div className="flex justify-between mb-2 mt-4 text-lg font-bold">
+                  <span>Khách cần trả:</span>
+                  <span>{formatCurrency(calculateTotalAllInvoices().amountToPay)}</span>
+                </div>
+              </div>
+
+              {/* Phần thanh toán và tiền thừa đã được xóa */}
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Phương thức thanh toán:
+              </label>
+              <div className="grid grid-cols-3 gap-2 mt-2">
+                {paymentMethods.length > 0 ? (
+                  paymentMethods.map((method) => (
+                    <div
+                      key={method.payment_id}
+                      onClick={() => setSelectedPaymentMethod(method.payment_id)}
+                      className={`border rounded-md p-2 cursor-pointer transition-all duration-200 ${
+                        selectedPaymentMethod === method.payment_id
+                          ? `${currentTheme?.borderColor || 'border-blue-500'} bg-blue-50`
+                          : 'border-gray-300 hover:border-blue-300'
+                      }`}
+                    >
+                      <div className="flex items-center">
+                        {method.image ? (
+                          <img
+                            src={method.image}
+                            alt={method.payment_method_name}
+                            className="w-6 h-6 mr-2 object-contain"
+                          />
+                        ) : (
+                          <svg className="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                          </svg>
+                        )}
+                        <div className="text-sm font-medium">{method.payment_method_name}</div>
+                      </div>
+                      {method.description && (
+                        <div className="text-xs text-gray-500 mt-1 ml-8">{method.description}</div>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <div className="col-span-3 text-center py-4 text-gray-500">
+                    Không có phương thức thanh toán nào. Vui lòng thêm phương thức thanh toán trong phần cài đặt.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Khách thanh toán:
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={new Intl.NumberFormat('vi-VN').format(parseInt(customerPaid) || 0)}
+                  onChange={handleCustomerPaidChange}
+                  className={`w-full p-2 border ${currentTheme?.borderColor || 'border-blue-500'} rounded-md pl-8 focus:ring-2 focus:ring-opacity-50 focus:ring-blue-300 outline-none`}
+                  placeholder="0"
+                />
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <span className="text-gray-500">₫</span>
+                </div>
+              </div>
+            </div>
+
+            {parseInt(customerPaid) > 0 && (
+              <div className="flex justify-between items-center mb-4 p-3 bg-green-50 border border-green-100 rounded-md">
+                <div className="flex items-center">
+                  <svg className="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="font-medium">Tiền thừa trả khách:</span>
+                </div>
+                <span className="font-bold text-green-600 text-lg">{formatCurrency(calculateChange())}</span>
+              </div>
+            )}
+
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={closeQuickSalePopup}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleQuickSale}
+                disabled={loading || !selectedPaymentMethod || parseInt(customerPaid) < calculateTotalAllInvoices().amountToPay}
+                className={`px-5 py-2 text-white rounded-md disabled:bg-gray-400 transition-colors duration-200 flex items-center ${currentTheme?.buttonBg || 'bg-blue-600'} ${currentTheme?.buttonHoverBg || 'hover:bg-blue-700'}`}
+              >
+                {loading ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Đang xử lý...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Thanh toán
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
