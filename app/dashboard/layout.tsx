@@ -261,10 +261,9 @@ export default function DashboardLayout({
       icon: DocumentTextIcon,
       current: activeNavItem === 'orders',
       children: [
-        { name: language === 'vi' ? 'Tìm & Xem đơn hàng' : 'Find & View Orders', href: '/dashboard/orders/view', icon: null, current: false },
-        { name: language === 'vi' ? 'Các đơn hàng cần xử lý' : 'Pending Orders', href: '/dashboard/orders/pending', icon: null, current: false },
-        { name: language === 'vi' ? 'Thanh toán đơn hàng' : 'Order Payment', href: '/dashboard/orders/payment', icon: null, current: false },
-        { name: language === 'vi' ? 'In hóa đơn cho đơn hàng' : 'Print Invoice', href: '/dashboard/orders/invoice', icon: null, current: false },
+        { name: language === 'vi' ? 'Tìm & Xem đơn hàng' : 'Find & View Orders', href: '/dashboard/orders/search', icon: null, current: pathname.includes('/dashboard/orders/search') },
+        { name: language === 'vi' ? 'Thanh toán' : 'Payment', href: '/dashboard/payment', icon: null, current: pathname.includes('/dashboard/payment') },
+        { name: language === 'vi' ? 'In hóa đơn' : 'Print Invoice', href: '/dashboard/orders/invoice', icon: null, current: pathname.includes('/dashboard/orders/invoice') },
       ]
     },
     {
@@ -273,7 +272,7 @@ export default function DashboardLayout({
       icon: ChartBarIcon,
       current: activeNavItem === 'reports',
       children: [
-        { name: language === 'vi' ? 'Báo cáo đơn hàng' : 'Order Reports', href: '/dashboard/reports/orders', icon: null, current: false },
+        { name: language === 'vi' ? 'Báo cáo đơn hàng' : 'Order Reports', href: '/dashboard/reports/orders', icon: null, current: pathname.includes('/dashboard/orders/invoice') },
         { name: language === 'vi' ? 'Báo cáo khách hàng' : 'Customer Reports', href: '/dashboard/reports/customers', icon: null, current: false },
         { name: language === 'vi' ? 'Báo cáo sản phẩm' : 'Product Reports', href: '/dashboard/reports/products', icon: null, current: false },
       ]

@@ -1,4 +1,7 @@
 // Chứa thông tin các thực thể, trường thuộc tính trong database
+
+
+
 1. users
 Lưu thông tin về người dùng.
 user_id (UUID, PK) – Khóa chính, định danh duy nhất.
@@ -55,7 +58,7 @@ updated_at (TIMESTAMPTZ) – Ngày cập nhật.
 
 image - ảnh
 
-4. Đơn hàng (Orders)
+4. Đơn hàng (oorders)
 Lưu thông tin về đơn hàng.
 
 order_id (text, PK, Auto) – Khóa chính.

@@ -726,8 +726,8 @@ export default function CreateOrderPage() {
         customer_id: customerId,
         order_date: new Date().toISOString(),
         price: totalOrderAmount, // Lưu tổng giá trị đơn hàng
-        status: 'paid', // Sử dụng giá trị enum chính xác: paid (đã thanh toán)
-        shipping_id: null,
+        status: 'Đã thanh toán', // Sử dụng giá trị enum chính xác: Đã thanh toán
+        is_shipping: false, // Đơn hàng bán nhanh không có vận chuyển
         payment_method: selectedPaymentMethod
       };
 
