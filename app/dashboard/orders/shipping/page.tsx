@@ -1036,15 +1036,15 @@ export default function ShippingOrdersPage() {
               return (
                  <div
                   key={shipping.shipping_id}
-                  className="p-2 hover:bg-gray-100 transition duration-150 ease-in-out cursor-pointer border border-gray-100 rounded-lg mb-2"
+                  className="p-1 hover:bg-gray-100 transition duration-150 ease-in-out cursor-pointer border border-gray-200 rounded-lg mb-2 shadow-sm"
                   onClick={() => viewShippingDetails(shipping)}
                   role="button" // Accessibility
                   tabIndex={0} // Accessibility
                   onKeyPress={(e) => e.key === 'Enter' && viewShippingDetails(shipping)} // Accessibility
                 >
-                   <div className="flex flex-col md:flex-row md:items-stretch gap-4">
+                   <div className="flex flex-col md:flex-row md:items-stretch gap-2">
                       {/* Cột Trái: Trạng thái, Vận chuyển - với màu nền theo trạng thái */}
-                      <div className={`md:w-1/4 flex-shrink-0 space-y-2 p-3 rounded-lg flex flex-col justify-between ${shipping.status === 'pending' ? 'bg-yellow-50' : shipping.status === 'delivered' ? 'bg-green-50' : shipping.status === 'cancelled' ? 'bg-red-50' : 'bg-blue-50'}`}>
+                      <div className={`md:w-1/4 flex-shrink-0 space-y-1 p-2 rounded-lg flex flex-col justify-between ${shipping.status === 'pending' ? 'bg-yellow-50' : shipping.status === 'delivered' ? 'bg-green-50' : shipping.status === 'cancelled' ? 'bg-red-50' : 'bg-blue-50'}`}>
                           <div className="flex items-center justify-between">
                              <div className="flex items-center space-x-1">
                                 <span className={`px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full bg-${statusColor}-100 text-${statusColor}-800`}>
@@ -1075,8 +1075,8 @@ export default function ShippingOrdersPage() {
                       </div>
 
                       {/* Cột Phải: Thông tin KH, Địa chỉ và thông tin đơn hàng */}
-                      <div className="md:w-3/4 flex-grow p-3 bg-white rounded-lg border border-gray-100">
-                          <div className="flex flex-col md:flex-row md:justify-between gap-3">
+                      <div className="md:w-3/4 flex-grow p-2 bg-white rounded-lg">
+                          <div className="flex flex-col md:flex-row md:justify-between gap-1">
                               {/* Thông tin khách hàng */}
                               <div className="space-y-2">
                                   <div className="flex items-start space-x-3">
@@ -1097,7 +1097,7 @@ export default function ShippingOrdersPage() {
                               </div>
 
                               {/* Thông tin đơn hàng */}
-                              <div className="space-y-1 bg-gray-50 p-2 rounded-md border border-gray-100">
+                              <div className="space-y-1 p-1">
                                   <p className="text-sm">
                                       <span className="font-medium text-gray-600">Giá trị đơn hàng:</span>
                                       <span className="font-medium text-gray-900 ml-1">{formatCurrency(0)}</span>
