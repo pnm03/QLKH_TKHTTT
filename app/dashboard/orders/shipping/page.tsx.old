@@ -1,0 +1,2559 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { useRouter } from 'next/navigation'
+import { useTheme, themeColors } from '@/app/context/ThemeContext'
+import { 
+  MagnifyingGlassIcon, 
+  PencilIcon, 
+  EyeIcon,
+  ArrowDownTrayIcon,
+  TruckIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  ArrowPathIcon
+} from '@heroicons/react/24/outline'
+
+// Định nghĩa các interface
+interface Shipping {
+  shipping_id: string
+  order_id: string
+  name_customer: string
+  phone_customer: string
+  shipping_address: string
+  carrier: string
+  tracking_number: string
+  shipping_cost: number
+  status: string
+  created_at: string
+  actual_delivery_date: string | null
+  delivery_date: string | null
+  weight?: number
+  unit_weight?: string
+  long?: number
+  wide?: number
+  hight?: number
+  unit_size?: string
+  cod_shipping?: boolean
+}
+
+interface Order {
+  order_id: string
+  customer_id: string
+  order_date: string
+  price: number
+  status: string
+  is_shipping: boolean
+  payment_method: number
+  shipping_id?: string
+  customer_name?: string
+  payment_method_name?: string
+}
+
+export default function ShippingOrdersPage() {
+  const router = useRouter()
+  const supabase = createClientComponentClient()
+  const [mounted, setMounted] = useState(false)
+  const themeContext = useTheme()
+  const [themeState, setThemeState] = useState({
+    theme: themeColors.indigo
+  })
+
+  // State cho tìm kiếm và kết quả
+  const [searchTerm, setSearchTerm] = useState('')
+  const [dateRange, setDateRange] = useState({
+    from: '',
+    to: ''
+  })
+  const [statusFilter, setStatusFilter] = useState('all') // all, pending, shipped, delivered, cancelled
+  const [shippings, setShippings] = useState<Shipping[]>([])
+  const [loading, setLoading] = useState(true)
+  const [selectedShipping, setSelectedShipping] = useState<Shipping | null>(null)
+  const [showShippingDetails, setShowShippingDetails] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editedShipping, setEditedShipping] = useState<Shipping | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+
+  // State cho phân trang
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const shippingsPerPage = 10
+  
+  // State cho thông báo lỗi
+  const [error, setError] = useState<string | null>(null)
+
+  // Set mounted = true sau khi component được render ở client
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Cập nhật themeState từ context và tải dữ liệu khi component đã mounted
+  useEffect(() => {
+    if (mounted) {
+      setThemeState({
+        theme: themeContext.currentTheme || themeColors.indigo
+      })
+      
+      // Tải dữ liệu đơn vận chuyển ban đầu
+      searchShippings()
+    }
+  }, [mounted, themeContext.currentTheme])
+
+  // Tìm kiếm đơn vận chuyển
+  const searchShippings = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      // Truy vấn dữ liệu từ bảng shippings với bộ lọc
+      let query = supabase
+        .from('shippings')
+        .select('*')
+        .order('created_at', { ascending: false })
+      
+      // Áp dụng bộ lọc theo trạng thái
+      if (statusFilter !== 'all') {
+        query = query.eq('status', statusFilter)
+      }
+      
+      // Áp dụng bộ lọc theo ngày
+      if (dateRange.from) {
+        query = query.gte('created_at', dateRange.from)
+      }
+      if (dateRange.to) {
+        query = query.lte('created_at', dateRange.to)
+      }
+      
+      // Áp dụng tìm kiếm theo từ khóa
+      if (searchTerm && searchTerm.trim() !== '') {
+        query = query.or(`name_customer.ilike.%${searchTerm}%,phone_customer.ilike.%${searchTerm}%,shipping_id.ilike.%${searchTerm}%,order_id.ilike.%${searchTerm}%,tracking_number.ilike.%${searchTerm}%`)
+      }
+      
+      // Thực hiện truy vấn
+      const { data, error: shippingsError, count } = await query
+        .range((currentPage - 1) * shippingsPerPage, currentPage * shippingsPerPage - 1)
+      
+      if (shippingsError) {
+        console.error('Lỗi truy vấn shippings:', shippingsError)
+        setError(`Lỗi khi truy vấn dữ liệu: ${shippingsError.message}`)
+        setShippings([])
+        setTotalPages(1)
+        setLoading(false)
+        return
+      }
+      
+      // Log dữ liệu để kiểm tra
+      console.log('Dữ liệu shippings:', data)
+      
+      if (!data || data.length === 0) {
+        console.log('Không tìm thấy đơn vận chuyển nào')
+        setShippings([])
+        setTotalPages(1)
+        setLoading(false)
+        return
+      }
+      
+      // Tính tổng số trang
+      const totalCount = count || data.length
+      const pages = Math.ceil(totalCount / shippingsPerPage)
+      setTotalPages(pages)
+      
+      // Cập nhật state
+      setShippings(data)
+    } catch (error) {
+      console.error('Lỗi khi tìm kiếm đơn vận chuyển:', error)
+      setError('Có lỗi xảy ra khi tìm kiếm đơn vận chuyển')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Interface cho chi tiết sản phẩm
+  interface OrderDetail {
+    order_detail_id: string
+    order_id: string
+    product_id: string
+    name_product: string
+    quantity: number
+    unit_price: number
+    subtotal: number
+    product_image?: string | null
+  }
+
+  // State cho danh sách sản phẩm
+  const [orderDetails, setOrderDetails] = useState<OrderDetail[]>([])
+
+  // Xem chi tiết đơn vận chuyển
+  const viewShippingDetails = async (shipping: Shipping) => {
+    setSelectedShipping(shipping)
+    setEditedShipping({...shipping})
+    setShowShippingDetails(true) // Hiển thị popup ngay lập tức
+    setOrderDetails([]) // Reset chi tiết đơn hàng
+    
+    try {
+      console.log('Đang xử lý đơn vận chuyển:', shipping)
+      
+      // Tạo đơn hàng mặc định để hiển thị thông tin cơ bản
+      const defaultOrder: Order = {
+        order_id: shipping.order_id,
+        customer_id: '',
+        order_date: shipping.created_at || new Date().toISOString(),
+        price: 0,
+        status: 'Không xác định',
+        is_shipping: true,
+        payment_method: 0,
+        customer_name: shipping.name_customer || 'Không xác định',
+        payment_method_name: 'Không xác định',
+        shipping_id: shipping.shipping_id
+      }
+      setSelectedOrder(defaultOrder)
+      
+      // Lấy thông tin đơn hàng
+      let orderFound = false
+      
+      // Thử lấy từ bảng oorders trước
+      const { data: oordersData, error: oordersError } = await supabase
+        .from('oorders')
+        .select('*')
+        
+      if (!oordersError && oordersData && oordersData.length > 0) {
+        console.log('Tìm thấy dữ liệu trong bảng oorders:', oordersData.length, 'bản ghi')
+        
+        // Tìm đơn hàng phù hợp
+        const matchedOrder = oordersData.find(order => 
+          order.order_id === shipping.order_id || 
+          order.order_id?.toString() === shipping.order_id?.toString()
+        )
+        
+        if (matchedOrder) {
+          console.log('Tìm thấy đơn hàng trong bảng oorders:', matchedOrder)
+          orderFound = true
+          
+          // Format dữ liệu đơn hàng
+          const formattedOrder: Order = {
+            ...matchedOrder,
+            customer_name: shipping.name_customer || 'Không xác định',
+            payment_method_name: 'Đang tải...',
+            shipping_id: shipping.shipping_id
+          }
+          setSelectedOrder(formattedOrder)
+          
+          // Lấy thông tin phương thức thanh toán
+          if (matchedOrder.payment_method) {
+            const { data: paymentData } = await supabase
+              .from('Payments')
+              .select('payment_method_name')
+              .eq('payment_id', matchedOrder.payment_method)
+              .single()
+              
+            if (paymentData) {
+              setSelectedOrder(prev => ({
+                ...prev,
+                payment_method_name: paymentData.payment_method_name
+              }))
+            }
+          }
+        }
+      }
+      
+      // Nếu không tìm thấy trong oorders, thử tìm trong orders
+      if (!orderFound) {
+        const { data: ordersData, error: ordersError } = await supabase
+          .from('orders')
+          .select('*')
+          
+        if (!ordersError && ordersData && ordersData.length > 0) {
+          console.log('Tìm thấy dữ liệu trong bảng orders:', ordersData.length, 'bản ghi')
+          
+          // Tìm đơn hàng phù hợp
+          const matchedOrder = ordersData.find(order => 
+            order.order_id === shipping.order_id || 
+            order.order_id?.toString() === shipping.order_id?.toString()
+          )
+          
+          if (matchedOrder) {
+            console.log('Tìm thấy đơn hàng trong bảng orders:', matchedOrder)
+            orderFound = true
+            
+            // Format dữ liệu đơn hàng
+            const formattedOrder: Order = {
+              ...matchedOrder,
+              customer_name: shipping.name_customer || 'Không xác định',
+              payment_method_name: 'Đang tải...',
+              shipping_id: shipping.shipping_id
+            }
+            setSelectedOrder(formattedOrder)
+            
+            // Lấy thông tin phương thức thanh toán
+            if (matchedOrder.payment_method) {
+              const { data: paymentData } = await supabase
+                .from('Payments')
+                .select('payment_method_name')
+                .eq('payment_id', matchedOrder.payment_method)
+                .single()
+                
+              if (paymentData) {
+                setSelectedOrder(prev => ({
+                  ...prev,
+                  payment_method_name: paymentData.payment_method_name
+                }))
+              }
+            }
+          }
+        }
+      }
+      
+      if (!orderFound) {
+        console.log('Không tìm thấy đơn hàng nào phù hợp với mã:', shipping.order_id)
+      }
+      
+      // Lấy chi tiết đơn hàng
+      let orderDetailsFound = false
+      
+      // Thử lấy từ bảng orderdetails
+      const { data: orderDetailsData, error: orderDetailsError } = await supabase
+        .from('orderdetails')
+        .select(`
+          *,
+          products (image)
+        `)
+        
+      if (!orderDetailsError && orderDetailsData && orderDetailsData.length > 0) {
+        console.log('Tìm thấy dữ liệu trong bảng orderdetails:', orderDetailsData.length, 'bản ghi')
+        
+        // Lọc chi tiết đơn hàng theo mã đơn hàng
+        const matchedDetails = orderDetailsData.filter(detail => 
+          detail.order_id === shipping.order_id || 
+          detail.order_id?.toString() === shipping.order_id?.toString()
+        )
+        
+        if (matchedDetails.length > 0) {
+          console.log('Tìm thấy chi tiết đơn hàng:', matchedDetails.length, 'sản phẩm')
+          orderDetailsFound = true
+          
+          // Format dữ liệu chi tiết đơn hàng
+          const formattedOrderDetails = matchedDetails.map(detail => ({
+            order_detail_id: detail.orderdetail_id || detail.order_detail_id,
+            order_id: detail.order_id,
+            product_id: detail.product_id,
+            name_product: detail.name_product,
+            quantity: detail.quantity,
+            unit_price: detail.unit_price,
+            subtotal: detail.subtotal,
+            product_image: detail.products?.image || null
+          }))
+          
+          setOrderDetails(formattedOrderDetails)
+        }
+      }
+      
+      if (!orderDetailsFound) {
+        console.log('Không tìm thấy chi tiết đơn hàng cho mã:', shipping.order_id)
+      }
+    } catch (error) {
+      console.error('Lỗi khi lấy chi tiết đơn vận chuyển:', error)
+    }
+  }
+
+  // Đóng modal chi tiết
+  const closeModal = () => {
+    setShowShippingDetails(false)
+    setIsEditing(false)
+    setSelectedShipping(null)
+    setSelectedOrder(null)
+    setEditedShipping(null)
+  }
+
+  // Xử lý thay đổi input khi chỉnh sửa
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setEditedShipping(prev => prev ? { ...prev, [name]: value } : null)
+  }
+
+  // Lưu thay đổi
+  const saveShippingInfo = async () => {
+    if (!editedShipping) return
+    
+    setIsSaving(true)
+    try {
+      const { data, error } = await supabase
+        .from('shippings')
+        .update({
+          name_customer: editedShipping.name_customer,
+          phone_customer: editedShipping.phone_customer,
+          shipping_address: editedShipping.shipping_address,
+          carrier: editedShipping.carrier,
+          tracking_number: editedShipping.tracking_number,
+          shipping_cost: editedShipping.shipping_cost,
+          status: editedShipping.status,
+          actual_delivery_date: editedShipping.actual_delivery_date,
+          delivery_date: editedShipping.delivery_date,
+          weight: editedShipping.weight,
+          unit_weight: editedShipping.unit_weight,
+          long: editedShipping.long,
+          wide: editedShipping.wide,
+          hight: editedShipping.hight,
+          unit_size: editedShipping.unit_size,
+          cod_shipping: editedShipping.cod_shipping
+        })
+        .eq('shipping_id', editedShipping.shipping_id)
+      
+      if (error) {
+        console.error('Lỗi khi cập nhật thông tin vận chuyển:', error)
+        setError(`Lỗi khi cập nhật: ${error.message}`)
+      } else {
+        // Cập nhật thành công
+        setSelectedShipping(editedShipping)
+        setIsEditing(false)
+        
+        // Cập nhật lại danh sách
+        searchShippings()
+      }
+    } catch (error) {
+      console.error('Lỗi khi lưu thông tin vận chuyển:', error)
+      setError('Có lỗi xảy ra khi lưu thông tin')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  // Logo công ty (SVG của truck icon)
+  const companyLogo = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBjbGFzcz0ibHVjaWRlIGx1Y2lkZS10cnVjayI+PHBhdGggZD0iTTEwIDEzYTIgMiAwIDEgMSA0IDAgMiAyIDAgMCAxLTQgMFoiLz48cGF0aCBkPSJNMTggMTJhMiAyIDAgMSAxIDQgMCAyIDIgMCAwIDEtNCAwWiIvPjxwYXRoIGQ9Ik0xMCAxNGgtNC4xOGEuODIuODIgMCAwIDEtLjgyLS44MnYtMS4xOGEuODIuODIgMCAwIDEgLjgyLS44Mmg0LjE4Ii8+PHBhdGggZD0iTTIuMDYgMTJWNy44OEEyLjg4IDIuODggMCAwIDEgNC45NCA1aDQuMTJhMiAyIDAgMCAxIDIgMnYxLjE4YS44Mi44MiAwIDAgMCAuODIuODJoMi4wNmE4IDggMCAwIDEgNS4wNiAyLjI0bDIuMTggMi4xOGMuNTYuNTYuODIgMS40MS42NyAyLjIzLS4xNi44Mi0uODUgMS40Mi0xLjY3IDEuNDJIMjAiLz48cGF0aCBkPSJNMTggMTJhMiAyIDAgMSAwIDQgMCAyIDIgMCAwIDAtNCAwWiIvPjxwYXRoIGQ9Ik0xMCAxM2EyIDIgMCAxIDAgNCAwIDIgMiAwIDAgMC00IDBaIi8+PC9zdmc+'
+  
+  // In hóa đơn
+  const printInvoice = (orderId: string) => {
+    if (!selectedShipping || !selectedOrder) {
+      alert('Không có đủ thông tin để in hóa đơn')
+      return
+    }
+    
+    // Tạo HTML cho hóa đơn
+    const invoiceHtml = `
+      <!DOCTYPE html>
+      <html lang="vi">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Hóa đơn - ${selectedOrder.order_id}</title>
+        <style>
+          @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+          
+          body {
+            font-family: 'Roboto', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f9fafb;
+          }
+          
+          .invoice-container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #fff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+          }
+          
+          .invoice-header {
+            background-color: #4f46e5;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          }
+          
+          .logo-container {
+            display: flex;
+            align-items: center;
+          }
+          
+          .logo {
+            height: 50px;
+            width: 50px;
+            margin-right: 15px;
+            filter: invert(1);
+          }
+          
+          .company-name {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0;
+          }
+          
+          .invoice-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0;
+            text-align: right;
+          }
+          
+          .invoice-body {
+            padding: 30px;
+          }
+          
+          .invoice-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 20px;
+          }
+          
+          .invoice-details, .customer-details {
+            width: 48%;
+          }
+          
+          .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #4f46e5;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #4f46e5;
+            padding-bottom: 5px;
+            display: inline-block;
+          }
+          
+          .info-row {
+            margin-bottom: 8px;
+            display: flex;
+          }
+          
+          .label {
+            font-weight: 500;
+            color: #6b7280;
+            width: 140px;
+          }
+          
+          .value {
+            color: #1f2937;
+            flex: 1;
+          }
+          
+          .products-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+          }
+          
+          .products-table th {
+            background-color: #f3f4f6;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #4b5563;
+            border-bottom: 2px solid #e5e7eb;
+          }
+          
+          .products-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+          }
+          
+          .products-table tr:last-child td {
+            border-bottom: none;
+          }
+          
+          .text-right {
+            text-align: right;
+          }
+          
+          .summary {
+            background-color: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+          }
+          
+          .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+          }
+          
+          .summary-label {
+            font-weight: 500;
+            color: #6b7280;
+          }
+          
+          .summary-value {
+            font-weight: 500;
+            color: #1f2937;
+            text-align: right;
+          }
+          
+          .total-row {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1f2937;
+            border-top: 2px solid #e5e7eb;
+            padding-top: 8px;
+            margin-top: 8px;
+          }
+          
+          .shipping-info {
+            background-color: #f3f4f6;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+          }
+          
+          .shipping-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #4b5563;
+            margin-bottom: 15px;
+          }
+          
+          .shipping-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+          }
+          
+          .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 9999px;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+          }
+          
+          .status-pending {
+            background-color: #fef3c7;
+            color: #92400e;
+          }
+          
+          .status-shipped {
+            background-color: #dbeafe;
+            color: #1e40af;
+          }
+          
+          .status-delivered {
+            background-color: #d1fae5;
+            color: #065f46;
+          }
+          
+          .status-cancelled {
+            background-color: #fee2e2;
+            color: #b91c1c;
+          }
+          
+          .cod-notice {
+            background-color: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            margin-bottom: 30px;
+            font-style: italic;
+            color: #92400e;
+          }
+          
+          .invoice-footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #f3f4f6;
+            color: #6b7280;
+            font-size: 14px;
+            border-top: 1px solid #e5e7eb;
+          }
+          
+          .qr-code {
+            text-align: center;
+            margin-bottom: 30px;
+          }
+          
+          .qr-code-image {
+            height: 100px;
+            width: 100px;
+            margin-bottom: 10px;
+          }
+          
+          .qr-code-text {
+            font-size: 14px;
+            color: #6b7280;
+          }
+          
+          .thank-you {
+            text-align: center;
+            font-size: 20px;
+            font-weight: 600;
+            color: #4f46e5;
+            margin-bottom: 20px;
+          }
+          
+          @media print {
+            body {
+              background-color: white;
+            }
+            
+            .invoice-container {
+              box-shadow: none;
+              margin: 0;
+              max-width: 100%;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="invoice-container">
+          <div class="invoice-header">
+            <div class="logo-container">
+              <img src="${companyLogo}" alt="Logo" class="logo">
+              <h1 class="company-name">QLBH SYSTEM</h1>
+            </div>
+            <h1 class="invoice-title">HÓA ĐƠN</h1>
+          </div>
+          
+          <div class="invoice-body">
+            <div class="invoice-info">
+              <div class="invoice-details">
+                <h2 class="section-title">Thông tin hóa đơn</h2>
+                <div class="info-row">
+                  <div class="label">Mã hóa đơn:</div>
+                  <div class="value">${selectedOrder.order_id}</div>
+                </div>
+                <div class="info-row">
+                  <div class="label">Ngày đặt hàng:</div>
+                  <div class="value">${formatDate(selectedOrder.order_date)}</div>
+                </div>
+                <div class="info-row">
+                  <div class="label">Trạng thái:</div>
+                  <div class="value">
+                    <span class="status-badge status-${selectedShipping.status}">
+                      ${getStatusName(selectedShipping.status)}
+                    </span>
+                  </div>
+                </div>
+                <div class="info-row">
+                  <div class="label">Phương thức TT:</div>
+                  <div class="value">${selectedShipping.cod_shipping ? 'Thanh toán khi nhận hàng (COD)' : 'Thanh toán trước'}</div>
+                </div>
+              </div>
+              
+              <div class="customer-details">
+                <h2 class="section-title">Thông tin khách hàng</h2>
+                <div class="info-row">
+                  <div class="label">Tên khách hàng:</div>
+                  <div class="value">${selectedShipping.name_customer}</div>
+                </div>
+                <div class="info-row">
+                  <div class="label">Số điện thoại:</div>
+                  <div class="value">${selectedShipping.phone_customer}</div>
+                </div>
+                <div class="info-row">
+                  <div class="label">Địa chỉ:</div>
+                  <div class="value">${selectedShipping.shipping_address}</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="shipping-info">
+              <h2 class="shipping-title">Thông tin vận chuyển</h2>
+              <div class="shipping-grid">
+                <div>
+                  <div class="info-row">
+                    <div class="label">Mã vận chuyển:</div>
+                    <div class="value">${selectedShipping.shipping_id}</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="label">Đơn vị vận chuyển:</div>
+                    <div class="value">${selectedShipping.carrier}</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="label">Mã vận đơn:</div>
+                    <div class="value">${selectedShipping.tracking_number}</div>
+                  </div>
+                </div>
+                <div>
+                  <div class="info-row">
+                    <div class="label">Ngày tạo:</div>
+                    <div class="value">${formatDate(selectedShipping.created_at)}</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="label">Ngày bắt đầu giao:</div>
+                    <div class="value">${selectedShipping.actual_delivery_date ? formatDate(selectedShipping.actual_delivery_date) : 'Chưa có thông tin'}</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="label">Ngày nhận hàng:</div>
+                    <div class="value">${selectedShipping.delivery_date ? formatDate(selectedShipping.delivery_date) : 'Chưa có thông tin'}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <h2 class="section-title">Chi tiết đơn hàng</h2>
+            <table class="products-table">
+              <thead>
+                <tr>
+                  <th>Sản phẩm</th>
+                  <th class="text-right">Đơn giá</th>
+                  <th class="text-right">Số lượng</th>
+                  <th class="text-right">Thành tiền</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${orderDetails.map(detail => `
+                  <tr>
+                    <td>${detail.name_product}</td>
+                    <td class="text-right">${formatCurrency(detail.unit_price)}</td>
+                    <td class="text-right">${detail.quantity}</td>
+                    <td class="text-right">${formatCurrency(detail.subtotal)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+            
+            <div class="summary">
+              <div class="summary-row">
+                <div class="summary-label">Tổng tiền hàng:</div>
+                <div class="summary-value">${formatCurrency(selectedOrder.price)}</div>
+              </div>
+              <div class="summary-row">
+                <div class="summary-label">Phí vận chuyển:</div>
+                <div class="summary-value">${formatCurrency(selectedShipping.shipping_cost)}</div>
+              </div>
+              <div class="summary-row total-row">
+                <div class="summary-label">Tổng thanh toán:</div>
+                <div class="summary-value">${formatCurrency(selectedOrder.price + selectedShipping.shipping_cost)}</div>
+              </div>
+            </div>
+            
+            ${selectedShipping.cod_shipping ? `
+              <div class="cod-notice">
+                <strong>Lưu ý:</strong> Đơn vị vận chuyển sẽ thu hộ tiền đơn hàng ${formatCurrency(selectedOrder.price + selectedShipping.shipping_cost)} từ khách hàng khi giao hàng.
+              </div>
+            ` : ''}
+            
+            <div class="qr-code">
+              <div style="font-family: 'Courier New', monospace; font-size: 24px; letter-spacing: 2px; margin-top: 10px; border: 1px solid #ccc; display: inline-block; padding: 10px;">
+                *${selectedShipping.tracking_number}*
+              </div>
+              <div class="qr-code-text">Mã vận đơn: ${selectedShipping.tracking_number}</div>
+            </div>
+            
+            <div class="thank-you">Cảm ơn quý khách đã mua hàng!</div>
+          </div>
+          
+          <div class="invoice-footer">
+            <p>CÔNG TY TNHH THƯƠNG MẠI ĐIỆN TỬ QLBH SYSTEM</p>
+            <p>Địa chỉ: 123 Đường ABC, Quận XYZ, TP.HCM | Điện thoại: (028) 1234 5678 | Email: contact@qlbh-system.com</p>
+            <p>© ${new Date().getFullYear()} QLBH System. Tất cả các quyền được bảo lưu.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `
+    
+    // Tạo Blob từ HTML
+    const invoiceBlob = new Blob([invoiceHtml], { type: 'text/html' })
+    const invoiceUrl = URL.createObjectURL(invoiceBlob)
+    
+    // Mở cửa sổ mới để in
+    const invoicePrintWindow = window.open(invoiceUrl, '_blank')
+    
+    if (invoicePrintWindow) {
+      invoicePrintWindow.onload = () => {
+        invoicePrintWindow.document.title = `Hóa đơn - ${selectedOrder.order_id}`
+        
+        // Thêm script để tự động in sau khi trang đã tải
+        const printScript = invoicePrintWindow.document.createElement('script')
+        printScript.textContent = `
+          setTimeout(() => {
+            window.print()
+            setTimeout(() => {
+              window.close()
+            }, 500)
+          }, 1000)
+        `
+        invoicePrintWindow.document.body.appendChild(printScript)
+      }
+    } else {
+      alert('Vui lòng cho phép trình duyệt mở cửa sổ pop-up để in hóa đơn')
+    }
+  }
+  
+  // Xuất đơn vận chuyển
+  const exportShippingOrder = (orderId: string) => {
+    if (!selectedShipping || !selectedOrder) {
+      alert('Không có đủ thông tin để xuất đơn vận chuyển')
+      return
+    }
+    
+    // Tạo HTML cho đơn vận chuyển
+    const htmlContent = `
+    const shippingHtml = `
+      <!DOCTYPE html>
+      <html lang="vi">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Đơn vận chuyển - ${selectedShipping.shipping_id}</title>
+        <style>
+          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+          
+          body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: #1f2937;
+            margin: 0;
+            padding: 0;
+            background-color: #f9fafb;
+          }
+          
+          .shipping-container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #fff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+          }
+          
+          .shipping-header {
+            background-color: #2563eb;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          }
+          
+          .logo-container {
+            display: flex;
+            align-items: center;
+          }
+          
+          .logo {
+            height: 50px;
+            width: 50px;
+            margin-right: 15px;
+            filter: invert(1);
+          }
+          
+          .company-name {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0;
+          }
+          
+          .shipping-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0;
+            text-align: right;
+          }
+          
+          .shipping-body {
+            padding: 30px;
+          }
+          
+          .shipping-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 20px;
+          }
+          
+          .shipping-details, .customer-details {
+            width: 48%;
+          }
+          
+          .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2563eb;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #2563eb;
+            padding-bottom: 5px;
+            display: inline-block;
+          }
+          
+          .info-row {
+            margin-bottom: 8px;
+            display: flex;
+          }
+          
+          .label {
+            font-weight: 500;
+            color: #6b7280;
+            width: 140px;
+          }
+          
+          .value {
+            color: #1f2937;
+            flex: 1;
+          }
+          
+          .products-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+          }
+          
+          .products-table th {
+            background-color: #f3f4f6;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #4b5563;
+            border-bottom: 2px solid #e5e7eb;
+          }
+          
+          .products-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+          }
+          
+          .products-table tr:last-child td {
+            border-bottom: none;
+          }
+          
+          .text-right {
+            text-align: right;
+          }
+          
+          .summary {
+            background-color: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+          }
+          
+          .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+          }
+          
+          .summary-label {
+            font-weight: 500;
+            color: #6b7280;
+          }
+          
+          .summary-value {
+            font-weight: 500;
+            color: #1f2937;
+            text-align: right;
+          }
+          
+          .total-row {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1f2937;
+            border-top: 2px solid #e5e7eb;
+            padding-top: 8px;
+            margin-top: 8px;
+          }
+          
+          .package-info {
+            background-color: #f3f4f6;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+          }
+          
+          .package-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #4b5563;
+            margin-bottom: 15px;
+          }
+          
+          .package-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+          }
+          
+          .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 9999px;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+          }
+          
+          .status-pending {
+            background-color: #fef3c7;
+            color: #92400e;
+          }
+          
+          .status-shipped {
+            background-color: #dbeafe;
+            color: #1e40af;
+          }
+          
+          .status-delivered {
+            background-color: #d1fae5;
+            color: #065f46;
+          }
+          
+          .status-cancelled {
+            background-color: #fee2e2;
+            color: #b91c1c;
+          }
+          
+          .cod-notice {
+            background-color: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            margin-bottom: 30px;
+            font-style: italic;
+            color: #92400e;
+          }
+          
+          .shipping-footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #f3f4f6;
+            color: #6b7280;
+            font-size: 14px;
+            border-top: 1px solid #e5e7eb;
+          }
+          
+          .barcode {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px dashed #d1d5db;
+            border-radius: 8px;
+          }
+          
+          .barcode-image {
+            height: 100px;
+            width: 100px;
+            margin-bottom: 10px;
+          }
+          
+          .barcode-text {
+            font-size: 14px;
+            color: #6b7280;
+          }
+          
+          .barcode-number {
+            font-family: 'Courier New', monospace;
+            font-size: 24px;
+            letter-spacing: 2px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            display: inline-block;
+            padding: 10px;
+          }
+          
+          .signature-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+            margin-bottom: 30px;
+          }
+          
+          .signature-box {
+            width: 45%;
+            text-align: center;
+          }
+          
+          .signature-title {
+            font-weight: 600;
+            margin-bottom: 50px;
+          }
+          
+          .signature-line {
+            border-top: 1px solid #d1d5db;
+            margin-bottom: 10px;
+          }
+          
+          @media print {
+            body {
+              background-color: white;
+            }
+            
+            .shipping-container {
+              box-shadow: none;
+              margin: 0;
+              max-width: 100%;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="shipping-container">
+          <div class="shipping-header">
+            <div class="logo-container">
+              <img src="${companyLogo}" alt="Logo" class="logo">
+              <h1 class="company-name">QLBH SYSTEM</h1>
+            </div>
+            <h1 class="shipping-title">ĐƠN VẬN CHUYỂN</h1>
+          </div>
+          
+          <div class="shipping-body">
+            <div class="shipping-info">
+              <div class="shipping-details">
+                <h2 class="section-title">Thông tin vận chuyển</h2>
+                <div class="info-row">
+                  <div class="label">Mã vận chuyển:</div>
+                  <div class="value">${selectedShipping.shipping_id}</div>
+                </div>
+                <div class="info-row">
+                  <div class="label">Mã đơn hàng:</div>
+                  <div class="value">${selectedShipping.order_id}</div>
+                </div>
+                <div class="info-row">
+                  <div class="label">Ngày tạo:</div>
+                  <div class="value">${formatDate(selectedShipping.created_at)}</div>
+                </div>
+                <div class="info-row">
+                  <div class="label">Đơn vị vận chuyển:</div>
+                  <div class="value">${selectedShipping.carrier}</div>
+                </div>
+                <div class="info-row">
+                  <div class="label">Mã vận đơn:</div>
+                  <div class="value">${selectedShipping.tracking_number}</div>
+                </div>
+                <div class="info-row">
+                  <div class="label">Trạng thái:</div>
+                  <div class="value">
+                    <span class="status-badge status-${selectedShipping.status}">
+                      ${getStatusName(selectedShipping.status)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="customer-details">
+                <h2 class="section-title">Thông tin người nhận</h2>
+                <div class="info-row">
+                  <div class="label">Tên người nhận:</div>
+                  <div class="value">${selectedShipping.name_customer}</div>
+                </div>
+                <div class="info-row">
+                  <div class="label">Số điện thoại:</div>
+                  <div class="value">${selectedShipping.phone_customer}</div>
+                </div>
+                <div class="info-row">
+                  <div class="label">Địa chỉ giao hàng:</div>
+                  <div class="value">${selectedShipping.shipping_address}</div>
+                </div>
+                <div class="info-row">
+                  <div class="label">Phương thức TT:</div>
+                  <div class="value">${selectedShipping.cod_shipping ? 'Thanh toán khi nhận hàng (COD)' : 'Thanh toán trước'}</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="package-info">
+              <h2 class="package-title">Thông tin kiện hàng</h2>
+              <div class="package-grid">
+                <div>
+                  <div class="info-row">
+                    <div class="label">Kích thước:</div>
+                    <div class="value">${selectedShipping.long || '0'} x ${selectedShipping.wide || '0'} x ${selectedShipping.hight || '0'} ${selectedShipping.unit_size || 'cm'}</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="label">Trọng lượng:</div>
+                    <div class="value">${selectedShipping.weight || '0'} ${selectedShipping.unit_weight || 'kg'}</div>
+                  </div>
+                </div>
+                <div>
+                  <div class="info-row">
+                    <div class="label">Ngày bắt đầu giao:</div>
+                    <div class="value">${selectedShipping.actual_delivery_date ? formatDate(selectedShipping.actual_delivery_date) : 'Chưa có thông tin'}</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="label">Ngày nhận hàng:</div>
+                    <div class="value">${selectedShipping.delivery_date ? formatDate(selectedShipping.delivery_date) : 'Chưa có thông tin'}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <h2 class="section-title">Chi tiết đơn hàng</h2>
+            <table class="products-table">
+              <thead>
+                <tr>
+                  <th>Sản phẩm</th>
+                  <th class="text-right">Đơn giá</th>
+                  <th class="text-right">Số lượng</th>
+                  <th class="text-right">Thành tiền</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${orderDetails.map(detail => `
+                  <tr>
+                    <td>${detail.name_product}</td>
+                    <td class="text-right">${formatCurrency(detail.unit_price)}</td>
+                    <td class="text-right">${detail.quantity}</td>
+                    <td class="text-right">${formatCurrency(detail.subtotal)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+            
+            <div class="summary">
+              <div class="summary-row">
+                <div class="summary-label">Tổng tiền hàng:</div>
+                <div class="summary-value">${formatCurrency(selectedOrder.price)}</div>
+              </div>
+              <div class="summary-row">
+                <div class="summary-label">Phí vận chuyển:</div>
+                <div class="summary-value">${formatCurrency(selectedShipping.shipping_cost)}</div>
+              </div>
+              <div class="summary-row total-row">
+                <div class="summary-label">Tổng thanh toán:</div>
+                <div class="summary-value">${formatCurrency(selectedOrder.price + selectedShipping.shipping_cost)}</div>
+              </div>
+            </div>
+            
+            ${selectedShipping.cod_shipping ? `
+              <div class="cod-notice">
+                <strong>Lưu ý:</strong> Đơn vị vận chuyển sẽ thu hộ tiền đơn hàng ${formatCurrency(selectedOrder.price + selectedShipping.shipping_cost)} từ khách hàng khi giao hàng.
+              </div>
+            ` : ''}
+            
+            <div class="barcode">
+              <div class="barcode-text">Mã vận đơn</div>
+              <div class="barcode-number">*${selectedShipping.tracking_number}*</div>
+              <div class="barcode-text">Quét mã để theo dõi đơn hàng</div>
+            </div>
+            
+            <div class="signature-section">
+              <div class="signature-box">
+                <div class="signature-title">Người gửi</div>
+                <div class="signature-line"></div>
+                <div>QLBH System</div>
+              </div>
+              
+              <div class="signature-box">
+                <div class="signature-title">Người nhận</div>
+                <div class="signature-line"></div>
+                <div>${selectedShipping.name_customer}</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="shipping-footer">
+            <p>CÔNG TY TNHH THƯƠNG MẠI ĐIỆN TỬ QLBH SYSTEM</p>
+            <p>Địa chỉ: 123 Đường ABC, Quận XYZ, TP.HCM | Điện thoại: (028) 1234 5678 | Email: contact@qlbh-system.com</p>
+            <p>© ${new Date().getFullYear()} QLBH System. Tất cả các quyền được bảo lưu.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `
+    
+    // Tạo Blob từ HTML
+    const invoiceBlob = new Blob([invoiceHtml], { type: 'text/html' })
+    const invoiceUrl = URL.createObjectURL(invoiceBlob)
+    
+    // Mở cửa sổ mới để in
+    const invoicePrintWindow = window.open(invoiceUrl, '_blank')
+    
+    if (invoicePrintWindow) {
+      invoicePrintWindow.onload = () => {
+        invoicePrintWindow.document.title = `Hóa đơn - ${selectedOrder.order_id}`
+        
+        // Thêm script để tự động in sau khi trang đã tải
+        const printScript = printWindow.document.createElement('script')
+        printScript.textContent = `
+          setTimeout(() => {
+            window.print()
+            setTimeout(() => {
+              window.close()
+            }, 500)
+          }, 1000)
+        `
+        printWindow.document.body.appendChild(printScript)
+      }
+    } else {
+      alert('Vui lòng cho phép trình duyệt mở cửa sổ pop-up để xuất đơn vận chuyển')
+    }
+  }
+          }
+          .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+          }
+          .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e2e8f0;
+          }
+          .logo {
+            height: 60px;
+          }
+          .company-info {
+            text-align: right;
+          }
+          .shipping-info {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+          }
+          .shipping-details, .customer-details {
+            width: 48%;
+          }
+          .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #4a5568;
+            text-transform: uppercase;
+          }
+          .info-row {
+            margin-bottom: 5px;
+          }
+          .label {
+            font-weight: 600;
+            color: #4a5568;
+          }
+          .value {
+            color: #2d3748;
+          }
+          .products {
+            margin-top: 30px;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+          }
+          th {
+            background-color: #f7fafc;
+            text-align: left;
+            padding: 10px;
+            font-weight: 600;
+            color: #4a5568;
+            border-bottom: 1px solid #e2e8f0;
+          }
+          td {
+            padding: 10px;
+            border-bottom: 1px solid #e2e8f0;
+          }
+          .text-right {
+            text-align: right;
+          }
+          .total-section {
+            margin-top: 20px;
+            text-align: right;
+          }
+          .total-row {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 5px;
+          }
+          .total-label {
+            width: 150px;
+            font-weight: 600;
+            color: #4a5568;
+          }
+          .total-value {
+            width: 100px;
+            text-align: right;
+            color: #2d3748;
+          }
+          .grand-total {
+            font-weight: bold;
+            font-size: 16px;
+            color: #2d3748;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 5px;
+          }
+          .footer {
+            margin-top: 40px;
+            text-align: center;
+            color: #718096;
+            font-size: 14px;
+          }
+          .barcode {
+            margin-top: 20px;
+            text-align: center;
+          }
+          .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+          }
+          .status-pending {
+            background-color: #fef3c7;
+            color: #92400e;
+          }
+          .status-shipped {
+            background-color: #dbeafe;
+            color: #1e40af;
+          }
+          .status-delivered {
+            background-color: #d1fae5;
+            color: #065f46;
+          }
+          .status-cancelled {
+            background-color: #fee2e2;
+            color: #b91c1c;
+          }
+          .cod-notice {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #fef3c7;
+            border-radius: 4px;
+            font-style: italic;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <div>
+              <img src="${companyLogo}" alt="Logo" class="logo">
+              <h1>ĐƠN VẬN CHUYỂN</h1>
+            </div>
+            <div class="company-info">
+              <div>CÔNG TY TNHH THƯƠNG MẠI ĐIỆN TỬ</div>
+              <div>Địa chỉ: 123 Đường ABC, Quận XYZ, TP.HCM</div>
+              <div>Điện thoại: (028) 1234 5678</div>
+              <div>Email: contact@company.com</div>
+            </div>
+          </div>
+          
+          <div class="shipping-info">
+            <div class="shipping-details">
+              <div class="section-title">Thông tin vận chuyển</div>
+              <div class="info-row">
+                <span class="label">Mã vận chuyển:</span>
+                <span class="value">${selectedShipping.shipping_id}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Mã đơn hàng:</span>
+                <span class="value">${selectedShipping.order_id}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Ngày tạo:</span>
+                <span class="value">${formatDate(selectedShipping.created_at)}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Đơn vị vận chuyển:</span>
+                <span class="value">${selectedShipping.carrier}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Mã vận đơn:</span>
+                <span class="value">${selectedShipping.tracking_number}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Trạng thái:</span>
+                <span class="value status status-${selectedShipping.status}">${getStatusName(selectedShipping.status)}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Kích thước:</span>
+                <span class="value">${selectedShipping.long || ''} x ${selectedShipping.wide || ''} x ${selectedShipping.hight || ''} ${selectedShipping.unit_size || ''}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Trọng lượng:</span>
+                <span class="value">${selectedShipping.weight || ''} ${selectedShipping.unit_weight || ''}</span>
+              </div>
+            </div>
+            
+            <div class="customer-details">
+              <div class="section-title">Thông tin người nhận</div>
+              <div class="info-row">
+                <span class="label">Tên người nhận:</span>
+                <span class="value">${selectedShipping.name_customer}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Số điện thoại:</span>
+                <span class="value">${selectedShipping.phone_customer}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Địa chỉ giao hàng:</span>
+                <span class="value">${selectedShipping.shipping_address}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Phương thức thanh toán:</span>
+                <span class="value">${selectedShipping.cod_shipping ? 'Thanh toán khi nhận hàng (COD)' : 'Thanh toán trước'}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Ngày bắt đầu giao:</span>
+                <span class="value">${selectedShipping.actual_delivery_date ? formatDate(selectedShipping.actual_delivery_date) : 'Chưa có thông tin'}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Ngày nhận hàng:</span>
+                <span class="value">${selectedShipping.delivery_date ? formatDate(selectedShipping.delivery_date) : 'Chưa có thông tin'}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="products">
+            <div class="section-title">Danh sách sản phẩm</div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Sản phẩm</th>
+                  <th class="text-right">Đơn giá</th>
+                  <th class="text-right">Số lượng</th>
+                  <th class="text-right">Thành tiền</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${orderDetails.map(detail => `
+                  <tr>
+                    <td>${detail.name_product}</td>
+                    <td class="text-right">${formatCurrency(detail.unit_price)}</td>
+                    <td class="text-right">${detail.quantity}</td>
+                    <td class="text-right">${formatCurrency(detail.subtotal)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+          
+          <div class="total-section">
+            <div class="total-row">
+              <div class="total-label">Tổng tiền hàng:</div>
+              <div class="total-value">${formatCurrency(selectedOrder.price)}</div>
+            </div>
+            <div class="total-row">
+              <div class="total-label">Phí vận chuyển:</div>
+              <div class="total-value">${formatCurrency(selectedShipping.shipping_cost)}</div>
+            </div>
+            <div class="total-row grand-total">
+              <div class="total-label">Tổng thanh toán:</div>
+              <div class="total-value">${formatCurrency(selectedOrder.price + selectedShipping.shipping_cost)}</div>
+            </div>
+          </div>
+          
+          ${selectedShipping.cod_shipping ? `
+            <div class="cod-notice">
+              Đơn vị vận chuyển thu hộ tiền đơn hàng ${formatCurrency(selectedOrder.price + selectedShipping.shipping_cost)} từ khách hàng
+            </div>
+          ` : ''}
+          
+          <div class="barcode">
+            <div>Mã vận đơn: ${selectedShipping.tracking_number}</div>
+            <div style="font-family: 'Courier New', monospace; font-size: 24px; letter-spacing: 2px; margin-top: 10px;">
+              *${selectedShipping.tracking_number}*
+            </div>
+          </div>
+          
+          <div class="footer">
+            <p>Cảm ơn quý khách đã mua hàng tại cửa hàng chúng tôi!</p>
+            <p>Mọi thắc mắc xin vui lòng liên hệ hotline: 1900 1234</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `
+    
+    // Tạo Blob từ HTML
+    const shippingBlob = new Blob([shippingHtml], { type: 'text/html' })
+    const shippingUrl = URL.createObjectURL(shippingBlob)
+    
+    // Mở cửa sổ mới để in
+    const shippingPrintWindow = window.open(shippingUrl, '_blank')
+    
+    if (shippingPrintWindow) {
+      shippingPrintWindow.onload = () => {
+        shippingPrintWindow.document.title = `Đơn vận chuyển - ${selectedShipping?.shipping_id}`
+        
+        // Thêm script để tự động in sau khi trang đã tải
+        const printScript = printWindow.document.createElement('script')
+        printScript.textContent = `
+          setTimeout(() => {
+            window.print()
+            setTimeout(() => {
+              window.close()
+            }, 500)
+          }, 1000)
+        `
+        printWindow.document.body.appendChild(printScript)
+      }
+    } else {
+      alert('Vui lòng cho phép trình duyệt mở cửa sổ pop-up để xuất đơn hàng')
+    }
+  }
+
+  // Format tiền tệ
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount)
+  }
+
+  // Format ngày tháng
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'Chưa có thông tin'
+    const date = new Date(dateString)
+    return new Intl.DateTimeFormat('vi-VN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date)
+  }
+
+  // Lấy tên trạng thái
+  const getStatusName = (status: string) => {
+    switch (status) {
+      case 'pending': return 'Chờ xử lý'
+      case 'shipped': return 'Đang vận chuyển'
+      case 'delivered': return 'Đã giao hàng'
+      case 'cancelled': return 'Đã hủy'
+      default: return status
+    }
+  }
+
+  // Lấy màu trạng thái
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'pending': return 'yellow'
+      case 'shipped': return 'blue'
+      case 'delivered': return 'green'
+      case 'cancelled': return 'red'
+      default: return 'gray'
+    }
+  }
+
+  if (!mounted) {
+    return null
+  }
+
+  const { theme } = themeState
+  // Đảm bảo theme có giá trị trước khi sử dụng
+  const themeColor = theme && theme.textColor ? theme.textColor.split('-')[1] : 'indigo'
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <h1 className="text-2xl font-semibold text-gray-900 mb-6">Quản lý đơn vận chuyển</h1>
+      
+      {/* Bộ lọc và tìm kiếm */}
+      <div className="bg-white shadow rounded-lg mb-6">
+        <div className="p-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            {/* Tìm kiếm */}
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Tìm kiếm theo mã đơn, tên khách hàng, số điện thoại..."
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value)
+                  if (e.target.value === '') {
+                    searchShippings()
+                  }
+                }}
+                onKeyPress={(e) => e.key === 'Enter' && searchShippings()}
+                className={`block w-full rounded-md focus:ring-${themeColor}-500 focus:border-${themeColor}-500 h-10 border border-gray-300 pl-10 pr-3`}
+              />
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+              </div>
+            </div>
+
+            {/* Lọc theo trạng thái */}
+            <div>
+              <select
+                value={statusFilter}
+                onChange={(e) => {
+                  setStatusFilter(e.target.value)
+                  setTimeout(() => searchShippings(), 100)
+                }}
+                className={`block w-full rounded-md focus:ring-${themeColor}-500 focus:border-${themeColor}-500 h-10 border border-gray-300 pl-3 pr-10`}
+              >
+                <option value="all">Tất cả trạng thái</option>
+                <option value="pending">Chờ xử lý</option>
+                <option value="shipped">Đang vận chuyển</option>
+                <option value="delivered">Đã giao hàng</option>
+                <option value="cancelled">Đã hủy</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            {/* Lọc theo ngày bắt đầu */}
+            <div>
+              <label htmlFor="date-from" className="block text-sm font-medium text-gray-700 mb-1">Từ ngày</label>
+              <input
+                type="date"
+                id="date-from"
+                value={dateRange.from}
+                onChange={(e) => {
+                  setDateRange({ ...dateRange, from: e.target.value })
+                }}
+                className={`block w-full rounded-md focus:ring-${themeColor}-500 focus:border-${themeColor}-500 h-10 border border-gray-300 pl-3 pr-3`}
+              />
+            </div>
+
+            {/* Lọc theo ngày kết thúc */}
+            <div>
+              <label htmlFor="date-to" className="block text-sm font-medium text-gray-700 mb-1">Đến ngày</label>
+              <input
+                type="date"
+                id="date-to"
+                value={dateRange.to}
+                onChange={(e) => {
+                  setDateRange({ ...dateRange, to: e.target.value })
+                }}
+                className={`block w-full rounded-md focus:ring-${themeColor}-500 focus:border-${themeColor}-500 h-10 border border-gray-300 pl-3 pr-3`}
+              />
+            </div>
+
+            {/* Nút tìm kiếm */}
+            <div className="flex items-end">
+              <button
+                onClick={searchShippings}
+                className={`w-full h-10 bg-${themeColor}-600 hover:bg-${themeColor}-700 text-white font-medium rounded-md flex items-center justify-center`}
+                disabled={loading}
+              >
+                {loading ? (
+                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                ) : (
+                  <>
+                    <MagnifyingGlassIcon className="h-5 w-5 mr-2" />
+                    Tìm kiếm
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Thông báo lỗi */}
+      {error && (
+        <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <XCircleIcon className="h-5 w-5 text-red-400" />
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-red-700">
+                {error}
+              </p>
+              <div className="mt-2">
+                <button 
+                  onClick={() => {
+                    setError(null)
+                    searchShippings()
+                  }}
+                  className="text-sm font-medium text-red-700 hover:text-red-600"
+                >
+                  Thử lại
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Danh sách đơn vận chuyển */}
+      <div className="bg-white shadow rounded-lg overflow-hidden">
+        <div className="px-4 py-5 sm:px-6 flex justify-between items-center">
+          <h2 className="text-lg font-medium text-gray-900">Danh sách đơn vận chuyển</h2>
+          <button 
+            onClick={searchShippings}
+            className={`inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${themeColor}-500`}
+          >
+            <ArrowPathIcon className="h-4 w-4 mr-1" />
+            Làm mới
+          </button>
+        </div>
+        
+        {/* Hiển thị dạng hàng */}
+        <div className="p-4">
+          {loading ? (
+            <div className="flex justify-center py-8">
+              <svg className="animate-spin h-8 w-8 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            </div>
+          ) : shippings.length > 0 ? (
+            <div className="space-y-4">
+              {shippings.map((shipping) => (
+                <div 
+                  key={shipping.shipping_id} 
+                  className="border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden bg-white cursor-pointer"
+                  onClick={() => viewShippingDetails(shipping)}
+                >
+                  <div className="flex flex-col md:flex-row">
+                    {/* Phần trạng thái và thông tin cơ bản - giữ nguyên bên trái */}
+                    <div className={`px-4 py-3 bg-${getStatusColor(shipping.status)}-50 border-r border-gray-200 md:w-64 flex flex-col justify-between`}>
+                      <div>
+                        <div className="flex items-center justify-between mb-3">
+                          <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-${getStatusColor(shipping.status)}-100 text-${getStatusColor(shipping.status)}-800`}>
+                            {getStatusName(shipping.status)}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            {formatDate(shipping.created_at).split(' ')[0]}
+                          </span>
+                        </div>
+                        
+                        <div className="mb-3">
+                          <h3 className="text-md font-medium text-gray-900 mb-1 flex items-center">
+                            <TruckIcon className="h-4 w-4 mr-1 text-gray-500" />
+                            {shipping.carrier || 'Chưa có đơn vị vận chuyển'}
+                          </h3>
+                          <p className="text-xs text-gray-500">
+                            Mã vận đơn: {shipping.tracking_number || 'Chưa có mã vận đơn'}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-auto">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-medium text-gray-900">{formatCurrency(shipping.shipping_cost)}</p>
+                          {shipping.cod_shipping && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                              COD
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Phần thông tin bên phải - bổ sung thêm thông tin */}
+                    <div className="flex-1 p-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Cột 1: Thông tin đơn hàng và người nhận */}
+                        <div>
+                          <div className="mb-4">
+                            <h4 className="text-sm font-medium text-gray-900 mb-1">Thông tin đơn hàng</h4>
+                            <p className="text-sm text-gray-700">
+                              <span className="font-medium">Mã đơn:</span> {shipping.order_id}
+                            </p>
+                            <p className="text-sm text-gray-700">
+                              <span className="font-medium">Ngày tạo:</span> {formatDate(shipping.created_at)}
+                            </p>
+                          </div>
+                          
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-900 mb-1">Thông tin người nhận</h4>
+                            <div className="flex items-start space-x-3">
+                              <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
+                                <svg className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium text-gray-900">{shipping.name_customer}</p>
+                                <p className="text-sm text-gray-500">{shipping.phone_customer}</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Cột 2: Địa chỉ và thông tin giao hàng */}
+                        <div>
+                          <div className="mb-4">
+                            <h4 className="text-sm font-medium text-gray-900 mb-1">Địa chỉ giao hàng</h4>
+                            <p className="text-sm text-gray-700">{shipping.shipping_address}</p>
+                          </div>
+                          
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-900 mb-1">Thời gian giao hàng</h4>
+                            <p className="text-sm text-gray-700">
+                              <span className="font-medium">Ngày giao:</span> {shipping.actual_delivery_date ? formatDate(shipping.actual_delivery_date) : 'Chưa có thông tin'}
+                            </p>
+                            <p className="text-sm text-gray-700">
+                              <span className="font-medium">Ngày nhận:</span> {shipping.delivery_date ? formatDate(shipping.delivery_date) : 'Chưa có thông tin'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <TruckIcon className="mx-auto h-12 w-12 text-gray-400" />
+              <h3 className="mt-2 text-sm font-medium text-gray-900">Không tìm thấy đơn vận chuyển nào</h3>
+              <p className="mt-1 text-sm text-gray-500">
+                Thử thay đổi bộ lọc hoặc tìm kiếm với từ khóa khác.
+              </p>
+            </div>
+          )}
+        </div>
+        
+        {/* Phân trang */}
+        {totalPages > 1 && (
+          <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+            <div className="flex-1 flex justify-between sm:hidden">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                Trước
+              </button>
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className={`ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                Sau
+              </button>
+            </div>
+            <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm text-gray-700">
+                  Hiển thị <span className="font-medium">{shippings.length}</span> kết quả
+                </p>
+              </div>
+              <div>
+                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    <span className="sr-only">Trước</span>
+                    <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                      <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                        page === currentPage
+                          ? `z-10 bg-${themeColor}-50 border-${themeColor}-500 text-${themeColor}-600`
+                          : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    <span className="sr-only">Sau</span>
+                    <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                      <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                </nav>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Modal chi tiết đơn vận chuyển */}
+      {showShippingDetails && selectedShipping && (
+        <div className="fixed z-10 inset-0 overflow-y-auto">
+          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-5xl sm:w-full">
+              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div className="sm:flex sm:items-start">
+                  <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
+                    <TruckIcon className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h3 className="text-lg leading-6 font-medium text-gray-900">
+                          Chi tiết đơn vận chuyển
+                        </h3>
+                        <div className="mt-1">
+                          <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-${getStatusColor(selectedShipping.status)}-100 text-${getStatusColor(selectedShipping.status)}-800 mr-2`}>
+                            {getStatusName(selectedShipping.status)}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex space-x-2">
+                        <button
+                          type="button"
+                          onClick={() => exportShippingOrder(selectedOrder?.order_id || '')}
+                          className={`inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-${themeColor}-600 hover:bg-${themeColor}-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${themeColor}-500`}
+                        >
+                          <TruckIcon className="mr-1 h-4 w-4" />
+                          Xuất đơn vận chuyển
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => printInvoice(selectedOrder?.order_id || '')}
+                          className={`inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500`}
+                        >
+                          <ArrowDownTrayIcon className="mr-1 h-4 w-4" />
+                          In hóa đơn
+                        </button>
+                        <button
+                          type="button"
+                          onClick={closeModal}
+                          className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                        >
+                          Đóng
+                        </button>
+                      </div>
+                    </div>
+                    <div className="mt-2">
+                      <p className="text-sm text-gray-500">
+                        Mã vận chuyển: {selectedShipping.shipping_id} | Mã đơn hàng: {selectedShipping.order_id}
+                      </p>
+                    </div>
+                    
+                    <div className="mt-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Thông tin đơn hàng */}
+                        <div className="bg-gray-50 p-3 rounded-lg">
+                          <h4 className="text-md font-medium text-gray-900 mb-2">Thông tin đơn hàng</h4>
+                          <div className="space-y-1">
+                            <p className="text-sm text-gray-700">
+                              <span className="font-medium">Mã đơn hàng:</span> {selectedOrder?.order_id}
+                            </p>
+                            <p className="text-sm text-gray-700">
+                              <span className="font-medium">Ngày đặt hàng:</span> {selectedOrder ? formatDate(selectedOrder.order_date) : 'Không có thông tin'}
+                            </p>
+                            <p className="text-sm text-gray-700">
+                              <span className="font-medium">Tổng tiền:</span> {selectedOrder ? formatCurrency(selectedOrder.price) : 'Không có thông tin'}
+                            </p>
+                            <p className="text-sm text-gray-700">
+                              <span className="font-medium">Trạng thái thanh toán:</span> {selectedOrder?.status}
+                            </p>
+                            <p className="text-sm text-gray-700">
+                              <span className="font-medium">Phương thức thanh toán:</span> {selectedOrder?.payment_method_name}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        {/* Thông tin người nhận */}
+                        <div className="bg-gray-50 p-3 rounded-lg">
+                          <h4 className="text-md font-medium text-gray-900 mb-2">Thông tin người nhận</h4>
+                          {isEditing ? (
+                            <div className="space-y-2">
+                              <div>
+                                <label htmlFor="name_customer" className="block text-sm font-medium text-gray-700">Tên người nhận</label>
+                                <input
+                                  type="text"
+                                  name="name_customer"
+                                  id="name_customer"
+                                  value={editedShipping.name_customer}
+                                  onChange={handleInputChange}
+                                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1 px-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                />
+                              </div>
+                              <div>
+                                <label htmlFor="phone_customer" className="block text-sm font-medium text-gray-700">Số điện thoại</label>
+                                <input
+                                  type="text"
+                                  name="phone_customer"
+                                  id="phone_customer"
+                                  value={editedShipping.phone_customer}
+                                  onChange={handleInputChange}
+                                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1 px-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                />
+                              </div>
+                              <div>
+                                <label htmlFor="shipping_address" className="block text-sm font-medium text-gray-700">Địa chỉ giao hàng</label>
+                                <textarea
+                                  name="shipping_address"
+                                  id="shipping_address"
+                                  rows={2}
+                                  value={editedShipping.shipping_address}
+                                  onChange={handleInputChange}
+                                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1 px-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                ></textarea>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="space-y-1">
+                              <p className="text-sm text-gray-700">
+                                <span className="font-medium">Tên người nhận:</span> {selectedShipping.name_customer}
+                              </p>
+                              <p className="text-sm text-gray-700">
+                                <span className="font-medium">Số điện thoại:</span> {selectedShipping.phone_customer}
+                              </p>
+                              <p className="text-sm text-gray-700">
+                                <span className="font-medium">Địa chỉ giao hàng:</span> {selectedShipping.shipping_address}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {/* Danh sách sản phẩm */}
+                      <div className="mt-4 bg-gray-50 p-3 rounded-lg">
+                        <h4 className="text-md font-medium text-gray-900 mb-2">Danh sách sản phẩm</h4>
+                        {orderDetails.length > 0 ? (
+                          <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200">
+                              <thead className="bg-gray-100">
+                                <tr>
+                                  <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Sản phẩm
+                                  </th>
+                                  <th scope="col" className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Đơn giá
+                                  </th>
+                                  <th scope="col" className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Số lượng
+                                  </th>
+                                  <th scope="col" className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Thành tiền
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody className="bg-white divide-y divide-gray-200">
+                                {orderDetails.map((detail) => (
+                                  <tr key={detail.order_detail_id} className="hover:bg-gray-50">
+                                    <td className="px-3 py-2">
+                                      <div className="flex items-center">
+                                        {detail.product_image ? (
+                                          <div className="flex-shrink-0 h-10 w-10 mr-3">
+                                            <img 
+                                              className="h-10 w-10 rounded-md object-cover" 
+                                              src={detail.product_image} 
+                                              alt={detail.name_product} 
+                                            />
+                                          </div>
+                                        ) : (
+                                          <div className="flex-shrink-0 h-10 w-10 bg-gray-100 rounded-md mr-3 flex items-center justify-center">
+                                            <svg className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                            </svg>
+                                          </div>
+                                        )}
+                                        <div className="text-sm text-gray-900">{detail.name_product}</div>
+                                      </div>
+                                    </td>
+                                    <td className="px-3 py-2 whitespace-nowrap text-right">
+                                      <div className="text-sm text-gray-900">{formatCurrency(detail.unit_price)}</div>
+                                    </td>
+                                    <td className="px-3 py-2 whitespace-nowrap text-right">
+                                      <div className="text-sm text-gray-900">{detail.quantity}</div>
+                                    </td>
+                                    <td className="px-3 py-2 whitespace-nowrap text-right">
+                                      <div className="text-sm font-medium text-gray-900">{formatCurrency(detail.subtotal)}</div>
+                                    </td>
+                                  </tr>
+                                ))}
+                                <tr className="bg-gray-50">
+                                  <td colSpan={3} className="px-3 py-2 text-right text-sm font-medium text-gray-900">
+                                    Tổng cộng:
+                                  </td>
+                                  <td className="px-3 py-2 text-right text-sm font-medium text-gray-900">
+                                    {formatCurrency(orderDetails.reduce((sum, item) => sum + item.subtotal, 0))}
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-gray-500 text-center py-2">Không có thông tin sản phẩm</p>
+                        )}
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                        {/* Thông tin vận chuyển */}
+                        <div className="bg-gray-50 p-3 rounded-lg">
+                          <h4 className="text-md font-medium text-gray-900 mb-2">Thông tin vận chuyển</h4>
+                          {isEditing ? (
+                            <div className="space-y-2">
+                              <div>
+                                <label htmlFor="carrier" className="block text-sm font-medium text-gray-700">Đơn vị vận chuyển</label>
+                                <input
+                                  type="text"
+                                  name="carrier"
+                                  id="carrier"
+                                  value={editedShipping.carrier}
+                                  onChange={handleInputChange}
+                                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1 px-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                />
+                              </div>
+                              <div>
+                                <label htmlFor="tracking_number" className="block text-sm font-medium text-gray-700">Mã vận đơn</label>
+                                <input
+                                  type="text"
+                                  name="tracking_number"
+                                  id="tracking_number"
+                                  value={editedShipping.tracking_number}
+                                  onChange={handleInputChange}
+                                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1 px-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                />
+                              </div>
+                              <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                  <label htmlFor="shipping_cost" className="block text-sm font-medium text-gray-700">Phí vận chuyển</label>
+                                  <input
+                                    type="number"
+                                    name="shipping_cost"
+                                    id="shipping_cost"
+                                    value={editedShipping.shipping_cost}
+                                    onChange={handleInputChange}
+                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1 px-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                  />
+                                </div>
+                                <div>
+                                  <label htmlFor="status" className="block text-sm font-medium text-gray-700">Trạng thái</label>
+                                  <select
+                                    name="status"
+                                    id="status"
+                                    value={editedShipping.status}
+                                    onChange={handleInputChange}
+                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1 px-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                  >
+                                    <option value="pending">Chờ xử lý</option>
+                                    <option value="shipped">Đang vận chuyển</option>
+                                    <option value="delivered">Đã giao hàng</option>
+                                    <option value="cancelled">Đã hủy</option>
+                                  </select>
+                                </div>
+                              </div>
+                              <div className="flex items-center">
+                                <input
+                                  type="checkbox"
+                                  name="cod_shipping"
+                                  id="cod_shipping"
+                                  checked={editedShipping.cod_shipping}
+                                  onChange={(e) => setEditedShipping({...editedShipping, cod_shipping: e.target.checked})}
+                                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                                />
+                                <label htmlFor="cod_shipping" className="ml-2 block text-sm text-gray-700">
+                                  Thu tiền hộ (COD)
+                                </label>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="space-y-1">
+                              <p className="text-sm text-gray-700">
+                                <span className="font-medium">Mã vận chuyển:</span> {selectedShipping.shipping_id}
+                              </p>
+                              <p className="text-sm text-gray-700">
+                                <span className="font-medium">Đơn vị vận chuyển:</span> {selectedShipping.carrier}
+                              </p>
+                              <p className="text-sm text-gray-700">
+                                <span className="font-medium">Mã vận đơn:</span> {selectedShipping.tracking_number}
+                              </p>
+                              <p className="text-sm text-gray-700">
+                                <span className="font-medium">Phí vận chuyển:</span> {formatCurrency(selectedShipping.shipping_cost)}
+                              </p>
+                              <p className="text-sm text-gray-700">
+                                <span className="font-medium">Trạng thái:</span> {getStatusName(selectedShipping.status)}
+                              </p>
+                              <p className="text-sm text-gray-700">
+                                <span className="font-medium">Thu tiền hộ (COD):</span> {selectedShipping.cod_shipping ? 'Có' : 'Không'}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Thông tin kích thước và trọng lượng */}
+                        <div className="bg-gray-50 p-3 rounded-lg">
+                          <h4 className="text-md font-medium text-gray-900 mb-2">Kích thước & Trọng lượng</h4>
+                          {isEditing ? (
+                            <div className="space-y-2">
+                              <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                  <label htmlFor="weight" className="block text-sm font-medium text-gray-700">Trọng lượng</label>
+                                  <input
+                                    type="number"
+                                    name="weight"
+                                    id="weight"
+                                    value={editedShipping.weight}
+                                    onChange={handleInputChange}
+                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1 px-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                  />
+                                </div>
+                                <div>
+                                  <label htmlFor="unit_weight" className="block text-sm font-medium text-gray-700">Đơn vị</label>
+                                  <select
+                                    name="unit_weight"
+                                    id="unit_weight"
+                                    value={editedShipping.unit_weight}
+                                    onChange={handleInputChange}
+                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1 px-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                  >
+                                    <option value="kg">kg</option>
+                                    <option value="g">g</option>
+                                  </select>
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-3 gap-2">
+                                <div>
+                                  <label htmlFor="long" className="block text-sm font-medium text-gray-700">Dài</label>
+                                  <input
+                                    type="number"
+                                    name="long"
+                                    id="long"
+                                    value={editedShipping.long}
+                                    onChange={handleInputChange}
+                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1 px-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                  />
+                                </div>
+                                <div>
+                                  <label htmlFor="wide" className="block text-sm font-medium text-gray-700">Rộng</label>
+                                  <input
+                                    type="number"
+                                    name="wide"
+                                    id="wide"
+                                    value={editedShipping.wide}
+                                    onChange={handleInputChange}
+                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1 px-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                  />
+                                </div>
+                                <div>
+                                  <label htmlFor="hight" className="block text-sm font-medium text-gray-700">Cao</label>
+                                  <input
+                                    type="number"
+                                    name="hight"
+                                    id="hight"
+                                    value={editedShipping.hight}
+                                    onChange={handleInputChange}
+                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1 px-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                  />
+                                </div>
+                              </div>
+                              <div>
+                                <label htmlFor="unit_size" className="block text-sm font-medium text-gray-700">Đơn vị kích thước</label>
+                                <select
+                                  name="unit_size"
+                                  id="unit_size"
+                                  value={editedShipping.unit_size}
+                                  onChange={handleInputChange}
+                                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1 px-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                >
+                                  <option value="cm">cm</option>
+                                  <option value="mm">mm</option>
+                                  <option value="inch">inch</option>
+                                </select>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="space-y-1">
+                              <p className="text-sm text-gray-700">
+                                <span className="font-medium">Trọng lượng:</span> {selectedShipping.weight} {selectedShipping.unit_weight}
+                              </p>
+                              <p className="text-sm text-gray-700">
+                                <span className="font-medium">Kích thước:</span> {selectedShipping.long} x {selectedShipping.wide} x {selectedShipping.hight} {selectedShipping.unit_size}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Thông tin thời gian */}
+                        <div className="bg-gray-50 p-3 rounded-lg">
+                          <h4 className="text-md font-medium text-gray-900 mb-2">Thời gian vận chuyển</h4>
+                          {isEditing ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                              <div>
+                                <label htmlFor="actual_delivery_date" className="block text-sm font-medium text-gray-700">Ngày bắt đầu giao</label>
+                                <input
+                                  type="date"
+                                  name="actual_delivery_date"
+                                  id="actual_delivery_date"
+                                  value={editedShipping.actual_delivery_date ? new Date(editedShipping.actual_delivery_date).toISOString().split('T')[0] : ''}
+                                  onChange={handleInputChange}
+                                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1 px-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                />
+                              </div>
+                              <div>
+                                <label htmlFor="delivery_date" className="block text-sm font-medium text-gray-700">Ngày nhận hàng</label>
+                                <input
+                                  type="date"
+                                  name="delivery_date"
+                                  id="delivery_date"
+                                  value={editedShipping.delivery_date ? new Date(editedShipping.delivery_date).toISOString().split('T')[0] : ''}
+                                  onChange={handleInputChange}
+                                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1 px-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                />
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="space-y-1">
+                              <p className="text-sm text-gray-700">
+                                <span className="font-medium">Ngày tạo:</span> {formatDate(selectedShipping.created_at)}
+                              </p>
+                              <p className="text-sm text-gray-700">
+                                <span className="font-medium">Ngày bắt đầu giao:</span> {selectedShipping.actual_delivery_date ? formatDate(selectedShipping.actual_delivery_date) : 'Chưa có thông tin'}
+                              </p>
+                              <p className="text-sm text-gray-700">
+                                <span className="font-medium">Ngày nhận hàng:</span> {selectedShipping.delivery_date ? formatDate(selectedShipping.delivery_date) : 'Chưa có thông tin'}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Thông tin thanh toán - Góc dưới bên phải */}
+                        <div className="bg-white p-4 rounded-lg border-2 border-gray-300 shadow-sm">
+                          <h4 className="text-md font-medium text-gray-900 mb-2">Thông tin thanh toán</h4>
+                          <div className="space-y-1">
+                            <p className="text-sm text-gray-700">
+                              <span className="font-medium">Tổng tiền hàng:</span> {selectedOrder ? formatCurrency(selectedOrder.price) : 'Không có thông tin'}
+                            </p>
+                            <p className="text-sm text-gray-700">
+                              <span className="font-medium">Phí vận chuyển:</span> {formatCurrency(selectedShipping.shipping_cost)}
+                            </p>
+                            <p className="text-sm text-gray-700 font-medium">
+                              <span className="font-medium">Tổng thanh toán:</span> {formatCurrency((selectedOrder?.price || 0) + selectedShipping.shipping_cost)}
+                            </p>
+                            {selectedShipping.cod_shipping && (
+                              <>
+                                <p className="text-sm text-gray-700">
+                                  <span className="font-medium">Tiền khách cần trả:</span> {formatCurrency((selectedOrder?.price || 0) + selectedShipping.shipping_cost)}
+                                </p>
+                                <p className="text-sm text-gray-500 italic mt-2">
+                                  Đơn vị vận chuyển thu hộ tiền đơn hàng {formatCurrency((selectedOrder?.price || 0) + selectedShipping.shipping_cost)} từ khách hàng
+                                </p>
+                              </>
+                            )}
+                            {!selectedShipping.cod_shipping && (
+                              <p className="text-sm text-gray-700">
+                                <span className="font-medium">Tiền khách cần trả:</span> Thanh toán trước
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      
+
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                {isEditing && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={saveShippingInfo}
+                      disabled={isSaving}
+                      className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-${themeColor}-600 text-base font-medium text-white hover:bg-${themeColor}-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${themeColor}-500 sm:ml-3 sm:w-auto sm:text-sm ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      {isSaving ? 'Đang lưu...' : 'Lưu thay đổi'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsEditing(false)}
+                      className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                    >
+                      Hủy
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}

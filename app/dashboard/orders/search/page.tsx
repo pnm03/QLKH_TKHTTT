@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { useRouter } from 'next/navigation'
 import { useTheme, themeColors } from '@/app/context/ThemeContext'
+import { toast } from 'react-toastify'
 import { 
   MagnifyingGlassIcon, 
   EyeIcon,
@@ -12,8 +13,12 @@ import {
   CreditCardIcon,
   TruckIcon,
   CheckCircleIcon,
-  XCircleIcon
+  XCircleIcon,
+  DocumentTextIcon
 } from '@heroicons/react/24/outline'
+// Các thư viện PDF sẽ được import động khi cần
+// import { jsPDF } from 'jspdf'
+// import html2canvas from 'html2canvas'
 
 // Định nghĩa các interface
 interface Order {
@@ -372,10 +377,305 @@ export default function SearchOrdersPage() {
     return orders.slice(startIndex, endIndex)
   }
 
+  // Biến lưu trữ URL của PDF đã tạo gần đây nhất và tùy chọn mở
+  const [lastGeneratedPdfUrl, setLastGeneratedPdfUrl] = useState<string | null>(null);
+  const [showOpenPdfOption, setShowOpenPdfOption] = useState<boolean>(false);
+  const openPdfTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Hiển thị tùy chọn mở hóa đơn
+  useEffect(() => {
+    // Xóa timeout khi component unmount
+    return () => {
+      if (openPdfTimeoutRef.current) {
+        clearTimeout(openPdfTimeoutRef.current);
+      }
+    };
+  }, []);
+  
   // Xuất đơn hàng ra PDF
-  const exportOrderToPDF = (orderId: string) => {
-    // TODO: Implement PDF export functionality
-    console.log('Xuất đơn hàng', orderId, 'ra PDF')
+  const exportOrderToPDF = async (orderId: string) => {
+    try {
+      console.log('Đang xuất hóa đơn cho đơn hàng', orderId);
+      
+      // Hiển thị thông báo đang xử lý với màu theme
+      const toastId = toast.loading("Đang xuất hóa đơn...", {
+        position: "top-right",
+        autoClose: false,
+        closeOnClick: false,
+        className: `border-l-4 border-${themeColor}-500`
+      });
+      
+      // Dynamic import các thư viện cần thiết
+      const jspdfModule = await import('jspdf');
+      const html2canvasModule = await import('html2canvas');
+      
+      const jsPDF = jspdfModule.jsPDF;
+      const html2canvas = html2canvasModule.default;
+      
+      // Tìm đơn hàng trong danh sách
+      const order = orders.find(o => o.order_id === orderId);
+      if (!order) {
+        console.error('Không tìm thấy đơn hàng', orderId);
+        toast.update(toastId, { 
+          render: "Không tìm thấy đơn hàng", 
+          type: "error", 
+          isLoading: false,
+          autoClose: 3000
+        });
+        return;
+      }
+      
+      // Lấy chi tiết đơn hàng từ database
+      const { data: orderDetails, error: orderDetailsError } = await supabase
+        .from('orderdetails')
+        .select(`
+          *,
+          products (image)
+        `)
+        .eq('order_id', orderId);
+        
+      if (orderDetailsError) {
+        console.error('Lỗi khi lấy chi tiết đơn hàng:', orderDetailsError);
+        return;
+      }
+      
+      if (!orderDetails || orderDetails.length === 0) {
+        console.error('Không tìm thấy chi tiết đơn hàng cho đơn hàng', orderId);
+        return;
+      }
+      
+      // Xử lý dữ liệu chi tiết đơn hàng
+      const formattedOrderDetails = orderDetails.map(detail => ({
+        ...detail,
+        product_image: detail.products?.image || null
+      }));
+      
+      // Lấy thông tin vận chuyển nếu có
+      let shippingInfo = null;
+      if (order.is_shipping) {
+        const { data: shipping, error: shippingError } = await supabase
+          .from('shippings')
+          .select('*')
+          .eq('order_id', orderId)
+          .single();
+          
+        if (!shippingError && shipping) {
+          shippingInfo = shipping;
+          console.log('Thông tin vận chuyển:', shippingInfo);
+        } else {
+          console.error('Lỗi khi lấy thông tin vận chuyển:', shippingError);
+        }
+      }
+      
+      // Tạo nội dung HTML cho hóa đơn
+      const invoiceContent = document.createElement('div');
+      invoiceContent.style.width = '800px';
+      invoiceContent.style.padding = '20px';
+      invoiceContent.style.fontFamily = 'Arial, sans-serif';
+      
+      // Tiêu đề hóa đơn
+      const title = document.createElement('h1');
+      title.textContent = 'HÓA ĐƠN BÁN HÀNG';
+      title.style.textAlign = 'center';
+      title.style.color = '#333';
+      title.style.marginBottom = '20px';
+      invoiceContent.appendChild(title);
+      
+      // Thông tin đơn hàng
+      const orderInfo = document.createElement('div');
+      orderInfo.style.marginBottom = '20px';
+      orderInfo.innerHTML = `
+        <p><strong>Mã đơn hàng:</strong> ${order.order_id}</p>
+        <p><strong>Ngày đặt:</strong> ${formatDate(order.order_date)}</p>
+        <p><strong>Trạng thái thanh toán:</strong> ${order.status}</p>
+        <p><strong>Phương thức thanh toán:</strong> ${order.payment_method_name}</p>
+      `;
+      invoiceContent.appendChild(orderInfo);
+      
+      // Thông tin khách hàng
+      const customerInfo = document.createElement('div');
+      customerInfo.style.marginBottom = '20px';
+      
+      if (order.is_shipping && shippingInfo) {
+        // Nếu có vận chuyển và có thông tin vận chuyển
+        customerInfo.innerHTML = `
+          <h3>Thông tin khách hàng</h3>
+          <p><strong>Khách hàng:</strong> ${shippingInfo.name_customer || order.customer_name}</p>
+          <p><strong>Số điện thoại:</strong> ${shippingInfo.phone_customer || 'Không có'}</p>
+          <p><strong>Địa chỉ giao hàng:</strong> ${shippingInfo.shipping_address || 'Không có'}</p>
+        `;
+        
+        // Thêm thông tin vận chuyển chi tiết
+        customerInfo.innerHTML += `
+          <h3 style="margin-top: 15px;">Thông tin vận chuyển</h3>
+          <p><strong>Đơn vị vận chuyển:</strong> ${shippingInfo.carrier || 'Không có'}</p>
+          <p><strong>Mã theo dõi:</strong> ${shippingInfo.tracking_number || 'Không có'}</p>
+          <p><strong>Chi phí vận chuyển:</strong> ${formatCurrency(shippingInfo.shipping_cost || 0)}</p>
+          <p><strong>Trạng thái:</strong> ${shippingInfo.status || 'Đang xử lý'}</p>
+        `;
+        
+        // Thêm thông tin kích thước và trọng lượng nếu có
+        if (shippingInfo.weight) {
+          customerInfo.innerHTML += `
+            <p><strong>Trọng lượng:</strong> ${shippingInfo.weight} ${shippingInfo.unit_weight || ''}</p>
+          `;
+        }
+        
+        if (shippingInfo.long && shippingInfo.wide && shippingInfo.hight) {
+          customerInfo.innerHTML += `
+            <p><strong>Kích thước:</strong> ${shippingInfo.long} x ${shippingInfo.wide} x ${shippingInfo.hight} ${shippingInfo.unit_size || ''}</p>
+          `;
+        }
+        
+        // Thêm thông tin thu tiền hộ nếu có
+        if (shippingInfo.cod_shipping) {
+          customerInfo.innerHTML += `
+            <p><strong>Thu tiền hộ:</strong> Có</p>
+          `;
+        }
+      } else {
+        // Nếu là khách vãng lai hoặc không có thông tin vận chuyển
+        customerInfo.innerHTML = `
+          <h3>Thông tin khách hàng</h3>
+          <p><strong>Khách hàng:</strong> ${order.customer_name || 'Khách vãng lai'}</p>
+        `;
+      }
+      
+      invoiceContent.appendChild(customerInfo);
+      
+      // Bảng chi tiết sản phẩm
+      const productsTable = document.createElement('table');
+      productsTable.style.width = '100%';
+      productsTable.style.borderCollapse = 'collapse';
+      productsTable.style.marginBottom = '20px';
+      
+      // Tiêu đề bảng
+      productsTable.innerHTML = `
+        <thead>
+          <tr style="background-color: #f2f2f2;">
+            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Sản phẩm</th>
+            <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Đơn giá</th>
+            <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Số lượng</th>
+            <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Thành tiền</th>
+          </tr>
+        </thead>
+        <tbody>
+      `;
+      
+      // Thêm các sản phẩm vào bảng
+      let totalAmount = 0;
+      formattedOrderDetails.forEach(detail => {
+        const productName = detail.name_product || 'Sản phẩm không xác định';
+        const price = detail.unit_price || 0;
+        const quantity = detail.quantity || 0;
+        const amount = price * quantity;
+        totalAmount += amount;
+        
+        productsTable.innerHTML += `
+          <tr>
+            <td style="border: 1px solid #ddd; padding: 8px;">${productName}</td>
+            <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${formatCurrency(price)}</td>
+            <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${quantity}</td>
+            <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${formatCurrency(amount)}</td>
+          </tr>
+        `;
+      });
+      
+      // Thêm tổng tiền
+      productsTable.innerHTML += `
+        </tbody>
+        <tfoot>
+          <tr style="font-weight: bold;">
+            <td colspan="3" style="border: 1px solid #ddd; padding: 8px; text-align: right;">Tổng cộng:</td>
+            <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${formatCurrency(totalAmount)}</td>
+          </tr>
+        </tfoot>
+      `;
+      invoiceContent.appendChild(productsTable);
+      
+      // Chữ ký và thông tin cuối trang
+      const footer = document.createElement('div');
+      footer.style.marginTop = '40px';
+      footer.style.display = 'flex';
+      footer.style.justifyContent = 'space-between';
+      footer.innerHTML = `
+        <div style="width: 45%;">
+          <p style="text-align: center;"><strong>Người mua hàng</strong></p>
+          <p style="text-align: center; margin-top: 60px;">(Ký, ghi rõ họ tên)</p>
+        </div>
+        <div style="width: 45%;">
+          <p style="text-align: center;"><strong>Người bán hàng</strong></p>
+          <p style="text-align: center; margin-top: 60px;">(Ký, ghi rõ họ tên)</p>
+        </div>
+      `;
+      invoiceContent.appendChild(footer);
+      
+      // Thêm vào DOM để chụp
+      document.body.appendChild(invoiceContent);
+      
+      // Chuyển HTML thành canvas
+      const canvas = await html2canvas(invoiceContent, {
+        scale: 2, // Tăng độ phân giải
+        useCORS: true,
+        logging: false
+      });
+      
+      // Xóa khỏi DOM sau khi chụp
+      document.body.removeChild(invoiceContent);
+      
+      // Tạo PDF từ canvas
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+      
+      // Tính toán kích thước để vừa với trang A4
+      const imgWidth = 210; // A4 width in mm
+      const imgHeight = canvas.height * imgWidth / canvas.width;
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+      
+      // Tạo tên file PDF
+      const pdfFileName = `Hoa_Don_${orderId}.pdf`;
+      
+      // Tải xuống PDF
+      pdf.save(pdfFileName);
+      
+      // Lưu tên file để hiển thị trong thông báo
+      setLastGeneratedPdfUrl(pdfFileName);
+      
+      console.log('Đã xuất hóa đơn thành công cho đơn hàng', orderId);
+      
+      // Cập nhật thông báo đang xử lý thành thông báo thành công với màu theme
+      toast.update(toastId, {
+        render: (
+          <div>
+            <div className="font-medium">Đã xuất hóa đơn thành công!</div>
+            <div className="text-xs mt-1">
+              File <span className="font-medium">{lastGeneratedPdfUrl}</span> đã được tải xuống.
+            </div>
+          </div>
+        ),
+        type: "success",
+        isLoading: false,
+        autoClose: 5000,
+        closeOnClick: true,
+        className: `border-l-4 border-${themeColor}-500`
+      });
+      
+      // Không cần hiển thị thông báo bên dưới nữa
+      setShowOpenPdfOption(false);
+      
+    } catch (error) {
+      console.error('Lỗi khi xuất hóa đơn:', error);
+      toast.error("Lỗi khi xuất hóa đơn. Vui lòng thử lại sau.", {
+        position: "top-right",
+        autoClose: 3000,
+        className: `border-l-4 border-red-500`
+      });
+    }
   }
 
   if (!mounted) {
@@ -389,6 +689,8 @@ export default function SearchOrdersPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <h1 className="text-2xl font-semibold text-gray-900 mb-6">Tìm kiếm và xem đơn hàng</h1>
+      
+      {/* Đã bỏ thông báo bên dưới */}
 
       {/* Bộ lọc và tìm kiếm */}
       <div className="bg-white shadow rounded-lg mb-6">
@@ -818,9 +1120,9 @@ export default function SearchOrdersPage() {
                     {/* Chi tiết sản phẩm */}
                     <div>
                       <h4 className="text-sm font-medium text-gray-500 mb-2">Chi tiết sản phẩm</h4>
-                      <div className="overflow-x-auto">
+                      <div className="overflow-x-auto max-h-60 overflow-y-auto">
                         <table className="min-w-full divide-y divide-gray-200">
-                          <thead className="bg-gray-50">
+                          <thead className="bg-gray-50 sticky top-0 z-10">
                             <tr>
                               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Sản phẩm
@@ -885,22 +1187,10 @@ export default function SearchOrdersPage() {
                 </div>
               </div>
               <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                <button
-                  type="button"
-                  onClick={() => exportOrderToPDF(selectedOrder.order_id)}
-                  className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-${themeColor}-600 text-base font-medium text-white hover:bg-${themeColor}-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${themeColor}-500 sm:ml-3 sm:w-auto sm:text-sm`}
-                >
-                  <ArrowDownTrayIcon className="h-5 w-5 mr-2" />
-                  Xuất PDF
-                </button>
-                
                 {/* Nút xuất hóa đơn */}
                 <button
                   type="button"
-                  onClick={() => {
-                    // TODO: Implement invoice export functionality
-                    console.log('Xuất hóa đơn cho đơn hàng', selectedOrder.order_id);
-                  }}
+                  onClick={() => exportOrderToPDF(selectedOrder.order_id)}
                   className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm`}
                 >
                   <ArrowDownTrayIcon className="h-5 w-5 mr-2" />
