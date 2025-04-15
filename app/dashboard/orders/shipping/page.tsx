@@ -1036,15 +1036,15 @@ export default function ShippingOrdersPage() {
               return (
                  <div
                   key={shipping.shipping_id}
-                  className="p-4 hover:bg-gray-100 transition duration-150 ease-in-out cursor-pointer"
+                  className="p-2 hover:bg-gray-100 transition duration-150 ease-in-out cursor-pointer border border-gray-100 rounded-lg mb-2"
                   onClick={() => viewShippingDetails(shipping)}
                   role="button" // Accessibility
                   tabIndex={0} // Accessibility
                   onKeyPress={(e) => e.key === 'Enter' && viewShippingDetails(shipping)} // Accessibility
                 >
-                   <div className="flex flex-col md:flex-row md:items-start gap-4">
+                   <div className="flex flex-col md:flex-row md:items-stretch gap-4">
                       {/* Cột Trái: Trạng thái, Vận chuyển - với màu nền theo trạng thái */}
-                      <div className={`md:w-1/4 flex-shrink-0 space-y-2 p-3 rounded-lg ${shipping.status === 'pending' ? 'bg-yellow-50' : shipping.status === 'delivered' ? 'bg-green-50' : shipping.status === 'cancelled' ? 'bg-red-50' : 'bg-blue-50'}`}>
+                      <div className={`md:w-1/4 flex-shrink-0 space-y-2 p-3 rounded-lg flex flex-col justify-between ${shipping.status === 'pending' ? 'bg-yellow-50' : shipping.status === 'delivered' ? 'bg-green-50' : shipping.status === 'cancelled' ? 'bg-red-50' : 'bg-blue-50'}`}>
                           <div className="flex items-center justify-between">
                              <div className="flex items-center space-x-1">
                                 <span className={`px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full bg-${statusColor}-100 text-${statusColor}-800`}>
@@ -1074,23 +1074,50 @@ export default function ShippingOrdersPage() {
                           </div>
                       </div>
 
-                      {/* Cột Phải: Thông tin KH, Địa chỉ */}
-                      <div className="md:w-3/4 flex-grow space-y-2 p-3 bg-white rounded-lg">
-                          <div className="flex items-start space-x-3">
-                              <div className="flex-shrink-0 pt-0.5">
-                                 <UserCircleIcon className="h-5 w-5 text-gray-400" />
+                      {/* Cột Phải: Thông tin KH, Địa chỉ và thông tin đơn hàng */}
+                      <div className="md:w-3/4 flex-grow p-3 bg-white rounded-lg border border-gray-100">
+                          <div className="flex flex-col md:flex-row md:justify-between gap-3">
+                              {/* Thông tin khách hàng */}
+                              <div className="space-y-2">
+                                  <div className="flex items-start space-x-3">
+                                      <div className="flex-shrink-0 pt-0.5">
+                                         <UserCircleIcon className="h-5 w-5 text-gray-400" />
+                                      </div>
+                                      <div>
+                                        <p className="text-sm font-medium text-gray-900">{shipping.name_customer}</p>
+                                        <p className="text-sm text-gray-600">{shipping.phone_customer}</p>
+                                      </div>
+                                  </div>
+                                   <p className="text-sm text-gray-700 line-clamp-2" title={shipping.shipping_address}>
+                                    <span className="font-medium text-gray-600">Địa chỉ:</span> {shipping.shipping_address}
+                                   </p>
+                                   <p className="text-sm text-gray-500">
+                                        <span className="font-medium text-gray-600">Mã đơn hàng:</span> {shipping.order_id}
+                                   </p>
                               </div>
-                              <div>
-                                <p className="text-sm font-medium text-gray-900">{shipping.name_customer}</p>
-                                <p className="text-sm text-gray-600">{shipping.phone_customer}</p>
+
+                              {/* Thông tin đơn hàng */}
+                              <div className="space-y-1 bg-gray-50 p-2 rounded-md border border-gray-100">
+                                  <p className="text-sm">
+                                      <span className="font-medium text-gray-600">Giá trị đơn hàng:</span>
+                                      <span className="font-medium text-gray-900 ml-1">{formatCurrency(0)}</span>
+                                  </p>
+                                  <p className="text-sm">
+                                      <span className="font-medium text-gray-600">Trạng thái thanh toán:</span>
+                                      <span className="ml-1 px-1.5 py-0.5 text-xs font-medium rounded bg-yellow-100 text-yellow-800">
+                                          Chưa thanh toán
+                                      </span>
+                                  </p>
+                                  <p className="text-sm">
+                                      <span className="font-medium text-gray-600">Số lượng sản phẩm:</span>
+                                      <span className="text-gray-900 ml-1">0</span>
+                                  </p>
+                                  <p className="text-sm">
+                                      <span className="font-medium text-gray-600">Ngày tạo:</span>
+                                      <span className="text-gray-900 ml-1">{formatDate(shipping.created_at).split(' ')[0]}</span>
+                                  </p>
                               </div>
                           </div>
-                           <p className="text-sm text-gray-700 line-clamp-2" title={shipping.shipping_address}>
-                            <span className="font-medium text-gray-500">Địa chỉ:</span> {shipping.shipping_address}
-                           </p>
-                           <p className="text-xs text-gray-500">
-                                Mã đơn hàng gốc: {shipping.order_id}
-                           </p>
                       </div>
                   </div>
                 </div>
