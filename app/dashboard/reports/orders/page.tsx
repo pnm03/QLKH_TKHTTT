@@ -565,16 +565,6 @@ export default function OrderReportsPage() {
     setExportingPdf(true)
     
     try {
-      const reportElement = reportRef.current
-      const canvas = await html2canvas(reportElement, {
-        scale: 1.5, // Tăng độ phân giải
-        useCORS: true, // Cho phép tải hình ảnh từ các domain khác
-        logging: false,
-        backgroundColor: '#ffffff'
-      })
-      
-      const imgData = canvas.toDataURL('image/png')
-      
       // Tạo PDF với kích thước A4
       const pdf = new jsPDF({
         orientation: 'portrait',
@@ -582,31 +572,254 @@ export default function OrderReportsPage() {
         format: 'a4'
       })
       
-      const imgWidth = 210 // A4 width in mm
-      const imgHeight = (canvas.height * imgWidth) / canvas.width
+      // Sử dụng font Times New Roman
+      pdf.setFont("times", "normal")
       
-      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight)
+      // Thêm tiêu đề và thông tin chính thức
+      pdf.setFontSize(13)
+      pdf.setTextColor(0, 0, 0)
+      pdf.setFont("times", "bold")
+      pdf.text("CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM", 105, 15, { align: "center" })
+      pdf.setLineWidth(0.5)
+      pdf.line(60, 17, 150, 17)
+      pdf.setFontSize(12)
+      pdf.text("Độc lập - Tự do - Hạnh phúc", 105, 23, { align: "center" })
+      pdf.line(75, 25, 135, 25)
       
-      // Nếu nội dung dài hơn 1 trang
-      if (imgHeight > 297) { // A4 height in mm
-        let remainingHeight = imgHeight
-        let position = 0
-        
-        // Trang đầu tiên đã được thêm
-        remainingHeight -= 297
-        position += 297
-        
-        // Thêm các trang tiếp theo nếu cần
-        while (remainingHeight > 0) {
-          pdf.addPage()
-          pdf.addImage(imgData, 'PNG', 0, -position, imgWidth, imgHeight)
-          remainingHeight -= 297
-          position += 297
-        }
+      // Thêm tiêu đề báo cáo
+      pdf.setFontSize(16)
+      pdf.text("BÁO CÁO TỔNG HỢP ĐƠN HÀNG", 105, 35, { align: "center" })
+      
+      // Thêm thông tin thời gian và bộ lọc
+      const now = new Date()
+      let reportPeriod = "Tất cả thời gian"
+      if (dateRange.from && dateRange.to) {
+        reportPeriod = `Từ ngày ${dateRange.from} đến ngày ${dateRange.to}`
+      } else if (dateRange.from) {
+        reportPeriod = `Từ ngày ${dateRange.from}`
+      } else if (dateRange.to) {
+        reportPeriod = `Đến ngày ${dateRange.to}`
       }
       
+      pdf.setFont("times", "normal")
+      pdf.setFontSize(10)
+      pdf.text(`Kỳ báo cáo: ${reportPeriod}`, 105, 42, { align: "center" })
+      pdf.text(`Ngày xuất báo cáo: ${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()} ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`, 105, 47, { align: "center" })
+      
+      if (statusFilter !== 'all') {
+        pdf.text(`Trạng thái: ${statusFilter}`, 105, 52, { align: "center" })
+      }
+      
+      // Thêm thông tin tổng quan
+      pdf.setFont("times", "bold")
+      pdf.setFontSize(12)
+      pdf.text("I. THÔNG TIN TỔNG QUAN", 20, 60)
+      pdf.setLineWidth(0.2)
+      pdf.line(20, 62, 80, 62)
+      
+      pdf.setFont("times", "normal")
+      pdf.setFontSize(10)
+      
+      // Tạo bảng thông tin tổng quan
+      const summaryData = [
+        ["Tổng số đơn hàng:", `${orderSummary.totalOrders} đơn`],
+        ["Tổng doanh thu:", formatCurrency(orderSummary.totalRevenue)],
+        ["Giá trị trung bình:", formatCurrency(orderSummary.avgOrderValue)],
+        ["Đơn hàng vận chuyển:", `${orderSummary.shippingOrders} đơn (${orderSummary.totalOrders > 0 ? ((orderSummary.shippingOrders / orderSummary.totalOrders) * 100).toFixed(1) : 0}%)`],
+        ["Đơn hàng đã thanh toán:", `${orderSummary.paidOrders} đơn (${orderSummary.totalOrders > 0 ? ((orderSummary.paidOrders / orderSummary.totalOrders) * 100).toFixed(1) : 0}%)`],
+        ["Đơn hàng chưa thanh toán:", `${orderSummary.unpaidOrders} đơn (${orderSummary.totalOrders > 0 ? ((orderSummary.unpaidOrders / orderSummary.totalOrders) * 100).toFixed(1) : 0}%)`]
+      ]
+      
+      let yPos = 68
+      summaryData.forEach(row => {
+        pdf.text(row[0], 25, yPos)
+        pdf.text(row[1], 80, yPos)
+        yPos += 7
+      })
+      
+      // Thêm thông tin đơn hàng theo trạng thái
+      pdf.setFont("times", "bold")
+      pdf.setFontSize(12)
+      pdf.text("II. ĐƠN HÀNG THEO TRẠNG THÁI", 20, yPos + 5)
+      pdf.line(20, yPos + 7, 100, yPos + 7)
+      
+      pdf.setFont("times", "normal")
+      pdf.setFontSize(10)
+      yPos += 13
+      
+      // Hiển thị dữ liệu đơn hàng theo trạng thái dạng bảng thay vì biểu đồ
+      ordersByStatus.labels.forEach((label, index) => {
+        const value = ordersByStatus.values[index]
+        const total = ordersByStatus.values.reduce((sum, val) => sum + val, 0)
+        const percentage = total > 0 ? (value / total) * 100 : 0
+        
+        pdf.text(`${label}:`, 25, yPos)
+        pdf.text(`${value} đơn hàng (${percentage.toFixed(1)}%)`, 80, yPos)
+        
+        yPos += 7
+      })
+      
+      // Thêm thông tin phương thức thanh toán
+      pdf.setFont("times", "bold")
+      pdf.setFontSize(12)
+      pdf.text("III. PHƯƠNG THỨC THANH TOÁN", 20, yPos + 5)
+      pdf.line(20, yPos + 7, 100, yPos + 7)
+      
+      pdf.setFont("times", "normal")
+      pdf.setFontSize(10)
+      yPos += 13
+      
+      // Vẽ bảng phương thức thanh toán
+      const paymentHeaders = ["Phương thức", "Số đơn hàng", "Tổng giá trị", "Tỷ lệ"]
+      const paymentCellWidth = [50, 30, 50, 30]
+      const paymentMargin = 25
+      
+      // Vẽ header
+      pdf.setFillColor(240, 240, 240)
+      pdf.rect(paymentMargin, yPos, paymentCellWidth.reduce((a, b) => a + b, 0), 8, 'F')
+      
+      pdf.setFont("times", "bold")
+      let currentX = paymentMargin
+      paymentHeaders.forEach((header, i) => {
+        pdf.text(header, currentX + 2, yPos + 5)
+        currentX += paymentCellWidth[i]
+      })
+      
+      yPos += 8
+      
+      // Vẽ dữ liệu phương thức thanh toán
+      pdf.setFont("times", "normal")
+      paymentMethods.forEach(method => {
+        currentX = paymentMargin
+        
+        const rowData = [
+          method.method_name,
+          method.count.toString(),
+          formatCurrency(method.total),
+          `${method.percentage.toFixed(1)}%`
+        ]
+        
+        rowData.forEach((cell, i) => {
+          pdf.text(cell, currentX + 2, yPos + 5)
+          currentX += paymentCellWidth[i]
+        })
+        
+        pdf.setDrawColor(200, 200, 200)
+        pdf.line(paymentMargin, yPos, paymentMargin + paymentCellWidth.reduce((a, b) => a + b, 0), yPos)
+        
+        yPos += 8
+      })
+      
+      // Kiểm tra nếu cần thêm trang mới
+      if (yPos > 250) {
+        pdf.addPage()
+        pdf.setFont("times", "normal")
+        yPos = 20
+      }
+      
+      // Thêm thông tin doanh thu theo ngày
+      pdf.setFont("times", "bold")
+      pdf.setFontSize(12)
+      pdf.text("IV. DOANH THU THEO NGÀY", 20, yPos + 10)
+      pdf.line(20, yPos + 12, 90, yPos + 12)
+      
+      pdf.setFont("times", "normal")
+      pdf.setFontSize(10)
+      yPos += 20
+      
+      // Tạo bảng doanh thu theo ngày
+      const tableHeaders = ["Ngày", "Doanh thu", "Số đơn hàng", "Giá trị trung bình"]
+      const cellWidth = [30, 60, 30, 60]
+      const cellHeight = 8
+      const margin = 25
+      
+      // Vẽ header
+      pdf.setFillColor(240, 240, 240)
+      pdf.rect(margin, yPos, cellWidth.reduce((a, b) => a + b, 0), cellHeight, 'F')
+      
+      pdf.setFont("times", "bold")
+      currentX = margin
+      tableHeaders.forEach((header, i) => {
+        pdf.text(header, currentX + 2, yPos + 5)
+        currentX += cellWidth[i]
+      })
+      
+      // Vẽ dữ liệu
+      pdf.setFont("times", "normal")
+      let currentY = yPos + cellHeight
+      
+      // Tạo dữ liệu bảng
+      const tableData = revenueByDay.labels.map((label, index) => {
+        const value = revenueByDay.values[index]
+        const ordersInDay = orders.filter(order => {
+          if (!order.order_date) return false
+          try {
+            const orderDate = new Date(order.order_date)
+            const formattedDate = `${orderDate.getDate()}/${orderDate.getMonth() + 1}`
+            return formattedDate === label
+          } catch (e) {
+            return false
+          }
+        })
+        const orderCount = ordersInDay.length
+        const avgValue = orderCount > 0 ? value / orderCount : 0
+        return [label, formatCurrency(value), orderCount.toString(), formatCurrency(avgValue)]
+      })
+      
+      tableData.forEach((row, rowIndex) => {
+        currentX = margin
+        
+        // Kiểm tra nếu cần thêm trang mới
+        if (currentY > 270) {
+          pdf.addPage()
+          pdf.setFont("times", "normal")
+          currentY = 20
+          
+          // Vẽ lại header trên trang mới
+          pdf.setFillColor(240, 240, 240)
+          pdf.rect(margin, currentY, cellWidth.reduce((a, b) => a + b, 0), cellHeight, 'F')
+          
+          pdf.setFont("times", "bold")
+          currentX = margin
+          tableHeaders.forEach((header, i) => {
+            pdf.text(header, currentX + 2, currentY + 5)
+            currentX += cellWidth[i]
+          })
+          
+          pdf.setFont("times", "normal")
+          currentY += cellHeight
+        }
+        
+        // Vẽ hàng
+        row.forEach((cell, i) => {
+          pdf.text(cell, currentX + 2, currentY + 5)
+          currentX += cellWidth[i]
+        })
+        
+        // Vẽ đường kẻ
+        pdf.setDrawColor(200, 200, 200)
+        pdf.line(margin, currentY, margin + cellWidth.reduce((a, b) => a + b, 0), currentY)
+        
+        currentY += cellHeight
+      })
+      
+      // Thêm chữ ký
+      const signatureY = currentY + 20
+      pdf.setFont("times", "bold")
+      pdf.text("Người lập báo cáo", 50, signatureY, { align: "center" })
+      pdf.text("Người phê duyệt", 160, signatureY, { align: "center" })
+      
+      pdf.setFont("times", "italic")
+      pdf.setFontSize(10)
+      pdf.text("(Ký, ghi rõ họ tên)", 50, signatureY + 7, { align: "center" })
+      pdf.text("(Ký, ghi rõ họ tên)", 160, signatureY + 7, { align: "center" })
+      
+      // Thêm thông tin công ty ở footer
+      pdf.setFont("times", "normal")
+      pdf.setFontSize(8)
+      pdf.text("© Hệ thống quản lý bán hàng - Công ty TNHH ABC", 105, 290, { align: "center" })
+      
       // Tạo tên file với timestamp
-      const now = new Date()
       const timestamp = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}_${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}`
       const filename = `bao_cao_don_hang_${timestamp}.pdf`
       
@@ -766,11 +979,11 @@ export default function OrderReportsPage() {
             Bộ lọc báo cáo
           </h3>
         </div>
-        <div className="px-4 py-5 sm:p-6">
+        <div className="px-4 py-5 sm:p-6 bg-gray-50">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Lọc theo khoảng thời gian */}
-            <div>
-              <label htmlFor="date-from" className="block text-sm font-medium text-gray-700 mb-1">
+            <div className="bg-white p-3 rounded-md border border-gray-200 shadow-sm">
+              <label htmlFor="date-from" className="block text-sm font-medium text-gray-700 mb-2">
                 Từ ngày
               </label>
               <input
@@ -778,11 +991,11 @@ export default function OrderReportsPage() {
                 id="date-from"
                 value={dateRange.from}
                 onChange={handleDateChange('from')}
-                className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md h-10"
               />
             </div>
-            <div>
-              <label htmlFor="date-to" className="block text-sm font-medium text-gray-700 mb-1">
+            <div className="bg-white p-3 rounded-md border border-gray-200 shadow-sm">
+              <label htmlFor="date-to" className="block text-sm font-medium text-gray-700 mb-2">
                 Đến ngày
               </label>
               <input
@@ -790,20 +1003,20 @@ export default function OrderReportsPage() {
                 id="date-to"
                 value={dateRange.to}
                 onChange={handleDateChange('to')}
-                className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md h-10"
               />
             </div>
             
             {/* Lọc theo trạng thái */}
-            <div>
-              <label htmlFor="status-filter" className="block text-sm font-medium text-gray-700 mb-1">
+            <div className="bg-white p-3 rounded-md border border-gray-200 shadow-sm">
+              <label htmlFor="status-filter" className="block text-sm font-medium text-gray-700 mb-2">
                 Trạng thái
               </label>
               <select
                 id="status-filter"
                 value={statusFilter}
                 onChange={handleStatusFilterChange}
-                className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md h-10"
               >
                 <option value="all">Tất cả trạng thái</option>
                 <option value="Đã thanh toán">Đã thanh toán</option>
@@ -812,15 +1025,15 @@ export default function OrderReportsPage() {
             </div>
             
             {/* Lọc theo vận chuyển */}
-            <div>
-              <label htmlFor="shipping-filter" className="block text-sm font-medium text-gray-700 mb-1">
+            <div className="bg-white p-3 rounded-md border border-gray-200 shadow-sm">
+              <label htmlFor="shipping-filter" className="block text-sm font-medium text-gray-700 mb-2">
                 Vận chuyển
               </label>
               <select
                 id="shipping-filter"
                 value={isShippingFilter}
                 onChange={handleIsShippingFilterChange}
-                className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md h-10"
               >
                 <option value="all">Tất cả đơn hàng</option>
                 <option value="true">Có vận chuyển</option>
@@ -829,8 +1042,8 @@ export default function OrderReportsPage() {
             </div>
             
             {/* Lọc theo giá trị đơn hàng */}
-            <div>
-              <label htmlFor="min-amount" className="block text-sm font-medium text-gray-700 mb-1">
+            <div className="bg-white p-3 rounded-md border border-gray-200 shadow-sm">
+              <label htmlFor="min-amount" className="block text-sm font-medium text-gray-700 mb-2">
                 Giá trị tối thiểu (VNĐ)
               </label>
               <input
@@ -839,11 +1052,11 @@ export default function OrderReportsPage() {
                 value={minAmount}
                 onChange={handleAmountChange('min')}
                 placeholder="Nhập giá trị tối thiểu"
-                className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md h-10"
               />
             </div>
-            <div>
-              <label htmlFor="max-amount" className="block text-sm font-medium text-gray-700 mb-1">
+            <div className="bg-white p-3 rounded-md border border-gray-200 shadow-sm">
+              <label htmlFor="max-amount" className="block text-sm font-medium text-gray-700 mb-2">
                 Giá trị tối đa (VNĐ)
               </label>
               <input
@@ -852,7 +1065,7 @@ export default function OrderReportsPage() {
                 value={maxAmount}
                 onChange={handleAmountChange('max')}
                 placeholder="Nhập giá trị tối đa"
-                className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md h-10"
               />
             </div>
           </div>
@@ -860,8 +1073,9 @@ export default function OrderReportsPage() {
           <div className="mt-4 flex justify-end">
             <button
               onClick={handleApplyFilters}
-              className={`inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-${themeColor}-600 hover:bg-${themeColor}-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${themeColor}-500`}
+              className={`inline-flex items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-${themeColor}-600 hover:bg-${themeColor}-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${themeColor}-500`}
             >
+              <FunnelIcon className="h-5 w-5 mr-2" />
               Áp dụng bộ lọc
             </button>
           </div>
@@ -1072,9 +1286,14 @@ export default function OrderReportsPage() {
                           const value = revenueByDay.values[index]
                           // Tính số đơn hàng trong ngày
                           const ordersInDay = orders.filter(order => {
-                            const orderDate = new Date(order.order_date)
-                            const formattedDate = `${orderDate.getDate()}/${orderDate.getMonth() + 1}`
-                            return formattedDate === label
+                            if (!order.order_date) return false
+                            try {
+                              const orderDate = new Date(order.order_date)
+                              const formattedDate = `${orderDate.getDate()}/${orderDate.getMonth() + 1}`
+                              return formattedDate === label
+                            } catch (e) {
+                              return false
+                            }
                           })
                           const orderCount = ordersInDay.length
                           const avgValue = orderCount > 0 ? value / orderCount : 0
