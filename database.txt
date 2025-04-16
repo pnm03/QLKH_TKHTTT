@@ -58,7 +58,7 @@ updated_at (TIMESTAMPTZ) – Ngày cập nhật.
 
 image - ảnh
 
-4. Đơn hàng (oorders)
+4. Đơn hàng (orders)
 Lưu thông tin về đơn hàng.
 
 order_id (text, PK, Auto) – Khóa chính.
