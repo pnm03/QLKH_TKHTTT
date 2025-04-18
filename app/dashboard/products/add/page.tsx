@@ -379,9 +379,7 @@ export default function AddProductPage() {
                       </div>
                     )}
                   </div>
-                  {formData.category_id === null && (
-                    <p className="mt-1 text-sm text-red-600">Vui lòng chọn danh mục sản phẩm</p>
-                  )}
+
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -484,8 +482,8 @@ export default function AddProductPage() {
                               className="object-contain rounded-lg"
                               priority
                             />
-                            <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-20 transition-opacity duration-200 flex items-center justify-center">
-                              <span className="text-white text-sm font-medium opacity-0 hover:opacity-100 transition-opacity duration-200">
+                            <div className="absolute inset-0 hover:bg-black hover:bg-opacity-20 transition-opacity duration-200 flex items-center justify-center">
+                              <span className="text-white text-sm font-medium opacity-0 hover:opacity-100 transition-opacity duration-200 bg-black bg-opacity-50 px-2 py-1 rounded">
                                 Thay đổi ảnh
                               </span>
                             </div>
