@@ -253,6 +253,7 @@ export default function DashboardLayout({
         { name: language === 'vi' ? 'Thêm sản phẩm' : 'Add Product', href: '/dashboard/products/add', icon: null, current: false },
         { name: language === 'vi' ? 'Tìm kiếm sản phẩm' : 'Search Products', href: '/dashboard/products/search', icon: null, current: false },
         { name: language === 'vi' ? 'Chỉnh sửa sản phẩm' : 'Edit Product', href: '/dashboard/products/edit', icon: null, current: false },
+        { name: language === 'vi' ? 'Danh mục sản phẩm' : 'Product Categories', href: '/dashboard/products/categories', icon: null, current: false },
       ]
     },
     {

@@ -1,0 +1,113 @@
+Bảng Users:
+	user_id (Khóa chính định danh người dùng) - UUID - PRIMARY KEY
+	branch_id (Chi nhánh người dùng thuộc về) - INT - FOREIGN KEY REFERENCES Branches(branch_id)
+	full_name (Họ và tên đầy đủ) - VARCHAR(255) - NOT NULL, ít nhất 2 ký tự
+	email (Email (duy nhất)) - VARCHAR(255) - UNIQUE, NOT NULL
+	phone (Số điện thoại) - VARCHAR(11) - Bắt đầu bằng số 0, có 10 hoặc 11 ký tự
+	birth_date (Ngày sinh) - DATE - -
+	hometown (Quê quán) - VARCHAR(255) - Có ít nhất 2 ký tự
+	created_at (Thời gian tạo) - TIMESTAMP - DEFAULT CURRENT_TIMESTAMP
+	updated_at (Thời gian cập nhật) - TIMESTAMP – DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+Bảng Accounts:
+	id (Khóa chính định danh tài khoản) - UUID - PRIMARY KEY
+	user_id (Liên kết với người dùng) - UUID - FOREIGN KEY REFERENCES Users(user_id), NOT NULL, UNIQUE
+	user_name (Tên đăng nhập (duy nhất)) - VARCHAR(50) - UNIQUE, NOT NULL
+	password_hash (Mật khẩu đã mã hóa) - VARCHAR(255) - NOT NULL, mã hóa
+	role (Vai trò người dùng) - VARCHAR(20) - CHECK (role IN ('admin', 'NVBH', 'NVK')), NOT NULL
+	status (Trạng thái tài khoản) - VARCHAR(20) - CHECK (status IN ('active', 'inactive', 'locked')), NOT NULL
+	last_login (Lần đăng nhập cuối) - TIMESTAMP - -
+	create_at (Thời gian tạo) - TIMESTAMP - DEFAULT CURRENT_TIMESTAMP
+	update_at (Thời gian cập nhật) - TIMESTAMP - DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+Bảng Customers:
+	customer_id (Khóa chính định danh khách hàng) - UUID - PRIMARY KEY
+	full_name (Họ và tên đầy đủ) - VARCHAR(255) - NOT NULL
+	phone (Số điện thoại) - VARCHAR(11) - Bắt đầu bằng số 0, có 10 hoặc 11 ký tự, UNIQUE
+	email (Email (duy nhất)) - VARCHAR(255) - UNIQUE, NOT NULL
+	hometown (Quê quán) - VARCHAR(255) - Có ít nhất 2 ký tự, NULL
+	created_at (Thời gian tạo) - TIMESTAMP - DEFAULT CURRENT_TIMESTAMP
+	updated_at (Thời gian cập nhật) - TIMESTAMP - DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+Bảng Staff:
+	staff_id (Khóa chính định danh nhân viên) - INT - PRIMARY KEY, tự tăng
+	user_id (Liên kết với người dùng) - UUID - FOREIGN KEY REFERENCES Users(user_id)
+	start_date (Ngày bắt đầu làm việc) - DATE - NOT NULL
+	end_date (Ngày kết thúc làm việc) - DATE - NULL
+	work_shift (Ca làm việc) - VARCHAR(100) - NOT NULL
+	salary (Lương) - DECIMAL(15, 2) - CHECK (salary >= 0), DEFAULT 0, NOT NULL
+	contract_type (Loại hợp đồng) - VARCHAR(100) - CHECK (contract_type IN ('full-time', 'part-time', 'contract'))
+	employment_status (Trạng thái làm việc) - VARCHAR(100) - CHECK (employment_status IN ('active', 'on-leave', 'terminated'))
+	reports_to_user_id (Người quản lý trực tiếp) - UUID - FOREIGN KEY REFERENCES Users(user_id), NULL
+Bảng Category:
+	category_id (Mã danh mục) - INT - PRIMARY KEY, Tự tăng
+	name_category (Tên danh mục sản phẩm) - VARCHAR(255) - NOT NULL, UNIQUE
+	description_category (Mô tả về danh mục) - TEXT - NOT NULL
+	image_category (URL/Đường dẫn ảnh danh mục) - TEXT - NULL, BASE 64, DEFAULT url
+Bảng Products:
+	product_id (Mã sản phẩm) - INT - PRIMARY KEY, Tự tăng
+	category_id (Mã danh mục sản phẩm thuộc về) – INT - FOREIGN KEY REFERENCES Category(category_id), NOT NULL
+	product_name (Tên sản phẩm) - VARCHAR(255) - NOT NULL
+	description (Mô tả chi tiết sản phẩm) - TEXT - -
+	color (Màu sắc sản phẩm) - VARCHAR(50) - -
+	size (Kích thước sản phẩm) - VARCHAR(50) - -
+	price (Giá bán sản phẩm) - DECIMAL(15, 2) - NOT NULL, CHECK (price >= 0), DEFAULT 0
+	stock_quantity (Số lượng tồn kho) - INT - NOT NULL, DEFAULT 0, CHECK (stock_quantity >= 0)
+	created_at (Ngày tạo sản phẩm) - TIMESTAMP WITH TIME ZONE - NOT NULL, DEFAULT CURRENT_TIMESTAMP
+	updated_at (Ngày cập nhật sản phẩm gần nhất) - TIMESTAMP WITH TIME ZONE - NOT NULL, DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP (Lưu ý: Dựa trên cấu trúc hoặc auto-update và các bảng trước)
+	image (URL/Đường dẫn hình ảnh sản phẩm) - TEXT - NOT NULL, BASE 64
+Bảng Payments:
+	payment_id (Mã phương thức thanh toán (tự tăng)) - INT - PRIMARY KEY
+	payment_method_name (Tên phương thức thanh toán (Vd: Tiền mặt,...)) - VARCHAR(100) - NOT NULL
+	description (Mô tả chi tiết) - TEXT - -
+	image (URL/Đường dẫn ảnh logo/QR) - TEXT - BASE 64, NULL
+	created_at (Ngày tạo phương thức) - TIMESTAMP WITH TIME ZONE - NOT NULL, DEFAULT CURRENT_TIMESTAMP
+	updated_at (Thời gian cập nhật) - TIMESTAMP WITH TIME ZONE - NOT NULL, DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+Orders:
+	order_id (Mã đơn hàng) - TEXT - PRIMARY KEY, Tự sinh
+	user_id (Mã người dùng tạo/xử lý đơn (NULL nếu là khách vãng lai)) - UUID - FOREIGN KEY REFERENCES Users(user_id), NULL
+	customer_id (Mã khách hàng đặt hàng) - UUID - FOREIGN KEY REFERENCES Customers(customer_id), NOT NULL
+	order_date (Ngày đặt hàng) - TIMESTAMP WITH TIME ZONE - NOT NULL, DEFAULT CURRENT_TIMESTAMP
+	price (Tổng giá trị đơn hàng) - DECIMAL(15, 2) - NOT NULL, CHECK (price >= 0)
+	status (Trạng thái đơn hàng) - VARCHAR(50) - NOT NULL, CHECK (status IN ('Đã thanh toán', 'Chưa thanh toán'))
+	payment_method (Phương thức thanh toán) - INT - FOREIGN KEY REFERENCES Payments(payment_id), NULL khi chưa thanh toán
+	is_shipping (Cờ đánh dấu có vận chuyển hay không) - BOOLEAN - NOT NULL, DEFAULT FALSE
+Bảng Orderdetails:
+	orderdetail_id (Mã chi tiết đơn hàng) - TEXT - PRIMARY KEY, Tự sinh
+	order_id (Mã đơn hàng chứa chi tiết này) – TEXT - FOREIGN KEY REFERENCES Orders(order_id), NOT NULL
+	product_id (Mã sản phẩm được đặt) – INT - FOREIGN KEY REFERENCES Products(product_id), NOT NULL
+	name_product (Tên sản phẩm tại thời điểm đặt hàng) - VARCHAR(255) - NOT NULL
+	name_check (Tên hóa đơn trong đơn hàng) - VARCHAR(255) - NOT NULL
+	quantity (Số lượng sản phẩm) - INT - NOT NULL, CHECK (quantity > 0)
+	unit_price (Đơn giá sản phẩm tại thời điểm đặt hàng) - DECIMAL(15, 2) - NOT NULL, CHECK (unit_price >= 0)
+	subtotal (Thành tiền (quantity * unit_price)) - DECIMAL(15, 2) - NOT NULL, CHECK (subtotal >= 0)
+Bảng Shippings:
+	shipping_id (Mã vận chuyển) - TEXT - PRIMARY KEY, tự sinh
+	order_id (Mã đơn hàng được vận chuyển) – TEXT - FOREIGN KEY REFERENCES Orders(order_id), NOT NULL, UNIQUE
+	carrier (Đơn vị vận chuyển (Vd: GHN, ViettelPost, ...)) - VARCHAR(255) - -
+	tracking_num (Mã vận đơn) - VARCHAR(255) - NULLABLE, UNIQUE (thường là duy nhất), tự sinh
+	shipping_address (Địa chỉ giao hàng) - TEXT - NOT NULL
+	shipping_cost (Phí vận chuyển) - DECIMAL(10, 2) - NOT NULL, DEFAULT 0, CHECK (shipping_cost >= 0)
+	actual_delivery_date (Ngày giao hàng thực tế) - TIMESTAMP WITH TIME ZONE - -
+	delivery_date (Ngày giao hàng dự kiến) - TIMESTAMP WITH TIME ZONE - -
+	status (Trạng thái vận chuyển) - VARCHAR(50) - NOT NULL, CHECK (status IN ('Chưa giao hàng', 'Đang chuẩn bị', 'đang giao', 'Đã giao', 'Đang hoàn về', 'Đã hủy'))
+	created_at (Ngày tạo thông tin vận chuyển) - TIMESTAMP WITH TIME ZONE - NOT NULL, DEFAULT CURRENT_TIMESTAMP
+	weight (Cân nặng lô hàng) - DECIMAL(10, 3) - CHECK (weight >= 0)
+	unit_weight (Đơn vị cân nặng) - VARCHAR(10) - CHECK (unit_weight IN ('kg', 'g'))
+	long (Chiều dài kiện hàng) - DECIMAL(10, 2) - CHECK (long >= 0)
+	wide (Chiều rộng kiện hàng) - DECIMAL(10, 2) - CHECK (wide >= 0)
+	hight (Chiều cao kiện hàng) - DECIMAL(10, 2) - CHECK (height >= 0)
+Bảng Returns:
+	return_id (Mã yêu cầu đổi/trả) - INT - PRIMARY KEY, Tự tăng
+	order_id (Mã đơn hàng gốc liên quan) - TEXT - FOREIGN KEY REFERENCES Orders(order_id), NOT NULL
+	return_date (Ngày yêu cầu đổi/trả) - TIMESTAMP WITH TIME ZONE - NOT NULL, DEFAULT CURRENT_TIMESTAMP
+	return_reason (Lý do đổi/trả hàng) - TEXT - NOT NULL
+	refund_amount (Số tiền hoàn lại (nếu có)) - DECIMAL(15, 2) - NULLABLE, CHECK (refund_amount >= 0)
+	status (Trạng thái của yêu cầu đổi/trả) - VARCHAR(50) - NOT NULL, CHECK (status IN ('đang xử lý', 'đã chấp nhận', 'đã từ chối'))
+Bảng Branches:
+	branch_id (Khóa chính định danh chi nhánh) - INT - PRIMARY KEY, tự tăng
+	branch_name (Tên chi nhánh (duy nhất)) - VARCHAR(255) - NOT NULL, UNIQUE
+	branch_address (Địa chỉ chi nhánh) - VARCHAR(255) - NOT NULL
+	manager_id (Người quản lý chi nhánh) - UUID - FOREIGN KEY REFERENCES Users(user_id)
+ 
+Các trigger hiện có:
++ Trigger mỗi khi bảng Orderdetails được thêm bản ghi mới thì trường  subtotal tự động tính bằng quantity * unit_price
++ Trigger cập nhật số lượng tồn kho trong bảng Products mỗi khi bảng Orderdetails thêm bản ghi mới 
++ Trigger tự động xóa các chi tiết đơn hàng khi đơn hàng bị xóa

@@ -159,6 +159,12 @@ export default function DebugPage() {
             >
               Gọi API Refresh
             </a>
+            <a
+              href="/debug/category"
+              className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded inline-block"
+            >
+              Debug Category Table
+            </a>
           </div>
         </>
       )}

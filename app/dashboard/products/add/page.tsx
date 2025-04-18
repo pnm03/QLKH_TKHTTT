@@ -15,6 +15,14 @@ interface ProductFormData {
   price: number
   stock_quantity: number
   image: File | null
+  category_id: number | null
+  showCategoryDropdown?: boolean
+}
+
+interface Category {
+  category_id: number
+  name_category: string
+  image_category?: string
 }
 
 export default function AddProductPage() {
@@ -25,6 +33,7 @@ export default function AddProductPage() {
   const [themeState, setThemeState] = useState(themeColors.indigo)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
 
+  const [categories, setCategories] = useState<Category[]>([])
   const [formData, setFormData] = useState<ProductFormData>({
     product_name: '',
     description: '',
@@ -32,7 +41,8 @@ export default function AddProductPage() {
     size: '',
     price: 0,
     stock_quantity: 0,
-    image: null
+    image: null,
+    category_id: null
   })
 
   const [loading, setLoading] = useState(false)
@@ -42,7 +52,35 @@ export default function AddProductPage() {
   // Set mounted = true sau khi component được render ở client
   useEffect(() => {
     setMounted(true)
+    const fetchCategories = async () => {
+      const { data, error } = await supabase
+        .from('category')
+        .select('category_id, name_category, image_category')
+        .order('category_id', { ascending: true })
+
+      if (!error && data) {
+        setCategories(data)
+      } else if (error) {
+        console.error('Error fetching categories:', error)
+      }
+    }
+    fetchCategories()
   }, [])
+  
+  // Xử lý đóng dropdown khi click ra ngoài
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement
+      if (formData.showCategoryDropdown && !target.closest('.category-dropdown')) {
+        setFormData(prev => ({ ...prev, showCategoryDropdown: false }))
+      }
+    }
+    
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [formData.showCategoryDropdown])
 
   // Cập nhật themeState từ context khi component đã mounted
   useEffect(() => {
@@ -74,9 +112,15 @@ export default function AddProductPage() {
     const file = e.target.files?.[0]
     if (file) {
       // Sử dụng hàm validateImage để kiểm tra file
-      const validation = validateImage(file)
-      if (!validation.valid) {
-        setError(validation.error)
+      try {
+        const isValid = await validateImage(file)
+        if (!isValid) {
+          setError('File ảnh không hợp lệ')
+          return
+        }
+      } catch (err) {
+        console.error('Lỗi khi kiểm tra ảnh:', err)
+        setError('Không thể kiểm tra file ảnh')
         return
       }
 
@@ -112,6 +156,10 @@ export default function AddProductPage() {
       }
 
       // Insert product data into database
+      if (!formData.category_id) {
+        throw new Error('Vui lòng chọn danh mục sản phẩm')
+      }
+
       const { error: insertError } = await supabase
         .from('products')
         .insert([
@@ -122,7 +170,8 @@ export default function AddProductPage() {
             size: formData.size,
             price: formData.price,
             stock_quantity: formData.stock_quantity,
-            image: imageUrl
+            image: imageUrl,
+            category_id: formData.category_id
           }
         ])
 
@@ -144,13 +193,21 @@ export default function AddProductPage() {
         size: '',
         price: 0,
         stock_quantity: 0,
-        image: null
+        image: null,
+        category_id: null
       })
 
       // Xóa ảnh xem trước
       setPreviewUrl(null)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Có lỗi xảy ra khi thêm sản phẩm')
+      console.error('Chi tiết lỗi khi thêm sản phẩm:', err)
+      if (err instanceof Error) {
+        setError(`Lỗi: ${err.message}`)
+      } else if (typeof err === 'object' && err !== null && 'message' in err) {
+        setError(`Lỗi từ Supabase: ${err.message}`)
+      } else {
+        setError('Có lỗi xảy ra khi thêm sản phẩm. Vui lòng kiểm tra console để biết chi tiết.')
+      }
     } finally {
       setLoading(false)
     }
@@ -158,7 +215,6 @@ export default function AddProductPage() {
 
   if (!mounted || !themeState) return null
 
-  const themeColor = themeState.textColor.split('-')[1]
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -226,6 +282,106 @@ export default function AddProductPage() {
                       placeholder="Nhập mô tả sản phẩm"
                     />
                   </div>
+                </div>
+
+                <div>
+                  <label htmlFor="category_id" className="block text-sm font-medium text-gray-700">
+                    Danh mục sản phẩm
+                  </label>
+                  <div className="relative mt-1 category-dropdown">
+                    <button
+                      type="button"
+                      id="category_id"
+                      onClick={() => setFormData(prev => ({ ...prev, showCategoryDropdown: !prev.showCategoryDropdown }))}
+                      className="relative w-full bg-white border border-gray-200 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-pointer focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    >
+                      {formData.category_id ? (
+                        <div className="flex items-center">
+                          {categories.find(c => c.category_id === formData.category_id)?.image_category ? (
+                            <div className="flex-shrink-0 h-6 w-6 mr-2">
+                              <img 
+                                src={categories.find(c => c.category_id === formData.category_id)?.image_category} 
+                                alt=""
+                                className="h-6 w-6 rounded-full object-cover"
+                              />
+                            </div>
+                          ) : (
+                            <div className="flex-shrink-0 h-6 w-6 mr-2 bg-gray-200 rounded-full flex items-center justify-center">
+                              <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                              </svg>
+                            </div>
+                          )}
+                          <span className="block truncate">
+                            {categories.find(c => c.category_id === formData.category_id)?.name_category}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="block truncate text-gray-500">Chọn danh mục</span>
+                      )}
+                      <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                        <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                          <path fillRule="evenodd" d="M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l3-3A1 1 0 0110 3zm-3.707 9.293a1 1 0 011.414 0L10 14.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
+                      </span>
+                    </button>
+                    
+                    {formData.showCategoryDropdown && (
+                      <div className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
+                        {categories.length === 0 ? (
+                          <div className="text-center py-2 px-4 text-sm text-gray-500">
+                            Không có danh mục nào
+                          </div>
+                        ) : (
+                          categories.map((category) => (
+                            <div
+                              key={category.category_id}
+                              className={`cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-gray-100 ${formData.category_id === category.category_id ? 'bg-indigo-50 text-indigo-900' : 'text-gray-900'}`}
+                              onClick={() => {
+                                setFormData(prev => ({ 
+                                  ...prev, 
+                                  category_id: category.category_id,
+                                  showCategoryDropdown: false
+                                }))
+                              }}
+                            >
+                              <div className="flex items-center">
+                                {category.image_category ? (
+                                  <div className="flex-shrink-0 h-6 w-6 mr-2">
+                                    <img 
+                                      src={category.image_category} 
+                                      alt=""
+                                      className="h-6 w-6 rounded-full object-cover"
+                                    />
+                                  </div>
+                                ) : (
+                                  <div className="flex-shrink-0 h-6 w-6 mr-2 bg-gray-200 rounded-full flex items-center justify-center">
+                                    <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                  </div>
+                                )}
+                                <span className="font-medium block truncate">
+                                  {category.name_category}
+                                </span>
+                              </div>
+                              
+                              {formData.category_id === category.category_id && (
+                                <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600">
+                                  <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                  </svg>
+                                </span>
+                              )}
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  {formData.category_id === null && (
+                    <p className="mt-1 text-sm text-red-600">Vui lòng chọn danh mục sản phẩm</p>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -387,7 +543,8 @@ export default function AddProductPage() {
                     size: '',
                     price: 0,
                     stock_quantity: 0,
-                    image: null
+                    image: null,
+                    category_id: null
                   })
 
                   // Xóa ảnh xem trước
