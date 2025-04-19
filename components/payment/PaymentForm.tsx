@@ -435,9 +435,11 @@ export default function PaymentForm() {
   return (
     <div className="container mx-auto p-4">
       <div className="bg-white rounded-lg shadow-md mb-8 overflow-hidden">
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-4">
-          <h2 className="text-xl font-bold text-white">Thêm phương thức thanh toán mới</h2>
-          <p className="text-blue-100 text-sm">Tích hợp các phương thức thanh toán cho hệ thống bán hàng</p>
+        <div className="bg-gray-200 px-6 py-3 relative overflow-hidden">
+          <h2 className="text-xl font-bold text-gray-700">
+            Thêm phương thức thanh toán mới
+          </h2>
+          <p className="text-gray-500 text-sm mt-1">Tích hợp các phương thức thanh toán cho hệ thống bán hàng</p>
         </div>
         <div className="p-6">
           <form key={formKey} ref={formRef} onSubmit={handleSubmit} className="space-y-6">
@@ -531,9 +533,11 @@ export default function PaymentForm() {
       </div>
 
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <div className="bg-gradient-to-r from-green-600 to-teal-700 px-6 py-4">
-          <h2 className="text-xl font-bold text-white">Danh sách phương thức thanh toán</h2>
-          <p className="text-green-100 text-sm">Các phương thức thanh toán hiện có trong hệ thống</p>
+        <div className="bg-gray-200 px-6 py-3 relative overflow-hidden">
+          <h2 className="text-xl font-bold text-gray-700">
+            Danh sách phương thức thanh toán
+          </h2>
+          <p className="text-gray-500 text-sm mt-1">Các phương thức thanh toán hiện có trong hệ thống</p>
         </div>
         <div className="p-6">
           {paymentMethods.length === 0 ? (

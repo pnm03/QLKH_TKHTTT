@@ -84,13 +84,13 @@ export default function CreateOrderPage() {
   const [customerPrepaid, setCustomerPrepaid] = useState('0') // Số tiền khách trả trước
   const [currentUser, setCurrentUser] = useState<any>(null) // Thông tin người tạo đơn hàng
   const [orderCreationTime, setOrderCreationTime] = useState(new Date()) // Thời gian tạo đơn hàng
-  
+
   // State cho tìm kiếm khách hàng
   const [customerSearchTerm, setCustomerSearchTerm] = useState('')
   const [customerSearchResults, setCustomerSearchResults] = useState<Customer[]>([])
   const [showCustomerSearchResults, setShowCustomerSearchResults] = useState(false)
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
-  
+
   // State cho modal thêm khách hàng mới
   const [showAddCustomerModal, setShowAddCustomerModal] = useState(false)
   const [newCustomer, setNewCustomer] = useState<Partial<Customer>>({
@@ -306,18 +306,18 @@ export default function CreateOrderPage() {
 
     return () => clearTimeout(delaySearch)
   }, [searchTerm, searchProducts])
-  
+
   // Xử lý đóng dropdown khi click ra ngoài
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement
-      
+
       // Kiểm tra xem click có phải là bên ngoài khu vực tìm kiếm khách hàng không
       if (showCustomerSearchResults && !target.closest('.customer-search-container')) {
         setShowCustomerSearchResults(false)
       }
     }
-    
+
     document.addEventListener('mousedown', handleClickOutside)
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
@@ -471,16 +471,16 @@ export default function CreateOrderPage() {
         .select('*')
         .order('created_at', { ascending: false })
         .limit(2)
-        
+
       if (error) throw error
-      
+
       setCustomerSearchResults(data || [])
       setShowCustomerSearchResults(true)
     } catch (error) {
       console.error('Lỗi khi lấy khách hàng ngẫu nhiên:', error)
     }
   }
-  
+
   // Tìm kiếm khách hàng
   const searchCustomers = async (term = customerSearchTerm) => {
     if (!term.trim()) {
@@ -488,7 +488,7 @@ export default function CreateOrderPage() {
       fetchRandomCustomers()
       return
     }
-    
+
     try {
       const { data, error } = await supabase
         .from('customers')
@@ -496,29 +496,29 @@ export default function CreateOrderPage() {
         .or(`full_name.ilike.%${term}%, phone.ilike.%${term}%, email.ilike.%${term}%`)
         .order('full_name', { ascending: true })
         .limit(5)
-        
+
       if (error) throw error
-      
+
       setCustomerSearchResults(data || [])
       setShowCustomerSearchResults(true)
     } catch (error) {
       console.error('Lỗi khi tìm kiếm khách hàng:', error)
     }
   }
-  
+
   // Chọn khách hàng từ kết quả tìm kiếm
   const selectCustomer = (customer: Customer) => {
     setSelectedCustomer(customer)
-    
+
     // Cập nhật thông tin khách hàng vào đơn hàng
     const updatedInvoices = [...invoices]
     updatedInvoices[activeInvoiceIndex].customer = customer
     setInvoices(updatedInvoices)
-    
+
     // Đóng kết quả tìm kiếm
     setShowCustomerSearchResults(false)
     setCustomerSearchTerm('')
-    
+
     // Cập nhật thông tin người nhận trong form gửi hàng
     setRecipientName(customer.full_name)
     setRecipientPhone(customer.phone)
@@ -526,17 +526,17 @@ export default function CreateOrderPage() {
       setRecipientAddress(customer.hometown)
     }
   }
-  
+
   // Xóa khách hàng đã chọn
   const clearSelectedCustomer = () => {
     setSelectedCustomer(null)
-    
+
     // Cập nhật thông tin khách hàng vào đơn hàng
     const updatedInvoices = [...invoices]
     updatedInvoices[activeInvoiceIndex].customer = null
     setInvoices(updatedInvoices)
   }
-  
+
   // Mở modal thêm khách hàng mới
   const openAddCustomerModal = () => {
     setShowAddCustomerModal(true)
@@ -548,12 +548,12 @@ export default function CreateOrderPage() {
     })
     setAddCustomerErrors({})
   }
-  
+
   // Đóng modal thêm khách hàng mới
   const closeAddCustomerModal = () => {
     setShowAddCustomerModal(false)
   }
-  
+
   // Xử lý thay đổi form thêm khách hàng mới
   const handleNewCustomerChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -561,7 +561,7 @@ export default function CreateOrderPage() {
       ...newCustomer,
       [name]: value
     })
-    
+
     // Xóa lỗi khi người dùng nhập
     if (addCustomerErrors[name]) {
       setAddCustomerErrors({
@@ -570,42 +570,42 @@ export default function CreateOrderPage() {
       })
     }
   }
-  
+
   // Kiểm tra form thêm khách hàng mới
   const validateNewCustomerForm = () => {
     const errors: Record<string, string> = {}
-    
+
     // Kiểm tra tên
     if (!newCustomer.full_name?.trim()) {
       errors.full_name = 'Họ tên không được để trống'
     }
-    
+
     // Kiểm tra số điện thoại
     if (!newCustomer.phone?.trim()) {
       errors.phone = 'Số điện thoại không được để trống'
     } else if (!/^0\d{9,10}$/.test(newCustomer.phone)) {
       errors.phone = 'Số điện thoại phải bắt đầu bằng số 0 và có 10-11 số'
     }
-    
+
     // Kiểm tra email
     if (!newCustomer.email?.trim()) {
       errors.email = 'Email không được để trống'
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newCustomer.email)) {
       errors.email = 'Email không hợp lệ'
     }
-    
+
     setAddCustomerErrors(errors)
     return Object.keys(errors).length === 0
   }
-  
+
   // Thêm khách hàng mới
   const addNewCustomer = async () => {
     if (!validateNewCustomerForm()) {
       return
     }
-    
+
     setAddCustomerLoading(true)
-    
+
     try {
       // Kiểm tra khách hàng đã tồn tại
       const { data: existingCustomer, error: checkError } = await supabase
@@ -613,9 +613,9 @@ export default function CreateOrderPage() {
         .select('*')
         .or(`phone.eq.${newCustomer.phone},email.eq.${newCustomer.email}`)
         .maybeSingle()
-      
+
       if (checkError) throw checkError
-      
+
       if (existingCustomer) {
         if (existingCustomer.phone === newCustomer.phone) {
           setAddCustomerErrors({
@@ -624,7 +624,7 @@ export default function CreateOrderPage() {
           })
           return
         }
-        
+
         if (existingCustomer.email === newCustomer.email) {
           setAddCustomerErrors({
             ...addCustomerErrors,
@@ -633,32 +633,32 @@ export default function CreateOrderPage() {
           return
         }
       }
-      
+
       // Thêm khách hàng mới
       const { data: insertedCustomer, error: insertError } = await supabase
         .from('customers')
         .insert([newCustomer])
         .select()
         .single()
-      
+
       if (insertError) throw insertError
-      
+
       // Chọn khách hàng vừa thêm
       if (insertedCustomer) {
         selectCustomer(insertedCustomer)
         setSuccessMessage('Thêm khách hàng mới thành công!')
-        
+
         // Tự động ẩn thông báo sau 3 giây
         setTimeout(() => {
           setSuccessMessage(null)
         }, 3000)
-        
+
         // Đóng modal
         closeAddCustomerModal()
       }
     } catch (error: any) {
       console.error('Lỗi khi thêm khách hàng mới:', error)
-      
+
       // Xử lý lỗi trùng lặp từ Supabase
       if (error.code === '23505') {
         if (error.message.includes('customers_email_key')) {
@@ -947,19 +947,19 @@ export default function CreateOrderPage() {
       // Tạo đơn hàng mới trong cơ sở dữ liệu
       // Lấy thông tin người dùng hiện tại (người tạo đơn hàng) từ hàm fetchCurrentUser
       const currentUserData = await fetchCurrentUser();
-      
+
       if (!currentUserData) {
         console.error('Không thể lấy thông tin người dùng hiện tại');
         throw new Error('Không thể lấy thông tin người dùng hiện tại');
       }
-      
+
       console.log('Thông tin người dùng hiện tại:', currentUserData);
       const orderUserId = currentUserData.user_id;
       console.log('Đã tìm thấy user_id từ người dùng hiện tại:', orderUserId);
 
       // Sử dụng customer_id từ khách hàng đã chọn hoặc null nếu không có khách hàng
       let customerId = null;
-      
+
       // Nếu có khách hàng được chọn trong đơn hàng hiện tại
       if (currentInvoice.customer && currentInvoice.customer.customer_id) {
         customerId = currentInvoice.customer.customer_id;
@@ -1314,14 +1314,14 @@ export default function CreateOrderPage() {
 
     // Đặt giá trị mặc định cho các trường
     const totalAmountToPay = calculateTotalAllInvoices().amountToPay;
-    
+
     // Nếu có phương thức thanh toán được chọn, bỏ tích thu tiền hộ
     if (selectedPaymentMethod) {
       setCodAmount(false);
     } else {
       setCodAmount(true);
     }
-    
+
     // Nếu có khách hàng được chọn, điền thông tin khách hàng vào form
     if (currentInvoice.customer) {
       setRecipientName(currentInvoice.customer.full_name || '');
@@ -1333,7 +1333,7 @@ export default function CreateOrderPage() {
       setRecipientPhone('');
       setRecipientAddress('');
     }
-    
+
     setShowShippingPopup(true);
   };
 
@@ -1435,7 +1435,7 @@ export default function CreateOrderPage() {
 
       // Sử dụng customer_id từ khách hàng đã chọn hoặc null nếu không có khách hàng
       let customerId = null;
-      
+
       // Nếu có khách hàng được chọn trong đơn hàng hiện tại
       if (currentInvoice.customer && currentInvoice.customer.customer_id) {
         customerId = currentInvoice.customer.customer_id;
@@ -1443,19 +1443,19 @@ export default function CreateOrderPage() {
       } else {
         console.log('Không có khách hàng được chọn, customer_id sẽ là null')
       }
-      
+
       // Lấy thông tin người dùng hiện tại (người tạo đơn hàng) từ hàm fetchCurrentUser
       const currentUserData = await fetchCurrentUser();
-      
+
       if (!currentUserData) {
         console.error('Không thể lấy thông tin người dùng hiện tại');
         throw new Error('Không thể lấy thông tin người dùng hiện tại');
       }
-      
+
       console.log('Thông tin người dùng hiện tại:', currentUserData);
       const creatorUserId = currentUserData.user_id;
       console.log('Đã tìm thấy user_id từ người dùng hiện tại:', creatorUserId);
-      
+
       // Tạo đối tượng đơn hàng phù hợp với cấu trúc bảng orders
       const orderObject = {
         order_id: orderId,
@@ -1830,7 +1830,7 @@ export default function CreateOrderPage() {
             <div className="bg-gray-50 p-4 rounded-lg mb-3">
               {/* Tìm kiếm khách hàng */}
               <h3 className="text-lg font-medium mb-2">Thông tin khách hàng</h3>
-              
+
               {selectedCustomer ? (
                 <div className="mb-3 p-3 border border-gray-200 rounded-md bg-white">
                   <div className="flex justify-between items-start">
@@ -1906,7 +1906,7 @@ export default function CreateOrderPage() {
                       <PlusIcon className="h-5 w-5" />
                     </button>
                   </div>
-                  
+
                   {/* Kết quả tìm kiếm khách hàng */}
                   {showCustomerSearchResults && customerSearchResults.length > 0 && (
                     <div className="absolute mt-1 w-full bg-white shadow-lg rounded-md z-10 max-h-60 overflow-y-auto customer-search-container">
@@ -1936,7 +1936,7 @@ export default function CreateOrderPage() {
                   )}
                 </div>
               )}
-              
+
               {/* Ghi chú đơn hàng */}
               <br></br>
               <h3 className="text-lg font-medium mb-2">Ghi chú đơn hàng</h3>
@@ -2090,7 +2090,7 @@ export default function CreateOrderPage() {
                     </div>
                   </div>
                 )}
-                
+
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Giảm giá thêm:
@@ -2224,7 +2224,7 @@ export default function CreateOrderPage() {
       {showShippingPopup && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="absolute inset-0 bg-black opacity-10" onClick={closeShippingPopup}></div>
-          <div className={`bg-white rounded-lg shadow-xl w-full max-w-4xl p-6 border-2 border-red-500 relative max-h-[90vh] overflow-y-auto`}>
+          <div className={`bg-white rounded-lg shadow-xl w-full max-w-4xl p-6 border-2 ${currentTheme?.borderColor || 'border-blue-500'} relative max-h-[90vh] overflow-y-auto`}>
             <div className="flex justify-between items-center mb-4">
               <div>
                 <h3 className="text-xl font-semibold">Tạo đơn gửi đi</h3>
@@ -2509,7 +2509,7 @@ export default function CreateOrderPage() {
                   </div>
                 )}
               </div>
-              
+
               <div className="mt-2 text-sm text-gray-600">
                 {selectedPaymentMethod ? (
                   <div className="flex items-center text-green-600">
@@ -2570,7 +2570,7 @@ export default function CreateOrderPage() {
                       Vui lòng điền đầy đủ thông tin bên dưới
                     </p>
                   </div>
-                  
+
                   <div className="space-y-6">
                     <div>
                       <label htmlFor="full_name" className="block text-sm font-medium text-gray-700">
@@ -2589,7 +2589,7 @@ export default function CreateOrderPage() {
                         <p className="mt-1 text-sm text-red-600">{addCustomerErrors.full_name}</p>
                       )}
                     </div>
-                    
+
                     <div>
                       <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
                         Số điện thoại <span className="text-red-500">*</span>
@@ -2609,7 +2609,7 @@ export default function CreateOrderPage() {
                         <p className="mt-1 text-sm text-red-600">{addCustomerErrors.phone}</p>
                       )}
                     </div>
-                    
+
                     <div>
                       <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                         Email <span className="text-red-500">*</span>
@@ -2627,7 +2627,7 @@ export default function CreateOrderPage() {
                         <p className="mt-1 text-sm text-red-600">{addCustomerErrors.email}</p>
                       )}
                     </div>
-                    
+
                     <div>
                       <label htmlFor="hometown" className="block text-sm font-medium text-gray-700">
                         Địa chỉ
