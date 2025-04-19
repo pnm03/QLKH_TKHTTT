@@ -461,24 +461,56 @@ export default function StaffPage() {
     if (!selectedStaff) return
     
     try {
-      const { error } = await supabase
-        .from('staff')
-        .delete()
-        .eq('staff_id', selectedStaff.staff_id)
+      // Lấy ngày hiện tại ở định dạng ISO
+      const currentDate = new Date().toISOString().split('T')[0];
       
-      if (error) throw error
+      // Gọi API để xóa tài khoản từ bảng accounts
+      const response = await fetch('/api/delete-user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: selectedStaff.user_id
+        }),
+      });
+      
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error || 'Không thể xóa tài khoản');
+      }
+      
+      // Cập nhật trạng thái nhân viên thành "terminated" và ngày kết thúc thành ngày hiện tại
+      const { error: updateError } = await supabase
+        .from('staff')
+        .update({ 
+          employment_status: 'terminated',
+          end_date: currentDate
+        })
+        .eq('staff_id', selectedStaff.staff_id);
+      
+      if (updateError) throw updateError;
       
       // Cập nhật state
-      setStaffList(prev => prev.filter(staff => staff.staff_id !== selectedStaff.staff_id))
+      setStaffList(prev => prev.map(staff => 
+        staff.staff_id === selectedStaff.staff_id 
+          ? { 
+              ...staff, 
+              employment_status: 'terminated',
+              end_date: currentDate
+            } 
+          : staff
+      ));
       
-      showNotification('Xóa nhân viên thành công!', 'success')
+      showNotification('Đã vô hiệu hóa tài khoản nhân viên thành công!', 'success');
       
       // Đóng popup
-      setShowDeleteConfirm(false)
-      setSelectedStaff(null)
+      setShowDeleteConfirm(false);
+      setSelectedStaff(null);
     } catch (error: any) {
-      console.error('Lỗi khi xóa nhân viên:', error)
-      showNotification(`Lỗi: ${error.message || 'Không thể xóa nhân viên'}`, 'error')
+      console.error('Lỗi khi vô hiệu hóa nhân viên:', error);
+      showNotification(`Lỗi: ${error.message || 'Không thể vô hiệu hóa nhân viên'}`, 'error');
     }
   }
 
@@ -1212,7 +1244,7 @@ export default function StaffPage() {
           <div className="absolute inset-0 bg-black opacity-10" onClick={cancelDelete}></div>
           <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6 border-2 border-red-500 relative">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-semibold text-red-600">Xác nhận xóa</h3>
+              <h3 className="text-xl font-semibold text-red-600">Xác nhận vô hiệu hóa tài khoản</h3>
               <button
                 onClick={cancelDelete}
                 className="text-gray-400 hover:text-gray-500"
@@ -1223,9 +1255,17 @@ export default function StaffPage() {
 
             <div className="mb-4">
               <p className="text-sm text-gray-500">
-                Bạn có chắc chắn muốn xóa nhân viên <span className="font-semibold">{selectedStaff.user?.full_name}</span>? 
-                Hành động này không thể hoàn tác.
+                Bạn có chắc chắn muốn vô hiệu hóa tài khoản của nhân viên <span className="font-semibold">{selectedStaff.user?.full_name}</span>?
               </p>
+              <p className="text-sm text-gray-500 mt-2">
+                <strong>Lưu ý:</strong> Hành động này sẽ:
+              </p>
+              <ul className="list-disc list-inside text-sm text-gray-500 mt-1 ml-2">
+                <li>Xóa tài khoản đăng nhập của nhân viên</li>
+                <li>Đổi trạng thái làm việc thành "Đã nghỉ việc"</li>
+                <li>Cập nhật ngày kết thúc thành ngày hiện tại ({new Date().toLocaleDateString('vi-VN')})</li>
+                <li>Giữ lại thông tin cá nhân của nhân viên trong hệ thống</li>
+              </ul>
             </div>
 
             <div className="flex justify-end space-x-3">
@@ -1241,7 +1281,7 @@ export default function StaffPage() {
                 onClick={handleDelete}
                 className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
               >
-                Xác nhận xóa
+                Xác nhận vô hiệu hóa
               </button>
             </div>
           </div>
