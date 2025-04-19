@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { UserIcon, LanguageIcon, ShoppingCartIcon, UserGroupIcon, CubeIcon, DocumentTextIcon, ChartBarIcon, ChevronDownIcon, Bars3Icon, SwatchIcon, BuildingStorefrontIcon } from '@heroicons/react/24/outline'
+import { UserIcon, LanguageIcon, ShoppingCartIcon, UserGroupIcon, CubeIcon, DocumentTextIcon, ChartBarIcon, ChevronDownIcon, Bars3Icon, SwatchIcon, BuildingStorefrontIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline'
 import { useTheme, themeColors } from '../context/ThemeContext'
 
 interface NavItem {
@@ -230,6 +230,16 @@ export default function DashboardLayout({
       children: [
         { name: language === 'vi' ? 'Tạo đơn hàng' : 'Create Order', href: '/dashboard/sales/create', icon: null, current: false },
         { name: language === 'vi' ? 'Tích hợp thanh toán' : 'Payment Integration', href: '/dashboard/sales/payment', icon: null, current: pathname.includes('/dashboard/sales/payment') },
+      ]
+    },
+    {
+      name: language === 'vi' ? 'Doanh nghiệp' : 'Business',
+      href: '/dashboard/business',
+      icon: BuildingOfficeIcon,
+      current: activeNavItem === 'business',
+      children: [
+        { name: language === 'vi' ? 'Chi nhánh' : 'Branches', href: '/dashboard/business/branches', icon: null, current: pathname.includes('/dashboard/business/branches') },
+        { name: language === 'vi' ? 'Nhân viên' : 'Staff', href: '/dashboard/business/staff', icon: null, current: pathname.includes('/dashboard/business/staff') },
       ]
     },
     {
