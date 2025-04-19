@@ -82,6 +82,11 @@ export default function BranchesPage() {
   const [users, setUsers] = useState<User[]>([])
   const [branchEmployees, setBranchEmployees] = useState<User[]>([])
   const [loadingEmployees, setLoadingEmployees] = useState(false)
+  const [employeeStats, setEmployeeStats] = useState<{active: number, terminated: number, total: number}>({
+    active: 0,
+    terminated: 0,
+    total: 0
+  })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   
@@ -311,15 +316,56 @@ export default function BranchesPage() {
   const fetchBranchEmployees = async (branchId: number) => {
     setLoadingEmployees(true)
     try {
-      const { data, error } = await supabase
+      // Lấy tất cả nhân viên thuộc chi nhánh này
+      const { data: allUsers, error: userError } = await supabase
         .from('users')
         .select('user_id, full_name, email, phone, birth_date, hometown')
         .eq('branch_id', branchId)
         .order('full_name', { ascending: true })
       
-      if (error) throw error
+      if (userError) throw userError
       
-      setBranchEmployees(data || [])
+      // Lấy thông tin về trạng thái làm việc của nhân viên từ bảng staff
+      const { data: staffData, error: staffError } = await supabase
+        .from('staff')
+        .select('user_id, employment_status')
+        .in('user_id', allUsers.map(user => user.user_id))
+      
+      if (staffError) throw staffError
+      
+      // Tạo map để dễ dàng tra cứu trạng thái làm việc
+      const staffStatusMap = new Map()
+      staffData.forEach(staff => {
+        staffStatusMap.set(staff.user_id, staff.employment_status)
+      })
+      
+      // Phân loại nhân viên
+      const activeEmployees = []
+      let terminatedCount = 0
+      
+      allUsers.forEach(user => {
+        const status = staffStatusMap.get(user.user_id)
+        
+        // Nếu nhân viên không có trong bảng staff hoặc đang hoạt động
+        if (!status || status !== 'terminated') {
+          activeEmployees.push(user)
+        } else {
+          terminatedCount++
+        }
+      })
+      
+      // Lưu thông tin tổng số nhân viên
+      const totalEmployees = {
+        active: activeEmployees.length,
+        terminated: terminatedCount,
+        total: allUsers.length
+      }
+      
+      // Chỉ hiển thị nhân viên đang hoạt động
+      setBranchEmployees(activeEmployees)
+      
+      // Lưu thông tin tổng số vào state
+      setEmployeeStats(totalEmployees)
     } catch (error) {
       console.error('Lỗi khi lấy danh sách nhân viên:', error)
       showNotification('Không thể tải danh sách nhân viên', 'error')
@@ -341,6 +387,7 @@ export default function BranchesPage() {
     setShowViewPopup(false)
     setSelectedBranch(null)
     setBranchEmployees([]) // Reset danh sách nhân viên
+    setEmployeeStats({active: 0, terminated: 0, total: 0}) // Reset thống kê nhân viên
   }
 
   // Chuyển sang chế độ chỉnh sửa
@@ -855,7 +902,17 @@ export default function BranchesPage() {
               
               {/* Danh sách nhân viên của chi nhánh */}
               <div className="mt-6">
-                <h4 className="text-sm font-medium text-gray-700 border-b pb-2 mb-3">Danh sách nhân viên</h4>
+                <div className="flex justify-between items-center border-b pb-2 mb-3">
+                  <h4 className="text-sm font-medium text-gray-700">Danh sách nhân viên đang hoạt động</h4>
+                  
+                  {/* Thống kê nhân viên */}
+                  {!loadingEmployees && employeeStats.total > 0 && (
+                    <div className="text-xs text-gray-500">
+                      Có tổng {employeeStats.active} nhân viên đang hoạt động
+                      {employeeStats.terminated > 0 && ` - ${employeeStats.terminated} nhân viên đã nghỉ`}
+                    </div>
+                  )}
+                </div>
                 
                 {loadingEmployees ? (
                   <div className="flex justify-center py-4">
@@ -863,7 +920,9 @@ export default function BranchesPage() {
                   </div>
                 ) : branchEmployees.length === 0 ? (
                   <div className="text-center py-4 text-sm text-gray-500">
-                    Chưa có nhân viên nào trong chi nhánh này
+                    {employeeStats.total === 0 
+                      ? "Chưa có nhân viên nào trong chi nhánh này" 
+                      : "Không có nhân viên đang hoạt động trong chi nhánh này"}
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
