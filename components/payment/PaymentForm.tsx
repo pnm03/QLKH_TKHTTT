@@ -10,7 +10,7 @@ interface PaymentMethod {
   description: string;
   image: string;
   created_at: string;
-  user_id: string;
+  // user_id đã bị loại bỏ khỏi bảng
   user_email?: string;
   user_name?: string;
 }
@@ -56,24 +56,16 @@ export default function PaymentForm() {
     const description = formData.get('description') as string;
 
     if (!imageFile || !imagePreview) {
-      toast.error('Vui lòng chọn ảnh minh họa');
+      toast.error('Vui lòng chọn ảnh minh họa', {
+        autoClose: false,
+        closeButton: true,
+        draggable: true
+      });
       setLoading(false);
       return;
     }
 
     try {
-      // Lấy user ID
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-
-      if (userError) {
-        console.error('Lỗi khi lấy thông tin người dùng:', userError);
-        toast.error('Không thể xác thực người dùng');
-        setLoading(false);
-        return;
-      }
-
-      // Sử dụng base64 image trực tiếp từ imagePreview
-      // Lưu ý: imagePreview đã là chuỗi base64 từ FileReader.readAsDataURL
 
       // Insert payment method into database
       const { error: insertError } = await supabase
@@ -81,13 +73,51 @@ export default function PaymentForm() {
         .insert({
           payment_method_name: paymentMethodName,
           description: description,
-          image: imagePreview, // Lưu trực tiếp chuỗi base64
-          user_id: userData.user?.id || null,
+          image: imagePreview,
+          // Đã loại bỏ trường user_id
         });
 
       if (insertError) {
         console.error('Lỗi khi thêm phương thức thanh toán:', insertError);
-        toast.error('Không thể lưu phương thức thanh toán');
+
+        // Hiển thị chi tiết lỗi đầy đủ
+        toast.error(
+          <div>
+            <p><strong>Lỗi database:</strong> {insertError.message}</p>
+            <p><strong>Mã lỗi:</strong> {insertError.code || 'unknown'}</p>
+            <p><strong>Chi tiết:</strong> {JSON.stringify(insertError, null, 2)}</p>
+            <p><strong>Hint:</strong> {insertError.hint || 'Không có gợi ý'}</p>
+            <p><strong>Details:</strong> {insertError.details || 'Không có chi tiết bổ sung'}</p>
+          </div>,
+          {
+            autoClose: false,
+            closeButton: true,
+            draggable: true
+          }
+        );
+
+        // Special handling for missing table error
+        if (insertError.code === '42P01') {
+          toast.warning('Bảng payments không tồn tại. Vui lòng tạo bảng trong Supabase trước.', {
+            autoClose: false,
+            closeButton: true
+          });
+        }
+        // Xử lý lỗi vi phạm ràng buộc
+        else if (insertError.code === '23505') {
+          toast.warning('Phương thức thanh toán này đã tồn tại.', {
+            autoClose: false,
+            closeButton: true
+          });
+        }
+        // Xử lý lỗi quyền truy cập
+        else if (insertError.code === '42501') {
+          toast.warning('Bạn không có quyền thêm phương thức thanh toán.', {
+            autoClose: false,
+            closeButton: true
+          });
+        }
+
         setLoading(false);
         return;
       }
@@ -103,7 +133,29 @@ export default function PaymentForm() {
       fetchPaymentMethods();
     } catch (error) {
       console.error('Lỗi không xác định:', error);
-      toast.error('Có lỗi xảy ra khi thêm phương thức thanh toán');
+
+      // Hiển thị chi tiết lỗi không xác định
+      let errorMessage = 'Có lỗi xảy ra khi thêm phương thức thanh toán';
+      let errorDetails = '';
+
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        errorDetails = error.stack || '';
+      } else if (typeof error === 'object' && error !== null) {
+        errorDetails = JSON.stringify(error, null, 2);
+      }
+
+      toast.error(
+        <div>
+          <p><strong>Lỗi:</strong> {errorMessage}</p>
+          {errorDetails && <p><strong>Chi tiết:</strong> {errorDetails}</p>}
+        </div>,
+        {
+          autoClose: false,
+          closeButton: true,
+          draggable: true
+        }
+      );
     } finally {
       setLoading(false);
     }
@@ -120,11 +172,27 @@ export default function PaymentForm() {
       if (paymentsError) {
         console.error('Lỗi khi tải danh sách phương thức thanh toán:', paymentsError);
 
+        // Hiển thị chi tiết lỗi đầy đủ
+        toast.error(
+          <div>
+            <p><strong>Lỗi khi tải danh sách phương thức thanh toán:</strong></p>
+            <p><strong>Mã lỗi:</strong> {paymentsError.code || 'unknown'}</p>
+            <p><strong>Thông báo:</strong> {paymentsError.message}</p>
+            <p><strong>Chi tiết:</strong> {JSON.stringify(paymentsError, null, 2)}</p>
+          </div>,
+          {
+            autoClose: false,
+            closeButton: true,
+            draggable: true
+          }
+        );
+
         // Nếu lỗi là do bảng không tồn tại, hiển thị thông báo phù hợp
         if (paymentsError.code === '42P01') { // Mã lỗi PostgreSQL cho "relation does not exist"
-          toast.error('Bảng payments chưa được tạo trong cơ sở dữ liệu');
-        } else {
-          toast.error('Không thể tải danh sách phương thức thanh toán');
+          toast.warning('Bảng payments chưa được tạo trong cơ sở dữ liệu. Vui lòng chạy migration để tạo bảng.', {
+            autoClose: false,
+            closeButton: true
+          });
         }
 
         // Trả về mảng rỗng để tránh lỗi
@@ -141,48 +209,41 @@ export default function PaymentForm() {
       // Tạo một bản sao của dữ liệu để xử lý
       const processedData = [...paymentsData];
 
-      // Bước 2: Lấy thông tin người dùng cho mỗi phương thức thanh toán có user_id
-      const userIds = processedData
-        .filter(item => item.user_id)
-        .map(item => item.user_id);
-
-      if (userIds.length > 0) {
-        try {
-          const { data: usersData, error: usersError } = await supabase
-            .from('users')
-            .select('user_id, email, full_name')
-            .in('user_id', userIds);
-
-          if (!usersError && usersData) {
-            // Tạo map để tra cứu nhanh
-            const userMap = new Map();
-            usersData.forEach(user => {
-              userMap.set(user.user_id, user);
-            });
-
-            // Cập nhật thông tin người dùng cho mỗi phương thức thanh toán
-            processedData.forEach(item => {
-              const user = userMap.get(item.user_id);
-              if (user) {
-                item.user_email = user.email;
-                item.user_name = user.full_name;
-              } else {
-                item.user_email = 'Không có thông tin';
-                item.user_name = 'Người dùng ẩn danh';
-              }
-            });
-          }
-        } catch (userError) {
-          console.error('Lỗi khi lấy thông tin người dùng:', userError);
-          // Không hiển thị lỗi này cho người dùng, chỉ ghi log
-        }
-      }
+      // Đã loại bỏ phần xử lý liên quan đến user_id
+      // Gán giá trị mặc định cho các trường user_email và user_name
+      processedData.forEach(item => {
+        item.user_email = 'Hệ thống';
+        item.user_name = 'Hệ thống';
+      });
 
       // Cập nhật state với dữ liệu đã xử lý
       setPaymentMethods(processedData);
     } catch (error) {
       console.error('Lỗi không xác định khi tải danh sách phương thức thanh toán:', error);
-      toast.error('Không thể tải danh sách phương thức thanh toán');
+
+      // Hiển thị chi tiết lỗi
+      let errorMessage = 'Không thể tải danh sách phương thức thanh toán';
+      let errorDetails = '';
+
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        errorDetails = error.stack || '';
+      } else if (typeof error === 'object' && error !== null) {
+        errorDetails = JSON.stringify(error, null, 2);
+      }
+
+      toast.error(
+        <div>
+          <p><strong>Lỗi:</strong> {errorMessage}</p>
+          {errorDetails && <p><strong>Chi tiết:</strong> {errorDetails}</p>}
+        </div>,
+        {
+          autoClose: false,
+          closeButton: true,
+          draggable: true
+        }
+      );
+
       setPaymentMethods([]);
     }
   };
@@ -201,7 +262,21 @@ export default function PaymentForm() {
 
       if (deleteError) {
         console.error('Lỗi khi xóa phương thức thanh toán:', deleteError);
-        toast.error('Không thể xóa phương thức thanh toán');
+
+        // Hiển thị chi tiết lỗi khi xóa
+        toast.error(
+          <div>
+            <p><strong>Lỗi khi xóa phương thức thanh toán:</strong></p>
+            <p><strong>Mã lỗi:</strong> {deleteError.code || 'unknown'}</p>
+            <p><strong>Thông báo:</strong> {deleteError.message}</p>
+            <p><strong>Chi tiết:</strong> {JSON.stringify(deleteError, null, 2)}</p>
+          </div>,
+          {
+            autoClose: false,
+            closeButton: true,
+            draggable: true
+          }
+        );
         return;
       }
 
@@ -209,7 +284,29 @@ export default function PaymentForm() {
       fetchPaymentMethods();
     } catch (error) {
       console.error('Lỗi không xác định khi xóa phương thức thanh toán:', error);
-      toast.error('Không thể xóa phương thức thanh toán');
+
+      // Hiển thị chi tiết lỗi
+      let errorMessage = 'Không thể xóa phương thức thanh toán';
+      let errorDetails = '';
+
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        errorDetails = error.stack || '';
+      } else if (typeof error === 'object' && error !== null) {
+        errorDetails = JSON.stringify(error, null, 2);
+      }
+
+      toast.error(
+        <div>
+          <p><strong>Lỗi:</strong> {errorMessage}</p>
+          {errorDetails && <p><strong>Chi tiết:</strong> {errorDetails}</p>}
+        </div>,
+        {
+          autoClose: false,
+          closeButton: true,
+          draggable: true
+        }
+      );
     }
   };
 
@@ -339,7 +436,8 @@ export default function PaymentForm() {
                           // Nếu hình ảnh không tải được, hiển thị placeholder
                           e.currentTarget.onerror = null; // Tránh vòng lặp vô hạn
                           e.currentTarget.style.display = 'none';
-                          e.currentTarget.parentElement.innerHTML = `
+                          if (e.currentTarget.parentElement) {
+                            e.currentTarget.parentElement.innerHTML = `
                             <div class="w-full h-full flex items-center justify-center bg-gray-100">
                               <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
@@ -347,6 +445,7 @@ export default function PaymentForm() {
                               <p class="mt-2 text-sm text-gray-500">Hình ảnh không khả dụng</p>
                             </div>
                           `;
+                          }
                         }}
                       />
                     ) : (
@@ -374,8 +473,7 @@ export default function PaymentForm() {
                         </button>
                       </div>
                       <div className="text-xs text-gray-500">
-                        Người thêm: {method.user_name || 'Không xác định'}
-                        {method.user_email ? ` (${method.user_email})` : ''}
+                        Người thêm: Hệ thống
                       </div>
                     </div>
                   </div>

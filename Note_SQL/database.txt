@@ -63,7 +63,7 @@ Bảng Payments:
 Orders:
 	order_id (Mã đơn hàng) - TEXT - PRIMARY KEY, Tự sinh
 	user_id (Mã người dùng tạo/xử lý đơn (NULL nếu là khách vãng lai)) - UUID - FOREIGN KEY REFERENCES Users(user_id), NULL
-	customer_id (Mã khách hàng đặt hàng) - UUID - FOREIGN KEY REFERENCES Customers(customer_id), NOT NULL
+	customer_id (Mã khách hàng đặt hàng) - UUID - FOREIGN KEY REFERENCES Customers(customer_id), NULL
 	order_date (Ngày đặt hàng) - TIMESTAMP WITH TIME ZONE - NOT NULL, DEFAULT CURRENT_TIMESTAMP
 	price (Tổng giá trị đơn hàng) - DECIMAL(15, 2) - NOT NULL, CHECK (price >= 0)
 	status (Trạng thái đơn hàng) - VARCHAR(50) - NOT NULL, CHECK (status IN ('Đã thanh toán', 'Chưa thanh toán'))

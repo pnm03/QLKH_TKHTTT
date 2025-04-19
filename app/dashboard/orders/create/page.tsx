@@ -9,7 +9,11 @@ import {
   PlusIcon, 
   MinusIcon, 
   TrashIcon,
-  UserIcon
+  UserIcon,
+  XMarkIcon,
+  EnvelopeIcon,
+  PhoneIcon,
+  HomeIcon
 } from '@heroicons/react/24/outline'
 
 // Định nghĩa các interface
@@ -35,6 +39,7 @@ interface Customer {
   phone: string
   address: string
   email: string
+  hometown?: string
 }
 
 interface Order {
@@ -69,6 +74,23 @@ export default function CreateOrderPage() {
     address: '',
     email: ''
   })
+  
+  // State cho tìm kiếm khách hàng
+  const [customerSearchTerm, setCustomerSearchTerm] = useState('')
+  const [customerSearchResults, setCustomerSearchResults] = useState<any[]>([])
+  const [showCustomerSearchResults, setShowCustomerSearchResults] = useState(false)
+  const [selectedCustomer, setSelectedCustomer] = useState<any | null>(null)
+  
+  // State cho modal thêm khách hàng mới
+  const [showAddCustomerModal, setShowAddCustomerModal] = useState(false)
+  const [newCustomer, setNewCustomer] = useState({
+    full_name: '',
+    phone: '',
+    email: '',
+    hometown: ''
+  })
+  const [addCustomerLoading, setAddCustomerLoading] = useState(false)
+  const [addCustomerErrors, setAddCustomerErrors] = useState<Record<string, string>>({})
   
   // State cho người dùng hiện tại
   const [currentUser, setCurrentUser] = useState<any>(null)
@@ -225,6 +247,222 @@ export default function CreateOrderPage() {
     setOrders(updatedOrders)
   }
 
+
+  
+  // Tìm kiếm khách hàng
+  const searchCustomers = async () => {
+    if (!customerSearchTerm.trim()) {
+      setCustomerSearchResults([])
+      setShowCustomerSearchResults(false)
+      return
+    }
+    
+    try {
+      const { data, error } = await supabase
+        .from('customers')
+        .select('*')
+        .or(`full_name.ilike.%${customerSearchTerm}%, phone.ilike.%${customerSearchTerm}%, email.ilike.%${customerSearchTerm}%`)
+        .order('full_name', { ascending: true })
+        .limit(5)
+        
+      if (error) throw error
+      
+      setCustomerSearchResults(data || [])
+      setShowCustomerSearchResults(true)
+    } catch (error) {
+      console.error('Lỗi khi tìm kiếm khách hàng:', error)
+      setError('Có lỗi xảy ra khi tìm kiếm khách hàng')
+    }
+  }
+  
+  // Chọn khách hàng từ kết quả tìm kiếm
+  const selectCustomer = (customer: any) => {
+    setSelectedCustomer(customer)
+    setCustomer({
+      customer_id: customer.customer_id,
+      name: customer.full_name,
+      phone: customer.phone,
+      email: customer.email,
+      address: customer.hometown || '',
+      hometown: customer.hometown
+    })
+    
+    // Cập nhật thông tin khách hàng vào đơn hàng
+    const updatedOrders = [...orders]
+    updatedOrders[activeOrderIndex].customer = {
+      customer_id: customer.customer_id,
+      name: customer.full_name,
+      phone: customer.phone,
+      email: customer.email,
+      address: customer.hometown || '',
+      hometown: customer.hometown
+    }
+    setOrders(updatedOrders)
+    
+    // Đóng kết quả tìm kiếm
+    setShowCustomerSearchResults(false)
+    setCustomerSearchTerm('')
+  }
+  
+  // Xóa khách hàng đã chọn
+  const clearSelectedCustomer = () => {
+    setSelectedCustomer(null)
+    setCustomer({
+      name: '',
+      phone: '',
+      address: '',
+      email: ''
+    })
+    
+    // Cập nhật thông tin khách hàng vào đơn hàng
+    const updatedOrders = [...orders]
+    updatedOrders[activeOrderIndex].customer = null
+    setOrders(updatedOrders)
+  }
+  
+  // Mở modal thêm khách hàng mới
+  const openAddCustomerModal = () => {
+    setShowAddCustomerModal(true)
+    setNewCustomer({
+      full_name: '',
+      phone: '',
+      email: '',
+      hometown: ''
+    })
+    setAddCustomerErrors({})
+  }
+  
+  // Đóng modal thêm khách hàng mới
+  const closeAddCustomerModal = () => {
+    setShowAddCustomerModal(false)
+  }
+  
+  // Xử lý thay đổi form thêm khách hàng mới
+  const handleNewCustomerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setNewCustomer({
+      ...newCustomer,
+      [name]: value
+    })
+    
+    // Xóa lỗi khi người dùng nhập
+    if (addCustomerErrors[name]) {
+      setAddCustomerErrors({
+        ...addCustomerErrors,
+        [name]: ''
+      })
+    }
+  }
+  
+  // Kiểm tra form thêm khách hàng mới
+  const validateNewCustomerForm = () => {
+    const errors: Record<string, string> = {}
+    
+    // Kiểm tra tên
+    if (!newCustomer.full_name.trim()) {
+      errors.full_name = 'Họ tên không được để trống'
+    }
+    
+    // Kiểm tra số điện thoại
+    if (!newCustomer.phone.trim()) {
+      errors.phone = 'Số điện thoại không được để trống'
+    } else if (!/^0\d{9,10}$/.test(newCustomer.phone)) {
+      errors.phone = 'Số điện thoại phải bắt đầu bằng số 0 và có 10-11 số'
+    }
+    
+    // Kiểm tra email nếu có
+    if (newCustomer.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newCustomer.email)) {
+      errors.email = 'Email không hợp lệ'
+    }
+    
+    setAddCustomerErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+  
+  // Thêm khách hàng mới
+  const addNewCustomer = async () => {
+    if (!validateNewCustomerForm()) {
+      return
+    }
+    
+    setAddCustomerLoading(true)
+    
+    try {
+      // Kiểm tra khách hàng đã tồn tại
+      const { data: existingCustomer, error: checkError } = await supabase
+        .from('customers')
+        .select('*')
+        .or(`phone.eq.${newCustomer.phone},email.eq.${newCustomer.email}`)
+        .maybeSingle()
+      
+      if (checkError) throw checkError
+      
+      if (existingCustomer) {
+        if (existingCustomer.phone === newCustomer.phone) {
+          setAddCustomerErrors({
+            ...addCustomerErrors,
+            phone: 'Số điện thoại này đã được sử dụng bởi khách hàng khác'
+          })
+          return
+        }
+        
+        if (existingCustomer.email === newCustomer.email) {
+          setAddCustomerErrors({
+            ...addCustomerErrors,
+            email: 'Email này đã được sử dụng bởi khách hàng khác'
+          })
+          return
+        }
+      }
+      
+      // Thêm khách hàng mới
+      const { data: insertedCustomer, error: insertError } = await supabase
+        .from('customers')
+        .insert([newCustomer])
+        .select()
+        .single()
+      
+      if (insertError) throw insertError
+      
+      // Chọn khách hàng vừa thêm
+      if (insertedCustomer) {
+        selectCustomer(insertedCustomer)
+        setSuccessMessage('Thêm khách hàng mới thành công!')
+        
+        // Tự động ẩn thông báo sau 3 giây
+        setTimeout(() => {
+          setSuccessMessage(null)
+        }, 3000)
+        
+        // Đóng modal
+        closeAddCustomerModal()
+      }
+    } catch (error: any) {
+      console.error('Lỗi khi thêm khách hàng mới:', error)
+      
+      // Xử lý lỗi trùng lặp từ Supabase
+      if (error.code === '23505') {
+        if (error.message.includes('customers_email_key')) {
+          setAddCustomerErrors({
+            ...addCustomerErrors,
+            email: 'Email này đã được sử dụng bởi khách hàng khác'
+          })
+        } else if (error.message.includes('customers_phone_key')) {
+          setAddCustomerErrors({
+            ...addCustomerErrors,
+            phone: 'Số điện thoại này đã được sử dụng bởi khách hàng khác'
+          })
+        } else {
+          setError('Có lỗi xảy ra khi thêm khách hàng mới')
+        }
+      } else {
+        setError('Có lỗi xảy ra khi thêm khách hàng mới')
+      }
+    } finally {
+      setAddCustomerLoading(false)
+    }
+  }
+  
   // Cập nhật thông tin khách hàng
   const handleCustomerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -322,8 +560,70 @@ export default function CreateOrderPage() {
 
       {/* Thanh ngang phía trên */}
       <div className="bg-white shadow rounded-lg mb-6">
-        <div className="p-4 flex items-center justify-between">
-          <div className="relative w-96">
+        <div className="p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          {/* Tìm kiếm khách hàng */}
+          <div className="relative w-full md:w-96">
+            <input
+              type="text"
+              placeholder="Tìm kiếm khách hàng..."
+              value={customerSearchTerm}
+              onChange={(e) => setCustomerSearchTerm(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && searchCustomers()}
+              className={`block w-full rounded-md focus:ring-${themeColor}-500 focus:border-${themeColor}-500 h-10 border border-gray-300 pl-10 pr-10`}
+            />
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <UserIcon className="h-5 w-5 text-gray-400" />
+            </div>
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+              <button
+                type="button"
+                onClick={searchCustomers}
+                className={`text-${themeColor}-600 hover:text-${themeColor}-800 focus:outline-none`}
+              >
+                <span className="sr-only">Tìm kiếm</span>
+                <MagnifyingGlassIcon className="h-5 w-5" />
+              </button>
+              <button
+                type="button"
+                onClick={openAddCustomerModal}
+                className="ml-2 text-green-600 hover:text-green-800 focus:outline-none"
+              >
+                <span className="sr-only">Thêm khách hàng mới</span>
+                <PlusIcon className="h-5 w-5" />
+              </button>
+            </div>
+            
+            {/* Kết quả tìm kiếm khách hàng */}
+            {showCustomerSearchResults && customerSearchResults.length > 0 && (
+              <div className="absolute mt-1 w-full bg-white shadow-lg rounded-md z-10 max-h-60 overflow-y-auto">
+                {customerSearchResults.map((customer) => (
+                  <div
+                    key={customer.customer_id}
+                    className="p-2 hover:bg-gray-100 cursor-pointer flex items-center"
+                    onClick={() => selectCustomer(customer)}
+                  >
+                    <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-2">
+                      <UserIcon className="h-4 w-4 text-gray-500" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-medium">{customer.full_name}</div>
+                      <div className="text-sm text-gray-500 flex items-center">
+                        <PhoneIcon className="h-3 w-3 mr-1" /> {customer.phone}
+                        {customer.email && (
+                          <span className="ml-2 flex items-center">
+                            <EnvelopeIcon className="h-3 w-3 mr-1" /> {customer.email}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          
+          {/* Tìm kiếm sản phẩm */}
+          <div className="relative w-full md:w-96">
             <input
               type="text"
               placeholder="Tìm kiếm sản phẩm..."
@@ -599,6 +899,169 @@ export default function CreateOrderPage() {
           </div>
         </div>
       </div>
+      
+
+      {/* Hiển thị khách hàng đã chọn */}
+      {selectedCustomer && (
+        <div className="fixed bottom-4 right-4 bg-white shadow-lg rounded-lg p-3 max-w-md border-l-4 border-green-500 z-40">
+          <div className="flex justify-between items-start">
+            <div className="flex items-center">
+              <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center mr-3">
+                <UserIcon className="h-6 w-6 text-gray-500" />
+              </div>
+              <div>
+                <div className="font-medium text-gray-900">{selectedCustomer.full_name}</div>
+                <div className="text-sm text-gray-500 flex flex-col">
+                  <span className="flex items-center">
+                    <PhoneIcon className="h-4 w-4 mr-1" /> {selectedCustomer.phone}
+                  </span>
+                  {selectedCustomer.email && (
+                    <span className="flex items-center">
+                      <EnvelopeIcon className="h-4 w-4 mr-1" /> {selectedCustomer.email}
+                    </span>
+                  )}
+                  {selectedCustomer.hometown && (
+                    <span className="flex items-center">
+                      <HomeIcon className="h-4 w-4 mr-1" /> {selectedCustomer.hometown}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={clearSelectedCustomer}
+              className="text-gray-400 hover:text-gray-500"
+            >
+              <XMarkIcon className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+      )}
+      
+      {/* Modal thêm khách hàng mới */}
+      {showAddCustomerModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0">
+            <div className="fixed inset-0 backdrop-blur-[2px]" onClick={closeAddCustomerModal}></div>
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div className="inline-block align-middle backdrop-filter backdrop-blur-sm bg-white bg-opacity-50 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-xl sm:w-full relative z-50 border border-blue-500">
+              <form onSubmit={(e) => { e.preventDefault(); addNewCustomer(); }}>
+                <div className="bg-white bg-opacity-90 backdrop-filter backdrop-blur-sm px-6 pt-6 pb-6 sm:p-8">
+                  <div className="mb-6">
+                    <h3 className="text-xl leading-6 font-medium text-gray-900">
+                      Thêm khách hàng mới
+                    </h3>
+                    <p className="mt-1 text-sm text-gray-500">
+                      Vui lòng điền đầy đủ thông tin bên dưới
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-6">
+                    <div>
+                      <label htmlFor="full_name" className="block text-sm font-medium text-gray-700">
+                        Họ và tên <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        name="full_name"
+                        id="full_name"
+                        value={newCustomer.full_name}
+                        onChange={handleNewCustomerChange}
+                        className={`mt-1 block w-full rounded-md shadow-sm focus:border-${themeColor}-500 focus:ring-${themeColor}-500 text-base py-3 ${addCustomerErrors.full_name ? 'border-red-300' : 'border-gray-300'}`}
+                        placeholder="Nhập họ và tên"
+                      />
+                      {addCustomerErrors.full_name && (
+                        <p className="mt-1 text-sm text-red-600">{addCustomerErrors.full_name}</p>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+                        Số điện thoại <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="tel"
+                          name="phone"
+                          id="phone"
+                          value={newCustomer.phone}
+                          onChange={handleNewCustomerChange}
+                          className={`mt-1 block w-full rounded-md shadow-sm focus:border-${themeColor}-500 focus:ring-${themeColor}-500 text-base py-3 ${addCustomerErrors.phone ? 'border-red-300' : 'border-gray-300'}`}
+                          placeholder="Nhập số điện thoại"
+                        />
+                        {addCustomerErrors.phone && (
+                          <p className="mt-1 text-sm text-red-600">{addCustomerErrors.phone}</p>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                        Email
+                      </label>
+                      <input
+                        type="email"
+                        name="email"
+                        id="email"
+                        value={newCustomer.email}
+                        onChange={handleNewCustomerChange}
+                        className={`mt-1 block w-full rounded-md shadow-sm focus:border-${themeColor}-500 focus:ring-${themeColor}-500 text-base py-3 ${addCustomerErrors.email ? 'border-red-300' : 'border-gray-300'}`}
+                        placeholder="Nhập email"
+                      />
+                      {addCustomerErrors.email && (
+                        <p className="mt-1 text-sm text-red-600">{addCustomerErrors.email}</p>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="hometown" className="block text-sm font-medium text-gray-700">
+                        Địa chỉ
+                      </label>
+                      <input
+                        type="text"
+                        name="hometown"
+                        id="hometown"
+                        value={newCustomer.hometown}
+                        onChange={handleNewCustomerChange}
+                        className={`mt-1 block w-full rounded-md shadow-sm focus:border-${themeColor}-500 focus:ring-${themeColor}-500 text-base py-3 ${addCustomerErrors.hometown ? 'border-red-300' : 'border-gray-300'}`}
+                        placeholder="Nhập địa chỉ"
+                      />
+                      {addCustomerErrors.hometown && (
+                        <p className="mt-1 text-sm text-red-600">{addCustomerErrors.hometown}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-gray-50 bg-opacity-90 backdrop-filter backdrop-blur-sm px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                  <button
+                    type="submit"
+                    disabled={addCustomerLoading}
+                    className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-${themeColor}-600 text-base font-medium text-white hover:bg-${themeColor}-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${themeColor}-500 sm:ml-3 sm:w-auto sm:text-sm ${addCustomerLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                  >
+                    {addCustomerLoading ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Đang lưu...
+                      </>
+                    ) : 'Thêm khách hàng'}
+                  </button>
+                  <button
+                    type="button"
+                    className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                    onClick={closeAddCustomerModal}
+                  >
+                    Hủy
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
