@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/utils/supabase/client'
-import { PlusIcon, XMarkIcon, MagnifyingGlassIcon, UserIcon, EnvelopeIcon, PhoneIcon, HomeIcon } from '@heroicons/react/24/outline'
+import { PlusIcon, XMarkIcon, MagnifyingGlassIcon, UserIcon, EnvelopeIcon, PhoneIcon, HomeIcon, CheckCircleIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
 import { useTheme } from '@/app/context/ThemeContext'
 // Đã loại bỏ việc import các hàm cập nhật tồn kho vì sử dụng trigger trong cơ sở dữ liệu
 
@@ -75,7 +75,7 @@ export default function CreateOrderPage() {
   const [recipientDistrict, setRecipientDistrict] = useState('')
   const [recipientWard, setRecipientWard] = useState('')
   const [shippingWeight, setShippingWeight] = useState('500')
-  const [shippingUnit, setShippingUnit] = useState('gram')
+  const [shippingUnit, setShippingUnit] = useState('g')
   const [packageLength, setPackageLength] = useState('10')
   const [packageWidth, setPackageWidth] = useState('10')
   const [packageHeight, setPackageHeight] = useState('10')
@@ -1314,13 +1314,33 @@ export default function CreateOrderPage() {
 
     // Đặt giá trị mặc định cho các trường
     const totalAmountToPay = calculateTotalAllInvoices().amountToPay;
-    setCodAmount(true);
+    
+    // Nếu có phương thức thanh toán được chọn, bỏ tích thu tiền hộ
+    if (selectedPaymentMethod) {
+      setCodAmount(false);
+    } else {
+      setCodAmount(true);
+    }
+    
+    // Nếu có khách hàng được chọn, điền thông tin khách hàng vào form
+    if (currentInvoice.customer) {
+      setRecipientName(currentInvoice.customer.full_name || '');
+      setRecipientPhone(currentInvoice.customer.phone || '');
+      setRecipientAddress(currentInvoice.customer.hometown || '');
+    } else {
+      // Reset các trường nếu không có khách hàng
+      setRecipientName('');
+      setRecipientPhone('');
+      setRecipientAddress('');
+    }
+    
     setShowShippingPopup(true);
   };
 
   // Đóng popup gửi đơn hàng
   const closeShippingPopup = () => {
     setShowShippingPopup(false);
+    setSelectedPaymentMethod(null); // Reset phương thức thanh toán khi đóng popup
   };
 
   // Xử lý tạo đơn hàng
@@ -1408,7 +1428,7 @@ export default function CreateOrderPage() {
       const remainingAmount = Math.max(0, totalOrderAmount - prepaidAmount);
 
       // Xác định trạng thái thanh toán
-      const paymentStatus = prepaidAmount >= totalOrderAmount ? 'paid' : 'unpaid';
+      const paymentStatus = prepaidAmount >= totalOrderAmount || selectedPaymentMethod ? 'Đã thanh toán' : 'Chưa thanh toán';
 
       // 2. Tạo đơn hàng trước
       console.log('Bắt đầu tạo đơn hàng...');
@@ -1445,7 +1465,7 @@ export default function CreateOrderPage() {
         price: totalOrderAmount,
         status: paymentStatus, // Trạng thái dựa trên số tiền đã trả
         is_shipping: true, // Đây là đơn vận chuyển
-        payment_method: null // Chưa có phương thức thanh toán
+        payment_method: selectedPaymentMethod // Phương thức thanh toán đã chọn hoặc null
       };
 
       console.log('Thông tin đơn hàng:', orderObject);
@@ -1531,7 +1551,7 @@ export default function CreateOrderPage() {
         shipping_cost: 0, // Có thể tính phí vận chuyển sau
         actual_delivery_date: null,
         delivery_date: null,
-        status: 'pending', // Trạng thái mặc định là đang chờ xử lý
+        status: 'Chưa giao hàng', // Trạng thái mặc định khi tạo đơn hàng
         created_at: new Date().toISOString(),
         // Thêm các trường mới
         name_customer: recipientName,
@@ -2225,7 +2245,14 @@ export default function CreateOrderPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <h4 className="font-medium text-lg mb-3">Thông tin người nhận</h4>
+                <div className="flex justify-between items-center mb-3">
+                  <h4 className="font-medium text-lg">Thông tin người nhận</h4>
+                  {currentInvoice.customer && (
+                    <span className="text-sm text-green-600 bg-green-50 px-2 py-1 rounded-full border border-green-200">
+                      Đã chọn khách hàng
+                    </span>
+                  )}
+                </div>
 
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -2235,8 +2262,9 @@ export default function CreateOrderPage() {
                     type="text"
                     value={recipientName}
                     onChange={(e) => setRecipientName(e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${currentInvoice.customer ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                     placeholder="Nhập tên người nhận"
+                    disabled={currentInvoice.customer !== null}
                   />
                 </div>
 
@@ -2248,8 +2276,9 @@ export default function CreateOrderPage() {
                     type="text"
                     value={recipientPhone}
                     onChange={(e) => setRecipientPhone(e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${currentInvoice.customer ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                     placeholder="Nhập số điện thoại"
+                    disabled={currentInvoice.customer !== null}
                   />
                 </div>
 
@@ -2261,8 +2290,9 @@ export default function CreateOrderPage() {
                     type="text"
                     value={recipientAddress}
                     onChange={(e) => setRecipientAddress(e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${currentInvoice.customer ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                     placeholder="Nhập địa chỉ chi tiết"
+                    disabled={currentInvoice.customer !== null}
                   />
                 </div>
 
@@ -2320,7 +2350,7 @@ export default function CreateOrderPage() {
                       onChange={(e) => setShippingUnit(e.target.value)}
                       className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
-                      <option value="gram">gram</option>
+                      <option value="g">gram</option>
                       <option value="kg">kg</option>
                     </select>
                   </div>
@@ -2392,7 +2422,7 @@ export default function CreateOrderPage() {
                       const prepaidAmount = parseFloat(value) || 0;
                       const totalAmount = calculateTotalAllInvoices().amountToPay;
 
-                      if (prepaidAmount >= totalAmount) {
+                      if (prepaidAmount >= totalAmount || selectedPaymentMethod) {
                         setCodAmount(false);
                       } else {
                         setCodAmount(true);
@@ -2416,12 +2446,82 @@ export default function CreateOrderPage() {
                       type="checkbox"
                       checked={codAmount}
                       onChange={(e) => setCodAmount(e.target.checked)}
-                      disabled={parseFloat(customerPrepaid) >= calculateTotalAllInvoices().amountToPay}
+                      disabled={parseFloat(customerPrepaid) >= calculateTotalAllInvoices().amountToPay || selectedPaymentMethod !== null}
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded disabled:opacity-50"
                     />
                     <span className="ml-2 text-sm text-gray-700">Thu hộ tiền (COD)</span>
                   </label>
                 </div>
+              </div>
+            </div>
+
+            {/* Phương thức thanh toán */}
+            <div className="mt-6 mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Phương thức thanh toán:
+              </label>
+              <div className="grid grid-cols-3 gap-2 mt-2">
+                {paymentMethods.length > 0 ? (
+                  paymentMethods.map((method) => (
+                    <div
+                      key={method.payment_id}
+                      onClick={() => {
+                        // Nếu phương thức này đã được chọn, bỏ chọn nó
+                        if (selectedPaymentMethod === method.payment_id) {
+                          setSelectedPaymentMethod(null);
+                          // Khi bỏ chọn phương thức thanh toán, mặc định là thu tiền hộ
+                          setCodAmount(true);
+                        } else {
+                          // Nếu chưa chọn, chọn phương thức này
+                          setSelectedPaymentMethod(method.payment_id);
+                          // Tự động bỏ tích thu tiền hộ khi chọn phương thức thanh toán
+                          setCodAmount(false);
+                        }
+                      }}
+                      className={`border rounded-md p-2 cursor-pointer transition-all duration-200 ${
+                        selectedPaymentMethod === method.payment_id
+                          ? `${currentTheme?.borderColor || 'border-blue-500'} bg-blue-50`
+                          : 'border-gray-300 hover:border-blue-300'
+                      }`}
+                    >
+                      <div className="flex items-center">
+                        {method.image ? (
+                          <img
+                            src={method.image}
+                            alt={method.payment_method_name}
+                            className="w-6 h-6 mr-2 object-contain"
+                          />
+                        ) : (
+                          <svg className="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                          </svg>
+                        )}
+                        <div className="text-sm font-medium">{method.payment_method_name}</div>
+                      </div>
+                      {method.description && (
+                        <div className="text-xs text-gray-500 mt-1 ml-8">{method.description}</div>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <div className="col-span-3 text-center py-4 text-gray-500">
+                    Không có phương thức thanh toán nào. Vui lòng thêm phương thức thanh toán trong phần cài đặt.
+                  </div>
+                )}
+              </div>
+              
+              <div className="mt-2 text-sm text-gray-600">
+                {selectedPaymentMethod ? (
+                  <div className="flex items-center text-green-600">
+                    <CheckCircleIcon className="h-4 w-4 mr-1" />
+                    <span>Đơn hàng sẽ được đánh dấu là "Đã thanh toán" - Nhấn vào phương thức đã chọn để bỏ chọn</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center text-gray-500">
+                    <InformationCircleIcon className="h-4 w-4 mr-1" />
+                    <span>Nếu không chọn phương thức thanh toán, đơn hàng sẽ ở trạng thái "Chưa thanh toán"</span>
+                  </div>
+                )}
               </div>
             </div>
 
