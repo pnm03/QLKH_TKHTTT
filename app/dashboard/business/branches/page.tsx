@@ -17,11 +17,15 @@ interface Branch {
   longitude?: number | null
 }
 
-// Định nghĩa kiểu dữ liệu cho người dùng (để hiển thị danh sách quản lý)
+// Định nghĩa kiểu dữ liệu cho người dùng (để hiển thị danh sách quản lý và nhân viên)
 interface User {
   user_id: string
   full_name: string
   email: string
+  phone?: string
+  branch_id?: number
+  birth_date?: string
+  hometown?: string
 }
 
 // Định nghĩa kiểu dữ liệu cho tọa độ
@@ -59,7 +63,7 @@ function MapEventHandler({ onLocationSelect }: { onLocationSelect: (lat: number,
       const { lat, lng } = e.latlng;
       onLocationSelect(lat, lng);
     },
-  });
+  }); 
   return null;
 }
 
@@ -76,6 +80,8 @@ export default function BranchesPage() {
   const [mounted, setMounted] = useState(false)
   const [branches, setBranches] = useState<Branch[]>([])
   const [users, setUsers] = useState<User[]>([])
+  const [branchEmployees, setBranchEmployees] = useState<User[]>([])
+  const [loadingEmployees, setLoadingEmployees] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   
@@ -301,9 +307,32 @@ export default function BranchesPage() {
     setShowAddPopup(false)
   }
 
+  // Lấy danh sách nhân viên của chi nhánh
+  const fetchBranchEmployees = async (branchId: number) => {
+    setLoadingEmployees(true)
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('user_id, full_name, email, phone, birth_date, hometown')
+        .eq('branch_id', branchId)
+        .order('full_name', { ascending: true })
+      
+      if (error) throw error
+      
+      setBranchEmployees(data || [])
+    } catch (error) {
+      console.error('Lỗi khi lấy danh sách nhân viên:', error)
+      showNotification('Không thể tải danh sách nhân viên', 'error')
+    } finally {
+      setLoadingEmployees(false)
+    }
+  }
+
   // Mở popup xem chi tiết
   const openViewPopup = (branch: Branch) => {
     setSelectedBranch(branch)
+    // Lấy danh sách nhân viên của chi nhánh
+    fetchBranchEmployees(branch.branch_id)
     setShowViewPopup(true)
   }
 
@@ -311,6 +340,7 @@ export default function BranchesPage() {
   const closeViewPopup = () => {
     setShowViewPopup(false)
     setSelectedBranch(null)
+    setBranchEmployees([]) // Reset danh sách nhân viên
   }
 
   // Chuyển sang chế độ chỉnh sửa
@@ -728,24 +758,40 @@ export default function BranchesPage() {
                   )}
                 </div>
 
-                <div>
-                  <label htmlFor="manager_id" className="block text-sm font-medium text-gray-700">
-                    Quản lý
-                  </label>
-                  <select
-                    id="manager_id"
-                    name="manager_id"
-                    value={formData.manager_id || ''}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  >
-                    <option value="">-- Chọn quản lý --</option>
-                    {users.map(user => (
-                      <option key={user.user_id} value={user.user_id}>
-                        {user.full_name} ({user.email})
-                      </option>
-                    ))}
-                  </select>
+                {/* ID và Quản lý cùng một hàng */}
+                <div className="grid grid-cols-2 gap-4">
+                  {isEditing && selectedBranch && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        ID Chi nhánh
+                      </label>
+                      <input
+                        type="text"
+                        value={selectedBranch.branch_id}
+                        disabled
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-gray-50 text-gray-500 sm:text-sm"
+                      />
+                    </div>
+                  )}
+                  <div className={isEditing && selectedBranch ? "" : "col-span-2"}>
+                    <label htmlFor="manager_id" className="block text-sm font-medium text-gray-700">
+                      Quản lý
+                    </label>
+                    <select
+                      id="manager_id"
+                      name="manager_id"
+                      value={formData.manager_id || ''}
+                      onChange={handleInputChange}
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    >
+                      <option value="">-- Chọn quản lý --</option>
+                      {users.map(user => (
+                        <option key={user.user_id} value={user.user_id}>
+                          {user.full_name} ({user.email})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
 
@@ -773,7 +819,7 @@ export default function BranchesPage() {
       {showViewPopup && selectedBranch && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="absolute inset-0 bg-black opacity-10" onClick={closeViewPopup}></div>
-          <div className={`bg-white rounded-lg shadow-xl w-full max-w-md p-6 border-2 ${currentTheme?.borderColor || 'border-blue-500'} relative`}>
+          <div className={`bg-white rounded-lg shadow-xl w-full max-w-2xl p-6 border-2 ${currentTheme?.borderColor || 'border-blue-500'} relative max-h-[90vh] overflow-y-auto`}>
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl font-semibold">Chi tiết chi nhánh</h3>
               <button
@@ -785,9 +831,16 @@ export default function BranchesPage() {
             </div>
 
             <div className="space-y-4">
-              <div>
-                <h4 className="text-sm font-medium text-gray-500">ID</h4>
-                <p className="mt-1 text-sm text-gray-900">{selectedBranch.branch_id}</p>
+              {/* ID và Quản lý cùng một hàng */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h4 className="text-sm font-medium text-gray-500">ID</h4>
+                  <p className="mt-1 text-sm text-gray-900">{selectedBranch.branch_id}</p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-gray-500">Quản lý</h4>
+                  <p className="mt-1 text-sm text-gray-900">{getManagerName(selectedBranch.manager_id)}</p>
+                </div>
               </div>
 
               <div>
@@ -799,10 +852,53 @@ export default function BranchesPage() {
                 <h4 className="text-sm font-medium text-gray-500">Địa chỉ</h4>
                 <p className="mt-1 text-sm text-gray-900 break-words">{selectedBranch.branch_address}</p>
               </div>
-
-              <div>
-                <h4 className="text-sm font-medium text-gray-500">Quản lý</h4>
-                <p className="mt-1 text-sm text-gray-900">{getManagerName(selectedBranch.manager_id)}</p>
+              
+              {/* Danh sách nhân viên của chi nhánh */}
+              <div className="mt-6">
+                <h4 className="text-sm font-medium text-gray-700 border-b pb-2 mb-3">Danh sách nhân viên</h4>
+                
+                {loadingEmployees ? (
+                  <div className="flex justify-center py-4">
+                    <div className={`animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 ${currentTheme?.borderColor || 'border-blue-500'}`}></div>
+                  </div>
+                ) : branchEmployees.length === 0 ? (
+                  <div className="text-center py-4 text-sm text-gray-500">
+                    Chưa có nhân viên nào trong chi nhánh này
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Họ tên
+                          </th>
+                          <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Email
+                          </th>
+                          <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Số điện thoại
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {branchEmployees.map((employee) => (
+                          <tr key={employee.user_id} className="hover:bg-gray-50">
+                            <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
+                              {employee.full_name}
+                            </td>
+                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
+                              {employee.email}
+                            </td>
+                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
+                              {employee.phone || '-'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             </div>
 
