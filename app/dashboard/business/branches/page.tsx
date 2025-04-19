@@ -137,15 +137,24 @@ export default function BranchesPage() {
 
   // Xử lý khi chọn vị trí trên bản đồ
   const handleLocationSelect = (lat: number, lng: number) => {
-    setMarkerPosition([lat, lng]);
+    // Đảm bảo lat và lng là số
+    const numLat = Number(lat);
+    const numLng = Number(lng);
+    
+    if (isNaN(numLat) || isNaN(numLng)) {
+      console.error('Tọa độ không hợp lệ:', lat, lng);
+      return;
+    }
+    
+    setMarkerPosition([numLat, numLng]);
     setFormData(prev => ({
       ...prev,
-      latitude: lat,
-      longitude: lng
+      latitude: numLat,
+      longitude: numLng
     }));
     
     // Cập nhật địa chỉ từ tọa độ (nếu có thể)
-    fetchAddressFromCoordinates(lat, lng);
+    fetchAddressFromCoordinates(numLat, numLng);
   };
   
   // Cập nhật địa chỉ từ tọa độ (Reverse Geocoding)
@@ -178,6 +187,12 @@ export default function BranchesPage() {
       if (data && data.length > 0) {
         const lat = parseFloat(data[0].lat);
         const lon = parseFloat(data[0].lon);
+        
+        // Kiểm tra tọa độ hợp lệ
+        if (isNaN(lat) || isNaN(lon)) {
+          showNotification('Tọa độ không hợp lệ từ kết quả tìm kiếm.', 'error');
+          return;
+        }
         
         setMapPosition([lat, lon]);
         setMarkerPosition([lat, lon]);
@@ -301,16 +316,32 @@ export default function BranchesPage() {
   // Chuyển sang chế độ chỉnh sửa
   const startEditing = () => {
     if (selectedBranch) {
+      // Đảm bảo tọa độ là số hoặc null
+      const latitude = selectedBranch.latitude !== undefined && selectedBranch.latitude !== null 
+        ? Number(selectedBranch.latitude) 
+        : null;
+      
+      const longitude = selectedBranch.longitude !== undefined && selectedBranch.longitude !== null 
+        ? Number(selectedBranch.longitude) 
+        : null;
+      
       setFormData({
         branch_name: selectedBranch.branch_name,
         branch_address: selectedBranch.branch_address,
         manager_id: selectedBranch.manager_id,
-        latitude: selectedBranch.latitude || null,
-        longitude: selectedBranch.longitude || null
-      })
-      setIsEditing(true)
-      setShowViewPopup(false)
-      setShowAddPopup(true)
+        latitude: latitude,
+        longitude: longitude
+      });
+      
+      // Cập nhật vị trí marker nếu có tọa độ
+      if (latitude !== null && longitude !== null) {
+        setMarkerPosition([latitude, longitude]);
+        setMapPosition([latitude, longitude]);
+      }
+      
+      setIsEditing(true);
+      setShowViewPopup(false);
+      setShowAddPopup(true);
     }
   }
 
@@ -689,9 +720,10 @@ export default function BranchesPage() {
                       <MapPinIcon className="h-5 w-5" />
                     </button>
                   </div>
-                  {formData.latitude && formData.longitude && (
+                  {formData.latitude !== null && formData.longitude !== null && (
                     <div className="mt-1 text-xs text-gray-500">
-                      Tọa độ: {formData.latitude.toFixed(6)}, {formData.longitude.toFixed(6)}
+                      Tọa độ: {typeof formData.latitude === 'number' ? formData.latitude.toFixed(6) : formData.latitude}, 
+                      {typeof formData.longitude === 'number' ? formData.longitude.toFixed(6) : formData.longitude}
                     </div>
                   )}
                 </div>
@@ -918,8 +950,11 @@ export default function BranchesPage() {
 
             <div className="mt-4 flex justify-between items-center">
               <div className="text-sm text-gray-500">
-                {formData.latitude && formData.longitude ? (
-                  <span>Tọa độ đã chọn: {formData.latitude.toFixed(6)}, {formData.longitude.toFixed(6)}</span>
+                {formData.latitude !== null && formData.longitude !== null ? (
+                  <span>
+                    Tọa độ đã chọn: {typeof formData.latitude === 'number' ? formData.latitude.toFixed(6) : formData.latitude}, 
+                    {typeof formData.longitude === 'number' ? formData.longitude.toFixed(6) : formData.longitude}
+                  </span>
                 ) : (
                   <span>Nhấp vào bản đồ để chọn vị trí</span>
                 )}
