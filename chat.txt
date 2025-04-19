@@ -1,0 +1,13 @@
+Hãy đọc bảng users:
+Bảng Users:
+	user_id (Khóa chính định danh người dùng) - UUID - PRIMARY KEY
+	branch_id (Chi nhánh người dùng thuộc về) - INT - FOREIGN KEY REFERENCES Branches(branch_id)
+	full_name (Họ và tên đầy đủ) - VARCHAR(255) - NOT NULL, ít nhất 2 ký tự
+	email (Email (duy nhất)) - VARCHAR(255) - UNIQUE, NOT NULL
+	phone (Số điện thoại) - VARCHAR(11) - Bắt đầu bằng số 0, có 10 hoặc 11 ký tự
+	birth_date (Ngày sinh) - DATE - -
+	hometown (Quê quán) - VARCHAR(255) - Có ít nhất 2 ký tự
+	created_at (Thời gian tạo) - TIMESTAMP - DEFAULT CURRENT_TIMESTAMP
+	updated_at (Thời gian cập nhật) - TIMESTAMP – DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+
+Nó có trường branch_id, tôi muốn khi vào popup cũng phải hiển danh sách của nhân viên trong chi nhánh đó nhé.

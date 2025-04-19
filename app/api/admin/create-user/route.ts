@@ -108,7 +108,8 @@ export async function POST(request: NextRequest) {
             user_id: userId,
             username: userData.email,
             status: 'active',
-            role: userData.role
+            role: userData.role,
+            password_hash: userData.password
           });
 
         if (accountError) {
