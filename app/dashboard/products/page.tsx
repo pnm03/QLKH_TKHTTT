@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { PlusIcon, MagnifyingGlassIcon, PencilIcon, XMarkIcon, TagIcon, CurrencyDollarIcon, SwatchIcon, ArchiveBoxIcon } from '@heroicons/react/24/outline'
+import { PlusIcon, MagnifyingGlassIcon, PencilIcon, XMarkIcon, TagIcon, CurrencyDollarIcon, SwatchIcon, ArchiveBoxIcon, ViewColumnsIcon, ListBulletIcon, ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
 import { useTheme, themeColors } from '@/app/context/ThemeContext'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 
@@ -16,6 +16,7 @@ interface Product {
   price: number
   stock_quantity: number
   image: string | null
+  category_id: number
   created_at: string
   updated_at: string
 }
@@ -147,16 +148,28 @@ const ProductDetail = ({ product, onClose, onDelete, theme }: ProductDetailProps
   )
 }
 
+// Thêm interface cho danh mục
+interface Category {
+  category_id: number
+  name_category: string
+  description_category?: string
+  image_category?: string
+  products?: Product[] // Sản phẩm thuộc danh mục này
+  isExpanded?: boolean // Trạng thái mở rộng của danh mục
+}
+
 export default function ProductsPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [mounted, setMounted] = useState(false)
   const [products, setProducts] = useState<Product[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [productToDelete, setProductToDelete] = useState<Product | null>(null)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState(false)
+  const [viewMode, setViewMode] = useState<'grid' | 'category'>('grid') // Thêm state cho kiểu xem
 
   // Lấy thông tin theme từ context nhưng chỉ sử dụng khi component đã mounted
   const themeContext = useTheme()
@@ -179,34 +192,52 @@ export default function ProductsPage() {
     }
   }, [mounted, themeContext.currentTheme])
 
-  // Fetch products from Supabase
+  // Fetch products and categories from Supabase
   useEffect(() => {
     if (mounted) {
-      fetchProducts()
+      fetchData()
     }
   }, [mounted])
 
-  // Fetch products from Supabase
-  const fetchProducts = async () => {
+  // Fetch products and categories from Supabase
+  const fetchData = async () => {
     try {
       setLoading(true)
       setError(null)
 
       const supabase = createClientComponentClient()
 
-      const { data, error } = await supabase
+      // Fetch products
+      const { data: productsData, error: productsError } = await supabase
         .from('products')
         .select('*')
         .order('created_at', { ascending: false })
 
-      if (error) {
-        throw error
+      if (productsError) {
+        throw productsError
       }
 
-      setProducts(data || [])
+      // Fetch categories
+      const { data: categoriesData, error: categoriesError } = await supabase
+        .from('category')
+        .select('*')
+        .order('name_category', { ascending: true })
+
+      if (categoriesError) {
+        throw categoriesError
+      }
+
+      setProducts(productsData || [])
+      
+      // Thêm trạng thái mở rộng cho mỗi danh mục
+      const categoriesWithState = (categoriesData || []).map(category => ({
+        ...category,
+        isExpanded: false // Mặc định đóng
+      }))
+      setCategories(categoriesWithState)
     } catch (error: any) {
-      console.error('Lỗi khi tải dữ liệu sản phẩm:', error)
-      setError(error.message || 'Đã xảy ra lỗi khi tải dữ liệu sản phẩm')
+      console.error('Lỗi khi tải dữ liệu:', error)
+      setError(error.message || 'Đã xảy ra lỗi khi tải dữ liệu')
     } finally {
       setLoading(false)
     }
@@ -219,6 +250,11 @@ export default function ProductsPage() {
     product.color?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     product.size?.toLowerCase().includes(searchTerm.toLowerCase())
   )
+  
+  // Lấy sản phẩm theo danh mục
+  const getProductsByCategory = (categoryId: number) => {
+    return products.filter(product => product.category_id === categoryId)
+  }
 
   // Định dạng tiền tệ
   const formatCurrency = (amount: number) => {
@@ -273,6 +309,20 @@ export default function ProductsPage() {
     } finally {
       setDeleteLoading(false)
     }
+  }
+  
+  // Chuyển đổi kiểu xem
+  const toggleViewMode = () => {
+    setViewMode(viewMode === 'grid' ? 'category' : 'grid')
+  }
+  
+  // Mở rộng/thu gọn danh mục
+  const toggleCategory = (categoryId: number) => {
+    setCategories(categories.map(category => 
+      category.category_id === categoryId 
+        ? { ...category, isExpanded: !category.isExpanded }
+        : category
+    ))
   }
 
   if (!mounted) {
@@ -366,7 +416,7 @@ export default function ProductsPage() {
 
       <div className="mt-6 bg-white rounded-lg shadow overflow-hidden">
         <div className="p-4 border-b border-gray-200">
-          <div className="flex rounded-md shadow-sm">
+          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
             <div className="relative flex-grow focus-within:z-10">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
@@ -381,6 +431,25 @@ export default function ProductsPage() {
                 placeholder="Tìm kiếm sản phẩm hoặc danh mục..."
               />
             </div>
+            
+            {/* Nút chuyển đổi kiểu xem */}
+            <button
+              type="button"
+              onClick={toggleViewMode}
+              className={`inline-flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${themeColor}-500`}
+            >
+              {viewMode === 'grid' ? (
+                <>
+                  <ListBulletIcon className="mr-2 h-5 w-5 text-gray-400" aria-hidden="true" />
+                  Xem theo danh mục
+                </>
+              ) : (
+                <>
+                  <ViewColumnsIcon className="mr-2 h-5 w-5 text-gray-400" aria-hidden="true" />
+                  Xem dạng lưới
+                </>
+              )}
+            </button>
           </div>
         </div>
 
@@ -393,7 +462,7 @@ export default function ProductsPage() {
           <div className="py-10 text-center border-t border-gray-200">
             <p className="text-red-500">{error}</p>
             <button
-              onClick={() => fetchProducts()}
+              onClick={() => fetchData()}
               className={`mt-2 px-4 py-2 border text-sm font-medium rounded-md text-white ${theme?.buttonBg || 'bg-indigo-600'} ${theme?.buttonHoverBg || 'hover:bg-indigo-700'}`}
             >
               Thử lại
@@ -401,63 +470,194 @@ export default function ProductsPage() {
           </div>
         ) : (
           <div className="p-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {filteredProducts.length > 0 ? filteredProducts.map((product) => (
-                <div
-                  key={product.id}
-                  className="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden cursor-pointer"
-                  onClick={() => openProductDetail(product)}
-                >
-                  <div className="relative h-48 bg-gray-100">
-                    {product.image ? (
-                      <img
-                        src={product.image}
-                        alt={product.product_name}
-                        className="w-full h-full object-contain"
-                      />
-                    ) : (
-                      <div className="flex items-center justify-center h-full w-full bg-gray-200">
-                        <ArchiveBoxIcon className="h-16 w-16 text-gray-400" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-4">
-                    {/* Hàng 1: Tên sản phẩm */}
-                    <h3 className="text-sm font-medium text-gray-900 truncate mb-2">{product.product_name}</h3>
+            {/* Hiển thị dạng lưới */}
+            {viewMode === 'grid' && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {filteredProducts.length > 0 ? filteredProducts.map((product) => (
+                  <div
+                    key={product.id}
+                    className="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden cursor-pointer"
+                    onClick={() => openProductDetail(product)}
+                  >
+                    <div className="relative h-48 bg-gray-100">
+                      {product.image ? (
+                        <img
+                          src={product.image}
+                          alt={product.product_name}
+                          className="w-full h-full object-contain"
+                        />
+                      ) : (
+                        <div className="flex items-center justify-center h-full w-full bg-gray-200">
+                          <ArchiveBoxIcon className="h-16 w-16 text-gray-400" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-4">
+                      {/* Hàng 1: Tên sản phẩm */}
+                      <h3 className="text-sm font-medium text-gray-900 truncate mb-2">{product.product_name}</h3>
 
-                    {/* Hàng 2: Màu và kích thước */}
-                    <div className="flex justify-between items-center mb-2">
-                      <div className="flex items-center">
-                        <SwatchIcon className="h-4 w-4 text-gray-400 mr-1" />
-                        <span className="text-xs text-gray-500 truncate">{product.color || 'Không có'}</span>
+                      {/* Hàng 2: Màu và kích thước */}
+                      <div className="flex justify-between items-center mb-2">
+                        <div className="flex items-center">
+                          <SwatchIcon className="h-4 w-4 text-gray-400 mr-1" />
+                          <span className="text-xs text-gray-500 truncate">{product.color || 'Không có'}</span>
+                        </div>
+                        <div className="flex items-center">
+                          <TagIcon className="h-4 w-4 text-gray-400 mr-1" />
+                          <span className="text-xs text-gray-500 truncate">{product.size || 'Không có'}</span>
+                        </div>
                       </div>
-                      <div className="flex items-center">
-                        <TagIcon className="h-4 w-4 text-gray-400 mr-1" />
-                        <span className="text-xs text-gray-500 truncate">{product.size || 'Không có'}</span>
+
+                      {/* Hàng 3: Giá và tồn kho */}
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium text-gray-900">{formatCurrency(product.price)}</span>
+                        <span className={`px-2 py-1 inline-flex text-xs leading-4 font-semibold rounded-full ${
+                          product.stock_quantity > 10
+                            ? 'bg-green-100 text-green-800'
+                            : product.stock_quantity > 0
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {product.stock_quantity}
+                        </span>
                       </div>
                     </div>
-
-                    {/* Hàng 3: Giá và tồn kho */}
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium text-gray-900">{formatCurrency(product.price)}</span>
-                      <span className={`px-2 py-1 inline-flex text-xs leading-4 font-semibold rounded-full ${
-                        product.stock_quantity > 10
-                          ? 'bg-green-100 text-green-800'
-                          : product.stock_quantity > 0
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {product.stock_quantity}
-                      </span>
-                    </div>
                   </div>
-                </div>
-              )) : (
-                <div className="col-span-full py-10 text-center">
-                  <p className="text-gray-500">Không tìm thấy sản phẩm nào phù hợp.</p>
-                </div>
-              )}
-            </div>
+                )) : (
+                  <div className="col-span-full py-10 text-center">
+                    <p className="text-gray-500">Không tìm thấy sản phẩm nào phù hợp.</p>
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {/* Hiển thị theo danh mục */}
+            {viewMode === 'category' && (
+              <div className="space-y-4">
+                {categories.length > 0 ? (
+                  categories.map(category => {
+                    // Lọc sản phẩm thuộc danh mục này
+                    const categoryProducts = filteredProducts.filter(
+                      product => product.category_id === category.category_id
+                    )
+                    
+                    // Chỉ hiển thị danh mục có sản phẩm phù hợp với tìm kiếm
+                    if (categoryProducts.length === 0 && searchTerm) {
+                      return null
+                    }
+                    
+                    return (
+                      <div key={category.category_id} className="border border-gray-200 rounded-lg overflow-hidden">
+                        {/* Tiêu đề danh mục */}
+                        <div 
+                          className={`flex items-center justify-between p-4 cursor-pointer ${category.isExpanded ? `bg-${themeColor}-50` : 'bg-white'}`}
+                          onClick={() => toggleCategory(category.category_id)}
+                        >
+                          <div className="flex items-center">
+                            {category.image_category ? (
+                              <div className="flex-shrink-0 h-8 w-8 mr-3">
+                                <img 
+                                  src={category.image_category} 
+                                  alt=""
+                                  className="h-8 w-8 rounded-full object-cover"
+                                />
+                              </div>
+                            ) : (
+                              <div className="flex-shrink-0 h-8 w-8 mr-3 bg-gray-200 rounded-full flex items-center justify-center">
+                                <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                              </div>
+                            )}
+                            <div>
+                              <h3 className="text-base font-medium text-gray-900">{category.name_category}</h3>
+                              <p className="text-xs text-gray-500">{categoryProducts.length} sản phẩm</p>
+                            </div>
+                          </div>
+                          {category.isExpanded ? (
+                            <ChevronDownIcon className="h-5 w-5 text-gray-500" />
+                          ) : (
+                            <ChevronRightIcon className="h-5 w-5 text-gray-500" />
+                          )}
+                        </div>
+                        
+                        {/* Danh sách sản phẩm trong danh mục */}
+                        {category.isExpanded && (
+                          <div className="border-t border-gray-200">
+                            {categoryProducts.length > 0 ? (
+                              <div className="divide-y divide-gray-200">
+                                {categoryProducts.map(product => (
+                                  <div 
+                                    key={product.id}
+                                    className="p-4 hover:bg-gray-50 cursor-pointer flex items-center"
+                                    onClick={() => openProductDetail(product)}
+                                  >
+                                    {/* Hình ảnh sản phẩm */}
+                                    <div className="flex-shrink-0 h-16 w-16 bg-gray-100 rounded-md overflow-hidden mr-4">
+                                      {product.image ? (
+                                        <img
+                                          src={product.image}
+                                          alt={product.product_name}
+                                          className="h-full w-full object-contain"
+                                        />
+                                      ) : (
+                                        <div className="flex items-center justify-center h-full w-full">
+                                          <ArchiveBoxIcon className="h-8 w-8 text-gray-400" />
+                                        </div>
+                                      )}
+                                    </div>
+                                    
+                                    {/* Thông tin sản phẩm */}
+                                    <div className="flex-1 min-w-0">
+                                      <h4 className="text-sm font-medium text-gray-900 truncate">{product.product_name}</h4>
+                                      <div className="flex items-center mt-1">
+                                        <SwatchIcon className="h-4 w-4 text-gray-400 mr-1" />
+                                        <span className="text-xs text-gray-500 truncate mr-2">{product.color || 'Không có'}</span>
+                                        <TagIcon className="h-4 w-4 text-gray-400 mr-1" />
+                                        <span className="text-xs text-gray-500 truncate">{product.size || 'Không có'}</span>
+                                      </div>
+                                    </div>
+                                    
+                                    {/* Giá và tồn kho */}
+                                    <div className="ml-4 flex-shrink-0 flex items-center">
+                                      <span className="text-sm font-medium text-gray-900 mr-3">{formatCurrency(product.price)}</span>
+                                      <span className={`px-2 py-1 inline-flex text-xs leading-4 font-semibold rounded-full ${
+                                        product.stock_quantity > 10
+                                          ? 'bg-green-100 text-green-800'
+                                          : product.stock_quantity > 0
+                                          ? 'bg-yellow-100 text-yellow-800'
+                                          : 'bg-red-100 text-red-800'
+                                      }`}>
+                                        {product.stock_quantity}
+                                      </span>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="p-4 text-center text-gray-500">
+                                Không có sản phẩm nào trong danh mục này.
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })
+                ) : (
+                  <div className="py-10 text-center">
+                    <p className="text-gray-500">Không có danh mục nào.</p>
+                  </div>
+                )}
+                
+                {/* Hiển thị thông báo khi không tìm thấy sản phẩm nào */}
+                {categories.length > 0 && filteredProducts.length === 0 && searchTerm && (
+                  <div className="py-10 text-center">
+                    <p className="text-gray-500">Không tìm thấy sản phẩm nào phù hợp.</p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 
