@@ -5,8 +5,8 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { useRouter } from 'next/navigation'
 import { useTheme, themeColors } from '@/app/context/ThemeContext'
 import { toast } from 'react-toastify'
-import { 
-  MagnifyingGlassIcon, 
+import {
+  MagnifyingGlassIcon,
   EyeIcon,
   ArrowDownTrayIcon,
   CalendarIcon,
@@ -86,7 +86,7 @@ export default function SearchOrdersPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const ordersPerPage = 10
-  
+
   // State cho thông báo lỗi
   const [error, setError] = useState<string | null>(null)
 
@@ -101,7 +101,7 @@ export default function SearchOrdersPage() {
       setThemeState({
         theme: themeContext.currentTheme || themeColors.indigo
       })
-      
+
       // Tải dữ liệu đơn hàng ban đầu
       searchOrders()
     }
@@ -117,9 +117,9 @@ export default function SearchOrdersPage() {
         .from('orders')
         .select('*')
         .order('order_date', { ascending: false })
-      
+
       // Không lọc theo trạng thái ở đây, sẽ lọc sau khi lấy dữ liệu
-      
+
       // Áp dụng bộ lọc theo ngày
       if (dateRange.from) {
         query = query.gte('order_date', dateRange.from)
@@ -127,10 +127,10 @@ export default function SearchOrdersPage() {
       if (dateRange.to) {
         query = query.lte('order_date', dateRange.to)
       }
-      
+
       // Thực hiện truy vấn
       const { data: ordersData, error: ordersError } = await query
-      
+
       if (ordersError) {
         console.error('Lỗi truy vấn orders:', ordersError)
         setError(`Lỗi khi truy vấn dữ liệu: ${ordersError.message}`)
@@ -139,10 +139,10 @@ export default function SearchOrdersPage() {
         setLoading(false)
         return
       }
-      
+
       // Log dữ liệu để kiểm tra
       console.log('Dữ liệu orders:', ordersData)
-      
+
       if (!ordersData || ordersData.length === 0) {
         console.log('Không tìm thấy đơn hàng nào')
         setOrders([])
@@ -150,34 +150,41 @@ export default function SearchOrdersPage() {
         setLoading(false)
         return
       }
-      
+
       // Lọc dữ liệu theo trạng thái và từ khóa tìm kiếm
       let filteredOrders = ordersData;
-      
+
       // Lọc theo trạng thái
       if (statusFilter !== 'all') {
         filteredOrders = filteredOrders.filter(order => order.status === statusFilter);
         console.log('Sau khi lọc theo trạng thái:', filteredOrders.length, 'đơn hàng');
       }
-      
+
       // Lọc theo từ khóa tìm kiếm
       if (searchTerm && searchTerm.trim() !== '') {
         const term = searchTerm.trim().toLowerCase();
-        
+
         // Lấy thông tin người tạo từ bảng users
         const userIds = [...new Set(filteredOrders.map(order => order.customer_id))];
         const { data: usersData } = await supabase
           .from('users')
           .select('user_id, full_name')
           .in('user_id', userIds);
-        
+
+        // Lấy thông tin khách hàng từ bảng customers
+        const customerIds = [...new Set(filteredOrders.map(order => order.customer_id))];
+        const { data: customersData } = await supabase
+          .from('customers')
+          .select('customer_id, full_name')
+          .in('customer_id', customerIds);
+
         // Lấy thông tin khách hàng từ bảng shippings
         const orderIds = filteredOrders.map(order => order.order_id);
         const { data: shippingsData } = await supabase
           .from('shippings')
           .select('order_id, name_customer')
           .in('order_id', orderIds);
-        
+
         // Tạo map để dễ dàng truy cập
         const usersMap = {};
         if (usersData) {
@@ -185,41 +192,55 @@ export default function SearchOrdersPage() {
             usersMap[user.user_id] = user.full_name;
           });
         }
-        
+
+        const customersMap = {};
+        if (customersData) {
+          customersData.forEach(customer => {
+            customersMap[customer.customer_id] = customer.full_name;
+          });
+        }
+
         const shippingsMap = {};
         if (shippingsData) {
           shippingsData.forEach(shipping => {
             shippingsMap[shipping.order_id] = shipping.name_customer;
           });
         }
-        
+
         // Lọc theo từ khóa
         filteredOrders = filteredOrders.filter(order => {
           // Tìm trong mã đơn hàng
           if (order.order_id.toLowerCase().includes(term)) return true;
-          
+
           // Tìm trong ID khách hàng
-          if (order.customer_id.toLowerCase().includes(term)) return true;
-          
+          if (order.customer_id && order.customer_id.toLowerCase().includes(term)) return true;
+
           // Tìm trong tên người tạo
           const creatorName = usersMap[order.customer_id] || '';
           if (creatorName.toLowerCase().includes(term)) return true;
-          
-          // Tìm trong tên khách hàng
-          const customerName = order.is_shipping ? (shippingsMap[order.order_id] || '') : 'Vãng lai';
+
+          // Tìm trong tên khách hàng từ bảng customers
+          let customerName = 'Vãng lai';
+          if (order.customer_id && customersMap[order.customer_id]) {
+            customerName = customersMap[order.customer_id];
+          } else if (order.is_shipping && shippingsMap[order.order_id]) {
+            customerName = shippingsMap[order.order_id];
+          }
+
           if (customerName.toLowerCase().includes(term)) return true;
-          
+
           return false;
         });
-        
+
         console.log('Sau khi lọc theo từ khóa:', filteredOrders.length, 'đơn hàng');
       }
-      
+
       // Lấy thông tin người tạo từ bảng users (nếu chưa lấy trong phần tìm kiếm)
       let usersMap = {};
+      let customersMap = {};
       let shippingsMap = {};
       let paymentsMap = {};
-      
+
       // Chỉ truy vấn nếu không có dữ liệu từ phần tìm kiếm
       if (Object.keys(usersMap).length === 0) {
         const userIds = [...new Set(filteredOrders.map(order => order.customer_id))];
@@ -227,14 +248,46 @@ export default function SearchOrdersPage() {
           .from('users')
           .select('user_id, full_name')
           .in('user_id', userIds);
-        
+
         if (usersData) {
           usersData.forEach(user => {
             usersMap[user.user_id] = user.full_name;
           });
         }
       }
-      
+
+      // Lấy thông tin khách hàng từ bảng customers
+      if (Object.keys(customersMap).length === 0) {
+        try {
+          // Lấy danh sách customer_id từ các đơn hàng
+          const customerIds = [...new Set(filteredOrders
+            .filter(order => order.customer_id) // Lọc bỏ các order có customer_id null
+            .map(order => order.customer_id))];
+
+          if (customerIds.length > 0) {
+            const { data: customersData, error: customersError } = await supabase
+              .from('customers')
+              .select('customer_id, full_name')
+              .in('customer_id', customerIds);
+
+            if (customersData && customersData.length > 0) {
+              customersData.forEach(customer => {
+                customersMap[customer.customer_id] = customer.full_name;
+              });
+              console.log('Lấy được thông tin', customersData.length, 'khách hàng');
+            }
+
+            if (customersError) {
+              console.error('Lỗi khi lấy thông tin khách hàng:', customersError.message);
+            }
+          } else {
+            console.log('Không có customer_id hợp lệ để truy vấn');
+          }
+        } catch (error) {
+          console.error('Lỗi khi xử lý truy vấn khách hàng:', error);
+        }
+      }
+
       // Chỉ truy vấn nếu không có dữ liệu từ phần tìm kiếm
       if (Object.keys(shippingsMap).length === 0) {
         const orderIds = filteredOrders.map(order => order.order_id);
@@ -242,14 +295,14 @@ export default function SearchOrdersPage() {
           .from('shippings')
           .select('order_id, name_customer')
           .in('order_id', orderIds);
-        
+
         if (shippingsData) {
           shippingsData.forEach(shipping => {
             shippingsMap[shipping.order_id] = shipping.name_customer;
           });
         }
       }
-      
+
       // Lấy thông tin phương thức thanh toán từ bảng payments
       const paymentIds = [...new Set(filteredOrders.filter(order => order.payment_method).map(order => order.payment_method))];
       if (paymentIds.length > 0) {
@@ -257,31 +310,38 @@ export default function SearchOrdersPage() {
           .from('payments')
           .select('payment_id, payment_method_name')
           .in('payment_id', paymentIds);
-        
+
         if (paymentsData) {
           paymentsData.forEach(payment => {
             paymentsMap[payment.payment_id] = payment.payment_method_name;
           });
         }
-        
+
         if (paymentsError) {
           console.error('Lỗi khi lấy thông tin phương thức thanh toán:', paymentsError);
         }
       }
-      
+
       // Xử lý dữ liệu trả về
       const formattedOrders = filteredOrders.map(order => {
         // Lấy tên người tạo từ bảng users dựa trên customer_id
-        const creatorName = usersMap[order.customer_id] || `ID: ${order.customer_id}`;
-        
-        // Lấy tên khách hàng từ bảng shippings dựa trên order_id
-        const customerName = order.is_shipping ? (shippingsMap[order.order_id] || 'Không xác định') : 'Vãng lai';
-        
+        const creatorName = usersMap[order.customer_id] || `ID: ${order.customer_id || 'N/A'}`;
+
+        // Lấy tên khách hàng từ bảng customers dựa trên customer_id
+        // Nếu không tìm thấy trong bảng customers, kiểm tra trong bảng shippings
+        // Nếu vẫn không tìm thấy, hiển thị 'Khách vãng lai'
+        let customerName = 'Khách vãng lai';
+        if (order.customer_id && customersMap[order.customer_id]) {
+          customerName = customersMap[order.customer_id];
+        } else if (order.is_shipping && shippingsMap[order.order_id]) {
+          customerName = shippingsMap[order.order_id];
+        }
+
         // Lấy tên phương thức thanh toán từ bảng payments dựa trên payment_method
-        const paymentMethodName = order.payment_method 
-          ? (paymentsMap[order.payment_method] || `ID: ${order.payment_method}`) 
+        const paymentMethodName = order.payment_method
+          ? (paymentsMap[order.payment_method] || `ID: ${order.payment_method}`)
           : 'Không có';
-        
+
         return {
           ...order,
           creator_name: creatorName,
@@ -289,7 +349,7 @@ export default function SearchOrdersPage() {
           payment_method_name: paymentMethodName
         }
       })
-      
+
       console.log('Đã tìm thấy', formattedOrders.length, 'đơn hàng')
       setOrders(formattedOrders)
       setTotalPages(Math.ceil(formattedOrders.length / ordersPerPage))
@@ -310,7 +370,26 @@ export default function SearchOrdersPage() {
     setShowOrderDetails(true)
     setOrderDetails([]) // Reset chi tiết đơn hàng
     setShippingInfo(null) // Reset thông tin vận chuyển
-    
+
+    // Kiểm tra và lấy thông tin khách hàng từ bảng customers nếu có
+    if (order.customer_id) {
+      try {
+        const { data: customer, error: customerError } = await supabase
+          .from('customers')
+          .select('*')
+          .eq('customer_id', order.customer_id)
+          .maybeSingle(); // Sử dụng maybeSingle thay vì single để tránh lỗi nếu không tìm thấy
+
+        if (!customerError && customer) {
+          // Cập nhật tên khách hàng trong order nếu có
+          order.customer_name = customer.full_name;
+          setSelectedOrder({...order, customer_name: customer.full_name});
+        }
+      } catch (error) {
+        console.error('Lỗi khi lấy thông tin khách hàng:', error);
+      }
+    }
+
     try {
       // Lấy chi tiết đơn hàng
       const { data: orderDetailsData, error: orderDetailsError } = await supabase
@@ -320,19 +399,19 @@ export default function SearchOrdersPage() {
           products (image)
         `)
         .eq('order_id', order.order_id)
-      
+
       if (orderDetailsError) {
         console.error('Lỗi khi lấy chi tiết đơn hàng:', orderDetailsError)
         setError(`Lỗi khi lấy chi tiết đơn hàng. Vui lòng thử lại sau.`)
         return
       }
-      
+
       // Xử lý dữ liệu chi tiết đơn hàng
       const formattedOrderDetails = (orderDetailsData || []).map(detail => ({
         ...detail,
         product_image: detail.products?.image || null
       }))
-      
+
       setOrderDetails(formattedOrderDetails)
     } catch (error) {
       console.error('Lỗi khi lấy chi tiết đơn hàng:', error)
@@ -381,7 +460,7 @@ export default function SearchOrdersPage() {
   const [lastGeneratedPdfUrl, setLastGeneratedPdfUrl] = useState<string | null>(null);
   const [showOpenPdfOption, setShowOpenPdfOption] = useState<boolean>(false);
   const openPdfTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  
+
   // Hiển thị tùy chọn mở hóa đơn
   useEffect(() => {
     // Xóa timeout khi component unmount
@@ -391,12 +470,12 @@ export default function SearchOrdersPage() {
       }
     };
   }, []);
-  
+
   // Xuất đơn hàng ra PDF
   const exportOrderToPDF = async (orderId: string) => {
     try {
       console.log('Đang xuất hóa đơn cho đơn hàng', orderId);
-      
+
       // Hiển thị thông báo đang xử lý với màu theme
       const toastId = toast.loading("Đang xuất hóa đơn...", {
         position: "top-right",
@@ -404,27 +483,27 @@ export default function SearchOrdersPage() {
         closeOnClick: false,
         className: `border-l-4 border-${themeColor}-500`
       });
-      
+
       // Dynamic import các thư viện cần thiết
       const jspdfModule = await import('jspdf');
       const html2canvasModule = await import('html2canvas');
-      
+
       const jsPDF = jspdfModule.jsPDF;
       const html2canvas = html2canvasModule.default;
-      
+
       // Tìm đơn hàng trong danh sách
       const order = orders.find(o => o.order_id === orderId);
       if (!order) {
         console.error('Không tìm thấy đơn hàng', orderId);
-        toast.update(toastId, { 
-          render: "Không tìm thấy đơn hàng", 
-          type: "error", 
+        toast.update(toastId, {
+          render: "Không tìm thấy đơn hàng",
+          type: "error",
           isLoading: false,
           autoClose: 3000
         });
         return;
       }
-      
+
       // Lấy chi tiết đơn hàng từ database
       const { data: orderDetails, error: orderDetailsError } = await supabase
         .from('orderdetails')
@@ -433,23 +512,23 @@ export default function SearchOrdersPage() {
           products (image)
         `)
         .eq('order_id', orderId);
-        
+
       if (orderDetailsError) {
         console.error('Lỗi khi lấy chi tiết đơn hàng:', orderDetailsError);
         return;
       }
-      
+
       if (!orderDetails || orderDetails.length === 0) {
         console.error('Không tìm thấy chi tiết đơn hàng cho đơn hàng', orderId);
         return;
       }
-      
+
       // Xử lý dữ liệu chi tiết đơn hàng
       const formattedOrderDetails = orderDetails.map(detail => ({
         ...detail,
         product_image: detail.products?.image || null
       }));
-      
+
       // Lấy thông tin vận chuyển nếu có
       let shippingInfo = null;
       if (order.is_shipping) {
@@ -458,7 +537,7 @@ export default function SearchOrdersPage() {
           .select('*')
           .eq('order_id', orderId)
           .single();
-          
+
         if (!shippingError && shipping) {
           shippingInfo = shipping;
           console.log('Thông tin vận chuyển:', shippingInfo);
@@ -466,13 +545,34 @@ export default function SearchOrdersPage() {
           console.error('Lỗi khi lấy thông tin vận chuyển:', shippingError);
         }
       }
-      
+
+      // Lấy thông tin khách hàng từ bảng customers
+      let customerData = null;
+      if (order.customer_id) {
+        try {
+          const { data: customer, error: customerError } = await supabase
+            .from('customers')
+            .select('*')
+            .eq('customer_id', order.customer_id)
+            .maybeSingle(); // Sử dụng maybeSingle thay vì single để tránh lỗi nếu không tìm thấy
+
+          if (!customerError && customer) {
+            customerData = customer;
+            console.log('Thông tin khách hàng:', customerData);
+            // Cập nhật tên khách hàng trong order nếu có
+            order.customer_name = customerData.full_name;
+          }
+        } catch (error) {
+          console.error('Lỗi khi lấy thông tin khách hàng:', error);
+        }
+      }
+
       // Tạo nội dung HTML cho hóa đơn
       const invoiceContent = document.createElement('div');
       invoiceContent.style.width = '800px';
       invoiceContent.style.padding = '20px';
       invoiceContent.style.fontFamily = 'Arial, sans-serif';
-      
+
       // Tiêu đề hóa đơn
       const title = document.createElement('h1');
       title.textContent = 'HÓA ĐƠN BÁN HÀNG';
@@ -480,7 +580,7 @@ export default function SearchOrdersPage() {
       title.style.color = '#333';
       title.style.marginBottom = '20px';
       invoiceContent.appendChild(title);
-      
+
       // Thông tin đơn hàng
       const orderInfo = document.createElement('div');
       orderInfo.style.marginBottom = '20px';
@@ -491,11 +591,11 @@ export default function SearchOrdersPage() {
         <p><strong>Phương thức thanh toán:</strong> ${order.payment_method_name}</p>
       `;
       invoiceContent.appendChild(orderInfo);
-      
+
       // Thông tin khách hàng
       const customerInfo = document.createElement('div');
       customerInfo.style.marginBottom = '20px';
-      
+
       if (order.is_shipping && shippingInfo) {
         // Nếu có vận chuyển và có thông tin vận chuyển
         customerInfo.innerHTML = `
@@ -504,7 +604,7 @@ export default function SearchOrdersPage() {
           <p><strong>Số điện thoại:</strong> ${shippingInfo.phone_customer || 'Không có'}</p>
           <p><strong>Địa chỉ giao hàng:</strong> ${shippingInfo.shipping_address || 'Không có'}</p>
         `;
-        
+
         // Thêm thông tin vận chuyển chi tiết
         customerInfo.innerHTML += `
           <h3 style="margin-top: 15px;">Thông tin vận chuyển</h3>
@@ -513,42 +613,51 @@ export default function SearchOrdersPage() {
           <p><strong>Chi phí vận chuyển:</strong> ${formatCurrency(shippingInfo.shipping_cost || 0)}</p>
           <p><strong>Trạng thái:</strong> ${shippingInfo.status || 'Đang xử lý'}</p>
         `;
-        
+
         // Thêm thông tin kích thước và trọng lượng nếu có
         if (shippingInfo.weight) {
           customerInfo.innerHTML += `
             <p><strong>Trọng lượng:</strong> ${shippingInfo.weight} ${shippingInfo.unit_weight || ''}</p>
           `;
         }
-        
+
         if (shippingInfo.long && shippingInfo.wide && shippingInfo.hight) {
           customerInfo.innerHTML += `
             <p><strong>Kích thước:</strong> ${shippingInfo.long} x ${shippingInfo.wide} x ${shippingInfo.hight} ${shippingInfo.unit_size || ''}</p>
           `;
         }
-        
+
         // Thêm thông tin thu tiền hộ nếu có
         if (shippingInfo.cod_shipping) {
           customerInfo.innerHTML += `
             <p><strong>Thu tiền hộ:</strong> Có</p>
           `;
         }
-      } else {
-        // Nếu là khách vãng lai hoặc không có thông tin vận chuyển
+      } else if (customerData) {
+        // Nếu có thông tin khách hàng từ bảng customers
         customerInfo.innerHTML = `
           <h3>Thông tin khách hàng</h3>
-          <p><strong>Khách hàng:</strong> ${order.customer_name || 'Khách vãng lai'}</p>
+          <p><strong>Khách hàng:</strong> ${customerData.full_name}</p>
+          <p><strong>Số điện thoại:</strong> ${customerData.phone || 'Không có'}</p>
+          <p><strong>Email:</strong> ${customerData.email || 'Không có'}</p>
+          ${customerData.hometown ? `<p><strong>Quê quán:</strong> ${customerData.hometown}</p>` : ''}
+        `;
+      } else {
+        // Nếu là khách vãng lai hoặc không có thông tin khách hàng
+        customerInfo.innerHTML = `
+          <h3>Thông tin khách hàng</h3>
+          <p><strong>Khách hàng:</strong> Khách vãng lai</p>
         `;
       }
-      
+
       invoiceContent.appendChild(customerInfo);
-      
+
       // Bảng chi tiết sản phẩm
       const productsTable = document.createElement('table');
       productsTable.style.width = '100%';
       productsTable.style.borderCollapse = 'collapse';
       productsTable.style.marginBottom = '20px';
-      
+
       // Tiêu đề bảng
       productsTable.innerHTML = `
         <thead>
@@ -561,7 +670,7 @@ export default function SearchOrdersPage() {
         </thead>
         <tbody>
       `;
-      
+
       // Thêm các sản phẩm vào bảng
       let totalAmount = 0;
       formattedOrderDetails.forEach(detail => {
@@ -570,7 +679,7 @@ export default function SearchOrdersPage() {
         const quantity = detail.quantity || 0;
         const amount = price * quantity;
         totalAmount += amount;
-        
+
         productsTable.innerHTML += `
           <tr>
             <td style="border: 1px solid #ddd; padding: 8px;">${productName}</td>
@@ -580,7 +689,7 @@ export default function SearchOrdersPage() {
           </tr>
         `;
       });
-      
+
       // Thêm tổng tiền
       productsTable.innerHTML += `
         </tbody>
@@ -592,7 +701,7 @@ export default function SearchOrdersPage() {
         </tfoot>
       `;
       invoiceContent.appendChild(productsTable);
-      
+
       // Chữ ký và thông tin cuối trang
       const footer = document.createElement('div');
       footer.style.marginTop = '40px';
@@ -609,20 +718,20 @@ export default function SearchOrdersPage() {
         </div>
       `;
       invoiceContent.appendChild(footer);
-      
+
       // Thêm vào DOM để chụp
       document.body.appendChild(invoiceContent);
-      
+
       // Chuyển HTML thành canvas
       const canvas = await html2canvas(invoiceContent, {
         scale: 2, // Tăng độ phân giải
         useCORS: true,
         logging: false
       });
-      
+
       // Xóa khỏi DOM sau khi chụp
       document.body.removeChild(invoiceContent);
-      
+
       // Tạo PDF từ canvas
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({
@@ -630,24 +739,24 @@ export default function SearchOrdersPage() {
         unit: 'mm',
         format: 'a4'
       });
-      
+
       // Tính toán kích thước để vừa với trang A4
       const imgWidth = 210; // A4 width in mm
       const imgHeight = canvas.height * imgWidth / canvas.width;
-      
+
       pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-      
+
       // Tạo tên file PDF
       const pdfFileName = `Hoa_Don_${orderId}.pdf`;
-      
+
       // Tải xuống PDF
       pdf.save(pdfFileName);
-      
+
       // Lưu tên file để hiển thị trong thông báo
       setLastGeneratedPdfUrl(pdfFileName);
-      
+
       console.log('Đã xuất hóa đơn thành công cho đơn hàng', orderId);
-      
+
       // Cập nhật thông báo đang xử lý thành thông báo thành công với màu theme
       toast.update(toastId, {
         render: (
@@ -664,10 +773,10 @@ export default function SearchOrdersPage() {
         closeOnClick: true,
         className: `border-l-4 border-${themeColor}-500`
       });
-      
+
       // Không cần hiển thị thông báo bên dưới nữa
       setShowOpenPdfOption(false);
-      
+
     } catch (error) {
       console.error('Lỗi khi xuất hóa đơn:', error);
       toast.error("Lỗi khi xuất hóa đơn. Vui lòng thử lại sau.", {
@@ -689,7 +798,7 @@ export default function SearchOrdersPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <h1 className="text-2xl font-semibold text-gray-900 mb-6">Tìm kiếm và xem đơn hàng</h1>
-      
+
       {/* Đã bỏ thông báo bên dưới */}
 
       {/* Bộ lọc và tìm kiếm */}
@@ -705,7 +814,7 @@ export default function SearchOrdersPage() {
                 onChange={(e) => {
                   const newValue = e.target.value;
                   setSearchTerm(newValue);
-                  
+
                   // Tự động tìm kiếm sau khi người dùng ngừng gõ 500ms
                   const delayDebounceFn = setTimeout(() => {
                     // Nếu xóa hết ký tự, đặt lại trạng thái ban đầu
@@ -809,7 +918,7 @@ export default function SearchOrdersPage() {
                 {error}
               </p>
               <div className="mt-2">
-                <button 
+                <button
                   onClick={() => {
                     setError(null);
                     searchOrders();
@@ -873,8 +982,8 @@ export default function SearchOrdersPage() {
                 </tr>
               ) : getCurrentPageOrders().length > 0 ? (
                 getCurrentPageOrders().map((order) => (
-                  <tr 
-                    key={order.order_id} 
+                  <tr
+                    key={order.order_id}
                     className="hover:bg-gray-50 cursor-pointer"
                     onClick={() => viewOrderDetails(order)}
                   >
@@ -895,8 +1004,8 @@ export default function SearchOrdersPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        order.status === 'Đã thanh toán' 
-                          ? 'bg-green-100 text-green-800' 
+                        order.status === 'Đã thanh toán'
+                          ? 'bg-green-100 text-green-800'
                           : order.status === 'Chưa thanh toán'
                             ? 'bg-yellow-100 text-yellow-800'
                             : 'bg-gray-100 text-gray-800'
@@ -906,8 +1015,8 @@ export default function SearchOrdersPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center ${
-                        order.is_shipping 
-                          ? 'text-blue-600' 
+                        order.is_shipping
+                          ? 'text-blue-600'
                           : 'text-gray-500'
                       }`}>
                         <TruckIcon className="h-5 w-5 mr-1" />
@@ -952,7 +1061,7 @@ export default function SearchOrdersPage() {
                             setLoading(true);
                             const response = await fetch('/api/seed-orders');
                             const data = await response.json();
-                            
+
                             if (data.success) {
                               alert(`Đã tạo ${data.data.orders} đơn hàng mẫu thành công!`);
                               searchOrders();
@@ -986,8 +1095,8 @@ export default function SearchOrdersPage() {
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
                 className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md ${
-                  currentPage === 1 
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                  currentPage === 1
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                     : 'bg-white text-gray-700 hover:bg-gray-50'
                 }`}
               >
@@ -997,8 +1106,8 @@ export default function SearchOrdersPage() {
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
                 className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md ${
-                  currentPage === totalPages 
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                  currentPage === totalPages
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                     : 'bg-white text-gray-700 hover:bg-gray-50'
                 }`}
               >
@@ -1017,8 +1126,8 @@ export default function SearchOrdersPage() {
                     onClick={() => handlePageChange(currentPage - 1)}
                     disabled={currentPage === 1}
                     className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${
-                      currentPage === 1 
-                        ? 'text-gray-300 cursor-not-allowed' 
+                      currentPage === 1
+                        ? 'text-gray-300 cursor-not-allowed'
                         : 'text-gray-500 hover:bg-gray-50'
                     }`}
                   >
@@ -1027,7 +1136,7 @@ export default function SearchOrdersPage() {
                       <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                   </button>
-                  
+
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                     <button
                       key={page}
@@ -1041,13 +1150,13 @@ export default function SearchOrdersPage() {
                       {page}
                     </button>
                   ))}
-                  
+
                   <button
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
                     className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${
-                      currentPage === totalPages 
-                        ? 'text-gray-300 cursor-not-allowed' 
+                      currentPage === totalPages
+                        ? 'text-gray-300 cursor-not-allowed'
                         : 'text-gray-500 hover:bg-gray-50'
                     }`}
                   >
@@ -1080,7 +1189,7 @@ export default function SearchOrdersPage() {
                     <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
                       Chi tiết đơn hàng #{selectedOrder.order_id}
                     </h3>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                       <div>
                         <h4 className="text-sm font-medium text-gray-500 mb-2">Thông tin đơn hàng</h4>
@@ -1107,16 +1216,16 @@ export default function SearchOrdersPage() {
                           </div>
                         </div>
                       </div>
-                      
+
                       <div>
                         <h4 className="text-sm font-medium text-gray-500 mb-2">Thông tin người tạo & khách hàng</h4>
                         <div className="bg-gray-50 p-3 rounded-md">
                           <p className="text-sm text-gray-700 mb-2">Người tạo: {selectedOrder.creator_name}</p>
-                          <p className="text-sm text-gray-700">Khách hàng: {selectedOrder.customer_name}</p>
+                          <p className="text-sm text-gray-700">Khách hàng: {selectedOrder.customer_name || 'Khách vãng lai'}</p>
                         </div>
                       </div>
                     </div>
-                    
+
                     {/* Chi tiết sản phẩm */}
                     <div>
                       <h4 className="text-sm font-medium text-gray-500 mb-2">Chi tiết sản phẩm</h4>
@@ -1196,7 +1305,7 @@ export default function SearchOrdersPage() {
                   <ArrowDownTrayIcon className="h-5 w-5 mr-2" />
                   Xuất hóa đơn
                 </button>
-                
+
                 {/* Nút xem đơn vận chuyển nếu có vận chuyển */}
                 {selectedOrder.is_shipping && (
                   <button
@@ -1211,7 +1320,7 @@ export default function SearchOrdersPage() {
                     Xem đơn vận chuyển
                   </button>
                 )}
-                
+
                 <button
                   type="button"
                   onClick={closeOrderDetails}
