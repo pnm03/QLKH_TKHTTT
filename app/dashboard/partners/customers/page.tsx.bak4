@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-
-import { PlusIcon, MagnifyingGlassIcon, PencilIcon, XMarkIcon, UserIcon, EnvelopeIcon, PhoneIcon, HomeIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
+import { useTheme, themeColors } from '@/app/context/ThemeContext'
+import { PlusIcon, MagnifyingGlassIcon, PencilIcon, XMarkIcon, UserIcon, EnvelopeIcon, PhoneIcon, HomeIcon, CalendarIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
 
 interface Customer {
   customer_id: string
@@ -20,10 +20,11 @@ interface CustomerDetailProps {
   onClose: () => void
   onEdit: (customer: Customer) => void
   onDelete: (customer: Customer) => void
+  theme: any
 }
 
 // Component hiển thị chi tiết khách hàng trong popup
-const CustomerDetail = ({ customer, onClose, onEdit, onDelete }: CustomerDetailProps) => {
+const CustomerDetail = ({ customer, onClose, onEdit, onDelete, theme }: CustomerDetailProps) => {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     return new Intl.DateTimeFormat('vi-VN', {
@@ -39,9 +40,9 @@ const CustomerDetail = ({ customer, onClose, onEdit, onDelete }: CustomerDetailP
     <div className="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
       <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0">
         {/* Overlay mờ để vẫn nhìn thấy bên dưới */}
-        <div className="fixed inset-0 backdrop-blur-[2px]" onClick={onClose}></div>
+        <div className="fixed inset-0 backdrop-blur-[2px] bg-gray-500 bg-opacity-10" onClick={onClose}></div>
         <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-        <div className="inline-block align-middle backdrop-filter backdrop-blur-sm bg-white bg-opacity-50 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-lg sm:w-full relative z-50 border border-blue-500">
+        <div className="inline-block align-middle bg-transparent backdrop-filter backdrop-blur-md rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-lg sm:w-full relative z-50 border border-blue-500">
           <div className="absolute top-0 right-0 pt-4 pr-4">
             <button
               type="button"
@@ -52,7 +53,7 @@ const CustomerDetail = ({ customer, onClose, onEdit, onDelete }: CustomerDetailP
               <XMarkIcon className="h-6 w-6" aria-hidden="true" />
             </button>
           </div>
-          <div className="bg-white bg-opacity-90 backdrop-filter backdrop-blur-sm px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+          <div className="bg-white bg-opacity-40 backdrop-filter backdrop-blur-sm px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
             <div className="sm:flex sm:items-start">
               <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
                 <div className="flex flex-col md:flex-row gap-4">
@@ -90,7 +91,7 @@ const CustomerDetail = ({ customer, onClose, onEdit, onDelete }: CustomerDetailP
               </div>
             </div>
           </div>
-          <div className="bg-gray-50 bg-opacity-90 backdrop-filter backdrop-blur-sm px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+          <div className="bg-gray-50 bg-opacity-40 backdrop-filter backdrop-blur-sm px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
             <button
               type="button"
               onClick={() => onEdit(customer)}
@@ -131,9 +132,10 @@ interface CustomerFormProps {
   onClose: () => void
   onSubmit: (data: Partial<Customer>) => void
   loading: boolean
+  theme: any
 }
 
-const CustomerForm = ({ isOpen, isEdit, customer, onClose, onSubmit, loading }: CustomerFormProps) => {
+const CustomerForm = ({ isOpen, isEdit, customer, onClose, onSubmit, loading, theme }: CustomerFormProps) => {
   const [formData, setFormData] = useState<Partial<Customer>>({
     full_name: '',
     phone: '',
@@ -284,11 +286,11 @@ const CustomerForm = ({ isOpen, isEdit, customer, onClose, onSubmit, loading }: 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
       <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0">
-        <div className="fixed inset-0 backdrop-blur-[2px]" onClick={onClose}></div>
+        <div className="fixed inset-0 backdrop-blur-[5px] bg-white bg-opacity-0" onClick={onClose}></div>
         <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-        <div className="inline-block align-middle backdrop-filter backdrop-blur-sm bg-white bg-opacity-50 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-xl sm:w-full relative z-50 border border-blue-500">
+        <div className="inline-block align-middle bg-transparent backdrop-filter backdrop-blur-md rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-xl sm:w-full relative z-50 border border-blue-500">
           <form onSubmit={handleSubmit}>
-            <div className="bg-white bg-opacity-90 backdrop-filter backdrop-blur-sm px-6 pt-6 pb-6 sm:p-8">
+            <div className="bg-white bg-opacity-40 backdrop-filter backdrop-blur-sm px-6 pt-6 pb-6 sm:p-8">
               <div className="mb-6">
                 <h3 className="text-xl leading-6 font-medium text-gray-900">
                   {isEdit ? 'Chỉnh sửa thông tin khách hàng' : 'Thêm khách hàng mới'}
@@ -419,7 +421,7 @@ const CustomerForm = ({ isOpen, isEdit, customer, onClose, onSubmit, loading }: 
               </div>
             </div>
             
-            <div className="bg-gray-50 bg-opacity-30 backdrop-filter backdrop-blur-sm px-6 py-4 sm:px-8 sm:flex sm:flex-row-reverse">
+            <div className="bg-gray-50 bg-opacity-40 backdrop-filter backdrop-blur-sm px-6 py-4 sm:px-8 sm:flex sm:flex-row-reverse">
               <button
                 type="submit"
                 disabled={loading}
@@ -465,10 +467,10 @@ const DeleteConfirmation = ({ isOpen, customer, onClose, onConfirm, loading }: D
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
       <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0">
-        <div className="fixed inset-0 backdrop-blur-[2px]" onClick={onClose}></div>
+        <div className="fixed inset-0 backdrop-blur-[5px] bg-white bg-opacity-0" onClick={onClose}></div>
         <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-        <div className="inline-block align-middle backdrop-filter backdrop-blur-sm bg-white bg-opacity-50 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-lg sm:w-full relative z-50 border border-red-500">
-          <div className="bg-white bg-opacity-90 backdrop-filter backdrop-blur-sm px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+        <div className="inline-block align-middle bg-transparent backdrop-filter backdrop-blur-md rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-lg sm:w-full relative z-50 border border-red-500">
+          <div className="bg-white bg-opacity-40 backdrop-filter backdrop-blur-sm px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
             <div className="sm:flex sm:items-start">
               <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
                 <svg className="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -487,7 +489,7 @@ const DeleteConfirmation = ({ isOpen, customer, onClose, onConfirm, loading }: D
               </div>
             </div>
           </div>
-          <div className="bg-gray-50 bg-opacity-90 backdrop-filter backdrop-blur-sm px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+          <div className="bg-gray-50 bg-opacity-40 backdrop-filter backdrop-blur-sm px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
             <button
               type="button"
               className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
@@ -561,11 +563,21 @@ export default function CustomersPage() {
     }, 2000)
   }
   
+  const themeContext = useTheme()
   const [mounted, setMounted] = useState(false)
+  const [themeState, setThemeState] = useState(themeColors.indigo)
+  
   // Set mounted = true after component is rendered on client
   useEffect(() => {
     setMounted(true)
   }, [])
+  
+  // Update themeState from context when component is mounted
+  useEffect(() => {
+    if (mounted && themeContext.currentTheme) {
+      setThemeState(themeContext.currentTheme)
+    }
+  }, [mounted, themeContext.currentTheme])
   
   // Fetch customers from database
   const fetchCustomers = async () => {
@@ -783,24 +795,21 @@ export default function CustomersPage() {
       // Close form and refresh data
       closeForm()
       await fetchCustomers()
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error('Lỗi khi lưu dữ liệu khách hàng:', error)
       
       let errorMessage = 'Đã xảy ra lỗi khi lưu dữ liệu khách hàng'
       
       // Handle specific error cases
-      if (typeof error === 'object' && error !== null && 'code' in error && 'message' in error) {
-        const err = error as { code: string, message: string }
-        if (err.code === 'DUPLICATE_EMAIL') {
-          errorMessage = err.message
-        } else if (err.code === 'DUPLICATE_PHONE') {
-          errorMessage = err.message
-        } else if (err.code === '23505') {
-          if (err.message.includes('customers_email_key')) {
-            errorMessage = 'Email này đã được sử dụng bởi khách hàng khác'
-          } else if (err.message.includes('customers_phone_key')) {
-            errorMessage = 'Số điện thoại này đã được sử dụng bởi khách hàng khác'
-          }
+      if (error.code === 'DUPLICATE_EMAIL') {
+        errorMessage = error.message
+      } else if (error.code === 'DUPLICATE_PHONE') {
+        errorMessage = error.message
+      } else if (error.code === '23505') {
+        if (error.message.includes('customers_email_key')) {
+          errorMessage = 'Email này đã được sử dụng bởi khách hàng khác'
+        } else if (error.message.includes('customers_phone_key')) {
+          errorMessage = 'Số điện thoại này đã được sử dụng bởi khách hàng khác'
         }
       }
       
@@ -830,12 +839,12 @@ export default function CustomersPage() {
       // Close confirmation and refresh data
       closeDeleteConfirmation()
       await fetchCustomers()
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error('Lỗi khi xóa khách hàng:', error)
       
       let errorMessage = 'Đã xảy ra lỗi khi xóa khách hàng'
-      if (typeof error === 'object' && error !== null && 'message' in error) {
-        errorMessage = `Lỗi: ${(error as {message: string}).message}`
+      if (error.message) {
+        errorMessage = `Lỗi: ${error.message}`
       }
       
       showNotification('error', errorMessage)
@@ -1103,6 +1112,7 @@ export default function CustomersPage() {
           onClose={closeCustomerDetail}
           onEdit={openEditForm}
           onDelete={openDeleteConfirmation}
+          theme={themeState}
         />
       )}
       
@@ -1114,6 +1124,7 @@ export default function CustomersPage() {
         onClose={closeForm}
         onSubmit={handleFormSubmit}
         loading={formLoading}
+        theme={themeState}
       />
       
       {/* Delete confirmation */}

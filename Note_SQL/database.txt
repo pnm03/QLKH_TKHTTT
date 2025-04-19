@@ -111,3 +111,6 @@ Các trigger hiện có:
 + Trigger mỗi khi bảng Orderdetails được thêm bản ghi mới thì trường  subtotal tự động tính bằng quantity * unit_price
 + Trigger cập nhật số lượng tồn kho trong bảng Products mỗi khi bảng Orderdetails thêm bản ghi mới 
 + Trigger tự động xóa các chi tiết đơn hàng khi đơn hàng bị xóa
+
+
+
