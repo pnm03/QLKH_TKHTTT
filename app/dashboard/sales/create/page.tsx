@@ -211,7 +211,7 @@ export default function CreateOrderPage() {
           const { data: userData, error: userError } = await supabase
             .from('users')
             .select('*')
-            .eq('user_id', user.id)
+            .eq('auth_id', user.id)
             .maybeSingle()
 
           if (userError) {
@@ -945,15 +945,17 @@ export default function CreateOrderPage() {
 
     try {
       // Tạo đơn hàng mới trong cơ sở dữ liệu
-      // Lấy thông tin người dùng hiện tại
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-
-      if (userError || !user) {
-        console.error('Lỗi khi lấy thông tin người dùng đăng nhập:', userError);
-        throw new Error('Không tìm thấy thông tin người dùng đăng nhập');
+      // Lấy thông tin người dùng hiện tại (người tạo đơn hàng) từ hàm fetchCurrentUser
+      const currentUserData = await fetchCurrentUser();
+      
+      if (!currentUserData) {
+        console.error('Không thể lấy thông tin người dùng hiện tại');
+        throw new Error('Không thể lấy thông tin người dùng hiện tại');
       }
-
-      console.log('Đã tìm thấy user auth id:', user.id);
+      
+      console.log('Thông tin người dùng hiện tại:', currentUserData);
+      const orderUserId = currentUserData.user_id;
+      console.log('Đã tìm thấy user_id từ người dùng hiện tại:', orderUserId);
 
       // Sử dụng customer_id từ khách hàng đã chọn hoặc null nếu không có khách hàng
       let customerId = null;
@@ -995,6 +997,7 @@ export default function CreateOrderPage() {
       const orderData = {
         order_id: orderId,
         customer_id: customerId,
+        user_id: orderUserId, // Thêm user_id là người tạo đơn hàng
         order_date: new Date().toISOString(),
         price: totalOrderAmount, // Lưu tổng giá trị đơn hàng
         status: 'Đã thanh toán', // Sử dụng giá trị enum chính xác: Đã thanh toán
@@ -1421,10 +1424,23 @@ export default function CreateOrderPage() {
         console.log('Không có khách hàng được chọn, customer_id sẽ là null')
       }
       
+      // Lấy thông tin người dùng hiện tại (người tạo đơn hàng) từ hàm fetchCurrentUser
+      const currentUserData = await fetchCurrentUser();
+      
+      if (!currentUserData) {
+        console.error('Không thể lấy thông tin người dùng hiện tại');
+        throw new Error('Không thể lấy thông tin người dùng hiện tại');
+      }
+      
+      console.log('Thông tin người dùng hiện tại:', currentUserData);
+      const creatorUserId = currentUserData.user_id;
+      console.log('Đã tìm thấy user_id từ người dùng hiện tại:', creatorUserId);
+      
       // Tạo đối tượng đơn hàng phù hợp với cấu trúc bảng orders
       const orderObject = {
         order_id: orderId,
         customer_id: customerId, // Sử dụng customerId từ khách hàng đã chọn hoặc null
+        user_id: creatorUserId, // Thêm user_id là người tạo đơn hàng
         order_date: new Date().toISOString(),
         price: totalOrderAmount,
         status: paymentStatus, // Trạng thái dựa trên số tiền đã trả
@@ -2026,6 +2042,35 @@ export default function CreateOrderPage() {
               </div>
 
               <div>
+                {/* Hiển thị thông tin khách hàng nếu có */}
+                {currentInvoice.customer && (
+                  <div className="mb-4 p-3 border border-gray-200 rounded-md bg-gray-50">
+                    <h4 className="font-medium text-gray-700 mb-2">Thông tin khách hàng:</h4>
+                    <div className="space-y-1">
+                      <div className="flex items-center">
+                        <UserIcon className="h-4 w-4 text-gray-500 mr-2" />
+                        <span className="text-gray-800">{currentInvoice.customer.full_name}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <PhoneIcon className="h-4 w-4 text-gray-500 mr-2" />
+                        <span className="text-gray-800">{currentInvoice.customer.phone}</span>
+                      </div>
+                      {currentInvoice.customer.email && (
+                        <div className="flex items-center">
+                          <EnvelopeIcon className="h-4 w-4 text-gray-500 mr-2" />
+                          <span className="text-gray-800">{currentInvoice.customer.email}</span>
+                        </div>
+                      )}
+                      {currentInvoice.customer.hometown && (
+                        <div className="flex items-center">
+                          <HomeIcon className="h-4 w-4 text-gray-500 mr-2" />
+                          <span className="text-gray-800">{currentInvoice.customer.hometown}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Giảm giá thêm:
