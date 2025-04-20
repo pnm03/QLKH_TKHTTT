@@ -55,6 +55,12 @@ export default function CustomerCarePage() {
   const [orderSuggestions, setOrderSuggestions] = useState<Array<{order_id: string, price: number, order_date: string}>>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
 
+  // State for return detail modal
+  const [showReturnDetailModal, setShowReturnDetailModal] = useState(false)
+  const [selectedReturn, setSelectedReturn] = useState<any>(null)
+  const [returnDetailLoading, setReturnDetailLoading] = useState(false)
+  const [updateStatusLoading, setUpdateStatusLoading] = useState(false)
+
   // Set mounted = true
   useEffect(() => {
     setMounted(true)
@@ -409,6 +415,134 @@ export default function CustomerCarePage() {
     return new Date(dateString).toLocaleString('vi-VN')
   }
 
+  // Open return detail modal
+  const openReturnDetailModal = async (returnId: number) => {
+    setReturnDetailLoading(true)
+    setSelectedReturn(null)
+    setShowReturnDetailModal(true)
+
+    const supabase = createClientComponentClient()
+
+    try {
+      // Fetch return details with related order information
+      const { data: returnData, error: returnError } = await supabase
+        .from('returns')
+        .select('*')
+        .eq('return_id', returnId)
+        .single()
+
+      if (returnError) {
+        console.error('Lỗi khi lấy thông tin đơn đổi/trả:', returnError)
+        setError('Không thể lấy thông tin đơn đổi/trả. Vui lòng thử lại sau.')
+        setShowReturnDetailModal(false)
+        return
+      }
+
+      if (!returnData) {
+        setError('Không tìm thấy thông tin đơn đổi/trả.')
+        setShowReturnDetailModal(false)
+        return
+      }
+
+      // Fetch order details
+      const { data: orderData, error: orderError } = await supabase
+        .from('orders')
+        .select('*, customers(*)')
+        .eq('order_id', returnData.order_id)
+        .single()
+
+      if (orderError) {
+        console.error('Lỗi khi lấy thông tin đơn hàng:', orderError)
+      }
+
+      // Fetch order details
+      const { data: orderDetails, error: orderDetailsError } = await supabase
+        .from('orderdetails')
+        .select('*')
+        .eq('order_id', returnData.order_id)
+
+      if (orderDetailsError) {
+        console.error('Lỗi khi lấy chi tiết đơn hàng:', orderDetailsError)
+      }
+
+      // Fetch shipping information if available
+      const { data: shippingData, error: shippingError } = await supabase
+        .from('shippings')
+        .select('*')
+        .eq('order_id', returnData.order_id)
+        .maybeSingle()
+
+      if (shippingError) {
+        console.error('Lỗi khi lấy thông tin vận chuyển:', shippingError)
+      }
+
+      // Combine all data
+      const detailData = {
+        ...returnData,
+        order: orderData || null,
+        orderDetails: orderDetails || [],
+        shipping: shippingData || null
+      }
+
+      setSelectedReturn(detailData)
+    } catch (err) {
+      console.error('Lỗi khi lấy chi tiết đơn đổi/trả:', err)
+      setError('Không thể lấy thông tin đơn đổi/trả. Vui lòng thử lại sau.')
+    } finally {
+      setReturnDetailLoading(false)
+    }
+  }
+
+  // Close return detail modal
+  const closeReturnDetailModal = () => {
+    setShowReturnDetailModal(false)
+    setSelectedReturn(null)
+  }
+
+  // Update return status
+  const updateReturnStatus = async (returnId: number, newStatus: string) => {
+    if (!['đang xử lý', 'đã chấp nhận', 'đã từ chối'].includes(newStatus)) {
+      setError('Trạng thái không hợp lệ.')
+      return
+    }
+
+    setUpdateStatusLoading(true)
+    setError(null)
+
+    const supabase = createClientComponentClient()
+
+    try {
+      const { error } = await supabase
+        .from('returns')
+        .update({ status: newStatus })
+        .eq('return_id', returnId)
+
+      if (error) {
+        console.error('Lỗi khi cập nhật trạng thái:', error)
+        throw error
+      }
+
+      // Update local state
+      if (selectedReturn) {
+        setSelectedReturn({
+          ...selectedReturn,
+          status: newStatus
+        })
+      }
+
+      // Refresh the list
+      fetchReturnRequests()
+
+      setSuccessMessage('Cập nhật trạng thái thành công!')
+      setTimeout(() => setSuccessMessage(null), 3000)
+    } catch (err) {
+      console.error('Lỗi khi cập nhật trạng thái:', err)
+      setError('Không thể cập nhật trạng thái. Vui lòng thử lại sau.')
+    } finally {
+      setUpdateStatusLoading(false)
+    }
+  }
+
   if (!mounted) {
     return null // Or a loading spinner
   }
@@ -665,7 +799,7 @@ export default function CustomerCarePage() {
                 </tr>
               ) : (
                 returns.map((req) => (
-                  <tr key={req.return_id} className="hover:bg-gray-50">
+                  <tr key={req.return_id} className="hover:bg-gray-50 cursor-pointer" onClick={() => openReturnDetailModal(req.return_id)}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       {req.return_id}
                     </td>
@@ -988,6 +1122,245 @@ export default function CustomerCarePage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Return Detail Modal */}
+      {showReturnDetailModal && (
+        <div
+          className="fixed inset-0 flex items-center justify-center z-50"
+          aria-labelledby="detail-modal-title"
+          role="dialog"
+          aria-modal="true"
+        >
+          {/* Background overlay */}
+          <div
+            className="absolute inset-0 bg-black opacity-10"
+            onClick={closeReturnDetailModal}
+          ></div>
+
+          {/* Modal panel */}
+          <div
+            className={`bg-white bg-opacity-80 backdrop-filter backdrop-blur-md rounded-lg shadow-xl w-full max-w-5xl border-2 ${theme?.borderColor || 'border-blue-500'} relative max-h-[90vh] overflow-y-auto`}
+          >
+            <div className="px-6 pt-6 pb-4 sm:p-8">
+              <div className="flex justify-between items-center mb-4">
+                <h3
+                  className="text-xl font-semibold text-gray-900"
+                  id="detail-modal-title"
+                >
+                  Chi Tiết Yêu Cầu Đổi/Trả
+                </h3>
+                <button
+                  type="button"
+                  className="text-gray-500 hover:text-gray-700"
+                  onClick={closeReturnDetailModal}
+                >
+                  <XMarkIcon className="h-6 w-6" />
+                  <span className="sr-only">Đóng</span>
+                </button>
+              </div>
+
+              {returnDetailLoading ? (
+                <div className="flex justify-center items-center py-12">
+                  <svg
+                    className="animate-spin h-10 w-10 text-gray-400"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                </div>
+              ) : selectedReturn ? (
+                <div className="space-y-6">
+                  {/* Return Request Information */}
+                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <h4 className="text-lg font-medium text-gray-900 mb-3">Thông tin yêu cầu đổi/trả</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <p className="text-sm font-medium text-gray-500">Mã yêu cầu</p>
+                        <p className="text-base font-medium">{selectedReturn.return_id}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-500">Tên yêu cầu</p>
+                        <p className="text-base">{selectedReturn.name_return || <span className="text-gray-400 italic">Chưa đặt tên</span>}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-500">Ngày yêu cầu</p>
+                        <p className="text-base">{formatDate(selectedReturn.return_date)}</p>
+                      </div>
+                      <div className="md:col-span-3">
+                        <p className="text-sm font-medium text-gray-500">Lý do đổi/trả</p>
+                        <p className="text-base">{selectedReturn.return_reason}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-500">Số tiền hoàn lại</p>
+                        <p className="text-base font-medium">
+                          {selectedReturn.refund_amount ? formatCurrency(selectedReturn.refund_amount) : <span className="text-gray-400">-</span>}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-500">Trạng thái</p>
+                        <div className="mt-1">
+                          <select
+                            value={selectedReturn.status}
+                            onChange={(e) => updateReturnStatus(selectedReturn.return_id, e.target.value)}
+                            disabled={updateStatusLoading}
+                            className={`block w-full rounded-md shadow-sm focus:border-${themeColor}-500 focus:ring-${themeColor}-500 text-sm py-2 px-3 border border-gray-300`}
+                          >
+                            <option value="đang xử lý">Đang xử lý</option>
+                            <option value="đã chấp nhận">Đã chấp nhận</option>
+                            <option value="đã từ chối">Đã từ chối</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Order Information */}
+                  {selectedReturn.order && (
+                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                      <h4 className="text-lg font-medium text-gray-900 mb-3">Thông tin đơn hàng</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <p className="text-sm font-medium text-gray-500">Mã đơn hàng</p>
+                          <p className="text-base font-medium">{selectedReturn.order.order_id}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-500">Ngày đặt hàng</p>
+                          <p className="text-base">{formatDate(selectedReturn.order.order_date)}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-500">Tổng giá trị</p>
+                          <p className="text-base font-medium">{formatCurrency(selectedReturn.order.price)}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-500">Trạng thái thanh toán</p>
+                          <p className="text-base">
+                            <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${selectedReturn.order.status === 'Đã thanh toán' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                              {selectedReturn.order.status}
+                            </span>
+                          </p>
+                        </div>
+                        {selectedReturn.order.customers && (
+                          <div className="md:col-span-3">
+                            <p className="text-sm font-medium text-gray-500">Thông tin khách hàng</p>
+                            <div className="mt-1 p-3 bg-white rounded border border-gray-100">
+                              <p className="text-base font-medium">{selectedReturn.order.customers.full_name || 'Khách vãng lai'}</p>
+                              {selectedReturn.order.customers.phone && <p className="text-sm">Điện thoại: {selectedReturn.order.customers.phone}</p>}
+                              {selectedReturn.order.customers.email && <p className="text-sm">Email: {selectedReturn.order.customers.email}</p>}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Order Details */}
+                  {selectedReturn.orderDetails && selectedReturn.orderDetails.length > 0 && (
+                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                      <h4 className="text-lg font-medium text-gray-900 mb-3">Chi tiết sản phẩm</h4>
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200">
+                          <thead className="bg-gray-100">
+                            <tr>
+                              <th scope="col" className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên sản phẩm</th>
+                              <th scope="col" className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số lượng</th>
+                              <th scope="col" className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Đơn giá</th>
+                              <th scope="col" className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thành tiền</th>
+                            </tr>
+                          </thead>
+                          <tbody className="bg-white divide-y divide-gray-200">
+                            {selectedReturn.orderDetails.map((detail: any) => (
+                              <tr key={detail.orderdetail_id}>
+                                <td className="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">{detail.name_product}</td>
+                                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{detail.quantity}</td>
+                                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{formatCurrency(detail.unit_price)}</td>
+                                <td className="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">{formatCurrency(detail.subtotal)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Shipping Information */}
+                  {selectedReturn.shipping && (
+                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                      <h4 className="text-lg font-medium text-gray-900 mb-3">Thông tin vận chuyển</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <p className="text-sm font-medium text-gray-500">Mã vận chuyển</p>
+                          <p className="text-base font-medium">{selectedReturn.shipping.shipping_id}</p>
+                        </div>
+                        {selectedReturn.shipping.tracking_num && (
+                          <div>
+                            <p className="text-sm font-medium text-gray-500">Mã vận đơn</p>
+                            <p className="text-base">{selectedReturn.shipping.tracking_num}</p>
+                          </div>
+                        )}
+                        <div>
+                          <p className="text-sm font-medium text-gray-500">Trạng thái vận chuyển</p>
+                          <p className="text-base">
+                            <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                              selectedReturn.shipping.status === 'Đã giao hàng' ? 'bg-green-100 text-green-800' :
+                              selectedReturn.shipping.status === 'Đã hủy' ? 'bg-red-100 text-red-800' :
+                              'bg-yellow-100 text-yellow-800'}`}>
+                              {selectedReturn.shipping.status}
+                            </span>
+                          </p>
+                        </div>
+                        <div className="md:col-span-3">
+                          <p className="text-sm font-medium text-gray-500">Địa chỉ giao hàng</p>
+                          <p className="text-base">{selectedReturn.shipping.shipping_address}</p>
+                        </div>
+                        {selectedReturn.shipping.shipping_cost > 0 && (
+                          <div>
+                            <p className="text-sm font-medium text-gray-500">Phí vận chuyển</p>
+                            <p className="text-base">{formatCurrency(selectedReturn.shipping.shipping_cost)}</p>
+                          </div>
+                        )}
+                        {selectedReturn.shipping.actual_delivery_date && (
+                          <div>
+                            <p className="text-sm font-medium text-gray-500">Ngày giao hàng thực tế</p>
+                            <p className="text-base">{formatDate(selectedReturn.shipping.actual_delivery_date)}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">Không tìm thấy thông tin yêu cầu đổi/trả</p>
+                </div>
+              )}
+            </div>
+
+            <div className="bg-gray-50 bg-opacity-60 backdrop-filter backdrop-blur-sm px-6 py-4 sm:px-8 flex justify-end">
+              <button
+                type="button"
+                className="inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-6 py-3 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:w-auto sm:text-base"
+                onClick={closeReturnDetailModal}
+              >
+                Đóng
+              </button>
+            </div>
           </div>
         </div>
       )}
