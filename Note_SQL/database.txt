@@ -87,7 +87,7 @@ Bảng Shippings:
 	shipping_cost (Phí vận chuyển) - DECIMAL(10, 2) - NOT NULL, DEFAULT 0, CHECK (shipping_cost >= 0)
 	actual_delivery_date (Ngày giao hàng thực tế) - TIMESTAMP WITH TIME ZONE - -
 	delivery_date (Ngày giao hàng dự kiến) - TIMESTAMP WITH TIME ZONE - -
-	status (Trạng thái vận chuyển) - VARCHAR(50) - NOT NULL, CHECK (status IN ('Chưa giao hàng', 'Đang chuẩn bị', 'đang giao', 'Đã giao', 'Đang hoàn về', 'Đã hủy'))
+	status (Trạng thái vận chuyển) - VARCHAR(50) - NOT NULL, CHECK (status IN ('Chưa giao hàng', 'Đang chuẩn bị', 'Đang giao hàng', 'Đã giao hànghàng', 'Đang hoàn về', 'Đã hủy'))
 	created_at (Ngày tạo thông tin vận chuyển) - TIMESTAMP WITH TIME ZONE - NOT NULL, DEFAULT CURRENT_TIMESTAMP
 	weight (Cân nặng lô hàng) - DECIMAL(10, 3) - CHECK (weight >= 0)
 	unit_weight (Đơn vị cân nặng) - VARCHAR(10) - CHECK (unit_weight IN ('kg', 'g'))
