@@ -1,16 +1,17 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, ComponentType, SVGProps } from 'react' // Import ComponentType, SVGProps
 import { createClient } from '@/utils/supabase/client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { UserIcon, LanguageIcon, ShoppingCartIcon, UserGroupIcon, CubeIcon, DocumentTextIcon, ChartBarIcon, ChevronDownIcon, Bars3Icon, SwatchIcon, BuildingStorefrontIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline'
 import { useTheme, themeColors } from '../context/ThemeContext'
+import type { User } from '@supabase/supabase-js'; // Import User type
 
 interface NavItem {
   name: string;
   href: string;
-  icon: any;
+  icon: ComponentType<SVGProps<SVGSVGElement>> | null; // Updated icon type
   current: boolean;
   children?: NavItem[];
 }
@@ -20,7 +21,7 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null) // Updated user type
   const [loading, setLoading] = useState(true)
   const [activeNavItem, setActiveNavItem] = useState('dashboard')
   const [expandedItems, setExpandedItems] = useState<string[]>([])
@@ -31,17 +32,17 @@ export default function DashboardLayout({
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [autoCollapse, setAutoCollapse] = useState(false)
   const sidebarRef = useRef<HTMLDivElement>(null)
-  
+
   // Sử dụng usePathname để theo dõi đường dẫn hiện tại
   const pathname = usePathname()
-  
+
   // Lấy thông tin theme từ context nhưng chỉ sử dụng khi component đã mounted
   const themeContext = useTheme()
-  
+
   // Refs để kiểm soát click outside
   const userMenuRef = useRef<HTMLDivElement>(null)
   const colorMenuRef = useRef<HTMLDivElement>(null)
-  
+
   // State và refs cho theme
   const [themeState, setThemeState] = useState({
     selectedTheme: 'blue',
@@ -51,7 +52,7 @@ export default function DashboardLayout({
   // Set mounted = true sau khi component được render ở client
   useEffect(() => {
     setMounted(true)
-    
+
     // Đọc trạng thái autoCollapse từ localStorage
     if (typeof window !== 'undefined') {
       const savedAutoCollapse = localStorage.getItem('qlbh-auto-collapse');
@@ -68,7 +69,7 @@ export default function DashboardLayout({
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
         setShowUserMenu(false)
       }
-      
+
       // Đóng color picker khi click ra ngoài
       if (colorMenuRef.current && !colorMenuRef.current.contains(event.target as Node)) {
         setShowColorPicker(false)
@@ -79,7 +80,7 @@ export default function DashboardLayout({
     if (showUserMenu || showColorPicker) {
       document.addEventListener('mousedown', handleClickOutside)
     }
-    
+
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
     }
@@ -100,24 +101,31 @@ export default function DashboardLayout({
       try {
         // Chỉ thực hiện các thao tác khi component đã mounted ở client-side
         if (!mounted) return;
-        
+
         setLoading(true);
-        
+
         // Lấy dữ liệu user từ Supabase
         const supabase = createClient();
-        
+
         // Gọi refresh token nếu có
         let session = null;
-        if ((supabase as any).customRefreshToken) {
+        // Check if customRefreshToken exists and is a function before calling
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if (typeof (supabase as any).customRefreshToken === 'function') {
           try {
             // Thử lấy session từ hàm refresh token đã được cải tiến
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             session = await (supabase as any).customRefreshToken();
             console.log('Đã lấy session từ customRefreshToken:', !!session);
-          } catch (refreshError) {
-            console.error('Lỗi khi refresh token:', refreshError);
+          } catch (refreshError: unknown) { // Use unknown type
+             const message = refreshError instanceof Error ? refreshError.message : String(refreshError);
+            console.error('Lỗi khi refresh token:', message);
           }
+        } else {
+           console.log('customRefreshToken không tồn tại hoặc không phải là hàm.');
         }
-        
+
+
         // Nếu refresh token không trả về session, thử lấy bằng getSession
         if (!session) {
           try {
@@ -127,11 +135,12 @@ export default function DashboardLayout({
             } else if (sessionData.session) {
               session = sessionData.session;
             }
-          } catch (sessionError) {
-            console.error('Lỗi nghiêm trọng khi lấy session:', sessionError);
+          } catch (sessionError: unknown) { // Use unknown type
+             const message = sessionError instanceof Error ? sessionError.message : String(sessionError);
+            console.error('Lỗi nghiêm trọng khi lấy session:', message);
           }
         }
-        
+
         // Nếu vẫn không có session, thử đọc từ cache localStorage
         if (!session) {
           try {
@@ -141,26 +150,27 @@ export default function DashboardLayout({
               // Kiểm tra xem session cache có hết hạn không
               if (parsed.user && (!parsed.expires_at || parsed.expires_at * 1000 > Date.now())) {
                 console.log('Sử dụng session từ cache');
-                setUser(parsed.user);
+                setUser(parsed.user as User); // Cast to User
                 setLoading(false);
                 return;
               }
             }
-          } catch (cacheError) {
-            console.error('Lỗi khi đọc cache session:', cacheError);
+          } catch (cacheError: unknown) { // Use unknown type
+             const message = cacheError instanceof Error ? cacheError.message : String(cacheError);
+            console.error('Lỗi khi đọc cache session:', message);
           }
         }
-        
+
         if (!session) {
           console.log('Không tìm thấy phiên đăng nhập trong DashboardLayout');
           // Không cần tự chuyển hướng ở đây vì middleware sẽ xử lý
           setLoading(false);
           return;
         }
-        
+
         console.log('Phiên hợp lệ, đang tải thông tin user:', session.user.email);
-        setUser(session.user);
-        
+        setUser(session.user); // Type is already User | null
+
         // Cập nhật thông tin đăng nhập nếu có user_id
         if (session.user.id) {
           try {
@@ -170,7 +180,7 @@ export default function DashboardLayout({
               .select('id')
               .eq('user_id', session.user.id)
               .maybeSingle();
-              
+
             if (checkError) {
               console.error('Lỗi khi kiểm tra tài khoản:', checkError.message);
               // Tiếp tục xử lý, không dừng lại
@@ -179,11 +189,11 @@ export default function DashboardLayout({
               if (existingAccount) {
                 const { error: updateError } = await supabase
                   .from('accounts')
-                  .update({ 
-                    last_login: new Date().toISOString() 
+                  .update({
+                    last_login: new Date().toISOString()
                   })
                   .eq('user_id', session.user.id);
-                
+
                 if (updateError) {
                   console.error('Lỗi khi cập nhật last_login:', updateError.message);
                   // Tiếp tục xử lý, không dừng lại
@@ -195,19 +205,21 @@ export default function DashboardLayout({
                 // Có thể tạo mới tài khoản ở đây nếu cần
               }
             }
-          } catch (err) {
-            console.error('Lỗi khi cập nhật thông tin đăng nhập:', err);
+          } catch (err: unknown) { // Use unknown type
+             const message = err instanceof Error ? err.message : String(err);
+            console.error('Lỗi khi cập nhật thông tin đăng nhập:', message);
             // Tiếp tục xử lý, không dừng lại
           }
         }
-        
+
         setLoading(false);
-      } catch (error) {
-        console.error('Lỗi khi tải thông tin user:', error);
+      } catch (error: unknown) { // Use unknown type
+         const message = error instanceof Error ? error.message : String(error);
+        console.error('Lỗi khi tải thông tin user:', message);
         setLoading(false);
       }
     };
-    
+
     fetchUserData();
   }, [mounted]);
 
@@ -217,6 +229,8 @@ export default function DashboardLayout({
       const pathSegments = pathname.split('/')
       if (pathSegments.length > 2) {
         setActiveNavItem(pathSegments[2]) // /dashboard/[segment]
+      } else if (pathname === '/dashboard') {
+        setActiveNavItem('dashboard'); // Handle base dashboard route
       }
     }
   }, [pathname])
@@ -228,7 +242,7 @@ export default function DashboardLayout({
       icon: ShoppingCartIcon,
       current: activeNavItem === 'sales',
       children: [
-        { name: language === 'vi' ? 'Tạo đơn hàng' : 'Create Order', href: '/dashboard/sales/create', icon: null, current: false },
+        { name: language === 'vi' ? 'Tạo đơn hàng' : 'Create Order', href: '/dashboard/sales/create', icon: null, current: pathname === '/dashboard/sales/create' },
         { name: language === 'vi' ? 'Tích hợp thanh toán' : 'Payment Integration', href: '/dashboard/sales/payment', icon: null, current: pathname.includes('/dashboard/sales/payment') },
       ]
     },
@@ -249,6 +263,7 @@ export default function DashboardLayout({
       current: activeNavItem === 'partners',
       children: [
         { name: language === 'vi' ? 'Quản lý khách hàng' : 'Customer Management', href: '/dashboard/partners/customers', icon: null, current: pathname.includes('/dashboard/partners/customers') },
+        { name: language === 'vi' ? 'Chăm sóc khách hàng' : 'Customer Care', href: '/dashboard/partners/customer-care', icon: null, current: pathname.includes('/dashboard/partners/customer-care') },
       ]
     },
     {
@@ -257,10 +272,10 @@ export default function DashboardLayout({
       icon: UserGroupIcon,
       current: activeNavItem === 'users',
       children: [
-        { name: language === 'vi' ? 'Thêm người dùng' : 'Add User', href: '/dashboard/users/add', icon: null, current: false },
-        { name: language === 'vi' ? 'Tìm kiếm người dùng' : 'Search Users', href: '/dashboard/users/search', icon: null, current: false },
+        { name: language === 'vi' ? 'Thêm người dùng' : 'Add User', href: '/dashboard/users/add', icon: null, current: pathname === '/dashboard/users/add' },
+        { name: language === 'vi' ? 'Tìm kiếm người dùng' : 'Search Users', href: '/dashboard/users/search', icon: null, current: pathname === '/dashboard/users/search' },
         { name: language === 'vi' ? 'Chỉnh sửa người dùng' : 'Edit User', href: user?.id ? `/dashboard/users/edit/${user.id}` : '/dashboard/users/edit', icon: null, current: pathname.includes('/dashboard/users/edit/') },
-        { name: language === 'vi' ? 'Phân quyền người dùng' : 'User Permissions', href: user?.id ? `/dashboard/users/permissions/${user.id}` : '/dashboard/users/search', icon: null, current: pathname.includes('/dashboard/users/permissions') }
+        { name: language === 'vi' ? 'Phân quyền người dùng' : 'User Permissions', href: user?.id ? `/dashboard/users/permissions/${user.id}` : '/dashboard/users/permissions', icon: null, current: pathname.includes('/dashboard/users/permissions') }
       ]
     },
     {
@@ -269,10 +284,10 @@ export default function DashboardLayout({
       icon: CubeIcon,
       current: activeNavItem === 'products',
       children: [
-        { name: language === 'vi' ? 'Thêm sản phẩm' : 'Add Product', href: '/dashboard/products/add', icon: null, current: false },
-        { name: language === 'vi' ? 'Tìm kiếm sản phẩm' : 'Search Products', href: '/dashboard/products/search', icon: null, current: false },
-        { name: language === 'vi' ? 'Chỉnh sửa sản phẩm' : 'Edit Product', href: '/dashboard/products/edit', icon: null, current: false },
-        { name: language === 'vi' ? 'Danh mục sản phẩm' : 'Product Categories', href: '/dashboard/products/categories', icon: null, current: false },
+        { name: language === 'vi' ? 'Thêm sản phẩm' : 'Add Product', href: '/dashboard/products/add', icon: null, current: pathname === '/dashboard/products/add' },
+        { name: language === 'vi' ? 'Tìm kiếm sản phẩm' : 'Search Products', href: '/dashboard/products/search', icon: null, current: pathname === '/dashboard/products/search' },
+        { name: language === 'vi' ? 'Chỉnh sửa sản phẩm' : 'Edit Product', href: '/dashboard/products/edit', icon: null, current: pathname.includes('/dashboard/products/edit') },
+        { name: language === 'vi' ? 'Danh mục sản phẩm' : 'Product Categories', href: '/dashboard/products/categories', icon: null, current: pathname === '/dashboard/products/categories' },
       ]
     },
     {
@@ -293,9 +308,9 @@ export default function DashboardLayout({
       icon: ChartBarIcon,
       current: activeNavItem === 'reports',
       children: [
-        { name: language === 'vi' ? 'Báo cáo đơn hàng' : 'Order Reports', href: '/dashboard/reports/orders', icon: null, current: pathname.includes('/dashboard/orders/invoice') },
-        { name: language === 'vi' ? 'Báo cáo khách hàng' : 'Customer Reports', href: '/dashboard/reports/customers', icon: null, current: false },
-        { name: language === 'vi' ? 'Báo cáo sản phẩm' : 'Product Reports', href: '/dashboard/reports/products', icon: null, current: false },
+        { name: language === 'vi' ? 'Báo cáo đơn hàng' : 'Order Reports', href: '/dashboard/reports/orders', icon: null, current: pathname.includes('/dashboard/reports/orders') },
+        { name: language === 'vi' ? 'Báo cáo khách hàng' : 'Customer Reports', href: '/dashboard/reports/customers', icon: null, current: pathname === '/dashboard/reports/customers' },
+        { name: language === 'vi' ? 'Báo cáo sản phẩm' : 'Product Reports', href: '/dashboard/reports/products', icon: null, current: pathname === '/dashboard/reports/products' },
       ]
     },
   ]
@@ -303,11 +318,11 @@ export default function DashboardLayout({
   const toggleExpand = (itemName: string) => {
     // Tìm menu cha của chức năng đang active (nếu có)
     let activeParentMenu: string | null = null;
-    
+
     navigation.forEach(item => {
       if (item.children) {
         // Kiểm tra nếu menu này có chức năng con đang active
-        const hasActiveChild = item.children.some(child => pathname === child.href);
+        const hasActiveChild = item.children.some(child => pathname === child.href || (child.href.includes('/edit') && pathname.includes(child.href)) || (child.href.includes('/permissions') && pathname.includes('/permissions')));
         if (hasActiveChild || item.current) {
           activeParentMenu = item.name;
         }
@@ -317,7 +332,7 @@ export default function DashboardLayout({
     setExpandedItems(prev => {
       // Tạo danh sách menu mới từ trạng thái hiện tại
       let newExpandedItems: string[] = [...prev];
-      
+
       // Nếu item đang click đã mở, đóng nó (trừ khi đó là menu cha của chức năng đang active)
       if (prev.includes(itemName) && itemName !== activeParentMenu) {
         // Loại bỏ item này khỏi danh sách
@@ -325,18 +340,18 @@ export default function DashboardLayout({
       } else if (!prev.includes(itemName)) {
         // Nếu item đang click chưa mở, thêm nó vào và loại bỏ các item khác
         // (trừ menu cha của chức năng đang active)
-        newExpandedItems = newExpandedItems.filter(item => 
+        newExpandedItems = newExpandedItems.filter(item =>
           item === activeParentMenu
         );
         // Thêm item mới
         newExpandedItems.push(itemName);
       }
-      
+
       // Đảm bảo menu cha của chức năng đang active luôn có trong danh sách
       if (activeParentMenu && !newExpandedItems.includes(activeParentMenu)) {
         newExpandedItems.push(activeParentMenu);
       }
-      
+
       return newExpandedItems;
     });
   }
@@ -357,7 +372,7 @@ export default function DashboardLayout({
     if (isCollapsed) {
       return;
     }
-    
+
     // Cho phép đóng/mở menu khi click
     toggleExpand(item.name);
   }
@@ -372,15 +387,15 @@ export default function DashboardLayout({
   // Thêm hàm xử lý đăng xuất
   const handleLogout = async () => {
     console.log('Đang tiến hành đăng xuất từ menu avatar...');
-    
+
     try {
       // Đánh dấu là đăng xuất có chủ ý
       sessionStorage.setItem('intentional_logout', 'true');
       sessionStorage.setItem('user_logged_out', 'true');
-      
+
       // Đóng menu user
       setShowUserMenu(false);
-      
+
       // Dùng hàm fetch để gọi API đăng xuất
       await fetch('/api/auth/signout', {
         method: 'POST',
@@ -388,17 +403,17 @@ export default function DashboardLayout({
           'Content-Type': 'application/json'
         }
       });
-      
+
       // Xóa cache và session ngay lập tức
       localStorage.removeItem('sb_session_cache');
-      
+
       // Nếu dùng client object để đăng xuất không được, xóa trực tiếp cookies
       Object.keys(localStorage).forEach(key => {
         if (key.includes('supabase') || key.includes('sb-')) {
           localStorage.removeItem(key);
         }
       });
-      
+
       // Xóa cookies
       document.cookie.split(";").forEach(c => {
         const cookieName = c.split("=")[0].trim();
@@ -406,41 +421,40 @@ export default function DashboardLayout({
           document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
         }
       });
-      
+
       // Chuyển hướng trực tiếp đến trang đăng nhập
       window.location.href = '/auth/signin?logout=true&t=' + Date.now();
-    } catch (error) {
-      console.error('Lỗi khi đăng xuất:', error);
-      
+    } catch (error: unknown) { // Use unknown type
+       const message = error instanceof Error ? error.message : String(error);
+      console.error('Lỗi khi đăng xuất:', message);
+
       // Nếu có lỗi, vẫn thử logout bằng phương pháp thay thế
       try {
         const supabase = createClient();
         await supabase.auth.signOut();
-      } catch (e) {
-        console.error('Lỗi khi đăng xuất qua Supabase client:', e);
+      } catch (e: unknown) { // Use unknown type
+         const messageE = e instanceof Error ? e.message : String(e);
+        console.error('Lỗi khi đăng xuất qua Supabase client:', messageE);
       }
-      
+
       // Chuyển hướng bất kể thế nào
       window.location.href = '/auth/signin?logout=true&t=' + Date.now();
     }
   };
 
-  // Xử lý kiểm tra xem đường dẫn có bắt đầu bằng một đường dẫn nhất định
-  const patternMatch = (pattern: string, path: string) => {
-    return path.startsWith(pattern);
-  };
+  // Removed unused patternMatch function
 
   // Thay thế useEffect để luôn giữ menu cha của chức năng đang active mở
   useEffect(() => {
     if (pathname) {
       // Tìm menu cha của chức năng đang active (nếu có)
       let activeParentMenu: string | null = null;
-      
+
       navigation.forEach(item => {
         if (item.children) {
           // Kiểm tra nếu menu này có chức năng con đang active
-          const hasActiveChild = item.children.some(child => 
-            pathname === child.href || 
+          const hasActiveChild = item.children.some(child =>
+            pathname === child.href ||
             (child.href.includes('/edit') && pathname.includes(child.href)) ||
             (child.href.includes('/permissions') && pathname.includes('/permissions'))
           );
@@ -449,7 +463,7 @@ export default function DashboardLayout({
           }
         }
       });
-      
+
       // Nếu có menu cha của chức năng đang active, đảm bảo nó được mở
       if (activeParentMenu) {
         setExpandedItems(prev => {
@@ -462,26 +476,26 @@ export default function DashboardLayout({
         });
       }
     }
-  }, [pathname, navigation]);
+  }, [pathname, navigation]); // Dependency array includes navigation now
 
   // Xử lý khi thay đổi tùy chọn tự động thu gọn menu
   const handleAutoCollapseChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.checked;
     setAutoCollapse(newValue);
-    
+
     // Lưu trạng thái vào localStorage
     if (typeof window !== 'undefined') {
       localStorage.setItem('qlbh-auto-collapse', String(newValue));
     }
   };
-  
+
   // Xử lý sự kiện di chuột vào sidebar
   const handleMouseEnter = () => {
     if (autoCollapse && isCollapsed) {
       setIsCollapsed(false);
     }
   };
-  
+
   // Xử lý sự kiện di chuột ra khỏi sidebar
   const handleMouseLeave = () => {
     if (autoCollapse && !isCollapsed) {
@@ -520,7 +534,7 @@ export default function DashboardLayout({
                   <SwatchIcon className="h-4 w-4" />
                   <span className="ml-2 text-sm">{language === 'vi' ? 'Màu' : 'Theme'}</span>
                 </button>
-                
+
                 {showColorPicker && mounted && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 py-1 transform transition-all duration-100 ease-out origin-top-right">
                     <div className="px-3 py-2 text-xs font-medium text-gray-500">
@@ -535,7 +549,7 @@ export default function DashboardLayout({
                         }`}
                       >
                         <div className={`h-4 w-4 rounded-full bg-${key}-500 mr-3`}></div>
-                        {key === 'blue' ? 'Xanh dương' : 
+                        {key === 'blue' ? 'Xanh dương' :
                          key === 'slate' ? 'Xám đá' :
                          key === 'green' ? 'Xanh lá' :
                          key === 'purple' ? 'Tím' :
@@ -551,14 +565,14 @@ export default function DashboardLayout({
                   </div>
                 )}
               </div>
-              
+
               <button
                 onClick={toggleLanguage}
                 className="rounded-full p-1.5 bg-gray-100 text-gray-700 hover:bg-gray-200 flex items-center"
               >
                 <LanguageIcon className="h-4 w-4" />
                 <span className="ml-2 text-sm flex items-center">
-                  {language === 'vi' 
+                  {language === 'vi'
                     ? (
                       <>
                         <span className="w-4 h-3 mr-1 inline-block bg-red-600 relative overflow-hidden">
@@ -568,10 +582,10 @@ export default function DashboardLayout({
                         </span>
                         <span>VI</span>
                       </>
-                    ) 
+                    )
                     : (
                       <>
-                        <span className="w-4 h-3 mr-1 inline-block relative overflow-hidden" style={{ 
+                        <span className="w-4 h-3 mr-1 inline-block relative overflow-hidden" style={{
                           background: '#012169'
                         }}>
                           <span className="absolute inset-0" style={{
@@ -596,8 +610,8 @@ export default function DashboardLayout({
               <div className="relative" ref={userMenuRef}>
                 <div className="flex items-center space-x-3">
                   <span className="text-sm font-medium text-gray-700 hidden sm:inline">{user?.email}</span>
-                  <button 
-                    onClick={() => setShowUserMenu(!showUserMenu)} 
+                  <button
+                    onClick={() => setShowUserMenu(!showUserMenu)}
                     className="flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-gray-500"
                   >
                     <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-300">
@@ -605,7 +619,7 @@ export default function DashboardLayout({
                     </div>
                   </button>
                 </div>
-                
+
                 {/* User dropdown menu */}
                 {showUserMenu && (
                   <div className="origin-top-right absolute right-0 mt-2 w-60 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50 transform transition-all duration-100 ease-out">
@@ -614,9 +628,9 @@ export default function DashboardLayout({
                         <p className="text-sm text-gray-500">Đăng nhập với</p>
                         <p className="text-sm font-medium text-gray-900 truncate">{user?.email}</p>
                       </div>
-                      
-                      <Link 
-                        href="/dashboard/profile" 
+
+                      <Link
+                        href="/dashboard/profile"
                         className={`flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ${theme.textColor}`}
                         onClick={() => setShowUserMenu(false)}
                       >
@@ -625,8 +639,8 @@ export default function DashboardLayout({
                         </svg>
                         <span>{language === 'vi' ? 'Thông tin cá nhân' : 'Profile'}</span>
                       </Link>
-                      
-                      <button 
+
+                      <button
                         className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-red-500 w-full text-left"
                         onClick={handleLogout}
                       >
@@ -646,7 +660,7 @@ export default function DashboardLayout({
 
       <div className="flex h-[calc(100vh-3.5rem)]">
         {/* Sidebar navigation */}
-        <div 
+        <div
           ref={sidebarRef}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
@@ -667,16 +681,16 @@ export default function DashboardLayout({
                 <div className="flex flex-col items-start">
                   <span className="text-[8px] font-medium text-white opacity-60 mb-0.5">Tự động thu nhỏ menu</span>
                   <label className="inline-flex items-center cursor-pointer">
-                    <input 
-                      type="checkbox" 
-                      checked={autoCollapse} 
+                    <input
+                      type="checkbox"
+                      checked={autoCollapse}
                       onChange={handleAutoCollapseChange}
-                      className="sr-only peer" 
+                      className="sr-only peer"
                     />
                     <div className="relative w-7 h-4 bg-gray-500 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600"></div>
                   </label>
                 </div>
-                
+
                 <button
                   onClick={toggleCollapse}
                   className={`p-1 rounded-md ${theme.hoverBg}`}
@@ -695,13 +709,13 @@ export default function DashboardLayout({
                     onClick={() => handleNavClick(item)}
                     className={`
                       group w-full flex items-center justify-between px-2 py-1.5 text-sm font-medium rounded-md text-left
-                      ${item.current ? 'text-white' : 'text-white opacity-80 hover:opacity-100'} 
+                      ${item.current ? 'text-white' : 'text-white opacity-80 hover:opacity-100'}
                       ${item.current ? theme.darkBg : theme.hoverBg}
                     `}
                     style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
                   >
                     <div className="flex items-center">
-                      <item.icon className={`h-5 w-5 flex-shrink-0 ${item.current ? 'text-white' : 'text-white opacity-80'}`} aria-hidden="true" />
+                      {item.icon && <item.icon className={`h-5 w-5 flex-shrink-0 ${item.current ? 'text-white' : 'text-white opacity-80'}`} aria-hidden="true" />}
                       {!isCollapsed && (
                         <span className="ml-3 text-sm">{item.name}</span>
                       )}
@@ -715,9 +729,9 @@ export default function DashboardLayout({
 
                   {/* Submenu */}
                   {!isCollapsed && item.children && expandedItems.includes(item.name) && (
-                    <div 
-                      className="overflow-hidden transition-all duration-300 ease-in-out" 
-                      style={{ 
+                    <div
+                      className="overflow-hidden transition-all duration-300 ease-in-out"
+                      style={{
                         maxHeight: '500px', // Đủ cao để chứa tất cả menu con
                         animation: 'fadeIn 0.3s ease-in-out'
                       }}
@@ -725,7 +739,7 @@ export default function DashboardLayout({
                       <div className="mt-1 space-y-1 pl-4">
                         {item.children.map((subItem) => {
                           // Kiểm tra xem đường dẫn hiện tại có khớp với href của submenu không
-                          const isActive = pathname === subItem.href || 
+                          const isActive = pathname === subItem.href ||
                             (subItem.href.includes('/edit') && pathname.includes(subItem.href)) ||
                             (subItem.href.includes('/permissions') && pathname.includes('/permissions/'));
                           return (
@@ -792,7 +806,7 @@ export default function DashboardLayout({
         .scrollbar-hide::-webkit-scrollbar {
           display: none;  /* Chrome, Safari and Opera */
         }
-        
+
         @keyframes fadeIn {
           from {
             opacity: 0;
