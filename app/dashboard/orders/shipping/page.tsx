@@ -192,35 +192,42 @@ export default function ShippingOrdersPage() {
 
 
     try {
+      // Thay đổi truy vấn để lấy từ bảng orders với điều kiện is_shipping = true
       let query = supabase
-        .from('shippings')
-        .select('*', { count: 'exact' }) // Lấy count để phân trang chính xác
-        .order('created_at', { ascending: false })
+        .from('orders')
+        .select(`
+          *,
+          shippings (*),
+          customers (full_name, phone)
+        `, { count: 'exact' }) // Lấy count để phân trang chính xác
+        .eq('is_shipping', true) // Chỉ lấy các đơn hàng có is_shipping = true
+        .order('order_date', { ascending: false })
 
-      // Áp dụng bộ lọc theo trạng thái
+      // Áp dụng bộ lọc theo trạng thái cho bảng shippings
       if (statusFilter !== 'all') {
-        query = query.eq('status', statusFilter)
+        query = query.eq('shippings.status', statusFilter)
       }
 
       // Áp dụng bộ lọc theo ngày (đảm bảo bao gồm cả ngày kết thúc)
       if (dateRange.from) {
         // Đặt thời gian về đầu ngày
-        query = query.gte('created_at', `${dateRange.from}T00:00:00.000Z`)
+        query = query.gte('order_date', `${dateRange.from}T00:00:00.000Z`)
       }
       if (dateRange.to) {
         // Đặt thời gian về cuối ngày
-        query = query.lte('created_at', `${dateRange.to}T23:59:59.999Z`)
+        query = query.lte('order_date', `${dateRange.to}T23:59:59.999Z`)
       }
 
       // Áp dụng tìm kiếm theo từ khóa (bỏ khoảng trắng thừa)
       const trimmedSearchTerm = searchTerm.trim()
       if (trimmedSearchTerm) {
+        // Tìm kiếm trong cả orders và shippings
         query = query.or(
-          `name_customer.ilike.%${trimmedSearchTerm}%,` +
-          `phone_customer.ilike.%${trimmedSearchTerm}%,` +
-          `shipping_id.ilike.%${trimmedSearchTerm}%,` +
           `order_id.ilike.%${trimmedSearchTerm}%,` +
-          `tracking_number.ilike.%${trimmedSearchTerm}%`
+          `shippings.shipping_id.ilike.%${trimmedSearchTerm}%,` +
+          `shippings.name_customer.ilike.%${trimmedSearchTerm}%,` +
+          `shippings.phone_customer.ilike.%${trimmedSearchTerm}%,` +
+          `shippings.tracking_number.ilike.%${trimmedSearchTerm}%`
         )
       }
 
@@ -229,19 +236,55 @@ export default function ShippingOrdersPage() {
       const endIndex = startIndex + shippingsPerPage - 1
 
       // Thực hiện truy vấn với phân trang
-      const { data, error: shippingsError, count } = await query.range(startIndex, endIndex)
+      const { data, error: ordersError, count } = await query.range(startIndex, endIndex)
 
-      if (shippingsError) {
-        console.error('Lỗi truy vấn shippings:', shippingsError)
-        setError(`Lỗi khi truy vấn dữ liệu: ${shippingsError.message}`)
+      if (ordersError) {
+        console.error('Lỗi truy vấn orders:', ordersError)
+        setError(`Lỗi khi truy vấn dữ liệu: ${ordersError.message}`)
         setShippings([])
         setTotalPages(1)
       } else {
         // Log dữ liệu để kiểm tra (có thể xóa sau khi debug)
-        // console.log('Dữ liệu shippings:', data)
-        // console.log('Tổng số bản ghi:', count)
-
-        setShippings(data || [])
+        console.log('Dữ liệu orders với is_shipping=true:', data)
+        
+        // Chuyển đổi dữ liệu từ orders sang định dạng shippings
+        const processedShippings: Shipping[] = [];
+        
+        if (data && data.length > 0) {
+          console.log('Tìm thấy', data.length, 'đơn hàng có is_shipping=true');
+          
+          data.forEach(order => {
+            // Lấy thông tin khách hàng từ bảng customers nếu có
+            const customerName = order.customers ? order.customers.full_name : null;
+            const customerPhone = order.customers ? order.customers.phone : null;
+            
+            // Nếu có thông tin shipping từ join
+            if (order.shippings) {
+              processedShippings.push({
+                ...order.shippings,
+                order_id: order.order_id
+              });
+            } else {
+              // Nếu không có thông tin shipping, tạo một bản ghi mới từ thông tin order
+              processedShippings.push({
+                shipping_id: `SHIP-${order.order_id}`, // Tạo ID tạm thời
+                order_id: order.order_id,
+                name_customer: customerName || order.customer_name || 'Chưa có thông tin',
+                phone_customer: customerPhone || order.customer_phone || 'Chưa có thông tin',
+                shipping_address: 'Chưa có thông tin',
+                carrier: '',
+                tracking_number: '',
+                shipping_cost: 0,
+                status: 'pending', // Mặc định là đang chờ xử lý
+                created_at: order.order_date,
+                actual_delivery_date: null,
+                delivery_date: null
+              });
+            }
+          });
+        }
+        
+        setShippings(processedShippings)
 
         // Tính tổng số trang dựa trên count trả về từ Supabase
         const totalCount = count || 0
@@ -519,28 +562,49 @@ export default function ShippingOrdersPage() {
 
 
     try {
-      const { data, error: updateError } = await supabase
-        .from('shippings')
-        .update(updateData)
-        .eq('shipping_id', selectedShipping.shipping_id) // Sử dụng ID gốc
-        .select() // Trả về bản ghi đã cập nhật để xác nhận
-        .single() // Mong đợi chỉ một bản ghi được cập nhật
-
-      if (updateError) {
-        console.error('Lỗi khi cập nhật thông tin vận chuyển:', updateError)
-        setError(`Lỗi khi cập nhật: ${updateError.message}`)
+      // Kiểm tra xem shipping_id có tồn tại không
+      if (selectedShipping.shipping_id && !selectedShipping.shipping_id.startsWith('SHIP-')) {
+        // Nếu có shipping_id thực, cập nhật bảng shippings
+        const { data, error: updateError } = await supabase
+          .from('shippings')
+          .update(updateData)
+          .eq('shipping_id', selectedShipping.shipping_id) // Sử dụng ID gốc
+          
+        if (updateError) throw updateError;
       } else {
-        console.log('Cập nhật thành công:', data)
-        // Cập nhật thành công
-        setSelectedShipping(data); // Cập nhật selectedShipping với data mới nhất từ DB
-        setEditedShipping(data); // Đồng bộ editedShipping
-        setIsEditing(false)
-
-        // Cập nhật lại danh sách (không cần reset page)
-        searchShippings(false);
-        // Đóng modal sau khi lưu thành công? Hoặc hiển thị thông báo?
-        // closeModal(); // Tùy chọn: đóng modal sau khi lưu
+        // Nếu không có shipping_id thực (ID tạm thời), tạo mới bản ghi shipping
+        const { data, error: insertError } = await supabase
+          .from('shippings')
+          .insert({
+            ...updateData,
+            order_id: selectedShipping.order_id,
+            created_at: new Date().toISOString()
+          })
+          
+        if (insertError) throw insertError;
       }
+
+      // Cập nhật thành công
+      console.log('Cập nhật thành công');
+      
+      // Tải lại thông tin shipping mới nhất
+      if (selectedShipping.shipping_id && !selectedShipping.shipping_id.startsWith('SHIP-')) {
+        const { data: refreshedData, error: refreshError } = await supabase
+          .from('shippings')
+          .select('*')
+          .eq('shipping_id', selectedShipping.shipping_id)
+          .single();
+          
+        if (!refreshError && refreshedData) {
+          setSelectedShipping(refreshedData);
+          setEditedShipping(refreshedData);
+        }
+      }
+      
+      setIsEditing(false);
+
+      // Cập nhật lại danh sách (không cần reset page)
+      searchShippings(false);
     } catch (error: any) {
       console.error('Lỗi không mong muốn khi lưu thông tin vận chuyển:', error)
       setError(`Có lỗi xảy ra khi lưu: ${error.message || 'Không xác định'}`)
