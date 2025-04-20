@@ -102,10 +102,10 @@ export default function ShippingOrdersPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const shippingsPerPage = 10
-  
+
   // State để quản lý dropdown
   const [openShippingStatusId, setOpenShippingStatusId] = useState<string | null>(null)
-  const [openOrderStatusId, setOpenOrderStatusId] = useState<string | null>(null)
+  // const [openOrderStatusId, setOpenOrderStatusId] = useState<string | null>(null) // Đã vô hiệu hóa
 
   // --- Helper Functions ---
 
@@ -148,7 +148,7 @@ export default function ShippingOrdersPage() {
     { value: 'Đang hoàn về', label: 'Đang hoàn về', color: 'orange' },
     { value: 'Đã hủy', label: 'Đã hủy', color: 'red' }
   ];
-  
+
   // Định nghĩa các trạng thái đơn hàng có sẵn
   const orderStatuses = [
     { value: 'Đã thanh toán', label: 'Đã thanh toán', color: 'green' },
@@ -167,13 +167,13 @@ export default function ShippingOrdersPage() {
     const foundStatus = shippingStatuses.find(s => s.value === status);
     return (foundStatus?.color as StatusColor) || 'gray';
   }
-  
+
   // Hàm cập nhật trạng thái vận chuyển
   const updateShippingStatus = async (shipping: Shipping, newStatus: string, event: React.MouseEvent) => {
     event.stopPropagation(); // Ngăn không cho sự kiện click lan ra ngoài (không mở modal)
-    
+
     if (shipping.status === newStatus) return; // Không làm gì nếu trạng thái không thay đổi
-    
+
     try {
       // Nếu shipping_id bắt đầu bằng SHIP-, đây là bản ghi tạm thời
       if (shipping.shipping_id.startsWith('SHIP-')) {
@@ -190,9 +190,9 @@ export default function ShippingOrdersPage() {
           })
           .select()
           .single();
-          
+
         if (error) throw error;
-        
+
         // Cập nhật lại danh sách
         searchShippings();
       } else {
@@ -201,9 +201,9 @@ export default function ShippingOrdersPage() {
           .from('shippings')
           .update({ status: newStatus })
           .eq('shipping_id', shipping.shipping_id);
-          
+
         if (error) throw error;
-        
+
         // Cập nhật lại danh sách
         searchShippings();
       }
@@ -212,19 +212,19 @@ export default function ShippingOrdersPage() {
       setError(`Lỗi khi cập nhật trạng thái: ${error.message}`);
     }
   };
-  
+
   // Hàm cập nhật trạng thái đơn hàng
   const updateOrderStatus = async (orderId: string, newStatus: string, event: React.MouseEvent) => {
     event.stopPropagation(); // Ngăn không cho sự kiện click lan ra ngoài (không mở modal)
-    
+
     try {
       const { error } = await supabase
         .from('orders')
         .update({ status: newStatus })
         .eq('order_id', orderId);
-        
+
       if (error) throw error;
-      
+
       // Cập nhật lại danh sách
       searchShippings();
     } catch (error: any) {
@@ -321,18 +321,18 @@ export default function ShippingOrdersPage() {
       } else {
         // Log dữ liệu để kiểm tra (có thể xóa sau khi debug)
         console.log('Dữ liệu orders với is_shipping=true:', data)
-        
+
         // Chuyển đổi dữ liệu từ orders sang định dạng shippings
         const processedShippings: (Shipping & { order_status?: string })[] = [];
-        
+
         if (data && data.length > 0) {
           console.log('Tìm thấy', data.length, 'đơn hàng có is_shipping=true');
-          
+
           data.forEach(order => {
             // Lấy thông tin khách hàng từ bảng customers nếu có
             const customerName = order.customers ? order.customers.full_name : null;
             const customerPhone = order.customers ? order.customers.phone : null;
-            
+
             // Nếu có thông tin shipping từ join
             if (order.shippings) {
               processedShippings.push({
@@ -360,7 +360,7 @@ export default function ShippingOrdersPage() {
             }
           });
         }
-        
+
         setShippings(processedShippings)
 
         // Tính tổng số trang dựa trên count trả về từ Supabase
@@ -389,28 +389,28 @@ export default function ShippingOrdersPage() {
   useEffect(() => {
     searchShippings();
   }, [searchShippings]); // Chỉ phụ thuộc vào hàm useCallback
-  
+
   // Xử lý đóng dropdown khi click ra ngoài
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-      
+
       // Đóng shipping status dropdown
       if (openShippingStatusId && !target.closest('.shipping-status-dropdown')) {
         setOpenShippingStatusId(null);
       }
-      
-      // Đóng order status dropdown
-      if (openOrderStatusId && !target.closest('.order-status-dropdown')) {
-        setOpenOrderStatusId(null);
-      }
+
+      // Đã vô hiệu hóa đóng order status dropdown
+      // if (openOrderStatusId && !target.closest('.order-status-dropdown')) {
+      //   setOpenOrderStatusId(null);
+      // }
     };
-    
+
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [openShippingStatusId, openOrderStatusId]);
+  }, [openShippingStatusId]);
 
   // --- Event Handlers ---
 
@@ -668,7 +668,7 @@ export default function ShippingOrdersPage() {
           .from('shippings')
           .update(updateData)
           .eq('shipping_id', selectedShipping.shipping_id) // Sử dụng ID gốc
-          
+
         if (updateError) throw updateError;
       } else {
         // Nếu không có shipping_id thực (ID tạm thời), tạo mới bản ghi shipping
@@ -679,13 +679,13 @@ export default function ShippingOrdersPage() {
             order_id: selectedShipping.order_id,
             created_at: new Date().toISOString()
           })
-          
+
         if (insertError) throw insertError;
       }
 
       // Cập nhật thành công
       console.log('Cập nhật thành công');
-      
+
       // Tải lại thông tin shipping mới nhất
       if (selectedShipping.shipping_id && !selectedShipping.shipping_id.startsWith('SHIP-')) {
         const { data: refreshedData, error: refreshError } = await supabase
@@ -693,13 +693,13 @@ export default function ShippingOrdersPage() {
           .select('*')
           .eq('shipping_id', selectedShipping.shipping_id)
           .single();
-          
+
         if (!refreshError && refreshedData) {
           setSelectedShipping(refreshedData);
           setEditedShipping(refreshedData);
         }
       }
-      
+
       setIsEditing(false);
 
       // Cập nhật lại danh sách (không cần reset page)
@@ -1208,16 +1208,16 @@ export default function ShippingOrdersPage() {
                    <div className="flex flex-col md:flex-row md:items-stretch gap-2">
                       {/* Cột Trái: Trạng thái, Vận chuyển - với màu nền theo trạng thái */}
                       <div className={`md:w-1/4 flex-shrink-0 space-y-1 p-2 rounded-lg flex flex-col justify-between ${
-                        shipping.status === 'Chưa giao hàng' || shipping.status === 'Đang chuẩn bị' ? 'bg-yellow-50' : 
-                        shipping.status === 'Đang giao hàng' ? 'bg-blue-50' : 
-                        shipping.status === 'Đã giao hàng' ? 'bg-green-50' : 
-                        shipping.status === 'Đang hoàn về' ? 'bg-orange-50' : 
+                        shipping.status === 'Chưa giao hàng' || shipping.status === 'Đang chuẩn bị' ? 'bg-yellow-50' :
+                        shipping.status === 'Đang giao hàng' ? 'bg-blue-50' :
+                        shipping.status === 'Đã giao hàng' ? 'bg-green-50' :
+                        shipping.status === 'Đang hoàn về' ? 'bg-orange-50' :
                         shipping.status === 'Đã hủy' ? 'bg-red-50' : 'bg-gray-50'
                       }`}>
                           <div className="flex items-center justify-between">
                              <div className="flex items-center space-x-1">
                                 <div className="relative shipping-status-dropdown">
-                                  <span 
+                                  <span
                                     className={`px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full bg-${getStatusColor(shipping.status)}-100 text-${getStatusColor(shipping.status)}-800 cursor-pointer hover:bg-${getStatusColor(shipping.status)}-200`}
                                     onClick={(e) => {
                                       e.stopPropagation(); // Ngăn không cho mở modal chi tiết
@@ -1229,7 +1229,7 @@ export default function ShippingOrdersPage() {
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                     </svg>
                                   </span>
-                                  
+
                                   {/* Dropdown cho trạng thái vận chuyển */}
                                   {openShippingStatusId === shipping.shipping_id && (
                                     <div className="absolute left-0 mt-1 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
@@ -1251,7 +1251,7 @@ export default function ShippingOrdersPage() {
                                     </div>
                                   )}
                                 </div>
-                                
+
                                 {shipping.cod_shipping && (
                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
                                    COD
@@ -1306,40 +1306,12 @@ export default function ShippingOrdersPage() {
                                   </p>
                                   <p className="text-sm">
                                       <span className="font-medium text-gray-600">Trạng thái thanh toán:</span>
-                                      <span className="relative order-status-dropdown inline-block">
-                                        <span 
-                                          className={`ml-1 px-1.5 py-0.5 text-xs font-medium rounded ${shipping.order_status === 'Đã thanh toán' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'} cursor-pointer hover:${shipping.order_status === 'Đã thanh toán' ? 'bg-green-200' : 'bg-yellow-200'} inline-flex items-center`}
-                                          onClick={(e) => {
-                                            e.stopPropagation(); // Ngăn không cho mở modal chi tiết
-                                            setOpenOrderStatusId(openOrderStatusId === shipping.order_id ? null : shipping.order_id);
-                                          }}
+                                      <span className="inline-block">
+                                        <span
+                                          className={`ml-1 px-1.5 py-0.5 text-xs font-medium rounded ${shipping.order_status === 'Đã thanh toán' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}
                                         >
                                           {shipping.order_status || 'Chưa thanh toán'}
-                                          <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                          </svg>
                                         </span>
-                                        
-                                        {/* Dropdown cho trạng thái đơn hàng */}
-                                        {openOrderStatusId === shipping.order_id && (
-                                          <div className="absolute left-0 mt-1 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
-                                            <div className="py-1" role="menu" aria-orientation="vertical">
-                                              {orderStatuses.map((status) => (
-                                                <button
-                                                  key={status.value}
-                                                  className={`block w-full text-left px-4 py-2 text-sm ${(shipping.order_status || 'Chưa thanh toán') === status.value ? 'bg-gray-100 font-medium' : 'text-gray-700 hover:bg-gray-50'}`}
-                                                  onClick={(e) => {
-                                                    updateOrderStatus(shipping.order_id, status.value, e);
-                                                    setOpenOrderStatusId(null); // Đóng dropdown sau khi chọn
-                                                  }}
-                                                >
-                                                  <span className={`inline-block w-2 h-2 rounded-full mr-2 bg-${status.color}-500`}></span>
-                                                  {status.label}
-                                                </button>
-                                              ))}
-                                            </div>
-                                          </div>
-                                        )}
                                       </span>
                                   </p>
                                   <p className="text-sm">
