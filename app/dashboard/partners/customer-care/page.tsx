@@ -191,9 +191,14 @@ export default function CustomerCarePage() {
 
   // Handle order selection from suggestions
   const handleOrderSelect = (orderId: string) => {
+    // Tìm đơn hàng đã chọn trong danh sách gợi ý
+    const selectedOrder = orderSuggestions.find(order => order.order_id === orderId)
+
     setNewReturn({
       ...newReturn,
       order_id: orderId,
+      // Tự động điền số tiền hoàn lại bằng giá trị đơn hàng nếu có
+      refund_amount: selectedOrder?.price ? selectedOrder.price.toString() : newReturn.refund_amount,
     })
     setShowSuggestions(false)
 
@@ -202,6 +207,14 @@ export default function CustomerCarePage() {
       setAddReturnErrors({
         ...addReturnErrors,
         order_id: '',
+      })
+    }
+
+    // Clear refund_amount error if exists since we're setting it automatically
+    if (addReturnErrors.refund_amount) {
+      setAddReturnErrors({
+        ...addReturnErrors,
+        refund_amount: '',
       })
     }
   }
@@ -961,7 +974,7 @@ export default function CustomerCarePage() {
             Chăm sóc khách hàng - Yêu cầu đổi/trả
           </h1>
           <p className="mt-1 text-sm text-gray-500">
-            Quản lý các yêu cầu đổi/trả hàng từ khách hàng nữ
+            Quản lý các yêu cầu đổi/trả hàng từ khách hàng
           </p>
         </div>
         <div className="flex space-x-3">
