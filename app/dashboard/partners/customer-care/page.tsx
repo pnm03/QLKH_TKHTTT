@@ -2,7 +2,7 @@
 
 import { useState, useEffect, FormEvent } from 'react'
 import { useTheme, themeColors } from '@/app/context/ThemeContext'
-import { PlusIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { PlusIcon, XMarkIcon, PencilIcon, PrinterIcon, TrashIcon } from '@heroicons/react/24/outline'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 
 // Interfaces
@@ -60,6 +60,15 @@ export default function CustomerCarePage() {
   const [selectedReturn, setSelectedReturn] = useState<any>(null)
   const [returnDetailLoading, setReturnDetailLoading] = useState(false)
   const [updateStatusLoading, setUpdateStatusLoading] = useState(false)
+
+  // State for editing return
+  const [isEditMode, setIsEditMode] = useState(false)
+  const [editedReturn, setEditedReturn] = useState<any>(null)
+  const [editLoading, setEditLoading] = useState(false)
+
+  // State for delete confirmation
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleteLoading, setDeleteLoading] = useState(false)
 
   // Set mounted = true
   useEffect(() => {
@@ -497,6 +506,325 @@ export default function CustomerCarePage() {
   const closeReturnDetailModal = () => {
     setShowReturnDetailModal(false)
     setSelectedReturn(null)
+    setIsEditMode(false)
+    setEditedReturn(null)
+    setShowDeleteConfirm(false)
+  }
+
+  // Toggle edit mode
+  const toggleEditMode = () => {
+    if (isEditMode) {
+      // Exit edit mode without saving
+      setIsEditMode(false)
+      setEditedReturn(null)
+    } else {
+      // Enter edit mode
+      setIsEditMode(true)
+      setEditedReturn({
+        ...selectedReturn,
+        name_return: selectedReturn.name_return || '',
+        return_reason: selectedReturn.return_reason,
+        refund_amount: selectedReturn.refund_amount,
+        status: selectedReturn.status
+      })
+    }
+  }
+
+  // Handle edit form input change
+  const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target
+    setEditedReturn({
+      ...editedReturn,
+      [name]: value
+    })
+  }
+
+  // Save edited return
+  const saveEditedReturn = async () => {
+    if (!editedReturn) return
+
+    // Validate
+    if (!editedReturn.return_reason || editedReturn.return_reason.trim() === '') {
+      setError('Lý do đổi/trả không được để trống')
+      return
+    }
+
+    if (editedReturn.refund_amount && isNaN(parseFloat(editedReturn.refund_amount.toString()))) {
+      setError('Số tiền hoàn lại phải là một số')
+      return
+    }
+
+    if (editedReturn.refund_amount && parseFloat(editedReturn.refund_amount.toString()) < 0) {
+      setError('Số tiền hoàn lại không được âm')
+      return
+    }
+
+    if (!['đang xử lý', 'đã chấp nhận', 'đã từ chối'].includes(editedReturn.status)) {
+      setError('Trạng thái không hợp lệ')
+      return
+    }
+
+    setEditLoading(true)
+    setError(null)
+
+    const supabase = createClientComponentClient()
+
+    try {
+      // Prepare data
+      const updateData = {
+        name_return: editedReturn.name_return || null,
+        return_reason: editedReturn.return_reason.trim(),
+        refund_amount: editedReturn.refund_amount ? parseFloat(editedReturn.refund_amount.toString()) : null,
+        status: editedReturn.status
+      }
+
+      const { error } = await supabase
+        .from('returns')
+        .update(updateData)
+        .eq('return_id', editedReturn.return_id)
+
+      if (error) {
+        console.error('Lỗi khi cập nhật yêu cầu đổi/trả:', error)
+        throw error
+      }
+
+      // Update local state
+      setSelectedReturn({
+        ...selectedReturn,
+        ...updateData
+      })
+
+      // Exit edit mode
+      setIsEditMode(false)
+      setEditedReturn(null)
+
+      // Refresh the list
+      fetchReturnRequests()
+
+      setSuccessMessage('Cập nhật yêu cầu đổi/trả thành công!')
+      setTimeout(() => setSuccessMessage(null), 3000)
+    } catch (err) {
+      console.error('Lỗi khi cập nhật yêu cầu đổi/trả:', err)
+      setError('Không thể cập nhật yêu cầu đổi/trả. Vui lòng thử lại sau.')
+    } finally {
+      setEditLoading(false)
+    }
+  }
+
+  // Print return details
+  const printReturnDetails = () => {
+    if (!selectedReturn) return
+
+    // Create a new window for printing
+    const printWindow = window.open('', '_blank')
+    if (!printWindow) {
+      setError('Không thể mở cửa sổ in. Vui lòng kiểm tra cài đặt trình duyệt.')
+      return
+    }
+
+    // Format date for document
+    const formattedDate = new Date().toLocaleDateString('vi-VN')
+
+    // Create print content
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Biên bản yêu cầu đổi/trả #${selectedReturn.return_id}</title>
+        <meta charset="UTF-8">
+        <style>
+          body { font-family: Arial, sans-serif; margin: 20px; }
+          .header { text-align: center; margin-bottom: 20px; }
+          .title { font-size: 18px; font-weight: bold; margin-bottom: 5px; }
+          .subtitle { font-size: 14px; margin-bottom: 20px; }
+          .section { margin-bottom: 20px; }
+          .section-title { font-weight: bold; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-bottom: 10px; }
+          .info-row { display: flex; margin-bottom: 5px; }
+          .info-label { font-weight: bold; width: 150px; }
+          .info-value { flex: 1; }
+          table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+          th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+          th { background-color: #f2f2f2; }
+          .footer { margin-top: 30px; text-align: center; }
+          .signatures { display: flex; justify-content: space-between; margin-top: 50px; }
+          .signature-box { width: 45%; text-align: center; }
+          @media print { body { margin: 0; } }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div class="title">BIÊN BẢN YÊU CẦU ĐỔI/TRẢ HÀNG</div>
+          <div class="subtitle">Mã yêu cầu: #${selectedReturn.return_id} - Ngày lập: ${formattedDate}</div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">THÔNG TIN YÊU CẦU ĐỔI/TRẢ</div>
+          <div class="info-row">
+            <div class="info-label">Mã yêu cầu:</div>
+            <div class="info-value">${selectedReturn.return_id}</div>
+          </div>
+          ${selectedReturn.name_return ? `
+          <div class="info-row">
+            <div class="info-label">Tên yêu cầu:</div>
+            <div class="info-value">${selectedReturn.name_return}</div>
+          </div>` : ''}
+          <div class="info-row">
+            <div class="info-label">Ngày yêu cầu:</div>
+            <div class="info-value">${new Date(selectedReturn.return_date).toLocaleString('vi-VN')}</div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">Lý do đổi/trả:</div>
+            <div class="info-value">${selectedReturn.return_reason}</div>
+          </div>
+          ${selectedReturn.refund_amount ? `
+          <div class="info-row">
+            <div class="info-label">Số tiền hoàn lại:</div>
+            <div class="info-value">${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(selectedReturn.refund_amount)}</div>
+          </div>` : ''}
+          <div class="info-row">
+            <div class="info-label">Trạng thái:</div>
+            <div class="info-value">${selectedReturn.status}</div>
+          </div>
+        </div>
+
+        ${selectedReturn.order ? `
+        <div class="section">
+          <div class="section-title">THÔNG TIN ĐƠN HÀNG</div>
+          <div class="info-row">
+            <div class="info-label">Mã đơn hàng:</div>
+            <div class="info-value">${selectedReturn.order.order_id}</div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">Ngày đặt hàng:</div>
+            <div class="info-value">${new Date(selectedReturn.order.order_date).toLocaleString('vi-VN')}</div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">Tổng giá trị:</div>
+            <div class="info-value">${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(selectedReturn.order.price)}</div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">Trạng thái thanh toán:</div>
+            <div class="info-value">${selectedReturn.order.status}</div>
+          </div>
+        </div>` : ''}
+
+        ${selectedReturn.order && selectedReturn.order.customers ? `
+        <div class="section">
+          <div class="section-title">THÔNG TIN KHÁCH HÀNG</div>
+          <div class="info-row">
+            <div class="info-label">Tên khách hàng:</div>
+            <div class="info-value">${selectedReturn.order.customers.full_name || 'Khách vãng lai'}</div>
+          </div>
+          ${selectedReturn.order.customers.phone ? `
+          <div class="info-row">
+            <div class="info-label">Số điện thoại:</div>
+            <div class="info-value">${selectedReturn.order.customers.phone}</div>
+          </div>` : ''}
+          ${selectedReturn.order.customers.email ? `
+          <div class="info-row">
+            <div class="info-label">Email:</div>
+            <div class="info-value">${selectedReturn.order.customers.email}</div>
+          </div>` : ''}
+        </div>` : ''}
+
+        ${selectedReturn.orderDetails && selectedReturn.orderDetails.length > 0 ? `
+        <div class="section">
+          <div class="section-title">CHI TIẾT SẢN PHẨM</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Tên sản phẩm</th>
+                <th>Số lượng</th>
+                <th>Đơn giá</th>
+                <th>Thành tiền</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${selectedReturn.orderDetails.map(detail => `
+              <tr>
+                <td>${detail.name_product}</td>
+                <td>${detail.quantity}</td>
+                <td>${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(detail.unit_price)}</td>
+                <td>${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(detail.subtotal)}</td>
+              </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>` : ''}
+
+        <div class="signatures">
+          <div class="signature-box">
+            <p><strong>Đại diện cửa hàng</strong></p>
+            <p>(Ký, ghi rõ họ tên)</p>
+          </div>
+          <div class="signature-box">
+            <p><strong>Khách hàng</strong></p>
+            <p>(Ký, ghi rõ họ tên)</p>
+          </div>
+        </div>
+
+        <div class="footer">
+          <p>Biên bản này được lập thành 02 bản, mỗi bên giữ 01 bản có giá trị pháp lý như nhau.</p>
+        </div>
+
+        <script>
+          window.onload = function() {
+            window.print();
+          }
+        </script>
+      </body>
+      </html>
+    `
+
+    // Write to the new window and print
+    printWindow.document.open()
+    printWindow.document.write(printContent)
+    printWindow.document.close()
+  }
+
+  // Show delete confirmation
+  const showDeleteConfirmation = () => {
+    setShowDeleteConfirm(true)
+  }
+
+  // Cancel delete
+  const cancelDelete = () => {
+    setShowDeleteConfirm(false)
+  }
+
+  // Delete return request
+  const deleteReturnRequest = async () => {
+    if (!selectedReturn) return
+
+    setDeleteLoading(true)
+    setError(null)
+
+    const supabase = createClientComponentClient()
+
+    try {
+      const { error } = await supabase
+        .from('returns')
+        .delete()
+        .eq('return_id', selectedReturn.return_id)
+
+      if (error) {
+        console.error('Lỗi khi xóa yêu cầu đổi/trả:', error)
+        throw error
+      }
+
+      // Close modal and refresh list
+      closeReturnDetailModal()
+      fetchReturnRequests()
+
+      setSuccessMessage('Xóa yêu cầu đổi/trả thành công!')
+      setTimeout(() => setSuccessMessage(null), 3000)
+    } catch (err) {
+      console.error('Lỗi khi xóa yêu cầu đổi/trả:', err)
+      setError('Không thể xóa yêu cầu đổi/trả. Vui lòng thử lại sau.')
+    } finally {
+      setDeleteLoading(false)
+      setShowDeleteConfirm(false)
+    }
   }
 
   // Update return status
@@ -1142,7 +1470,7 @@ export default function CustomerCarePage() {
 
           {/* Modal panel */}
           <div
-            className={`bg-white bg-opacity-80 backdrop-filter backdrop-blur-md rounded-lg shadow-xl w-full max-w-5xl border-2 ${theme?.borderColor || 'border-blue-500'} relative max-h-[90vh] overflow-y-auto`}
+            className={`bg-white bg-opacity-80 backdrop-filter backdrop-blur-md rounded-lg shadow-xl w-full max-w-6xl border-2 ${theme?.borderColor || 'border-blue-500'} relative max-h-[90vh] overflow-y-auto`} // Tăng max-w thành 6xl
           >
             <div className="px-6 pt-6 pb-4 sm:p-8">
               <div className="flex justify-between items-center mb-4">
@@ -1152,14 +1480,44 @@ export default function CustomerCarePage() {
                 >
                   Chi Tiết Yêu Cầu Đổi/Trả
                 </h3>
-                <button
-                  type="button"
-                  className="text-gray-500 hover:text-gray-700"
-                  onClick={closeReturnDetailModal}
-                >
-                  <XMarkIcon className="h-6 w-6" />
-                  <span className="sr-only">Đóng</span>
-                </button>
+                <div className="flex space-x-2">
+                  {!isEditMode && !showDeleteConfirm && (
+                    <>
+                      <button
+                        type="button"
+                        className={`inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-${themeColor}-600 hover:bg-${themeColor}-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${themeColor}-500`}
+                        onClick={toggleEditMode}
+                      >
+                        <PencilIcon className="h-4 w-4 mr-1" />
+                        Chỉnh sửa
+                      </button>
+                      <button
+                        type="button"
+                        className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                        onClick={printReturnDetails}
+                      >
+                        <PrinterIcon className="h-4 w-4 mr-1" />
+                        In biên bản
+                      </button>
+                      <button
+                        type="button"
+                        className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                        onClick={showDeleteConfirmation}
+                      >
+                        <TrashIcon className="h-4 w-4 mr-1" />
+                        Xóa
+                      </button>
+                    </>
+                  )}
+                  <button
+                    type="button"
+                    className="text-gray-500 hover:text-gray-700"
+                    onClick={closeReturnDetailModal}
+                  >
+                    <XMarkIcon className="h-6 w-6" />
+                    <span className="sr-only">Đóng</span>
+                  </button>
+                </div>
               </div>
 
               {returnDetailLoading ? (
@@ -1186,91 +1544,271 @@ export default function CustomerCarePage() {
                   </svg>
                 </div>
               ) : selectedReturn ? (
-                <div className="space-y-6">
-                  {/* Return Request Information */}
-                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                    <h4 className="text-lg font-medium text-gray-900 mb-3">Thông tin yêu cầu đổi/trả</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <p className="text-sm font-medium text-gray-500">Mã yêu cầu</p>
-                        <p className="text-base font-medium">{selectedReturn.return_id}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-500">Tên yêu cầu</p>
-                        <p className="text-base">{selectedReturn.name_return || <span className="text-gray-400 italic">Chưa đặt tên</span>}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-500">Ngày yêu cầu</p>
-                        <p className="text-base">{formatDate(selectedReturn.return_date)}</p>
-                      </div>
-                      <div className="md:col-span-3">
-                        <p className="text-sm font-medium text-gray-500">Lý do đổi/trả</p>
-                        <p className="text-base">{selectedReturn.return_reason}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-500">Số tiền hoàn lại</p>
-                        <p className="text-base font-medium">
-                          {selectedReturn.refund_amount ? formatCurrency(selectedReturn.refund_amount) : <span className="text-gray-400">-</span>}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-500">Trạng thái</p>
-                        <div className="mt-1">
-                          <select
-                            value={selectedReturn.status}
-                            onChange={(e) => updateReturnStatus(selectedReturn.return_id, e.target.value)}
-                            disabled={updateStatusLoading}
-                            className={`block w-full rounded-md shadow-sm focus:border-${themeColor}-500 focus:ring-${themeColor}-500 text-sm py-2 px-3 border border-gray-300`}
-                          >
-                            <option value="đang xử lý">Đang xử lý</option>
-                            <option value="đã chấp nhận">Đã chấp nhận</option>
-                            <option value="đã từ chối">Đã từ chối</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                <div className="space-y-6"> {/* Container chính cho các phần thông tin */}
 
-                  {/* Order Information */}
-                  {selectedReturn.order && (
-                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                      <h4 className="text-lg font-medium text-gray-900 mb-3">Thông tin đơn hàng</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                          <p className="text-sm font-medium text-gray-500">Mã đơn hàng</p>
-                          <p className="text-base font-medium">{selectedReturn.order.order_id}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-gray-500">Ngày đặt hàng</p>
-                          <p className="text-base">{formatDate(selectedReturn.order.order_date)}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-gray-500">Tổng giá trị</p>
-                          <p className="text-base font-medium">{formatCurrency(selectedReturn.order.price)}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-gray-500">Trạng thái thanh toán</p>
-                          <p className="text-base">
-                            <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${selectedReturn.order.status === 'Đã thanh toán' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                              {selectedReturn.order.status}
-                            </span>
-                          </p>
-                        </div>
-                        {selectedReturn.order.customers && (
-                          <div className="md:col-span-3">
-                            <p className="text-sm font-medium text-gray-500">Thông tin khách hàng</p>
-                            <div className="mt-1 p-3 bg-white rounded border border-gray-100">
-                              <p className="text-base font-medium">{selectedReturn.order.customers.full_name || 'Khách vãng lai'}</p>
-                              {selectedReturn.order.customers.phone && <p className="text-sm">Điện thoại: {selectedReturn.order.customers.phone}</p>}
-                              {selectedReturn.order.customers.email && <p className="text-sm">Email: {selectedReturn.order.customers.email}</p>}
-                            </div>
+                  {/* --- Grid Container --- */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                    {/* --- Cột 1: Thông tin yêu cầu đổi/trả --- */}
+                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-4">
+                      <div className="flex justify-between items-center">
+                        <h4 className="text-lg font-medium text-gray-900">Thông tin yêu cầu đổi/trả</h4>
+                        {isEditMode && (
+                          <div className="flex space-x-2">
+                            <button
+                              type="button"
+                              className={`inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-${themeColor}-600 hover:bg-${themeColor}-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${themeColor}-500`}
+                              onClick={saveEditedReturn}
+                              disabled={editLoading}
+                            >
+                              {editLoading ? 'Đang lưu...' : 'Lưu thay đổi'}
+                            </button>
+                            <button
+                              type="button"
+                              className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                              onClick={toggleEditMode}
+                            >
+                              Hủy
+                            </button>
                           </div>
                         )}
                       </div>
-                    </div>
-                  )}
 
-                  {/* Order Details */}
+                      {/* Delete Confirmation - Vẫn nằm trong cột 1 */}
+                      {showDeleteConfirm && (
+                        <div className="p-4 bg-red-50 border border-red-200 rounded-md">
+                          <h5 className="text-red-800 font-medium mb-2">Xác nhận xóa yêu cầu đổi/trả</h5>
+                          <p className="text-red-700 mb-3">Bạn có chắc chắn muốn xóa yêu cầu đổi/trả này? Hành động này không thể hoàn tác.</p>
+                          <div className="flex space-x-2">
+                            <button
+                              type="button"
+                              className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                              onClick={deleteReturnRequest}
+                              disabled={deleteLoading}
+                            >
+                              {deleteLoading ? 'Đang xóa...' : 'Xác nhận xóa'}
+                            </button>
+                            <button
+                              type="button"
+                              className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                              onClick={cancelDelete}
+                              disabled={deleteLoading}
+                            >
+                              Hủy
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* --- Nội dung cột 1 --- */}
+                      {!isEditMode ? (
+                        // VIEW MODE
+                        <div className="space-y-4"> {/* Tăng khoảng cách giữa các dòng một chút */}
+
+                          {/* Hàng 1: Mã yêu cầu & Trạng thái */}
+                          <div className="grid grid-cols-2 gap-x-4 gap-y-2"> {/* Grid cho 2 cột, có khoảng cách */}
+                            <div>
+                              <div className="text-sm font-medium text-gray-500 mb-1">Mã yêu cầu</div>
+                              <div className="font-medium">{selectedReturn.return_id}</div>
+                            </div>
+                            <div>
+                              <div className="text-sm font-medium text-gray-500 mb-1">Trạng thái</div>
+                              <div className="flex items-center flex-wrap gap-2"> {/* Flex wrap để select xuống dòng nếu cần */}
+                                <span
+                                  className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                    selectedReturn.status === 'đã chấp nhận'
+                                      ? 'bg-green-100 text-green-800'
+                                      : selectedReturn.status === 'đã từ chối'
+                                      ? 'bg-red-100 text-red-800'
+                                      : 'bg-yellow-100 text-yellow-800'
+                                  }`}
+                                >
+                                  {selectedReturn.status}
+                                </span>
+                                <select
+                                  value={selectedReturn.status}
+                                  onChange={(e) => updateReturnStatus(selectedReturn.return_id, e.target.value)}
+                                  disabled={updateStatusLoading}
+                                  className={`rounded-md shadow-sm focus:border-${themeColor}-500 focus:ring-${themeColor}-500 text-xs py-1 px-2 border border-gray-300`} // Bỏ ml-2, dùng gap
+                                >
+                                  <option value="đang xử lý">Đang xử lý</option>
+                                  <option value="đã chấp nhận">Đã chấp nhận</option>
+                                  <option value="đã từ chối">Đã từ chối</option>
+                                </select>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Hàng 2: Tên yêu cầu & Số tiền hoàn lại */}
+                          <div className="grid grid-cols-2 gap-x-4 gap-y-2"> {/* Grid cho 2 cột */}
+                            <div>
+                              <div className="text-sm font-medium text-gray-500 mb-1">Tên yêu cầu</div>
+                              <div>{selectedReturn.name_return || <span className="text-gray-400 italic">Chưa đặt tên</span>}</div>
+                            </div>
+                            <div>
+                              <div className="text-sm font-medium text-gray-500 mb-1">Số tiền hoàn lại</div>
+                              <div className="font-medium">
+                                {selectedReturn.refund_amount != null ? formatCurrency(selectedReturn.refund_amount) : <span className="text-gray-400">-</span>}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Hàng 3: Lý do đổi/trả (Full width) */}
+                          <div>
+                            <div className="text-sm font-medium text-gray-500 mb-1">Lý do đổi/trả</div>
+                            <div className="bg-white p-2 rounded border border-gray-100 whitespace-pre-wrap">{selectedReturn.return_reason}</div>
+                          </div>
+
+                          {/* Hàng 4: Ngày yêu cầu (Nhỏ lại) */}
+                          <div>
+                            <div className="text-xs font-medium text-gray-500 mb-1">Ngày yêu cầu</div> {/* Đổi thành text-xs */}
+                            <div className="text-xs">{formatDate(selectedReturn.return_date)}</div> {/* Đổi thành text-xs */}
+                          </div>
+
+                        </div>
+                      ) : (
+                        // --- Edit Mode cho Cột 1 ---
+                        <div className="space-y-4"> {/* Tăng khoảng cách giữa các dòng một chút */}
+
+                          {/* Hàng 1: Mã yêu cầu (Readonly) & Trạng thái (Select) */}
+                          <div className="grid grid-cols-2 gap-x-4 gap-y-2 items-start"> {/* items-start để label thẳng hàng */}
+                            <div>
+                              <div className="text-sm font-medium text-gray-500 mb-1">Mã yêu cầu</div>
+                              <div className="font-medium pt-1.5"> {/* Căn chỉnh với input/select */}
+                                {selectedReturn.return_id}
+                              </div>
+                            </div>
+                            <div>
+                              <div className="text-sm font-medium text-gray-500 mb-1">Trạng thái</div>
+                              <select
+                                name="status"
+                                value={editedReturn.status}
+                                onChange={handleEditChange}
+                                className={`block w-full rounded-md shadow-sm focus:border-${themeColor}-500 focus:ring-${themeColor}-500 text-sm py-1 px-2 border border-gray-300`}
+                              >
+                                <option value="đang xử lý">Đang xử lý</option>
+                                <option value="đã chấp nhận">Đã chấp nhận</option>
+                                <option value="đã từ chối">Đã từ chối</option>
+                              </select>
+                            </div>
+                          </div>
+
+                          {/* Hàng 2: Tên yêu cầu (Input) & Số tiền hoàn lại (Input) */}
+                          <div className="grid grid-cols-2 gap-x-4 gap-y-2 items-start"> {/* items-start */}
+                            <div>
+                              <div className="text-sm font-medium text-gray-500 mb-1">Tên yêu cầu</div>
+                              <input
+                                type="text"
+                                name="name_return"
+                                value={editedReturn.name_return || ''}
+                                onChange={handleEditChange}
+                                className={`block w-full rounded-md shadow-sm focus:border-${themeColor}-500 focus:ring-${themeColor}-500 text-sm py-1 px-2 border border-gray-300`}
+                                placeholder="Nhập tên yêu cầu (không bắt buộc)"
+                              />
+                            </div>
+                            <div>
+                              <div className="text-sm font-medium text-gray-500 mb-1">Số tiền hoàn lại</div>
+                              <input
+                                type="number"
+                                name="refund_amount"
+                                value={editedReturn.refund_amount === null ? '' : editedReturn.refund_amount} // Xử lý giá trị null
+                                onChange={handleEditChange}
+                                min="0"
+                                step="1000"
+                                className={`block w-full rounded-md shadow-sm focus:border-${themeColor}-500 focus:ring-${themeColor}-500 text-sm py-1 px-2 border border-gray-300`}
+                                placeholder="Nhập số tiền (không bắt buộc)"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Hàng 3: Lý do đổi/trả (Textarea - Full width) */}
+                          <div>
+                            <div className="text-sm font-medium text-gray-500 mb-1">Lý do đổi/trả</div>
+                            <textarea
+                              name="return_reason"
+                              value={editedReturn.return_reason}
+                              onChange={handleEditChange}
+                              required
+                              rows={3}
+                              className={`block w-full rounded-md shadow-sm focus:border-${themeColor}-500 focus:ring-${themeColor}-500 text-sm py-1 px-2 border border-gray-300`}
+                              placeholder="Nhập lý do đổi/trả"
+                            />
+                          </div>
+
+                          {/* Hàng 4: Ngày yêu cầu (Readonly - Nhỏ lại) */}
+                          <div>
+                            <div className="text-xs font-medium text-gray-500 mb-1">Ngày yêu cầu</div> {/* Đổi thành text-xs */}
+                            <div className="text-xs">{formatDate(selectedReturn.return_date)}</div> {/* Đổi thành text-xs */}
+                          </div>
+
+                        </div>
+                      )}
+                    </div>
+                    {/* --- Hết Cột 1 --- */}
+
+                    {/* --- Cột 2: Thông tin đơn hàng --- */}
+                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-4">
+                      {selectedReturn.order ? (
+                        <>
+                          <h4 className="text-lg font-medium text-gray-900 mb-2">Thông tin đơn hàng</h4> {/* Giảm mb một chút */}
+                          <div className="space-y-4"> {/* Container cho các hàng thông tin */}
+
+                            {/* Hàng 1: Mã đơn hàng & Ngày đặt hàng */}
+                            <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                              <div>
+                                <div className="text-sm font-medium text-gray-500 mb-1">Mã đơn hàng</div>
+                                <div className="font-medium">{selectedReturn.order.order_id}</div>
+                              </div>
+                              <div>
+                                <div className="text-sm font-medium text-gray-500 mb-1">Ngày đặt hàng</div>
+                                <div>{formatDate(selectedReturn.order.order_date)}</div>
+                              </div>
+                            </div>
+
+                            {/* Hàng 2: Tổng giá trị & Trạng thái thanh toán */}
+                            <div className="grid grid-cols-2 gap-x-4 gap-y-2 items-start"> {/* items-start để căn lề label */}
+                              <div>
+                                <div className="text-sm font-medium text-gray-500 mb-1">Tổng giá trị</div>
+                                <div className="font-medium">{formatCurrency(selectedReturn.order.price)}</div>
+                              </div>
+                              <div>
+                                <div className="text-sm font-medium text-gray-500 mb-1">Trạng thái thanh toán</div>
+                                <div>
+                                  <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${selectedReturn.order.status === 'Đã thanh toán' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                                    {selectedReturn.order.status}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Hàng 3: Khách hàng (Nếu có) */}
+                            {selectedReturn.order.customers && (
+                              <div>
+                                <div className="text-sm font-medium text-gray-500 mb-1">Khách hàng</div>
+                                <div className="font-medium">{selectedReturn.order.customers.full_name || 'Khách vãng lai'}</div>
+                                <div className="text-xs text-gray-500 mt-0.5"> {/* Giảm khoảng cách trên một chút */}
+                                  {selectedReturn.order.customers.phone && <span className="block">ĐT: {selectedReturn.order.customers.phone}</span>} {/* Dùng block thay <br> */}
+                                  {selectedReturn.order.customers.email && <span className="block">Email: {selectedReturn.order.customers.email}</span>} {/* Dùng block thay <br> */}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Bạn có thể thêm các thông tin khác của đơn hàng ở đây, theo cấu trúc grid hoặc dòng riêng */}
+
+                          </div>
+                        </>
+                      ) : (
+                        <div className="text-center py-8">
+                          <p className="text-gray-500">Không có thông tin đơn hàng liên kết.</p>
+                        </div>
+                      )}
+                    </div>
+                    {/* --- Hết Cột 2 --- */}
+
+                  </div>
+                  {/* --- Hết Grid Container --- */}
+
+                  {/* --- Chi tiết sản phẩm (Giữ nguyên) --- */}
                   {selectedReturn.orderDetails && selectedReturn.orderDetails.length > 0 && (
                     <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                       <h4 className="text-lg font-medium text-gray-900 mb-3">Chi tiết sản phẩm</h4>
@@ -1278,19 +1816,19 @@ export default function CustomerCarePage() {
                         <table className="min-w-full divide-y divide-gray-200">
                           <thead className="bg-gray-100">
                             <tr>
-                              <th scope="col" className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên sản phẩm</th>
-                              <th scope="col" className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số lượng</th>
-                              <th scope="col" className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Đơn giá</th>
-                              <th scope="col" className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thành tiền</th>
+                              <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên sản phẩm</th>
+                              <th scope="col" className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">SL</th>
+                              <th scope="col" className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Đơn giá</th>
+                              <th scope="col" className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Thành tiền</th>
                             </tr>
                           </thead>
                           <tbody className="bg-white divide-y divide-gray-200">
-                            {selectedReturn.orderDetails.map((detail: any) => (
-                              <tr key={detail.orderdetail_id}>
-                                <td className="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">{detail.name_product}</td>
-                                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{detail.quantity}</td>
-                                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{formatCurrency(detail.unit_price)}</td>
-                                <td className="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">{formatCurrency(detail.subtotal)}</td>
+                            {selectedReturn.orderDetails.map((detail) => (
+                              <tr key={detail.orderdetail_id} className="hover:bg-gray-50">
+                                <td className="px-3 py-2 text-sm font-medium text-gray-900">{detail.name_product}</td>
+                                <td className="px-3 py-2 text-sm text-gray-500 text-center">{detail.quantity}</td>
+                                <td className="px-3 py-2 text-sm text-gray-500 text-right">{formatCurrency(detail.unit_price)}</td>
+                                <td className="px-3 py-2 text-sm font-medium text-gray-900 text-right">{formatCurrency(detail.subtotal)}</td>
                               </tr>
                             ))}
                           </tbody>
@@ -1299,60 +1837,67 @@ export default function CustomerCarePage() {
                     </div>
                   )}
 
-                  {/* Shipping Information */}
+                  {/* --- Thông tin vận chuyển (Giữ nguyên) --- */}
                   {selectedReturn.shipping && (
                     <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                       <h4 className="text-lg font-medium text-gray-900 mb-3">Thông tin vận chuyển</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4"> {/* Responsive grid cho shipping */}
+                          <div>
+                            <div className="text-sm font-medium text-gray-500 mb-1">Mã vận chuyển</div>
+                            <div className="font-medium">{selectedReturn.shipping.shipping_id}</div>
+                          </div>
+                          {selectedReturn.shipping.tracking_num && (
+                            <div>
+                              <div className="text-sm font-medium text-gray-500 mb-1">Mã vận đơn</div>
+                              <div>{selectedReturn.shipping.tracking_num}</div>
+                            </div>
+                          )}
+                          <div>
+                            <div className="text-sm font-medium text-gray-500 mb-1">Trạng thái vận chuyển</div>
+                            <div>
+                              <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                selectedReturn.shipping.status === 'Đã giao hàng' ? 'bg-green-100 text-green-800' :
+                                selectedReturn.shipping.status === 'Đã hủy' ? 'bg-red-100 text-red-800' :
+                                'bg-yellow-100 text-yellow-800'}`}>
+                                {selectedReturn.shipping.status}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
                         <div>
-                          <p className="text-sm font-medium text-gray-500">Mã vận chuyển</p>
-                          <p className="text-base font-medium">{selectedReturn.shipping.shipping_id}</p>
+                          <div className="text-sm font-medium text-gray-500 mb-1">Địa chỉ giao hàng</div>
+                          <div className="bg-white p-2 rounded border border-gray-100">{selectedReturn.shipping.shipping_address}</div>
                         </div>
-                        {selectedReturn.shipping.tracking_num && (
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">Mã vận đơn</p>
-                            <p className="text-base">{selectedReturn.shipping.tracking_num}</p>
-                          </div>
-                        )}
-                        <div>
-                          <p className="text-sm font-medium text-gray-500">Trạng thái vận chuyển</p>
-                          <p className="text-base">
-                            <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                              selectedReturn.shipping.status === 'Đã giao hàng' ? 'bg-green-100 text-green-800' :
-                              selectedReturn.shipping.status === 'Đã hủy' ? 'bg-red-100 text-red-800' :
-                              'bg-yellow-100 text-yellow-800'}`}>
-                              {selectedReturn.shipping.status}
-                            </span>
-                          </p>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4"> {/* Responsive grid cho shipping cost/date */}
+                          {selectedReturn.shipping.shipping_cost > 0 && (
+                            <div>
+                              <div className="text-sm font-medium text-gray-500 mb-1">Phí vận chuyển</div>
+                              <div>{formatCurrency(selectedReturn.shipping.shipping_cost)}</div>
+                            </div>
+                          )}
+                          {selectedReturn.shipping.actual_delivery_date && (
+                            <div>
+                              <div className="text-sm font-medium text-gray-500 mb-1">Ngày giao hàng thực tế</div>
+                              <div>{formatDate(selectedReturn.shipping.actual_delivery_date)}</div>
+                            </div>
+                          )}
                         </div>
-                        <div className="md:col-span-3">
-                          <p className="text-sm font-medium text-gray-500">Địa chỉ giao hàng</p>
-                          <p className="text-base">{selectedReturn.shipping.shipping_address}</p>
-                        </div>
-                        {selectedReturn.shipping.shipping_cost > 0 && (
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">Phí vận chuyển</p>
-                            <p className="text-base">{formatCurrency(selectedReturn.shipping.shipping_cost)}</p>
-                          </div>
-                        )}
-                        {selectedReturn.shipping.actual_delivery_date && (
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">Ngày giao hàng thực tế</p>
-                            <p className="text-base">{formatDate(selectedReturn.shipping.actual_delivery_date)}</p>
-                          </div>
-                        )}
                       </div>
                     </div>
                   )}
-                </div>
+
+                </div> // End space-y-6
               ) : (
                 <div className="text-center py-8">
                   <p className="text-gray-500">Không tìm thấy thông tin yêu cầu đổi/trả</p>
                 </div>
               )}
-            </div>
+            </div> {/* End px-6 pt-6 pb-4 sm:p-8 */}
 
-            <div className="bg-gray-50 bg-opacity-60 backdrop-filter backdrop-blur-sm px-6 py-4 sm:px-8 flex justify-end">
+            <div className="bg-gray-50 bg-opacity-60 backdrop-filter backdrop-blur-sm px-6 py-4 sm:px-8 flex justify-end sticky bottom-0">
               <button
                 type="button"
                 className="inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-6 py-3 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:w-auto sm:text-base"
@@ -1362,6 +1907,7 @@ export default function CustomerCarePage() {
               </button>
             </div>
           </div>
+          /
         </div>
       )}
     </div>

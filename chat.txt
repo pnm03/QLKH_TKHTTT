@@ -1,0 +1,8 @@
+vẫn xấu quá, thôi như này đi,
+Chia thành 1 gird có 1 hàng và 2 cột
+Cột 1 thì chứa Thông tin yêu cầu đổi/trả, cột 2 thì chứa Thông tin đơn hàng
+Cho popup rộng hơn ra 1 chút đề phù hợp nhé
+Cụ thể: 
+Cột 1 gồm: Mã yêu cầu, bên dưới là tên yêu cầu, tiếp dưới là Lý do đổi/trả, tiếp là Số tiền hoàn lại, tiếp là trạng thái và dưới cùng là ngày
+
+Cột 2 thì tùy nhưng mỗi cái 1 dòng nhé
