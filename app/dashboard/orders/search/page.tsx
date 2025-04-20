@@ -532,17 +532,23 @@ export default function SearchOrdersPage() {
       // Lấy thông tin vận chuyển nếu có
       let shippingInfo = null;
       if (order.is_shipping) {
-        const { data: shipping, error: shippingError } = await supabase
-          .from('shippings')
-          .select('*')
-          .eq('order_id', orderId)
-          .single();
+        try {
+          const { data: shipping, error: shippingError } = await supabase
+            .from('shippings')
+            .select('*')
+            .eq('order_id', orderId)
+            .maybeSingle(); // Sử dụng maybeSingle thay vì single để tránh lỗi nếu không tìm thấy
 
-        if (!shippingError && shipping) {
-          shippingInfo = shipping;
-          console.log('Thông tin vận chuyển:', shippingInfo);
-        } else {
-          console.error('Lỗi khi lấy thông tin vận chuyển:', shippingError);
+          if (!shippingError && shipping) {
+            shippingInfo = shipping;
+            console.log('Thông tin vận chuyển:', shippingInfo);
+          } else if (shippingError) {
+            console.error('Lỗi khi lấy thông tin vận chuyển:', shippingError.message);
+          } else {
+            console.log('Đơn hàng có vận chuyển nhưng không tìm thấy thông tin vận chuyển');
+          }
+        } catch (error) {
+          console.error('Lỗi khi xử lý truy vấn vận chuyển:', error);
         }
       }
 
@@ -637,7 +643,7 @@ export default function SearchOrdersPage() {
         // Nếu có thông tin khách hàng từ bảng customers
         customerInfo.innerHTML = `
           <h3>Thông tin khách hàng</h3>
-          <p><strong>Khách hàng:</strong> ${customerData.full_name}</p>
+          <p><strong>Khách hàng:</strong> ${customerData.full_name || order.customer_name || 'Không xác định'}</p>
           <p><strong>Số điện thoại:</strong> ${customerData.phone || 'Không có'}</p>
           <p><strong>Email:</strong> ${customerData.email || 'Không có'}</p>
           ${customerData.hometown ? `<p><strong>Quê quán:</strong> ${customerData.hometown}</p>` : ''}
