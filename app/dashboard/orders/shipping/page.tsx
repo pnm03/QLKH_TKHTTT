@@ -175,6 +175,49 @@ export default function ShippingOrdersPage() {
     if (shipping.status === newStatus) return; // Không làm gì nếu trạng thái không thay đổi
 
     try {
+      // Nếu trạng thái là "Đã giao hàng", cập nhật trạng thái đơn hàng thành "Đã thanh toán"
+      if (newStatus === 'Đã giao hàng') {
+        console.log('Cập nhật trạng thái đơn hàng thành Đã thanh toán');
+
+        // Tìm phương thức thanh toán tiền mặt hoặc bất kỳ phương thức nào
+        const { data: paymentMethods, error: paymentError } = await supabase
+          .from('payments')
+          .select('payment_id, payment_method_name');
+
+        if (paymentError) {
+          console.error('Lỗi khi lấy danh sách phương thức thanh toán:', paymentError);
+        } else if (paymentMethods && paymentMethods.length > 0) {
+          // Tìm phương thức tiền mặt
+          let selectedPaymentMethod = paymentMethods.find(p =>
+            p.payment_method_name.toLowerCase().includes('tiền mặt') ||
+            p.payment_method_name.toLowerCase().includes('tien mat'));
+
+          // Nếu không có phương thức tiền mặt, chọn phương thức đầu tiên
+          if (!selectedPaymentMethod && paymentMethods.length > 0) {
+            selectedPaymentMethod = paymentMethods[0];
+          }
+
+          if (selectedPaymentMethod) {
+            console.log('Sử dụng phương thức thanh toán:', selectedPaymentMethod.payment_method_name);
+
+            // Cập nhật trạng thái đơn hàng và phương thức thanh toán
+            const { error: updateOrderError } = await supabase
+              .from('orders')
+              .update({
+                status: 'Đã thanh toán',
+                payment_method: selectedPaymentMethod.payment_id
+              })
+              .eq('order_id', shipping.order_id);
+
+            if (updateOrderError) {
+              console.error('Lỗi khi cập nhật trạng thái đơn hàng:', updateOrderError);
+            } else {
+              console.log('Cập nhật trạng thái đơn hàng thành công');
+            }
+          }
+        }
+      }
+
       // Nếu shipping_id bắt đầu bằng SHIP-, đây là bản ghi tạm thời
       if (shipping.shipping_id.startsWith('SHIP-')) {
         // Tạo bản ghi shipping mới
@@ -533,7 +576,7 @@ export default function ShippingOrdersPage() {
        if (finalOrder && finalOrder.payment_method) {
          try {
             const { data: paymentData, error: paymentError } = await supabase
-                .from('Payments') // Đảm bảo tên bảng chính xác
+                .from('payments') // Đảm bảo tên bảng chính xác
                 .select('payment_method_name')
                 .eq('payment_id', finalOrder.payment_method)
                 .single(); // Dùng single vì mong đợi 1 kết quả
