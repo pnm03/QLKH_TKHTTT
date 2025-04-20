@@ -189,6 +189,11 @@ export default function CustomerCarePage() {
     }
   }
 
+  // Format number with thousand separator
+  const formatNumberWithSeparator = (num: number): string => {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+  }
+
   // Handle order selection from suggestions
   const handleOrderSelect = (orderId: string) => {
     // Tìm đơn hàng đã chọn trong danh sách gợi ý
@@ -197,8 +202,8 @@ export default function CustomerCarePage() {
     setNewReturn({
       ...newReturn,
       order_id: orderId,
-      // Tự động điền số tiền hoàn lại bằng giá trị đơn hàng nếu có
-      refund_amount: selectedOrder?.price ? selectedOrder.price.toString() : newReturn.refund_amount,
+      // Tự động điền số tiền hoàn lại bằng giá trị đơn hàng nếu có, với dấu phân cách hàng nghìn
+      refund_amount: selectedOrder?.price ? formatNumberWithSeparator(selectedOrder.price) : newReturn.refund_amount,
     })
     setShowSuggestions(false)
 
@@ -226,10 +231,31 @@ export default function CustomerCarePage() {
     >
   ) => {
     const { name, value } = e.target
-    setNewReturn({
-      ...newReturn,
-      [name]: value,
-    })
+
+    // Xử lý đặc biệt cho trường refund_amount để định dạng số với dấu phân cách hàng nghìn
+    if (name === 'refund_amount') {
+      // Xóa tất cả các ký tự không phải số
+      const numericValue = value.replace(/[^0-9]/g, '');
+
+      if (numericValue) {
+        // Định dạng số với dấu phân cách hàng nghìn
+        const formattedValue = formatNumberWithSeparator(parseInt(numericValue, 10));
+        setNewReturn({
+          ...newReturn,
+          [name]: formattedValue,
+        });
+      } else {
+        setNewReturn({
+          ...newReturn,
+          [name]: '',
+        });
+      }
+    } else {
+      setNewReturn({
+        ...newReturn,
+        [name]: value,
+      })
+    }
 
     // If changing order_id, search for suggestions
     if (name === 'order_id') {
@@ -253,16 +279,14 @@ export default function CustomerCarePage() {
     if (!newReturn.return_reason.trim())
       errors.return_reason = 'Lý do đổi/trả không được để trống'
     if (!newReturn.status) errors.status = 'Trạng thái không được để trống'
-    if (
-      newReturn.refund_amount &&
-      isNaN(parseFloat(newReturn.refund_amount))
-    ) {
-      errors.refund_amount = 'Số tiền hoàn lại phải là một số'
-    } else if (
-      newReturn.refund_amount &&
-      parseFloat(newReturn.refund_amount) < 0
-    ) {
-      errors.refund_amount = 'Số tiền hoàn lại không được âm'
+    if (newReturn.refund_amount) {
+      // Xóa dấu phân cách hàng nghìn (dấu chấm) trước khi chuyển đổi thành số
+      const cleanedAmount = newReturn.refund_amount.toString().replace(/\./g, '');
+      if (isNaN(parseFloat(cleanedAmount))) {
+        errors.refund_amount = 'Số tiền hoàn lại phải là một số'
+      } else if (parseFloat(cleanedAmount) < 0) {
+        errors.refund_amount = 'Số tiền hoàn lại không được âm'
+      }
     }
 
     setAddReturnErrors(errors)
@@ -330,7 +354,9 @@ export default function CustomerCarePage() {
       // Chuẩn bị dữ liệu
       let refundAmount = null;
       if (newReturn.refund_amount && newReturn.refund_amount.trim() !== '') {
-        const parsedAmount = parseFloat(newReturn.refund_amount);
+        // Xóa dấu phân cách hàng nghìn (dấu chấm) trước khi chuyển đổi thành số
+        const cleanedAmount = newReturn.refund_amount.replace(/\./g, '');
+        const parsedAmount = parseFloat(cleanedAmount);
         if (isNaN(parsedAmount)) {
           const errorMsg = 'Số tiền hoàn lại không hợp lệ. Vui lòng nhập một số.';
           console.error(errorMsg);
@@ -546,10 +572,31 @@ export default function CustomerCarePage() {
   // Handle edit form input change
   const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
-    setEditedReturn({
-      ...editedReturn,
-      [name]: value
-    })
+
+    // Xử lý đặc biệt cho trường refund_amount để định dạng số với dấu phân cách hàng nghìn
+    if (name === 'refund_amount') {
+      // Xóa tất cả các ký tự không phải số
+      const numericValue = value.replace(/[^0-9]/g, '');
+
+      if (numericValue) {
+        // Định dạng số với dấu phân cách hàng nghìn
+        const formattedValue = formatNumberWithSeparator(parseInt(numericValue, 10));
+        setEditedReturn({
+          ...editedReturn,
+          [name]: formattedValue,
+        });
+      } else {
+        setEditedReturn({
+          ...editedReturn,
+          [name]: '',
+        });
+      }
+    } else {
+      setEditedReturn({
+        ...editedReturn,
+        [name]: value
+      })
+    }
   }
 
   // Save edited return
@@ -562,14 +609,19 @@ export default function CustomerCarePage() {
       return
     }
 
-    if (editedReturn.refund_amount && isNaN(parseFloat(editedReturn.refund_amount.toString()))) {
-      setError('Số tiền hoàn lại phải là một số')
-      return
-    }
+    if (editedReturn.refund_amount) {
+      // Xóa dấu phân cách hàng nghìn (dấu chấm) trước khi chuyển đổi thành số
+      const cleanedAmount = editedReturn.refund_amount.toString().replace(/\./g, '');
 
-    if (editedReturn.refund_amount && parseFloat(editedReturn.refund_amount.toString()) < 0) {
-      setError('Số tiền hoàn lại không được âm')
-      return
+      if (isNaN(parseFloat(cleanedAmount))) {
+        setError('Số tiền hoàn lại phải là một số')
+        return
+      }
+
+      if (parseFloat(cleanedAmount) < 0) {
+        setError('Số tiền hoàn lại không được âm')
+        return
+      }
     }
 
     if (!['đang xử lý', 'đã chấp nhận', 'đã từ chối'].includes(editedReturn.status)) {
@@ -584,10 +636,17 @@ export default function CustomerCarePage() {
 
     try {
       // Prepare data
+      let refundAmount = null;
+      if (editedReturn.refund_amount) {
+        // Xóa dấu phân cách hàng nghìn (dấu chấm) trước khi chuyển đổi thành số
+        const cleanedAmount = editedReturn.refund_amount.toString().replace(/\./g, '');
+        refundAmount = parseFloat(cleanedAmount);
+      }
+
       const updateData = {
         name_return: editedReturn.name_return || null,
         return_reason: editedReturn.return_reason.trim(),
-        refund_amount: editedReturn.refund_amount ? parseFloat(editedReturn.refund_amount.toString()) : null,
+        refund_amount: refundAmount,
         status: editedReturn.status
       }
 
@@ -753,7 +812,7 @@ export default function CustomerCarePage() {
               </tr>
             </thead>
             <tbody>
-              ${selectedReturn.orderDetails.map(detail => `
+              ${selectedReturn.orderDetails.map((detail: any) => `
               <tr>
                 <td>${detail.name_product}</td>
                 <td>${detail.quantity}</td>
@@ -1836,7 +1895,7 @@ export default function CustomerCarePage() {
                             </tr>
                           </thead>
                           <tbody className="bg-white divide-y divide-gray-200">
-                            {selectedReturn.orderDetails.map((detail) => (
+                            {selectedReturn.orderDetails.map((detail: any) => (
                               <tr key={detail.orderdetail_id} className="hover:bg-gray-50">
                                 <td className="px-3 py-2 text-sm font-medium text-gray-900">{detail.name_product}</td>
                                 <td className="px-3 py-2 text-sm text-gray-500 text-center">{detail.quantity}</td>
