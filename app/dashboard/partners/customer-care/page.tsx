@@ -51,10 +51,29 @@ export default function CustomerCarePage() {
     {}
   )
 
+  // State for order suggestions
+  const [orderSuggestions, setOrderSuggestions] = useState<Array<{order_id: string, price: number, order_date: string}>>([])
+  const [showSuggestions, setShowSuggestions] = useState(false)
+
   // Set mounted = true
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement
+      if (showSuggestions && !target.closest('#order-id-container')) {
+        setShowSuggestions(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showSuggestions])
 
 
 
@@ -122,6 +141,54 @@ export default function CustomerCarePage() {
   // Close modal
   const closeAddReturnModal = () => {
     setShowAddReturnModal(false)
+    setShowSuggestions(false)
+    setOrderSuggestions([])
+  }
+
+  // Search for orders
+  const searchOrders = async (searchTerm: string) => {
+    if (!searchTerm || searchTerm.trim().length < 1) {
+      setOrderSuggestions([])
+      setShowSuggestions(false)
+      return
+    }
+
+    const supabase = createClientComponentClient()
+
+    try {
+      const { data, error } = await supabase
+        .from('orders')
+        .select('order_id, price, order_date')
+        .ilike('order_id', `%${searchTerm}%`)
+        .limit(10)
+
+      if (error) {
+        console.error('Lỗi khi tìm kiếm đơn hàng:', error)
+        return
+      }
+
+      setOrderSuggestions(data || [])
+      setShowSuggestions(data && data.length > 0)
+    } catch (err) {
+      console.error('Lỗi khi tìm kiếm đơn hàng:', err)
+    }
+  }
+
+  // Handle order selection from suggestions
+  const handleOrderSelect = (orderId: string) => {
+    setNewReturn({
+      ...newReturn,
+      order_id: orderId,
+    })
+    setShowSuggestions(false)
+
+    // Clear error if exists
+    if (addReturnErrors.order_id) {
+      setAddReturnErrors({
+        ...addReturnErrors,
+        order_id: '',
+      })
+    }
   }
 
   // Handle form input change
@@ -135,6 +202,11 @@ export default function CustomerCarePage() {
       ...newReturn,
       [name]: value,
     })
+
+    // If changing order_id, search for suggestions
+    if (name === 'order_id') {
+      searchOrders(value)
+    }
 
     // Clear error on input
     if (addReturnErrors[name]) {
@@ -180,11 +252,13 @@ export default function CustomerCarePage() {
     setError(null)
     setSuccessMessage(null)
 
-    // Sử dụng Supabase trực tiếp thay vì gọi API
-    const supabase = createClientComponentClient()
-
     try {
+      // Sử dụng Supabase trực tiếp thay vì gọi API
+      const supabase = createClientComponentClient()
+      console.log('Supabase client created')
+
       // Kiểm tra xem order_id có tồn tại trong bảng Orders không
+      console.log('Checking if order exists:', newReturn.order_id)
       const { data: orderExists, error: orderCheckError } = await supabase
         .from('orders')
         .select('order_id')
@@ -193,20 +267,64 @@ export default function CustomerCarePage() {
 
       if (orderCheckError) {
         console.error('Lỗi khi kiểm tra đơn hàng:', orderCheckError)
+        throw new Error(`Lỗi kiểm tra đơn hàng: ${orderCheckError.message}`)
       }
 
       if (!orderExists) {
-        setError(`Mã đơn hàng ${newReturn.order_id} không tồn tại trong hệ thống.`)
+        const errorMsg = `Mã đơn hàng ${newReturn.order_id} không tồn tại trong hệ thống.`
+        console.error(errorMsg)
+        setError(errorMsg)
         setAddReturnLoading(false)
         return
       }
 
+      // Kiểm tra xem đơn hàng đã có yêu cầu đổi/trả chưa
+      console.log('Checking if return request already exists for order:', newReturn.order_id)
+      const { data: existingReturn, error: checkExistingError } = await supabase
+        .from('returns')
+        .select('return_id')
+        .eq('order_id', newReturn.order_id)
+        .maybeSingle()
+
+      if (checkExistingError) {
+        console.error('Lỗi khi kiểm tra yêu cầu đổi/trả hiện có:', checkExistingError)
+      }
+
+      if (existingReturn) {
+        const errorMsg = `Đơn hàng ${newReturn.order_id} đã có yêu cầu đổi/trả. Không thể tạo thêm.`
+        console.error(errorMsg)
+        setError(errorMsg)
+        setAddReturnLoading(false)
+        return
+      }
+
+      console.log('Order exists, preparing data')
       // Chuẩn bị dữ liệu
+      let refundAmount = null;
+      if (newReturn.refund_amount && newReturn.refund_amount.trim() !== '') {
+        const parsedAmount = parseFloat(newReturn.refund_amount);
+        if (isNaN(parsedAmount)) {
+          const errorMsg = 'Số tiền hoàn lại không hợp lệ. Vui lòng nhập một số.';
+          console.error(errorMsg);
+          setError(errorMsg);
+          setAddReturnLoading(false);
+          return;
+        }
+        if (parsedAmount < 0) {
+          const errorMsg = 'Số tiền hoàn lại không được âm.';
+          console.error(errorMsg);
+          setError(errorMsg);
+          setAddReturnLoading(false);
+          return;
+        }
+        refundAmount = parsedAmount;
+      }
+
       const payload = {
         name_return: newReturn.name_return || null, // Có thể null
         order_id: newReturn.order_id,
         return_reason: newReturn.return_reason,
-        refund_amount: newReturn.refund_amount ? parseFloat(newReturn.refund_amount) : null,
+        refund_amount: refundAmount,
         status: newReturn.status,
       }
 
@@ -215,16 +333,21 @@ export default function CustomerCarePage() {
         payload.status = 'đang xử lý' // Mặc định nếu không hợp lệ
       }
 
-      // Thêm trực tiếp vào database
-      const { error } = await supabase
+      console.log('Inserting data into returns table:', payload)
+      // Thêm trực tiếp vào database - sử dụng cách khác
+      const insertResult = await supabase
         .from('returns')
-        .insert([payload])
+        .insert(payload)
+
+      const { error } = insertResult
+      console.log('Insert result:', insertResult)
 
       if (error) {
         console.error('Lỗi khi thêm yêu cầu:', error)
         throw error
       }
 
+      console.log('Return request added successfully:', insertResult)
       // Xử lý thành công
       setSuccessMessage('Thêm yêu cầu đổi/trả thành công!')
       closeAddReturnModal()
@@ -239,9 +362,10 @@ export default function CustomerCarePage() {
       let message = ''
       if (err instanceof Error) {
         message = err.message
-        console.log('Error details:', err)
+        console.log('Error details:', JSON.stringify(err, null, 2))
       } else {
         message = String(err)
+        console.log('Unknown error type:', typeof err, JSON.stringify(err, null, 2))
       }
 
       // Hiển thị thông báo lỗi thân thiện hơn
@@ -264,7 +388,7 @@ export default function CustomerCarePage() {
       } else if (message.includes('foreign key') || message.includes('violates foreign key constraint')) {
         setError('Mã đơn hàng không tồn tại trong hệ thống.')
       } else {
-        setError(`Không thể thêm yêu cầu: ${message}`)
+        setError(`Không thể thêm yêu cầu. Vui lòng kiểm tra lại dữ liệu và thử lại.`)
       }
     } finally {
       setAddReturnLoading(false)
@@ -671,25 +795,56 @@ export default function CustomerCarePage() {
                     >
                       Mã đơn hàng gốc <span className="text-red-500">*</span>
                     </label>
-                    <input
-                      type="text"
-                      name="order_id"
-                      id="order_id"
-                      value={newReturn.order_id}
-                      onChange={handleNewReturnChange}
-                      required
-                      placeholder="Nhập mã đơn hàng cần đổi/trả"
-                      className={`mt-1 block w-full rounded-md shadow-sm focus:border-${themeColor}-500 focus:ring-${themeColor}-500 text-base py-3 px-3 border ${
-                        addReturnErrors.order_id
-                          ? 'border-red-300'
-                          : 'border-gray-300'
-                      }`}
-                    />
+                    <div className="relative" id="order-id-container">
+                      <input
+                        type="text"
+                        name="order_id"
+                        id="order_id"
+                        value={newReturn.order_id}
+                        onChange={handleNewReturnChange}
+                        required
+                        placeholder="Nhập mã đơn hàng cần đổi/trả"
+                        className={`mt-1 block w-full rounded-md shadow-sm focus:border-${themeColor}-500 focus:ring-${themeColor}-500 text-base py-3 px-3 border ${
+                          addReturnErrors.order_id
+                            ? 'border-red-300'
+                            : 'border-gray-300'
+                        }`}
+                        autoComplete="off"
+                      />
+
+                      {/* Suggestions dropdown */}
+                      {showSuggestions && orderSuggestions.length > 0 && (
+                        <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md border border-gray-200 max-h-60 overflow-y-auto">
+                          <ul className="py-1">
+                            {orderSuggestions.map((order) => (
+                              <li
+                                key={order.order_id}
+                                className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex justify-between items-center"
+                                onClick={() => handleOrderSelect(order.order_id)}
+                              >
+                                <div>
+                                  <span className="font-medium">{order.order_id}</span>
+                                </div>
+                                <div className="text-sm text-gray-500 flex flex-col items-end">
+                                  <span>{formatCurrency(order.price)}</span>
+                                  <span className="text-xs">{new Date(order.order_date).toLocaleDateString('vi-VN')}</span>
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+
                     {addReturnErrors.order_id && (
                       <p className="mt-1 text-sm text-red-600">
                         {addReturnErrors.order_id}
                       </p>
                     )}
+
+                    <p className="mt-1 text-xs text-gray-500">
+                      Gõ ít nhất 1 ký tự để tìm kiếm mã đơn hàng
+                    </p>
                   </div>
 
                   <div>
