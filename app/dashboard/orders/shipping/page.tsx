@@ -1513,10 +1513,11 @@ export default function ShippingOrdersPage() {
             <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">​</span>
 
             {/* Modal panel */}
-            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-5xl sm:w-full">
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-6xl sm:w-full"> {/* Increased max-w slightly for better spacing */}
               {/* Modal Header */}
               <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 border-b border-gray-200">
                 <div className="sm:flex sm:items-start">
+                   {/* Icon and Title */}
                   <div className={`mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-${themeColor}-100 sm:mx-0 sm:h-10 sm:w-10`}>
                     <TruckIcon className={`h-6 w-6 text-${themeColor}-600`} aria-hidden="true" />
                   </div>
@@ -1539,7 +1540,7 @@ export default function ShippingOrdersPage() {
                        <button
                           type="button"
                           onClick={() => {
-                              setEditedShipping({ ...selectedShipping }); // Copy current data to edit form
+                              setEditedShipping({ ...selectedShipping });
                               setIsEditing(true);
                           }}
                           className={`inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${themeColor}-500`}
@@ -1551,7 +1552,7 @@ export default function ShippingOrdersPage() {
                     <button
                       type="button"
                       onClick={exportShippingOrder}
-                      disabled={loadingDetails || !selectedOrder} // Disable if still loading or no order info
+                      disabled={loadingDetails || !selectedOrder}
                       className={`inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-${themeColor}-600 hover:bg-${themeColor}-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${themeColor}-500 disabled:opacity-50`}
                       title={!selectedOrder ? "Cần thông tin đơn hàng để xuất" : "Xuất phiếu gửi hàng"}
                     >
@@ -1561,7 +1562,7 @@ export default function ShippingOrdersPage() {
                     <button
                       type="button"
                       onClick={printInvoice}
-                      disabled={loadingDetails || !selectedOrder} // Disable if still loading or no order info
+                      disabled={loadingDetails || !selectedOrder}
                       className={`inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50`}
                        title={!selectedOrder ? "Cần thông tin đơn hàng để in" : "In hóa đơn"}
                     >
@@ -1590,7 +1591,7 @@ export default function ShippingOrdersPage() {
               </div>
 
               {/* Modal Body */}
-               <div className="px-4 py-5 sm:p-6 max-h-[70vh] overflow-y-auto">
+               <div className="px-4 py-5 sm:p-6 max-h-[75vh] overflow-y-auto"> {/* Increased max-h */}
                   {/* Display Error inside modal if details failed */}
                    {error && !loadingDetails && (
                       <div className="bg-red-50 border border-red-200 p-3 rounded-md mb-4">
@@ -1599,294 +1600,255 @@ export default function ShippingOrdersPage() {
                       </div>
                     )}
 
-                   {/* Main content grid */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                   {/* Main Layout Grid */}
+                    <div className="space-y-6">
 
-                        {/* Column 1: Order Info & Customer Info */}
-                        <div className="lg:col-span-1 space-y-6">
-                            {/* Thông tin đơn hàng */}
-                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                                <h4 className="text-base font-medium text-gray-800 mb-3 border-b pb-2">Thông tin đơn hàng gốc</h4>
-                                {selectedOrder ? (
-                                <div className="space-y-2 text-sm">
-                                    <p><span className="font-medium text-gray-600 w-28 inline-block">Mã đơn:</span> {selectedOrder.order_id}</p>
-                                    <p><span className="font-medium text-gray-600 w-28 inline-block">Ngày đặt:</span> {formatDate(selectedOrder.order_date)}</p>
-                                    <p><span className="font-medium text-gray-600 w-28 inline-block">Tổng tiền:</span> {formatCurrency(selectedOrder.price)}</p>
-                                    <p><span className="font-medium text-gray-600 w-28 inline-block">Trạng thái ĐH:</span> {selectedOrder.status || 'N/A'}</p>
-                                    <p><span className="font-medium text-gray-600 w-28 inline-block">PT Thanh toán:</span> {selectedOrder.payment_method_name || 'N/A'}</p>
+                        {/* Row 1: 3 Columns */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                            {/* Col 1, Row 1: Thông tin đơn hàng gốc */}
+                            <div className="lg:col-span-1">
+                                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 h-full">
+                                    <h4 className="text-base font-medium text-gray-800 mb-3 border-b pb-2">Thông tin đơn hàng gốc</h4>
+                                    {selectedOrder ? (
+                                    <div className="space-y-2 text-sm">
+                                        <p><span className="font-medium text-gray-600 w-28 inline-block">Mã đơn:</span> {selectedOrder.order_id}</p>
+                                        <p><span className="font-medium text-gray-600 w-28 inline-block">Ngày đặt:</span> {formatDate(selectedOrder.order_date)}</p>
+                                        <p><span className="font-medium text-gray-600 w-28 inline-block">Tổng tiền:</span> {formatCurrency(selectedOrder.price)}</p>
+                                        <p><span className="font-medium text-gray-600 w-28 inline-block">Trạng thái ĐH:</span> {selectedOrder.status || 'N/A'}</p>
+                                        <p><span className="font-medium text-gray-600 w-28 inline-block">PT Thanh toán:</span> {selectedOrder.payment_method_name || 'N/A'}</p>
+                                    </div>
+                                    ) : (
+                                    <p className="text-sm text-gray-500 italic">Không tìm thấy thông tin đơn hàng gốc.</p>
+                                    )}
                                 </div>
-                                ) : (
-                                 <p className="text-sm text-gray-500 italic">Không tìm thấy thông tin đơn hàng gốc.</p>
-                                )}
                             </div>
 
-                            {/* Thông tin người nhận */}
-                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                                <h4 className="text-base font-medium text-gray-800 mb-3 border-b pb-2">Thông tin người nhận</h4>
-                                {isEditing && editedShipping ? (
-                                <div className="space-y-3">
-                                    <div>
-                                    <label htmlFor="name_customer" className="block text-sm font-medium text-gray-700">Tên người nhận</label>
-                                    <input
-                                        type="text" name="name_customer" id="name_customer" autoComplete='name'
-                                        value={editedShipping.name_customer || ''} onChange={handleInputChange}
-                                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                    />
-                                    </div>
-                                    <div>
-                                    <label htmlFor="phone_customer" className="block text-sm font-medium text-gray-700">Số điện thoại</label>
-                                    <input
-                                        type="tel" name="phone_customer" id="phone_customer" autoComplete='tel'
-                                        value={editedShipping.phone_customer || ''} onChange={handleInputChange}
-                                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                    />
-                                    </div>
-                                    <div>
-                                    <label htmlFor="shipping_address" className="block text-sm font-medium text-gray-700">Địa chỉ giao hàng</label>
-                                    <textarea
-                                        name="shipping_address" id="shipping_address" rows={3}
-                                        value={editedShipping.shipping_address || ''} onChange={handleInputChange}
-                                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                    ></textarea>
-                                    </div>
-                                </div>
-                                ) : (
-                                <div className="space-y-2 text-sm">
-                                    <p><span className="font-medium text-gray-600 w-28 inline-block">Tên:</span> {selectedShipping.name_customer}</p>
-                                    <p><span className="font-medium text-gray-600 w-28 inline-block">Điện thoại:</span> {selectedShipping.phone_customer}</p>
-                                    <p><span className="font-medium text-gray-600 w-28 inline-block">Địa chỉ:</span> {selectedShipping.shipping_address}</p>
-                                </div>
-                                )}
-                            </div>
-                        </div>
-
-                         {/* Column 2: Shipping Info & Package Info */}
-                        <div className="lg:col-span-1 space-y-6">
-                             {/* Thông tin vận chuyển */}
-                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                                <h4 className="text-base font-medium text-gray-800 mb-3 border-b pb-2">Thông tin vận chuyển</h4>
-                                {isEditing && editedShipping ? (
-                                <div className="space-y-3">
-                                    <div>
-                                        <label htmlFor="carrier" className="block text-sm font-medium text-gray-700">Đơn vị vận chuyển</label>
-                                        <input
-                                            type="text" name="carrier" id="carrier"
-                                            value={editedShipping.carrier || ''} onChange={handleInputChange}
-                                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-2 sm:text-sm"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label htmlFor="tracking_number" className="block text-sm font-medium text-gray-700">Mã vận đơn</label>
-                                        <input
-                                            type="text" name="tracking_number" id="tracking_number"
-                                            value={editedShipping.tracking_number || ''} onChange={handleInputChange}
-                                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-2 sm:text-sm"
-                                        />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div>
-                                            <label htmlFor="shipping_cost" className="block text-sm font-medium text-gray-700">Phí vận chuyển</label>
-                                            <input
-                                                type="number" step="1000" min="0" name="shipping_cost" id="shipping_cost"
-                                                value={editedShipping.shipping_cost ?? ''} onChange={handleInputChange}
-                                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-2 sm:text-sm"
-                                            />
+                            {/* Col 2, Row 1: Thông tin vận chuyển */}
+                            <div className="lg:col-span-1">
+                                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 h-full">
+                                    <h4 className="text-base font-medium text-gray-800 mb-3 border-b pb-2">Thông tin vận chuyển</h4>
+                                    {isEditing && editedShipping ? (
+                                    <div className="space-y-3">
+                                        {/* Edit form for Shipping Info */}
+                                         <div>
+                                            <label htmlFor="carrier" className="block text-sm font-medium text-gray-700">Đơn vị vận chuyển</label>
+                                            <input type="text" name="carrier" id="carrier" value={editedShipping.carrier || ''} onChange={handleInputChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-2 sm:text-sm"/>
                                         </div>
                                         <div>
-                                            <label htmlFor="status" className="block text-sm font-medium text-gray-700">Trạng thái VC</label>
-                                            <select
-                                                name="status" id="status" value={editedShipping.status || ''} onChange={handleInputChange}
-                                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-2 sm:text-sm h-[34px]" // Adjust height
-                                            >
-                                                <option value="pending">Chờ xử lý</option>
-                                                <option value="shipped">Đang vận chuyển</option>
-                                                <option value="delivered">Đã giao hàng</option>
-                                                <option value="cancelled">Đã hủy</option>
+                                            <label htmlFor="tracking_number" className="block text-sm font-medium text-gray-700">Mã vận đơn</label>
+                                            <input type="text" name="tracking_number" id="tracking_number" value={editedShipping.tracking_number || ''} onChange={handleInputChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-2 sm:text-sm"/>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div>
+                                                <label htmlFor="shipping_cost" className="block text-sm font-medium text-gray-700">Phí vận chuyển</label>
+                                                <input type="number" step="1000" min="0" name="shipping_cost" id="shipping_cost" value={editedShipping.shipping_cost ?? ''} onChange={handleInputChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-2 sm:text-sm"/>
+                                            </div>
+                                            <div>
+                                                <label htmlFor="status" className="block text-sm font-medium text-gray-700">Trạng thái VC</label>
+                                                <select name="status" id="status" value={editedShipping.status || ''} onChange={handleInputChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-2 sm:text-sm h-[34px]">
+                                                    <option value="pending">Chờ xử lý</option>
+                                                    <option value="shipped">Đang vận chuyển</option>
+                                                    <option value="delivered">Đã giao hàng</option>
+                                                    <option value="cancelled">Đã hủy</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center">
+                                            <input type="checkbox" name="cod_shipping" id="cod_shipping" checked={!!editedShipping.cod_shipping} onChange={handleInputChange} className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"/>
+                                            <label htmlFor="cod_shipping" className="ml-2 block text-sm text-gray-700">Thu tiền hộ (COD)</label>
+                                        </div>
+                                        <div className="pt-2 border-t mt-3">
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Thời gian giao hàng</label>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                <div>
+                                                    <label htmlFor="actual_delivery_date" className="block text-xs font-medium text-gray-500">Ngày bắt đầu giao</label>
+                                                    <input type="date" name="actual_delivery_date" id="actual_delivery_date" value={editedShipping.actual_delivery_date ? new Date(editedShipping.actual_delivery_date).toISOString().split('T')[0] : ''} onChange={handleInputChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-2 sm:text-sm"/>
+                                                </div>
+                                                <div>
+                                                    <label htmlFor="delivery_date" className="block text-xs font-medium text-gray-500">Ngày nhận hàng</label>
+                                                    <input type="date" name="delivery_date" id="delivery_date" value={editedShipping.delivery_date ? new Date(editedShipping.delivery_date).toISOString().split('T')[0] : ''} onChange={handleInputChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-2 sm:text-sm"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    ) : (
+                                    <div className="space-y-2 text-sm">
+                                        {/* Display Shipping Info */}
+                                        <p><span className="font-medium text-gray-600 w-28 inline-block">ĐV vận chuyển:</span> {selectedShipping.carrier || 'N/A'}</p>
+                                        <p><span className="font-medium text-gray-600 w-28 inline-block">Mã vận đơn:</span> {selectedShipping.tracking_number || 'N/A'}</p>
+                                        <p><span className="font-medium text-gray-600 w-28 inline-block">Phí VC:</span> {formatCurrency(selectedShipping.shipping_cost)}</p>
+                                        <p><span className="font-medium text-gray-600 w-28 inline-block">Trạng thái VC:</span> {getStatusName(selectedShipping.status)}</p>
+                                        <p><span className="font-medium text-gray-600 w-28 inline-block">COD:</span> {selectedShipping.cod_shipping ? 'Có' : 'Không'}</p>
+                                        <p className="pt-2 border-t mt-2"><span className="font-medium text-gray-600 w-28 inline-block">Ngày tạo VC:</span> {formatDate(selectedShipping.created_at)}</p>
+                                        <p><span className="font-medium text-gray-600 w-28 inline-block">Ngày giao:</span> {formatDate(selectedShipping.actual_delivery_date)}</p>
+                                        <p><span className="font-medium text-gray-600 w-28 inline-block">Ngày nhận:</span> {formatDate(selectedShipping.delivery_date)}</p>
+                                    </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Col 3, Row 1: Thông tin người nhận + Kích thước/Trọng lượng */}
+                            <div className="lg:col-span-1 space-y-6"> {/* Added space-y-6 here */}
+                                {/* Thông tin người nhận */}
+                                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                    <h4 className="text-base font-medium text-gray-800 mb-3 border-b pb-2">Thông tin người nhận</h4>
+                                    {isEditing && editedShipping ? (
+                                    <div className="space-y-3">
+                                        {/* Edit form for Recipient */}
+                                        <div>
+                                            <label htmlFor="name_customer" className="block text-sm font-medium text-gray-700">Tên người nhận</label>
+                                            <input type="text" name="name_customer" id="name_customer" autoComplete='name' value={editedShipping.name_customer || ''} onChange={handleInputChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"/>
+                                        </div>
+                                        <div>
+                                            <label htmlFor="phone_customer" className="block text-sm font-medium text-gray-700">Số điện thoại</label>
+                                            <input type="tel" name="phone_customer" id="phone_customer" autoComplete='tel' value={editedShipping.phone_customer || ''} onChange={handleInputChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"/>
+                                        </div>
+                                        <div>
+                                            <label htmlFor="shipping_address" className="block text-sm font-medium text-gray-700">Địa chỉ giao hàng</label>
+                                            <textarea name="shipping_address" id="shipping_address" rows={3} value={editedShipping.shipping_address || ''} onChange={handleInputChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+                                        </div>
+                                    </div>
+                                    ) : (
+                                    <div className="space-y-2 text-sm">
+                                         {/* Display Recipient Info */}
+                                        <p><span className="font-medium text-gray-600 w-28 inline-block">Tên:</span> {selectedShipping.name_customer}</p>
+                                        <p><span className="font-medium text-gray-600 w-28 inline-block">Điện thoại:</span> {selectedShipping.phone_customer}</p>
+                                        <p><span className="font-medium text-gray-600 w-28 inline-block">Địa chỉ:</span> {selectedShipping.shipping_address}</p>
+                                    </div>
+                                    )}
+                                </div>
+
+                                {/* Kích thước & Trọng lượng */}
+                                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                    <h4 className="text-base font-medium text-gray-800 mb-3 border-b pb-2">Kích thước & Trọng lượng</h4>
+                                    {isEditing && editedShipping ? (
+                                    <div className="space-y-3">
+                                        {/* Edit form for Dimensions */}
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div>
+                                                <label htmlFor="weight" className="block text-sm font-medium text-gray-700">Trọng lượng</label>
+                                                <input type="number" step="0.1" min="0" name="weight" id="weight" value={editedShipping.weight ?? ''} onChange={handleInputChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-2 sm:text-sm"/>
+                                            </div>
+                                            <div>
+                                                <label htmlFor="unit_weight" className="block text-sm font-medium text-gray-700">Đơn vị</label>
+                                                <select name="unit_weight" id="unit_weight" value={editedShipping.unit_weight || 'kg'} onChange={handleInputChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-2 sm:text-sm h-[34px]">
+                                                    <option value="kg">kg</option>
+                                                    <option value="g">g</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-3 gap-2">
+                                            <div><label htmlFor="long" className="block text-sm font-medium text-gray-700">Dài</label><input type="number" min="0" name="long" id="long" value={editedShipping.long ?? ''} onChange={handleInputChange} className="mt-1 block w-full border border-gray-300 rounded-md py-1.5 px-2 sm:text-sm"/></div>
+                                            <div><label htmlFor="wide" className="block text-sm font-medium text-gray-700">Rộng</label><input type="number" min="0" name="wide" id="wide" value={editedShipping.wide ?? ''} onChange={handleInputChange} className="mt-1 block w-full border border-gray-300 rounded-md py-1.5 px-2 sm:text-sm"/></div>
+                                            <div><label htmlFor="hight" className="block text-sm font-medium text-gray-700">Cao</label><input type="number" min="0" name="hight" id="hight" value={editedShipping.hight ?? ''} onChange={handleInputChange} className="mt-1 block w-full border border-gray-300 rounded-md py-1.5 px-2 sm:text-sm"/></div>
+                                        </div>
+                                        <div>
+                                            <label htmlFor="unit_size" className="block text-sm font-medium text-gray-700">Đơn vị kích thước</label>
+                                            <select name="unit_size" id="unit_size" value={editedShipping.unit_size || 'cm'} onChange={handleInputChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-2 sm:text-sm h-[34px]">
+                                                <option value="cm">cm</option>
+                                                <option value="mm">mm</option>
+                                                <option value="inch">inch</option>
                                             </select>
                                         </div>
                                     </div>
-                                    <div className="flex items-center">
-                                        <input
-                                            type="checkbox" name="cod_shipping" id="cod_shipping"
-                                            checked={!!editedShipping.cod_shipping} onChange={handleInputChange}
-                                            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                                        />
-                                        <label htmlFor="cod_shipping" className="ml-2 block text-sm text-gray-700">Thu tiền hộ (COD)</label>
+                                    ) : (
+                                    <div className="space-y-2 text-sm">
+                                        {/* Display Dimensions Info */}
+                                        <p><span className="font-medium text-gray-600 w-28 inline-block">Trọng lượng:</span> {selectedShipping.weight ?? 'N/A'} {selectedShipping.unit_weight || ''}</p>
+                                        <p><span className="font-medium text-gray-600 w-28 inline-block">Kích thước:</span> {selectedShipping.long ?? '?'} x {selectedShipping.wide ?? '?'} x {selectedShipping.hight ?? '?'} {selectedShipping.unit_size || ''}</p>
                                     </div>
-                                    {/* Thời gian */}
-                                     <div className="pt-2 border-t mt-3">
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Thời gian giao hàng</label>
-                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                            <div>
-                                                <label htmlFor="actual_delivery_date" className="block text-xs font-medium text-gray-500">Ngày bắt đầu giao</label>
-                                                <input
-                                                type="date" name="actual_delivery_date" id="actual_delivery_date"
-                                                value={editedShipping.actual_delivery_date ? new Date(editedShipping.actual_delivery_date).toISOString().split('T')[0] : ''}
-                                                onChange={handleInputChange}
-                                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-2 sm:text-sm"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label htmlFor="delivery_date" className="block text-xs font-medium text-gray-500">Ngày nhận hàng</label>
-                                                <input
-                                                type="date" name="delivery_date" id="delivery_date"
-                                                value={editedShipping.delivery_date ? new Date(editedShipping.delivery_date).toISOString().split('T')[0] : ''}
-                                                onChange={handleInputChange}
-                                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-2 sm:text-sm"
-                                                />
-                                            </div>
-                                         </div>
-                                    </div>
+                                    )}
                                 </div>
-                                ) : (
-                                 <div className="space-y-2 text-sm">
-                                     <p><span className="font-medium text-gray-600 w-28 inline-block">ĐV vận chuyển:</span> {selectedShipping.carrier || 'N/A'}</p>
-                                     <p><span className="font-medium text-gray-600 w-28 inline-block">Mã vận đơn:</span> {selectedShipping.tracking_number || 'N/A'}</p>
-                                     <p><span className="font-medium text-gray-600 w-28 inline-block">Phí VC:</span> {formatCurrency(selectedShipping.shipping_cost)}</p>
-                                     <p><span className="font-medium text-gray-600 w-28 inline-block">Trạng thái VC:</span> {getStatusName(selectedShipping.status)}</p>
-                                     <p><span className="font-medium text-gray-600 w-28 inline-block">COD:</span> {selectedShipping.cod_shipping ? 'Có' : 'Không'}</p>
-                                     <p className="pt-2 border-t mt-2"><span className="font-medium text-gray-600 w-28 inline-block">Ngày tạo VC:</span> {formatDate(selectedShipping.created_at)}</p>
-                                     <p><span className="font-medium text-gray-600 w-28 inline-block">Ngày giao:</span> {formatDate(selectedShipping.actual_delivery_date)}</p>
-                                     <p><span className="font-medium text-gray-600 w-28 inline-block">Ngày nhận:</span> {formatDate(selectedShipping.delivery_date)}</p>
-                                 </div>
-                                )}
                             </div>
-                             {/* Kích thước & Trọng lượng */}
-                             <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                                <h4 className="text-base font-medium text-gray-800 mb-3 border-b pb-2">Kích thước & Trọng lượng</h4>
-                                {isEditing && editedShipping ? (
-                                <div className="space-y-3">
-                                    <div className="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label htmlFor="weight" className="block text-sm font-medium text-gray-700">Trọng lượng</label>
-                                        <input
-                                            type="number" step="0.1" min="0" name="weight" id="weight"
-                                            value={editedShipping.weight ?? ''} onChange={handleInputChange}
-                                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-2 sm:text-sm"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label htmlFor="unit_weight" className="block text-sm font-medium text-gray-700">Đơn vị</label>
-                                        <select
-                                            name="unit_weight" id="unit_weight"
-                                            value={editedShipping.unit_weight || 'kg'} onChange={handleInputChange}
-                                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-2 sm:text-sm h-[34px]"
-                                        >
-                                            <option value="kg">kg</option>
-                                            <option value="g">g</option>
-                                        </select>
-                                    </div>
-                                    </div>
-                                    <div className="grid grid-cols-3 gap-2">
-                                    <div>
-                                        <label htmlFor="long" className="block text-sm font-medium text-gray-700">Dài</label>
-                                        <input type="number" min="0" name="long" id="long" value={editedShipping.long ?? ''} onChange={handleInputChange} className="mt-1 block w-full border border-gray-300 rounded-md py-1.5 px-2 sm:text-sm"/>
-                                    </div>
-                                    <div>
-                                        <label htmlFor="wide" className="block text-sm font-medium text-gray-700">Rộng</label>
-                                        <input type="number" min="0" name="wide" id="wide" value={editedShipping.wide ?? ''} onChange={handleInputChange} className="mt-1 block w-full border border-gray-300 rounded-md py-1.5 px-2 sm:text-sm"/>
-                                    </div>
-                                    <div>
-                                        <label htmlFor="hight" className="block text-sm font-medium text-gray-700">Cao</label>
-                                        <input type="number" min="0" name="hight" id="hight" value={editedShipping.hight ?? ''} onChange={handleInputChange} className="mt-1 block w-full border border-gray-300 rounded-md py-1.5 px-2 sm:text-sm"/>
-                                    </div>
-                                    </div>
-                                    <div>
-                                    <label htmlFor="unit_size" className="block text-sm font-medium text-gray-700">Đơn vị kích thước</label>
-                                    <select
-                                        name="unit_size" id="unit_size" value={editedShipping.unit_size || 'cm'} onChange={handleInputChange}
-                                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-2 sm:text-sm h-[34px]"
-                                    >
-                                        <option value="cm">cm</option>
-                                        <option value="mm">mm</option>
-                                        <option value="inch">inch</option>
-                                    </select>
-                                    </div>
-                                </div>
-                                ) : (
-                                 <div className="space-y-2 text-sm">
-                                     <p><span className="font-medium text-gray-600 w-28 inline-block">Trọng lượng:</span> {selectedShipping.weight ?? 'N/A'} {selectedShipping.unit_weight || ''}</p>
-                                     <p><span className="font-medium text-gray-600 w-28 inline-block">Kích thước:</span> {selectedShipping.long ?? '?'} x {selectedShipping.wide ?? '?'} x {selectedShipping.hight ?? '?'} {selectedShipping.unit_size || ''}</p>
-                                 </div>
-                                )}
-                            </div>
-                         </div>
+                        </div> {/* End Row 1 */}
 
-                        {/* Column 3: Product List & Payment Summary */}
-                         <div className="lg:col-span-1 space-y-6">
-                             {/* Danh sách sản phẩm */}
-                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                                <h4 className="text-base font-medium text-gray-800 mb-3 border-b pb-2">Danh sách sản phẩm</h4>
-                                {orderDetails.length > 0 ? (
-                                <div className="overflow-x-auto max-h-60">
-                                    <table className="min-w-full divide-y divide-gray-200 text-sm">
-                                    <thead className="bg-gray-100 sticky top-0">
-                                        <tr>
-                                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sản phẩm</th>
-                                        <th scope="col" className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">SL</th>
-                                        <th scope="col" className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Thành tiền</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200">
-                                        {orderDetails.map((detail) => (
-                                        <tr key={detail.order_detail_id} className="hover:bg-gray-50">
-                                            <td className="px-3 py-2 whitespace-nowrap">
-                                            <div className="flex items-center">
-                                                <div className="flex-shrink-0 h-8 w-8 mr-2">
-                                                {detail.product_image ? (
-                                                    <img className="h-8 w-8 rounded-md object-cover" src={detail.product_image} alt={detail.name_product} />
-                                                ) : (
-                                                    <div className="h-8 w-8 bg-gray-200 rounded-md flex items-center justify-center">
-                                                         <PhotoIcon className="h-5 w-5 text-gray-400"/>
+                        {/* Row 2: 2 Columns */}
+                        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6"> {/* Using 5 cols to make products list wider */}
+
+                             {/* Col 1, Row 2: Danh sách sản phẩm (Wider) */}
+                            <div className="lg:col-span-3"> {/* Span 3 out of 5 cols */}
+                                <div className="bg-gray-50 p-4 rounded-lg border-2 border-indigo-200 h-full">
+                                    <h4 className="text-base font-medium text-gray-800 mb-3 border-b pb-2">Danh sách sản phẩm</h4>
+                                    {orderDetails.length > 0 ? (
+                                    <div className="overflow-x-auto max-h-60"> {/* Adjust max-h if needed */}
+                                        <table className="min-w-full divide-y divide-gray-200 text-sm">
+                                        <thead className="bg-gray-100 sticky top-0">
+                                            <tr>
+                                            <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sản phẩm</th>
+                                            <th scope="col" className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">SL</th>
+                                            <th scope="col" className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Thành tiền</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="bg-white divide-y divide-gray-200">
+                                            {orderDetails.map((detail) => (
+                                            <tr key={detail.order_detail_id} className="hover:bg-gray-50">
+                                                <td className="px-3 py-2 whitespace-nowrap">
+                                                <div className="flex items-center">
+                                                    <div className="flex-shrink-0 h-8 w-8 mr-2">
+                                                    {detail.product_image ? (
+                                                        <img className="h-8 w-8 rounded-md object-cover" src={detail.product_image} alt={detail.name_product} />
+                                                    ) : (
+                                                        <div className="h-8 w-8 bg-gray-200 rounded-md flex items-center justify-center">
+                                                            <PhotoIcon className="h-5 w-5 text-gray-400"/>
+                                                        </div>
+                                                    )}
                                                     </div>
-                                                )}
+                                                    <div className="text-gray-900 truncate max-w-[200px]" title={detail.name_product}>{detail.name_product}</div> {/* Added max-w */}
                                                 </div>
-                                                <div className="text-gray-900 truncate" title={detail.name_product}>{detail.name_product}</div>
-                                            </div>
-                                            </td>
-                                            <td className="px-3 py-2 whitespace-nowrap text-right">{detail.quantity}</td>
-                                            <td className="px-3 py-2 whitespace-nowrap text-right font-medium">{formatCurrency(detail.subtotal)}</td>
-                                        </tr>
-                                        ))}
-                                    </tbody>
-                                    </table>
+                                                </td>
+                                                <td className="px-3 py-2 whitespace-nowrap text-right">{detail.quantity}</td>
+                                                <td className="px-3 py-2 whitespace-nowrap text-right font-medium">{formatCurrency(detail.subtotal)}</td>
+                                            </tr>
+                                            ))}
+                                        </tbody>
+                                        </table>
+                                    </div>
+                                    ) : (
+                                    <p className="text-sm text-gray-500 italic text-center py-4">Không có thông tin sản phẩm.</p>
+                                    )}
                                 </div>
-                                ) : (
-                                 <p className="text-sm text-gray-500 italic text-center py-4">Không có thông tin sản phẩm.</p>
-                                )}
                             </div>
-                             {/* Thông tin thanh toán */}
-                            <div className="bg-white p-4 rounded-lg border-2 border-indigo-200 shadow-sm">
-                                <h4 className="text-base font-medium text-indigo-800 mb-3 border-b border-indigo-100 pb-2">Thông tin thanh toán</h4>
-                                <div className="space-y-1 text-sm">
-                                     <div className="flex justify-between">
-                                        <span className="text-gray-600">Tiền hàng:</span>
-                                        <span className="font-medium text-gray-800">{formatCurrency(selectedOrder?.price)}</span>
-                                     </div>
-                                     <div className="flex justify-between">
-                                        <span className="text-gray-600">Phí vận chuyển:</span>
-                                        <span className="font-medium text-gray-800">{formatCurrency(selectedShipping.shipping_cost)}</span>
-                                     </div>
-                                     <div className="flex justify-between pt-2 border-t mt-2">
-                                         <span className="font-semibold text-gray-700">Tổng thanh toán:</span>
-                                         <span className="font-bold text-lg text-indigo-700">{formatCurrency((selectedOrder?.price || 0) + (selectedShipping.shipping_cost || 0))}</span>
-                                     </div>
-                                    {selectedShipping.cod_shipping && (
-                                        <p className="text-xs text-yellow-700 bg-yellow-50 p-2 rounded mt-2 italic text-center">
-                                            Thu hộ COD: {formatCurrency((selectedOrder?.price || 0) + (selectedShipping.shipping_cost || 0))}
-                                        </p>
-                                    )}
-                                    {!selectedShipping.cod_shipping && (
-                                         <p className="text-xs text-green-700 bg-green-50 p-2 rounded mt-2 text-center">
-                                            Đã thanh toán trước
-                                         </p>
-                                    )}
-                                </div>
-                             </div>
-                         </div>
 
-                    </div>
-              </div>
+                            {/* Col 2, Row 2: Thông tin thanh toán (Narrower) */}
+                            <div className="lg:col-span-2"> {/* Span 2 out of 5 cols */}
+                                <div className="bg-white p-4 rounded-lg border-2 border-indigo-200 shadow-sm h-full">
+                                    <h4 className="text-base font-medium text-indigo-800 mb-3 border-b border-indigo-100 pb-2">Thông tin thanh toán</h4>
+                                    <div className="space-y-1 text-sm flex flex-col justify-between h-[calc(100%-3rem)]"> {/* Adjust height calculation if title padding changes */}
+                                        <div> {/* Top part of payment */}
+                                            <div className="flex justify-between">
+                                                <span className="text-gray-600">Tiền hàng:</span>
+                                                <span className="font-medium text-gray-800">{formatCurrency(selectedOrder?.price)}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-gray-600">Phí vận chuyển:</span>
+                                                <span className="font-medium text-gray-800">{formatCurrency(selectedShipping.shipping_cost)}</span>
+                                            </div>
+                                        </div>
+                                        <div> {/* Bottom part of payment */}
+                                            <div className="flex justify-between pt-2 border-t mt-2">
+                                                <span className="font-semibold text-gray-700">Tổng thanh toán:</span>
+                                                <span className="font-bold text-lg text-indigo-700">{formatCurrency((selectedOrder?.price || 0) + (selectedShipping.shipping_cost || 0))}</span>
+                                            </div>
+                                            {selectedShipping.cod_shipping && (
+                                                <p className="text-xs text-yellow-700 bg-yellow-50 p-2 rounded mt-2 italic text-center">
+                                                    Thu hộ COD: {formatCurrency((selectedOrder?.price || 0) + (selectedShipping.shipping_cost || 0))}
+                                                </p>
+                                            )}
+                                            {!selectedShipping.cod_shipping && (
+                                                <p className="text-xs text-green-700 bg-green-50 p-2 rounded mt-2 text-center">
+                                                    Đã thanh toán trước
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div> {/* End Row 2 */}
+
+                    </div> {/* End Main Layout Grid */}
+              </div> {/* End Modal Body */}
 
               {/* Modal Footer */}
               <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-gray-200">
@@ -1910,7 +1872,7 @@ export default function ShippingOrdersPage() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => setIsEditing(false)} // Hủy chỉnh sửa, giữ nguyên dữ liệu gốc
+                      onClick={() => setIsEditing(false)}
                       disabled={isSaving}
                       className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
                     >
@@ -1918,11 +1880,10 @@ export default function ShippingOrdersPage() {
                     </button>
                   </>
                 )}
-                 {/* Nút đóng luôn hiển thị */}
                   <button
                     type="button"
                     onClick={closeModal}
-                    className={`mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 sm:mt-0 ${isEditing ? '' : 'sm:ml-3'} sm:w-auto sm:text-sm`} // Thêm ml-3 nếu không ở chế độ edit
+                    className={`mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 sm:mt-0 ${isEditing ? '' : 'sm:ml-3'} sm:w-auto sm:text-sm`}
                   >
                     Đóng
                   </button>
