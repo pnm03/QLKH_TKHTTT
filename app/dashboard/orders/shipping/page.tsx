@@ -168,6 +168,23 @@ export default function ShippingOrdersPage() {
     return (foundStatus?.color as StatusColor) || 'gray';
   }
 
+  // Hàm cập nhật một shipping trong danh sách mà không cần tải lại toàn bộ danh sách
+  const updateShippingInList = (updatedShipping: Shipping, orderStatus?: string, paymentMethod?: number | null) => {
+    setShippings(prevShippings =>
+      prevShippings.map(item => {
+        if (item.shipping_id === updatedShipping.shipping_id) {
+          // Trả về shipping đã cập nhật với trạng thái đơn hàng mới nếu có
+          return {
+            ...updatedShipping,
+            order_status: orderStatus || item.order_status,
+            payment_method: paymentMethod !== undefined ? paymentMethod : item.payment_method
+          };
+        }
+        return item;
+      })
+    );
+  };
+
   // Hàm cập nhật trạng thái vận chuyển
   const updateShippingStatus = async (shipping: Shipping, newStatus: string, event: React.MouseEvent) => {
     event.stopPropagation(); // Ngăn không cho sự kiện click lan ra ngoài (không mở modal)
@@ -175,6 +192,9 @@ export default function ShippingOrdersPage() {
     if (shipping.status === newStatus) return; // Không làm gì nếu trạng thái không thay đổi
 
     try {
+      let updatedOrderStatus: string | undefined;
+      let updatedPaymentMethod: number | null = undefined;
+
       // Nếu trạng thái là "Đã giao hàng", cập nhật trạng thái đơn hàng thành "Đã thanh toán"
       if (newStatus === 'Đã giao hàng') {
         console.log('Cập nhật trạng thái đơn hàng thành Đã thanh toán');
@@ -213,8 +233,31 @@ export default function ShippingOrdersPage() {
               console.error('Lỗi khi cập nhật trạng thái đơn hàng:', updateOrderError);
             } else {
               console.log('Cập nhật trạng thái đơn hàng thành công');
+              updatedOrderStatus = 'Đã thanh toán'; // Lưu trạng thái đơn hàng đã cập nhật
+              updatedPaymentMethod = selectedPaymentMethod.payment_id; // Lưu phương thức thanh toán đã cập nhật
             }
           }
+        }
+      }
+      // Nếu đơn hàng có COD và trạng thái mới là "Chưa giao hàng", "Đang chuẩn bị" hoặc "Đang giao hàng", cập nhật trạng thái đơn hàng về "Chưa thanh toán"
+      else if (shipping.cod_shipping === true && (newStatus === 'Chưa giao hàng' || newStatus === 'Đang chuẩn bị' || newStatus === 'Đang giao hàng')) {
+        console.log('Đơn hàng COD chuyển về trạng thái', newStatus, '- Cập nhật trạng thái đơn hàng thành Chưa thanh toán');
+
+        // Cập nhật trạng thái đơn hàng về "Chưa thanh toán" và xóa phương thức thanh toán
+        const { error: updateOrderError } = await supabase
+          .from('orders')
+          .update({
+            status: 'Chưa thanh toán',
+            payment_method: null // Xóa phương thức thanh toán
+          })
+          .eq('order_id', shipping.order_id);
+
+        if (updateOrderError) {
+          console.error('Lỗi khi cập nhật trạng thái đơn hàng:', updateOrderError);
+        } else {
+          console.log('Cập nhật trạng thái đơn hàng thành Chưa thanh toán thành công');
+          updatedOrderStatus = 'Chưa thanh toán'; // Lưu trạng thái đơn hàng đã cập nhật
+          updatedPaymentMethod = null; // Xóa phương thức thanh toán
         }
       }
 
@@ -236,8 +279,8 @@ export default function ShippingOrdersPage() {
 
         if (error) throw error;
 
-        // Cập nhật lại danh sách
-        searchShippings();
+        // Trong trường hợp này vẫn cần tải lại danh sách vì ID đã thay đổi
+        searchShippings(false); // Không reset về trang 1
       } else {
         // Cập nhật trạng thái cho bản ghi shipping hiện có
         const { error } = await supabase
@@ -247,8 +290,9 @@ export default function ShippingOrdersPage() {
 
         if (error) throw error;
 
-        // Cập nhật lại danh sách
-        searchShippings();
+        // Cập nhật shipping trong danh sách hiện tại thay vì tải lại toàn bộ danh sách
+        const updatedShipping = { ...shipping, status: newStatus };
+        updateShippingInList(updatedShipping, updatedOrderStatus, updatedPaymentMethod);
       }
     } catch (error: any) {
       console.error('Lỗi khi cập nhật trạng thái vận chuyển:', error);

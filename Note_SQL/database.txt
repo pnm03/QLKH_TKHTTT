@@ -94,6 +94,7 @@ Bảng Shippings:
 	long (Chiều dài kiện hàng) - DECIMAL(10, 2) - CHECK (long >= 0)
 	wide (Chiều rộng kiện hàng) - DECIMAL(10, 2) - CHECK (wide >= 0)
 	hight (Chiều cao kiện hàng) - DECIMAL(10, 2) - CHECK (height >= 0)
+	
 Bảng Returns:
 	return_id (Mã yêu cầu đổi/trả) - INT - PRIMARY KEY, Tự tăng
 	order_id (Mã đơn hàng gốc liên quan) - TEXT - FOREIGN KEY REFERENCES Orders(order_id), NOT NULL
