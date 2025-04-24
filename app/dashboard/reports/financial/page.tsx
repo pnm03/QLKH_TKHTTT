@@ -45,6 +45,8 @@ interface ChartData {
   expenseValues: number[]
 }
 
+type TimeGrouping = 'day' | 'week' | 'month' | 'year'
+
 interface PaymentMethodSummary {
   method_name: string
   income_amount: number
@@ -85,6 +87,7 @@ export default function FinancialReportsPage() {
   const [typeFilter, setTypeFilter] = useState<'all' | 'income' | 'expense'>('all')
   const [minAmount, setMinAmount] = useState('')
   const [maxAmount, setMaxAmount] = useState('')
+  const [timeGrouping, setTimeGrouping] = useState<TimeGrouping>('day')
 
   // State cho dữ liệu
   const [transactions, setTransactions] = useState<FinancialTransaction[]>([])
@@ -120,6 +123,28 @@ export default function FinancialReportsPage() {
     setError(null)
 
     try {
+      // Tự động chọn chế độ xem dựa trên khoảng thời gian tìm kiếm
+      if (dateRange.from && dateRange.to) {
+        const fromDate = new Date(dateRange.from);
+        const toDate = new Date(dateRange.to);
+        const diffTime = Math.abs(toDate.getTime() - fromDate.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        // Nếu khoảng thời gian > 60 ngày, chuyển sang xem theo tháng
+        if (diffDays > 60) {
+          setTimeGrouping('month');
+        }
+        // Nếu khoảng thời gian > 30 ngày, chuyển sang xem theo tuần
+        else if (diffDays > 30) {
+          setTimeGrouping('week');
+        } else {
+          setTimeGrouping('day');
+        }
+      } else if (!dateRange.from && !dateRange.to) {
+        // Nếu không có khoảng thời gian, mặc định xem theo ngày trong tuần hiện tại
+        setTimeGrouping('day');
+      }
+
       // Lấy dữ liệu đơn hàng (thu)
       let ordersQuery = supabase
         .from('orders')
@@ -247,7 +272,7 @@ export default function FinancialReportsPage() {
     } finally {
       setLoading(false)
     }
-  }, [dateRange, typeFilter, minAmount, maxAmount, supabase])
+  }, [dateRange, typeFilter, minAmount, maxAmount, supabase, timeGrouping])
 
   // Cập nhật themeState từ context
   useEffect(() => {
@@ -283,16 +308,40 @@ export default function FinancialReportsPage() {
     })
   }
 
-  // Tính toán dòng tiền theo ngày
+  // Tính toán dòng tiền theo thời gian (ngày, tuần, tháng, năm)
   const calculateCashflowByDay = (transactionsData: FinancialTransaction[]) => {
-    // Nhóm giao dịch theo ngày
+    // Nhóm giao dịch theo thời gian
     const cashflowMap = new Map<string, { income: number, expense: number }>()
 
     transactionsData.forEach(transaction => {
       const transactionDate = new Date(transaction.date)
-      const dateKey = transactionDate.toISOString().split('T')[0] // Lấy phần ngày YYYY-MM-DD
+      let timeKey = '';
 
-      const currentCashflow = cashflowMap.get(dateKey) || { income: 0, expense: 0 }
+      // Tạo key dựa trên chế độ xem
+      switch (timeGrouping) {
+        case 'day':
+          // Format: YYYY-MM-DD
+          timeKey = transactionDate.toISOString().split('T')[0];
+          break;
+        case 'week':
+          // Lấy ngày đầu tuần (thứ 2)
+          const day = transactionDate.getDay(); // 0 = CN, 1 = T2, ...
+          const diff = transactionDate.getDate() - day + (day === 0 ? -6 : 1); // Điều chỉnh nếu là CN
+          const monday = new Date(transactionDate);
+          monday.setDate(diff);
+          timeKey = monday.toISOString().split('T')[0];
+          break;
+        case 'month':
+          // Format: YYYY-MM
+          timeKey = `${transactionDate.getFullYear()}-${String(transactionDate.getMonth() + 1).padStart(2, '0')}`;
+          break;
+        case 'year':
+          // Format: YYYY
+          timeKey = `${transactionDate.getFullYear()}`;
+          break;
+      }
+
+      const currentCashflow = cashflowMap.get(timeKey) || { income: 0, expense: 0 }
 
       if (transaction.type === 'income') {
         currentCashflow.income += transaction.amount
@@ -300,23 +349,58 @@ export default function FinancialReportsPage() {
         currentCashflow.expense += transaction.amount
       }
 
-      cashflowMap.set(dateKey, currentCashflow)
+      cashflowMap.set(timeKey, currentCashflow)
     })
 
-    // Sắp xếp theo ngày
+    // Sắp xếp theo thời gian
     const sortedEntries = Array.from(cashflowMap.entries()).sort((a, b) => a[0].localeCompare(b[0]))
 
-    // Giới hạn hiển thị 7 ngày gần nhất nếu có nhiều dữ liệu
-    const limitedEntries = sortedEntries.slice(-7)
+    // Xác định số lượng mục cần hiển thị dựa trên chế độ xem
+    let displayCount = 7; // Mặc định hiển thị 7 mục
 
-    // Định dạng ngày để hiển thị
-    const labels = limitedEntries.map(([date]) => {
-      const [, month, day] = date.split('-') // Bỏ qua year
-      return `${day}/${month}`
+    if (timeGrouping === 'month') {
+      displayCount = 12; // Hiển thị tối đa 12 tháng
+    } else if (timeGrouping === 'day') {
+      // Nếu có khoảng thời gian tìm kiếm, hiển thị tất cả các ngày trong khoảng đó
+      if (dateRange.from && dateRange.to) {
+        const fromDate = new Date(dateRange.from);
+        const toDate = new Date(dateRange.to);
+        const diffTime = Math.abs(toDate.getTime() - fromDate.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        displayCount = Math.min(diffDays + 1, 31); // Giới hạn tối đa 31 ngày
+      } else {
+        // Nếu không có khoảng thời gian, hiển thị 7 ngày gần nhất
+        displayCount = 7;
+      }
+    }
+
+    // Lấy các mục cần hiển thị
+    const limitedEntries = sortedEntries.slice(-displayCount)
+
+    // Định dạng nhãn hiển thị dựa trên chế độ xem
+    const labels = limitedEntries.map(([timeKey]) => {
+      switch (timeGrouping) {
+        case 'day':
+          const [, month, day] = timeKey.split('-'); // YYYY-MM-DD
+          return `${day}/${month}`;
+        case 'week':
+          const weekDate = new Date(timeKey);
+          const endDate = new Date(weekDate);
+          endDate.setDate(endDate.getDate() + 6);
+          return `${weekDate.getDate()}/${weekDate.getMonth() + 1} - ${endDate.getDate()}/${endDate.getMonth() + 1}`;
+        case 'month':
+          const [year, month2] = timeKey.split('-'); // YYYY-MM
+          const monthNames = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'];
+          return `${monthNames[parseInt(month2) - 1]}/${year.slice(2)}`;
+        case 'year':
+          return timeKey; // YYYY
+        default:
+          return timeKey;
+      }
     })
 
-    const incomeValues = limitedEntries.map(([, cashflow]) => cashflow.income) // Bỏ qua date
-    const expenseValues = limitedEntries.map(([, cashflow]) => cashflow.expense) // Bỏ qua date
+    const incomeValues = limitedEntries.map(([, cashflow]) => cashflow.income)
+    const expenseValues = limitedEntries.map(([, cashflow]) => cashflow.expense)
 
     setCashflowByDay({
       labels,
@@ -755,46 +839,133 @@ export default function FinancialReportsPage() {
 
                 {/* Biểu đồ dòng tiền */}
                 <div className="bg-white shadow rounded-lg mb-6 p-6">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">Dòng tiền theo ngày</h3>
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-medium text-gray-900">Doanh thu theo {timeGrouping === 'day' ? 'ngày' : timeGrouping === 'month' ? 'tháng' : 'tuần'}</h3>
+
+                    {/* Bộ chọn chế độ xem */}
+                    <div className="flex items-center space-x-2">
+                      <label htmlFor="time-grouping" className="text-sm font-medium text-gray-700">
+                        Xem theo:
+                      </label>
+                      <select
+                        id="time-grouping"
+                        value={timeGrouping}
+                        onChange={(e) => {
+                          setTimeGrouping(e.target.value as TimeGrouping);
+                          // Tính toán lại dữ liệu biểu đồ
+                          calculateCashflowByDay(transactions);
+                        }}
+                        className="focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border border-gray-200 rounded-md h-9 px-2"
+                      >
+                        <option value="day">Ngày</option>
+                        <option value="week">Tuần</option>
+                        <option value="month">Tháng</option>
+                      </select>
+                    </div>
+                  </div>
 
                   {cashflowByDay.labels.length > 0 ? (
-                    <div className="h-64 relative">
-                      {/* Đây là phần giả lập biểu đồ, trong thực tế bạn sẽ sử dụng thư viện như Chart.js */}
-                      <div className="flex h-full items-end space-x-2">
-                        {cashflowByDay.labels.map((label, index) => (
-                          <div key={label} className="flex-1 flex flex-col items-center">
-                            <div className="w-full flex flex-col items-center space-y-1">
-                              {/* Cột thu */}
-                              <div
-                                className="w-full bg-green-500 rounded-t"
-                                style={{
-                                  height: `${Math.min(100, (cashflowByDay.incomeValues[index] / Math.max(...cashflowByDay.incomeValues, ...cashflowByDay.expenseValues)) * 100)}%`,
-                                  minHeight: cashflowByDay.incomeValues[index] > 0 ? '10px' : '0'
-                                }}
-                              ></div>
+                    <div className="h-96 relative">
+                      {/* Biểu đồ cột */}
+                      <div className="relative h-full">
+                        {/* Đường kẻ ngang */}
+                        {[0, 20, 40, 60, 80, 100].map((percent) => {
+                          // Tìm giá trị lớn nhất giữa thu và chi
+                          const maxIncome = Math.max(...cashflowByDay.incomeValues);
+                          const maxExpense = Math.max(...cashflowByDay.expenseValues);
+                          const maxValue = Math.max(maxIncome, maxExpense);
 
-                              {/* Cột chi */}
-                              <div
-                                className="w-full bg-red-500 rounded-t"
-                                style={{
-                                  height: `${Math.min(100, (cashflowByDay.expenseValues[index] / Math.max(...cashflowByDay.incomeValues, ...cashflowByDay.expenseValues)) * 100)}%`,
-                                  minHeight: cashflowByDay.expenseValues[index] > 0 ? '10px' : '0'
-                                }}
-                              ></div>
+                          return (
+                            <div
+                              key={percent}
+                              className="absolute w-full border-t border-gray-200"
+                              style={{ bottom: `${percent}%` }}
+                            >
+                              <span className="absolute -left-8 -top-2 text-xs text-gray-500">
+                                {Math.round((maxValue * percent) / 100).toLocaleString()} đ
+                              </span>
                             </div>
-                            <div className="text-xs text-gray-500 mt-2">{label}</div>
-                          </div>
-                        ))}
+                          );
+                        })}
+
+                        {/* Biểu đồ cột */}
+                        <div className="flex h-full items-end justify-evenly pl-8 pr-4">
+                          {cashflowByDay.labels.map((label, index) => {
+                            // Tìm giá trị lớn nhất giữa thu và chi
+                            const maxIncome = Math.max(...cashflowByDay.incomeValues);
+                            const maxExpense = Math.max(...cashflowByDay.expenseValues);
+                            const maxValue = Math.max(maxIncome, maxExpense);
+
+                            // Tính chiều cao tương đối cho cột thu và chi
+                            // Sử dụng phần trăm của chiều cao thực tế
+                            // Đảm bảo cột cao nhất chiếm 90% chiều cao của biểu đồ
+
+                            // Tính chiều cao chính xác theo tỷ lệ phần trăm
+                            // Không sử dụng chiều cao tối thiểu để đảm bảo tỷ lệ chính xác
+                            const incomeHeight = cashflowByDay.incomeValues[index] > 0
+                              ? (cashflowByDay.incomeValues[index] / maxValue) * 100
+                              : 0;
+
+                            const expenseHeight = cashflowByDay.expenseValues[index] > 0
+                              ? (cashflowByDay.expenseValues[index] / maxValue) * 100
+                              : 0;
+
+                            return (
+                              <div key={label} className="flex flex-col items-center" style={{ width: '100px' }}>
+                                <div className="flex items-end h-full justify-center">
+                                  {/* Cột thu */}
+                                  <div className="relative group">
+                                    {cashflowByDay.incomeValues[index] > 0 && (
+                                      <div
+                                        className="w-12 bg-blue-500 rounded-t shadow-md hover:bg-blue-600 transition-colors mx-1 cursor-pointer"
+                                        style={{
+                                          height: `${incomeHeight}%`,
+                                          minHeight: cashflowByDay.incomeValues[index] > 0 ? '2px' : '0'
+                                        }}
+                                      >
+                                        {/* Tooltip */}
+                                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                                          Thu: {cashflowByDay.incomeValues[index].toLocaleString()} đ
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* Cột chi */}
+                                  <div className="relative group">
+                                    {cashflowByDay.expenseValues[index] > 0 && (
+                                      <div
+                                        className="w-12 bg-red-500 rounded-t shadow-md hover:bg-red-600 transition-colors mx-1 cursor-pointer"
+                                        style={{
+                                          height: `${expenseHeight}%`,
+                                          minHeight: cashflowByDay.expenseValues[index] > 0 ? '2px' : '0'
+                                        }}
+                                      >
+                                        {/* Tooltip */}
+                                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                                          Chi: {cashflowByDay.expenseValues[index].toLocaleString()} đ
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Nhãn */}
+                                <div className="text-xs font-medium text-gray-600 mt-2 w-full text-center truncate">{label}</div>
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
 
-                      <div className="mt-4 flex items-center justify-center space-x-8">
-                        <div className="flex items-center">
-                          <div className="w-4 h-4 bg-green-500 rounded mr-2"></div>
-                          <span className="text-sm text-gray-600">Thu</span>
+                      <div className="mt-6 flex items-center justify-center space-x-8">
+                        <div className="flex items-center bg-gray-50 px-4 py-2 rounded-full shadow-sm">
+                          <div className="w-4 h-4 bg-blue-500 rounded mr-2"></div>
+                          <span className="text-sm font-medium text-gray-700">Thu</span>
                         </div>
-                        <div className="flex items-center">
+                        <div className="flex items-center bg-gray-50 px-4 py-2 rounded-full shadow-sm">
                           <div className="w-4 h-4 bg-red-500 rounded mr-2"></div>
-                          <span className="text-sm text-gray-600">Chi</span>
+                          <span className="text-sm font-medium text-gray-700">Chi</span>
                         </div>
                       </div>
                     </div>
