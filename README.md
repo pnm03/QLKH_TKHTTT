@@ -1,36 +1,78 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# QLBH System - Hệ thống Quản lý Bán Hàng
 
-## Getting Started
+Đây là ứng dụng quản lý bán hàng được xây dựng bằng Next.js và Supabase.
 
-First, run the development server:
+## Tính năng chính
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Quản lý đơn hàng
+- Quản lý sản phẩm
+- Quản lý khách hàng
+- Quản lý người dùng và phân quyền
+- Báo cáo tài chính
+- Quản lý chi nhánh
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Công nghệ sử dụng
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Frontend**: Next.js 15, React 19, TailwindCSS 4
+- **Backend**: Supabase (Authentication, Database)
+- **Hosting**: Vercel
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Hướng dẫn cài đặt và chạy ứng dụng
 
-## Learn More
+### Yêu cầu hệ thống
 
-To learn more about Next.js, take a look at the following resources:
+- Node.js 20.x trở lên
+- npm 10.x trở lên
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Cài đặt
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Clone repository:
+   ```bash
+   git clone https://github.com/pnm03/QLKH_TKHTTT.git
+   cd qlbh-system
+   ```
 
-## Deploy on Vercel
+2. Cài đặt dependencies:
+   ```bash
+   npm install
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+3. Tạo file `.env.local` với nội dung:
+   ```
+   NEXT_PUBLIC_SUPABASE_URL=https://aacmtacfsqbalzydqqmm.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFhY210YWNmc3FiYWx6eWRxcW1tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ4Mjc5OTIsImV4cCI6MjA2MDQwMzk5Mn0.yoPgz58cDdpDltnjFUZiBlnAUsufoLQanCb-vLMjXOI
+   SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFhY210YWNmc3FiYWx6eWRxcW1tIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NDgyNzk5MiwiZXhwIjoyMDYwNDAzOTkyfQ.eI8h9j39JXveVtqo5gl66RLAn-tD5Oh0CyW-V-II4eo
+   NEXT_PUBLIC_SITE_URL=http://localhost:3000
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+4. Chạy ứng dụng ở môi trường development:
+   ```bash
+   npm run dev
+   ```
+
+5. Mở [http://localhost:3000](http://localhost:3000) để xem ứng dụng.
+
+## Triển khai lên Vercel
+
+1. Đăng ký tài khoản [Vercel](https://vercel.com)
+2. Kết nối repository GitHub với Vercel
+3. Cấu hình các biến môi trường:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+   - `NEXT_PUBLIC_SITE_URL` (URL của ứng dụng sau khi triển khai)
+4. Triển khai ứng dụng
+
+Xem hướng dẫn chi tiết trong file [docs/vercel-deployment-guide.md](docs/vercel-deployment-guide.md).
+
+## Các tùy chọn triển khai khác
+
+- [Netlify](docs/netlify-deployment-guide.md)
+- [Render](docs/render-deployment-guide.md)
+
+## Tài liệu
+
+- [Hướng dẫn triển khai Vercel](docs/vercel-deployment-guide.md)
+- [Hướng dẫn triển khai Netlify](docs/netlify-deployment-guide.md)
+- [Hướng dẫn triển khai Render](docs/render-deployment-guide.md)
+- [So sánh các nền tảng triển khai](docs/deployment-options-comparison.md)
