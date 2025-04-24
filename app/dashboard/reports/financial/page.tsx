@@ -60,6 +60,22 @@ export default function FinancialReportsPage() {
     theme: themeColors.indigo
   })
 
+  // Hàm xử lý chuyển tab và lọc giao dịch
+  const handleFilterAndSwitchTab = (transactionType: 'income' | 'expense') => {
+    // Đặt bộ lọc trước
+    setTypeFilter(transactionType);
+    // Chuyển tab
+    setActiveTab('details');
+    // Đặt lại các bộ lọc khác về mặc định
+    setDateRange({ from: '', to: '' });
+    setMinAmount('');
+    setMaxAmount('');
+    // Gọi API để lấy dữ liệu sau khi React đã cập nhật UI
+    setTimeout(() => {
+      fetchFinancialData();
+    }, 100);
+  }
+
   // Refs cho xuất PDF
   const reportRef = useRef<HTMLDivElement>(null)
   const tableRef = useRef<HTMLDivElement>(null)
@@ -682,7 +698,10 @@ export default function FinancialReportsPage() {
                           {formatCurrency(financialSummary.totalIncome)}
                         </div>
                       </div>
-                      <div className="mt-2 text-sm font-medium text-green-600">
+                      <div
+                        className="mt-2 text-sm font-medium text-green-600 cursor-pointer hover:underline"
+                        onClick={() => handleFilterAndSwitchTab('income')}
+                      >
                         {financialSummary.incomeCount} giao dịch
                       </div>
                     </div>
@@ -703,7 +722,10 @@ export default function FinancialReportsPage() {
                           {formatCurrency(financialSummary.totalExpense)}
                         </div>
                       </div>
-                      <div className="mt-2 text-sm font-medium text-red-600">
+                      <div
+                        className="mt-2 text-sm font-medium text-red-600 cursor-pointer hover:underline"
+                        onClick={() => handleFilterAndSwitchTab('expense')}
+                      >
                         {financialSummary.expenseCount} giao dịch
                       </div>
                     </div>
