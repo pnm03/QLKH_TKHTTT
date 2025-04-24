@@ -503,10 +503,10 @@ export default function FinancialReportsPage() {
       </div>
 
       {/* Bộ lọc */}
-      <div className="bg-white shadow rounded-lg mb-6 p-4">
-        <div className="flex flex-col md:flex-row md:items-end space-y-4 md:space-y-0 md:space-x-4">
+      <div className="bg-white shadow rounded-lg mb-6 p-2">
+        <div className="flex flex-col md:flex-row md:items-end space-y-2 md:space-y-0 md:space-x-2">
           <div className="flex-1">
-            <label htmlFor="date-from" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="date-from" className="block text-sm font-medium text-gray-700 mb-0.5">
               Từ ngày
             </label>
             <input
@@ -520,12 +520,12 @@ export default function FinancialReportsPage() {
                   setTimeout(() => fetchFinancialData(), 300);
                 }
               }}
-              className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border border-gray-300 rounded-md h-10"
+              className="focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border border-gray-200 rounded-md h-9 px-2"
             />
           </div>
 
           <div className="flex-1">
-            <label htmlFor="date-to" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="date-to" className="block text-sm font-medium text-gray-700 mb-0.5">
               Đến ngày
             </label>
             <input
@@ -539,12 +539,12 @@ export default function FinancialReportsPage() {
                   setTimeout(() => fetchFinancialData(), 300);
                 }
               }}
-              className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border border-gray-300 rounded-md h-10"
+              className="focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border border-gray-200 rounded-md h-9 px-2"
             />
           </div>
 
           <div className="flex-1">
-            <label htmlFor="type-filter" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="type-filter" className="block text-sm font-medium text-gray-700 mb-0.5">
               Loại giao dịch
             </label>
             <select
@@ -555,7 +555,7 @@ export default function FinancialReportsPage() {
                 // Tự động tìm kiếm khi thay đổi giá trị
                 setTimeout(() => fetchFinancialData(), 300);
               }}
-              className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border border-gray-300 rounded-md h-10"
+              className="focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border border-gray-200 rounded-md h-9 px-2"
             >
               <option value="all">Tất cả</option>
               <option value="income">Thu</option>
@@ -564,7 +564,7 @@ export default function FinancialReportsPage() {
           </div>
 
           <div className="flex-1">
-            <label htmlFor="min-amount" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="min-amount" className="block text-sm font-medium text-gray-700 mb-0.5">
               Số tiền từ
             </label>
             <input
@@ -578,12 +578,12 @@ export default function FinancialReportsPage() {
               }}
               placeholder="0"
               min="0"
-              className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border border-gray-300 rounded-md h-10"
+              className="focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border border-gray-200 rounded-md h-9 px-2"
             />
           </div>
 
           <div className="flex-1">
-            <label htmlFor="max-amount" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="max-amount" className="block text-sm font-medium text-gray-700 mb-0.5">
               Đến
             </label>
             <input
@@ -597,7 +597,7 @@ export default function FinancialReportsPage() {
               }}
               placeholder="Không giới hạn"
               min="0"
-              className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border border-gray-300 rounded-md h-10"
+              className="focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border border-gray-200 rounded-md h-9 px-2"
             />
           </div>
 
@@ -605,7 +605,7 @@ export default function FinancialReportsPage() {
             <button
               onClick={resetFilters}
               disabled={loading}
-              className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm leading-4 font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 h-10"
+              className="inline-flex items-center px-2 py-1 border border-gray-200 text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 h-9"
             >
               Đặt lại
             </button>
@@ -614,15 +614,15 @@ export default function FinancialReportsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200 mb-6">
-        <nav className="-mb-px flex space-x-8">
+      <div className="border-b border-gray-200 mb-4">
+        <nav className="-mb-px flex space-x-4">
           <button
             onClick={() => setActiveTab('overview')}
             className={`${
               activeTab === 'overview'
                 ? `border-${themeColor}-500 text-${themeColor}-600`
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+            } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm`}
           >
             Tổng quan
           </button>
@@ -633,7 +633,7 @@ export default function FinancialReportsPage() {
               activeTab === 'details'
                 ? `border-${themeColor}-500 text-${themeColor}-600`
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+            } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm`}
           >
             Chi tiết giao dịch
           </button>
@@ -667,89 +667,65 @@ export default function FinancialReportsPage() {
               <div>
                 {/* Thẻ tổng quan */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                  <div className={`bg-white overflow-hidden shadow rounded-lg border-l-4 border-green-500`}>
-                    <div className="px-4 py-5 sm:p-6">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 bg-green-100 rounded-md p-3">
-                          <ArrowUpIcon className="h-6 w-6 text-green-600" />
+                  <div className="bg-white rounded-lg overflow-hidden border-l-4 border-green-500">
+                    <div className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm font-medium text-gray-500">
+                          Tổng thu
                         </div>
-                        <div className="ml-5 w-0 flex-1">
-                          <dl>
-                            <dt className="text-sm font-medium text-gray-500 truncate">
-                              Tổng thu
-                            </dt>
-                            <dd>
-                              <div className="text-lg font-medium text-gray-900">
-                                {formatCurrency(financialSummary.totalIncome)}
-                              </div>
-                            </dd>
-                          </dl>
+                        <div>
+                          <ArrowUpIcon className="h-5 w-5 text-green-600" />
                         </div>
                       </div>
-                    </div>
-                    <div className="bg-gray-50 px-4 py-4 sm:px-6">
-                      <div className="text-sm">
-                        <span className="font-medium text-green-600">
-                          {financialSummary.incomeCount} giao dịch
-                        </span>
+                      <div className="mt-1">
+                        <div className="text-xl font-semibold">
+                          {formatCurrency(financialSummary.totalIncome)}
+                        </div>
+                      </div>
+                      <div className="mt-2 text-sm font-medium text-green-600">
+                        {financialSummary.incomeCount} giao dịch
                       </div>
                     </div>
                   </div>
 
-                  <div className={`bg-white overflow-hidden shadow rounded-lg border-l-4 border-red-500`}>
-                    <div className="px-4 py-5 sm:p-6">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 bg-red-100 rounded-md p-3">
-                          <ArrowDownIcon className="h-6 w-6 text-red-600" />
+                  <div className="bg-white rounded-lg overflow-hidden border-l-4 border-red-500">
+                    <div className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm font-medium text-gray-500">
+                          Tổng chi
                         </div>
-                        <div className="ml-5 w-0 flex-1">
-                          <dl>
-                            <dt className="text-sm font-medium text-gray-500 truncate">
-                              Tổng chi
-                            </dt>
-                            <dd>
-                              <div className="text-lg font-medium text-gray-900">
-                                {formatCurrency(financialSummary.totalExpense)}
-                              </div>
-                            </dd>
-                          </dl>
+                        <div>
+                          <ArrowDownIcon className="h-5 w-5 text-red-600" />
                         </div>
                       </div>
-                    </div>
-                    <div className="bg-gray-50 px-4 py-4 sm:px-6">
-                      <div className="text-sm">
-                        <span className="font-medium text-red-600">
-                          {financialSummary.expenseCount} giao dịch
-                        </span>
+                      <div className="mt-1">
+                        <div className="text-xl font-semibold">
+                          {formatCurrency(financialSummary.totalExpense)}
+                        </div>
+                      </div>
+                      <div className="mt-2 text-sm font-medium text-red-600">
+                        {financialSummary.expenseCount} giao dịch
                       </div>
                     </div>
                   </div>
 
-                  <div className={`bg-white overflow-hidden shadow rounded-lg border-l-4 ${financialSummary.netCashflow >= 0 ? 'border-blue-500' : 'border-yellow-500'}`}>
-                    <div className="px-4 py-5 sm:p-6">
-                      <div className="flex items-center">
-                        <div className={`flex-shrink-0 ${financialSummary.netCashflow >= 0 ? 'bg-blue-100' : 'bg-yellow-100'} rounded-md p-3`}>
-                          <BanknotesIcon className={`h-6 w-6 ${financialSummary.netCashflow >= 0 ? 'text-blue-600' : 'text-yellow-600'}`} />
+                  <div className="bg-white rounded-lg overflow-hidden border-l-4 border-blue-500">
+                    <div className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm font-medium text-gray-500">
+                          Dòng tiền ròng
                         </div>
-                        <div className="ml-5 w-0 flex-1">
-                          <dl>
-                            <dt className="text-sm font-medium text-gray-500 truncate">
-                              Dòng tiền ròng
-                            </dt>
-                            <dd>
-                              <div className={`text-lg font-medium ${financialSummary.netCashflow >= 0 ? 'text-blue-600' : 'text-yellow-600'}`}>
-                                {formatCurrency(financialSummary.netCashflow)}
-                              </div>
-                            </dd>
-                          </dl>
+                        <div>
+                          <BanknotesIcon className="h-5 w-5 text-blue-600" />
                         </div>
                       </div>
-                    </div>
-                    <div className="bg-gray-50 px-4 py-4 sm:px-6">
-                      <div className="text-sm">
-                        <span className={`font-medium ${financialSummary.netCashflow >= 0 ? 'text-blue-600' : 'text-yellow-600'}`}>
-                          {financialSummary.netCashflow >= 0 ? 'Dương' : 'Âm'}
-                        </span>
+                      <div className="mt-1">
+                        <div className={`text-xl font-semibold ${financialSummary.netCashflow >= 0 ? 'text-blue-600' : 'text-yellow-600'}`}>
+                          {formatCurrency(financialSummary.netCashflow)}
+                        </div>
+                      </div>
+                      <div className="mt-2 text-sm font-medium text-blue-600">
+                        {financialSummary.netCashflow >= 0 ? 'Dương' : 'Âm'}
                       </div>
                     </div>
                   </div>
@@ -861,13 +837,13 @@ export default function FinancialReportsPage() {
 
             {activeTab === 'details' && (
               <div ref={tableRef} className="bg-white shadow rounded-lg overflow-hidden">
-                <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
+                <div className="px-4 py-3 sm:px-6 border-b border-gray-200">
                   <div className="flex justify-between items-center">
                     <div>
                       <h3 className="text-lg leading-6 font-medium text-gray-900">
                         Chi tiết giao dịch tài chính
                       </h3>
-                      <p className="mt-1 max-w-2xl text-sm text-gray-500">
+                      <p className="mt-0.5 max-w-2xl text-sm text-gray-500">
                         Danh sách tất cả các giao dịch thu chi
                       </p>
                     </div>
@@ -882,7 +858,7 @@ export default function FinancialReportsPage() {
                           setPageSize(Number(e.target.value))
                           setCurrentPage(1) // Reset về trang đầu khi thay đổi số lượng hiển thị
                         }}
-                        className="shadow-sm border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md h-9"
+                        className="shadow-sm border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md h-8"
                       >
                         <option value={10}>10 dòng</option>
                         <option value={20}>20 dòng</option>
@@ -896,9 +872,9 @@ export default function FinancialReportsPage() {
                 {transactions.length > 0 ? (
                   <>
                     {/* Hiển thị tổng thu chi cho các giao dịch đã lọc */}
-                    <div className="px-6 py-3 bg-gray-50 border-b border-gray-200">
+                    <div className="px-4 py-2 bg-gray-50 border-b border-gray-200">
                       <div className="flex justify-between items-center">
-                        <div className="flex space-x-6">
+                        <div className="flex space-x-4">
                           <div>
                             <span className="text-sm font-medium text-gray-500">Tổng thu:</span>{' '}
                             <span className="text-sm font-medium text-green-600">
@@ -925,22 +901,22 @@ export default function FinancialReportsPage() {
                       <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                           <tr>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                               Ngày
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                               Loại
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                               Số tiền
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                               Nguồn
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                               Mô tả
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                               Phương thức
                             </th>
                           </tr>
@@ -950,10 +926,10 @@ export default function FinancialReportsPage() {
                             .slice((currentPage - 1) * pageSize, currentPage * pageSize)
                             .map((transaction) => (
                               <tr key={transaction.id}>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
                                   {new Date(transaction.date).toLocaleDateString('vi-VN')}
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
+                                <td className="px-4 py-3 whitespace-nowrap">
                                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                                     transaction.type === 'income'
                                       ? 'bg-green-100 text-green-800'
@@ -962,18 +938,18 @@ export default function FinancialReportsPage() {
                                     {transaction.type === 'income' ? 'Thu' : 'Chi'}
                                   </span>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
                                   <span className={transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}>
                                     {formatCurrency(transaction.amount)}
                                   </span>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
                                   {transaction.source}
                                 </td>
-                                <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
+                                <td className="px-4 py-3 text-sm text-gray-500 max-w-xs truncate">
                                   {transaction.description}
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
                                   {transaction.payment_method}
                                 </td>
                               </tr>
@@ -984,19 +960,19 @@ export default function FinancialReportsPage() {
 
                     {/* Phân trang */}
                     {transactions.length > pageSize && (
-                      <div className="px-6 py-3 flex items-center justify-between border-t border-gray-200">
+                      <div className="px-4 py-2 flex items-center justify-between border-t border-gray-200">
                         <div className="flex-1 flex justify-between sm:hidden">
                           <button
                             onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                             disabled={currentPage === 1}
-                            className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                            className="relative inline-flex items-center px-3 py-1 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
                           >
                             Trước
                           </button>
                           <button
                             onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(transactions.length / pageSize)))}
                             disabled={currentPage === Math.ceil(transactions.length / pageSize)}
-                            className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                            className="ml-2 relative inline-flex items-center px-3 py-1 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
                           >
                             Sau
                           </button>
@@ -1014,7 +990,7 @@ export default function FinancialReportsPage() {
                               <button
                                 onClick={() => setCurrentPage(1)}
                                 disabled={currentPage === 1}
-                                className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                                className="relative inline-flex items-center px-1.5 py-1 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
                               >
                                 <span className="sr-only">Trang đầu</span>
                                 <span>&laquo;</span>
@@ -1022,7 +998,7 @@ export default function FinancialReportsPage() {
                               <button
                                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                                 disabled={currentPage === 1}
-                                className="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                                className="relative inline-flex items-center px-1.5 py-1 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
                               >
                                 <span className="sr-only">Trang trước</span>
                                 <span>&lsaquo;</span>
@@ -1045,7 +1021,7 @@ export default function FinancialReportsPage() {
                                     <button
                                       key={pageNumber}
                                       onClick={() => setCurrentPage(pageNumber)}
-                                      className={`relative inline-flex items-center px-4 py-2 border ${
+                                      className={`relative inline-flex items-center px-3 py-1 border ${
                                         currentPage === pageNumber
                                           ? `bg-${themeColor}-50 border-${themeColor}-500 text-${themeColor}-600`
                                           : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
@@ -1061,7 +1037,7 @@ export default function FinancialReportsPage() {
                               <button
                                 onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(transactions.length / pageSize)))}
                                 disabled={currentPage === Math.ceil(transactions.length / pageSize)}
-                                className="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                                className="relative inline-flex items-center px-1.5 py-1 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
                               >
                                 <span className="sr-only">Trang sau</span>
                                 <span>&rsaquo;</span>
@@ -1069,7 +1045,7 @@ export default function FinancialReportsPage() {
                               <button
                                 onClick={() => setCurrentPage(Math.ceil(transactions.length / pageSize))}
                                 disabled={currentPage === Math.ceil(transactions.length / pageSize)}
-                                className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                                className="relative inline-flex items-center px-1.5 py-1 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
                               >
                                 <span className="sr-only">Trang cuối</span>
                                 <span>&raquo;</span>
