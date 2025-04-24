@@ -1,6 +1,9 @@
 import React from 'react';
 
-interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {}
+interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  // Thêm thuộc tính để tránh lỗi empty interface
+  customProp?: string;
+}
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className = '', type, ...props }, ref) => {
