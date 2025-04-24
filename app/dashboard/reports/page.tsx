@@ -82,6 +82,33 @@ export default function ReportsPage() {
           </div>
         </Link>
 
+        {/* Báo cáo tài chính */}
+        <Link
+          href="/dashboard/reports/financial"
+          className={`bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow duration-300`}
+        >
+          <div className="p-5">
+            <div className="flex items-center">
+              <div className={`flex-shrink-0 rounded-md p-3 bg-${themeColor}-100`}>
+                <CurrencyDollarIcon className={`h-6 w-6 text-${themeColor}-600`} />
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <h3 className="text-lg font-medium text-gray-900">Báo cáo tài chính</h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  Thống kê chi tiết về dòng tiền, thu chi theo thời gian
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className={`bg-gray-50 px-5 py-3 border-t border-gray-200`}>
+            <div className="text-sm">
+              <span className={`font-medium text-${themeColor}-600`}>
+                Xem báo cáo
+              </span>
+            </div>
+          </div>
+        </Link>
+
         {/* Báo cáo khách hàng */}
         <div className={`bg-white overflow-hidden shadow rounded-lg opacity-60 cursor-not-allowed`}>
           <div className="p-5">
@@ -130,17 +157,17 @@ export default function ReportsPage() {
           </div>
         </div>
 
-        {/* Báo cáo doanh thu */}
+        {/* Báo cáo xu hướng */}
         <div className={`bg-white overflow-hidden shadow rounded-lg opacity-60 cursor-not-allowed`}>
           <div className="p-5">
             <div className="flex items-center">
               <div className={`flex-shrink-0 rounded-md p-3 bg-gray-100`}>
-                <CurrencyDollarIcon className={`h-6 w-6 text-gray-600`} />
+                <ArrowTrendingUpIcon className={`h-6 w-6 text-gray-600`} />
               </div>
               <div className="ml-5 w-0 flex-1">
-                <h3 className="text-lg font-medium text-gray-900">Báo cáo doanh thu</h3>
+                <h3 className="text-lg font-medium text-gray-900">Báo cáo xu hướng</h3>
                 <p className="mt-1 text-sm text-gray-500">
-                  Thống kê doanh thu theo thời gian, so sánh các kỳ
+                  Phân tích xu hướng kinh doanh theo thời gian
                 </p>
               </div>
             </div>

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTheme } from '@/app/context/ThemeContext'
-import { BuildingOfficeIcon, UserIcon } from '@heroicons/react/24/outline'
+import { BuildingOfficeIcon, UserIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline'
 
 export default function BusinessPage() {
   const router = useRouter()
@@ -33,6 +33,13 @@ export default function BusinessPage() {
       icon: UserIcon,
       href: '/dashboard/business/staff',
     },
+    {
+      name: 'Chat',
+      description: 'Trò chuyện và trao đổi thông tin nội bộ',
+      icon: ChatBubbleLeftRightIcon,
+      href: '/dashboard/business/chat',
+      isNew: true,
+    },
   ]
 
   return (
@@ -44,7 +51,7 @@ export default function BusinessPage() {
               Quản lý doanh nghiệp
             </h2>
             <p className="mt-2 text-sm text-gray-500">
-              Quản lý thông tin chi nhánh và nhân viên của doanh nghiệp
+              Quản lý thông tin chi nhánh, nhân viên và trò chuyện nội bộ của doanh nghiệp
             </p>
           </div>
 
@@ -65,11 +72,13 @@ export default function BusinessPage() {
                     <h3 className="text-lg font-medium text-gray-900">{module.name}</h3>
                     <p className="mt-2 text-sm text-gray-500">{module.description}</p>
                   </div>
-                  <div className="absolute top-0 right-0 -mt-2 -mr-2">
-                    <span className={`inline-flex items-center rounded-full ${currentTheme?.bgColor || 'bg-blue-600'} px-2.5 py-0.5 text-xs font-medium text-white`}>
-                      Mới
-                    </span>
-                  </div>
+                  {module.isNew && (
+                    <div className="absolute top-0 right-0 -mt-2 -mr-2">
+                      <span className={`inline-flex items-center rounded-full ${currentTheme?.bgColor || 'bg-blue-600'} px-2.5 py-0.5 text-xs font-medium text-white`}>
+                        Mới
+                      </span>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

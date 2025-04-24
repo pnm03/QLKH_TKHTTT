@@ -309,6 +309,7 @@ export default function DashboardLayout({
       current: activeNavItem === 'reports',
       children: [
         { name: language === 'vi' ? 'Báo cáo đơn hàng' : 'Order Reports', href: '/dashboard/reports/orders', icon: null, current: pathname.includes('/dashboard/reports/orders') },
+        { name: language === 'vi' ? 'Báo cáo tài chính' : 'Financial Reports', href: '/dashboard/reports/financial', icon: null, current: pathname.includes('/dashboard/reports/financial') },
         { name: language === 'vi' ? 'Báo cáo khách hàng' : 'Customer Reports', href: '/dashboard/reports/customers', icon: null, current: pathname === '/dashboard/reports/customers' },
         { name: language === 'vi' ? 'Báo cáo sản phẩm' : 'Product Reports', href: '/dashboard/reports/products', icon: null, current: pathname === '/dashboard/reports/products' },
       ]
