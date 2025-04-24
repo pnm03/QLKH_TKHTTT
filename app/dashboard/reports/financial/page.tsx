@@ -865,97 +865,107 @@ export default function FinancialReportsPage() {
                   </div>
 
                   {cashflowByDay.labels.length > 0 ? (
-                    <div className="h-96 relative">
-                      {/* Biểu đồ cột */}
-                      <div className="relative h-full">
-                        {/* Đường kẻ ngang */}
-                        {[0, 20, 40, 60, 80, 100].map((percent) => {
-                          // Tìm giá trị lớn nhất giữa thu và chi
+                    <div className="h-48 relative">
+                      <div className="relative h-full flex flex-col">
+                        {/* Tính toán giá trị tối đa và các đường kẻ ngang */}
+                        {(() => {
+                          // Tìm giá trị lớn nhất
                           const maxIncome = Math.max(...cashflowByDay.incomeValues);
                           const maxExpense = Math.max(...cashflowByDay.expenseValues);
                           const maxValue = Math.max(maxIncome, maxExpense);
 
+                          // Log để kiểm tra giá trị
+                          console.log("Giá trị thu:", cashflowByDay.incomeValues);
+                          console.log("Giá trị chi:", cashflowByDay.expenseValues);
+                          console.log("Giá trị lớn nhất:", maxValue);
+
+                          // Đảm bảo giá trị tối đa không bị làm tròn
+                          // Sử dụng giá trị tối đa thực tế để tính toán
+                          // Điều này sẽ giúp cột cao nhất gần như chạm đến phần tiêu đề
+                          // và các cột khác có chiều cao tỷ lệ thuận chính xác
+                          const roundedMax = maxValue;
+
+                          // Tạo các mức giá trị cho đường kẻ ngang (6 mức từ 0 đến giá trị tối đa)
+                          const steps = 6;
+                          const gridValues = [];
+
+                          // Làm tròn giá trị tối đa lên để có số đẹp hơn cho việc hiển thị trên trục Y
+                          const displayMax = Math.ceil(maxValue / 3000000) * 3000000;
+
+                          for (let i = 0; i < steps; i++) {
+                            gridValues.push(Math.round(displayMax * i / (steps - 1)));
+                          }
+
                           return (
-                            <div
-                              key={percent}
-                              className="absolute w-full border-t border-gray-200"
-                              style={{ bottom: `${percent}%` }}
-                            >
-                              <span className="absolute -left-8 -top-2 text-xs text-gray-500">
-                                {Math.round((maxValue * percent) / 100).toLocaleString()} đ
-                              </span>
-                            </div>
-                          );
-                        })}
+                            <>
 
-                        {/* Biểu đồ cột */}
-                        <div className="flex h-full items-end justify-evenly pl-8 pr-4">
-                          {cashflowByDay.labels.map((label, index) => {
-                            // Tìm giá trị lớn nhất giữa thu và chi
-                            const maxIncome = Math.max(...cashflowByDay.incomeValues);
-                            const maxExpense = Math.max(...cashflowByDay.expenseValues);
-                            const maxValue = Math.max(maxIncome, maxExpense);
+                              {/* Vẽ các cột biểu đồ */}
+                              <div className="flex flex-grow items-end justify-evenly mt-2 mb-4">
+                                {cashflowByDay.labels.map((label, index) => {
+                                  const incomeValue = cashflowByDay.incomeValues[index];
+                                  const expenseValue = cashflowByDay.expenseValues[index];
 
-                            // Tính chiều cao tương đối cho cột thu và chi
-                            // Sử dụng phần trăm của chiều cao thực tế
-                            // Đảm bảo cột cao nhất chiếm 90% chiều cao của biểu đồ
+                                  // Tính chiều cao tương đối dựa trên giá trị thực tế
+                                  // Đảm bảo cột cao nhất chiếm gần như toàn bộ không gian có sẵn
+                                  // Đặt giá trị tối thiểu là 5% để các cột nhỏ vẫn nhìn thấy được
+                                  // Sử dụng 100% để tận dụng tối đa không gian
+                                  const incomeHeight = incomeValue > 0
+                                    ? (incomeValue / roundedMax) * 100
+                                    : 0;
 
-                            // Tính chiều cao chính xác theo tỷ lệ phần trăm
-                            // Không sử dụng chiều cao tối thiểu để đảm bảo tỷ lệ chính xác
-                            const incomeHeight = cashflowByDay.incomeValues[index] > 0
-                              ? (cashflowByDay.incomeValues[index] / maxValue) * 100
-                              : 0;
+                                  const expenseHeight = expenseValue > 0
+                                    ? (expenseValue / roundedMax) * 100
+                                    : 0;
 
-                            const expenseHeight = cashflowByDay.expenseValues[index] > 0
-                              ? (cashflowByDay.expenseValues[index] / maxValue) * 100
-                              : 0;
+                                  return (
+                                    <div key={label} className="flex flex-col items-center" style={{ width: '80px' }}>
+                                      <div className="flex items-end h-full justify-center">
+                                        {/* Cột thu */}
+                                        <div className="relative group">
+                                          {incomeValue > 0 && (
+                                            <div
+                                              className="w-12 bg-blue-500 rounded-t shadow-md hover:bg-blue-600 transition-colors mx-1 cursor-pointer"
+                                              style={{
+                                                height: `${incomeHeight}%`,
+                                                minHeight: incomeValue > 0 ? '20px' : '0'
+                                              }}
+                                            >
+                                              {/* Tooltip */}
+                                              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                                                Thu: {incomeValue.toLocaleString()} đ
+                                              </div>
+                                            </div>
+                                          )}
+                                        </div>
 
-                            return (
-                              <div key={label} className="flex flex-col items-center" style={{ width: '100px' }}>
-                                <div className="flex items-end h-full justify-center">
-                                  {/* Cột thu */}
-                                  <div className="relative group">
-                                    {cashflowByDay.incomeValues[index] > 0 && (
-                                      <div
-                                        className="w-12 bg-blue-500 rounded-t shadow-md hover:bg-blue-600 transition-colors mx-1 cursor-pointer"
-                                        style={{
-                                          height: `${incomeHeight}%`,
-                                          minHeight: cashflowByDay.incomeValues[index] > 0 ? '2px' : '0'
-                                        }}
-                                      >
-                                        {/* Tooltip */}
-                                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                                          Thu: {cashflowByDay.incomeValues[index].toLocaleString()} đ
+                                        {/* Cột chi */}
+                                        <div className="relative group">
+                                          {expenseValue > 0 && (
+                                            <div
+                                              className="w-12 bg-red-500 rounded-t shadow-md hover:bg-red-600 transition-colors mx-1 cursor-pointer"
+                                              style={{
+                                                height: `${expenseHeight}%`,
+                                                minHeight: expenseValue > 0 ? '20px' : '0'
+                                              }}
+                                            >
+                                              {/* Tooltip */}
+                                              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                                                Chi: {expenseValue.toLocaleString()} đ
+                                              </div>
+                                            </div>
+                                          )}
                                         </div>
                                       </div>
-                                    )}
-                                  </div>
 
-                                  {/* Cột chi */}
-                                  <div className="relative group">
-                                    {cashflowByDay.expenseValues[index] > 0 && (
-                                      <div
-                                        className="w-12 bg-red-500 rounded-t shadow-md hover:bg-red-600 transition-colors mx-1 cursor-pointer"
-                                        style={{
-                                          height: `${expenseHeight}%`,
-                                          minHeight: cashflowByDay.expenseValues[index] > 0 ? '2px' : '0'
-                                        }}
-                                      >
-                                        {/* Tooltip */}
-                                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                                          Chi: {cashflowByDay.expenseValues[index].toLocaleString()} đ
-                                        </div>
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-
-                                {/* Nhãn */}
-                                <div className="text-xs font-medium text-gray-600 mt-2 w-full text-center truncate">{label}</div>
+                                      {/* Nhãn */}
+                                      <div className="text-xs font-medium text-gray-600 mt-2 w-full text-center truncate">{label}</div>
+                                    </div>
+                                  );
+                                })}
                               </div>
-                            );
-                          })}
-                        </div>
+                            </>
+                          );
+                        })()}
                       </div>
 
                       <div className="mt-6 flex items-center justify-center space-x-8">

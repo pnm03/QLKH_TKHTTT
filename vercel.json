@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "regions": ["sin1"],
+  "env": {
+    "NEXT_PUBLIC_SUPABASE_URL": "SUPABASE_URL_HERE",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "SUPABASE_ANON_KEY_HERE",
+    "SUPABASE_SERVICE_ROLE_KEY": "SUPABASE_SERVICE_ROLE_KEY_HERE",
+    "NEXT_PUBLIC_SITE_URL": "YOUR_DEPLOYED_URL_HERE"
+  }
+}
