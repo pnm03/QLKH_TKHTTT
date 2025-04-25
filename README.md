@@ -42,7 +42,7 @@
    NEXT_PUBLIC_SUPABASE_URL=https://aacmtacfsqbalzydqqmm.supabase.co
    NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFhY210YWNmc3FiYWx6eWRxcW1tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ4Mjc5OTIsImV4cCI6MjA2MDQwMzk5Mn0.yoPgz58cDdpDltnjFUZiBlnAUsufoLQanCb-vLMjXOI
    SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFhY210YWNmc3FiYWx6eWRxcW1tIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NDgyNzk5MiwiZXhwIjoyMDYwNDAzOTkyfQ.eI8h9j39JXveVtqo5gl66RLAn-tD5Oh0CyW-V-II4eo
-   NEXT_PUBLIC_SITE_URL=http://localhost:3000
+   NEXT_PUBLIC_SITE_URL=https://qlkh-tkhttt.vercel.app/
    ```
 
 4. Chạy ứng dụng ở môi trường development:
@@ -60,7 +60,7 @@
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `SUPABASE_SERVICE_ROLE_KEY`
-   - `NEXT_PUBLIC_SITE_URL` (URL của ứng dụng sau khi triển khai)
+   - `NEXT_PUBLIC_SITE_URL` (https://qlkh-tkhttt.vercel.app/)
 4. Triển khai ứng dụng
 
 Xem hướng dẫn chi tiết trong file [docs/vercel-deployment-guide.md](docs/vercel-deployment-guide.md).

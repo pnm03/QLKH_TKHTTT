@@ -54,7 +54,7 @@ Chuẩn bị sẵn các giá trị sau từ Supabase Dashboard:
    - `NEXT_PUBLIC_SUPABASE_URL`: URL của Supabase project
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Anon Key của Supabase
    - `SUPABASE_SERVICE_ROLE_KEY`: Service Role Key của Supabase
-   - `NEXT_PUBLIC_SITE_URL`: Để trống (sẽ cập nhật sau)
+   - `NEXT_PUBLIC_SITE_URL`: https://qlkh-tkhttt.vercel.app/
 
 4. Nhấn "Deploy"
 
@@ -68,7 +68,7 @@ Chuẩn bị sẵn các giá trị sau từ Supabase Dashboard:
 
 ### 3.1. Cập nhật biến môi trường
 
-1. Sao chép URL của ứng dụng đã triển khai (ví dụ: https://your-app.vercel.app)
+1. Sao chép URL của ứng dụng đã triển khai (https://qlkh-tkhttt.vercel.app/)
 2. Vào Vercel Dashboard > Project > Settings > Environment Variables
 3. Tìm biến `NEXT_PUBLIC_SITE_URL` và cập nhật giá trị với URL của ứng dụng
 4. Nhấn "Save" và chọn "Redeploy" khi được hỏi
@@ -78,14 +78,14 @@ Chuẩn bị sẵn các giá trị sau từ Supabase Dashboard:
 1. Đăng nhập vào [Supabase Dashboard](https://app.supabase.io)
 2. Chọn project của bạn
 3. Vào phần "Authentication" > "URL Configuration"
-4. Thêm URL của ứng dụng đã triển khai vào danh sách "Site URLs" (ví dụ: https://your-app.vercel.app)
+4. Thêm URL của ứng dụng đã triển khai vào danh sách "Site URLs" (https://qlkh-tkhttt.vercel.app/)
 5. Lưu cấu hình
 
 ### 3.3. Kiểm tra CORS (Cross-Origin Resource Sharing)
 
 1. Trong Supabase Dashboard, vào phần "API" > "Settings"
 2. Trong phần "API Settings", tìm mục "CORS (Cross-Origin Resource Sharing)"
-3. Thêm URL của ứng dụng đã triển khai vào danh sách "Allowed Origins" (ví dụ: https://your-app.vercel.app)
+3. Thêm URL của ứng dụng đã triển khai vào danh sách "Allowed Origins" (https://qlkh-tkhttt.vercel.app/)
 4. Lưu cấu hình
 
 ## Phần 4: Kiểm tra ứng dụng
