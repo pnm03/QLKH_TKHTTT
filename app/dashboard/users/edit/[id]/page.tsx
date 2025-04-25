@@ -9,10 +9,10 @@ import Link from 'next/link'
 import React from 'react'
 import { useTheme, themeColors } from '@/app/context/ThemeContext'
 import { createClient } from '@/utils/supabase/client'
-import { 
-  UserCircleIcon, 
-  ArrowLeftIcon, 
-  CheckCircleIcon, 
+import {
+  UserCircleIcon,
+  ArrowLeftIcon,
+  CheckCircleIcon,
   XCircleIcon,
   ShieldCheckIcon,
   ClockIcon
@@ -24,7 +24,7 @@ const userSchema = z.object({
   email: z.string().email({ message: 'Email không hợp lệ' }),
   phone: z.string().nullable().optional(),
   birthDate: z.string().nullable().optional(),
-  hometown: z.string().nullable().optional(),
+  hometown: z.string().min(1, { message: 'Quê quán không được để trống' }),
   role: z.string().optional(), // Thêm trường role
   status: z.string().optional(), // Thêm trường status
 });
@@ -76,7 +76,7 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
   // Đánh dấu component đã mounted và lấy userId từ params
   useEffect(() => {
     setMounted(true);
-    
+
     // Lấy userId từ params khi component được mount
     const extractUserId = async () => {
       try {
@@ -87,7 +87,7 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
         setError('Không thể xác định người dùng. Vui lòng thử lại sau.');
       }
     };
-    
+
     extractUserId();
   }, [props.params]);
 
@@ -117,32 +117,32 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
   useEffect(() => {
     const checkSessionAndPermission = async () => {
       if (!mounted || !userId) return;
-      
+
       try {
         const supabase = createClient();
-        
+
         // Kiểm tra phiên đăng nhập
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
+
         if (sessionError || !session) {
           console.error('Không có phiên đăng nhập hợp lệ:', sessionError?.message);
           await supabase.auth.signOut();
           router.push(`/auth/signin?redirectTo=/dashboard/users/edit/${userId}`);
           return;
         }
-        
+
         // Lưu ID của người dùng đang đăng nhập
         const currentUserId = session.user.id;
         // Kiểm tra xem người dùng có phải đang chỉnh sửa thông tin của chính mình
         setIsCurrentUser(currentUserId === userId);
-        
+
         // Kiểm tra quyền
         const { data: accountData, error: accountError } = await supabase
           .from('accounts')
           .select('role')
           .eq('user_id', currentUserId)
           .maybeSingle();
-        
+
         if (accountError) {
           console.error('Lỗi khi lấy vai trò:', accountError);
           setAccessDenied(true);
@@ -150,20 +150,20 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
           setLoading(false);
           return;
         }
-        
+
         if (!accountData) {
           setAccessDenied(true);
           setError('Không tìm thấy thông tin tài khoản của bạn.');
           setLoading(false);
           return;
         }
-        
+
         setUserRole(accountData.role);
-        
+
         // Kiểm tra xem người dùng có phải là admin hay đang chỉnh sửa thông tin của chính mình
         const isAdmin = accountData.role === 'admin';
         const isEditingSelf = currentUserId === userId;
-        
+
         if (!isAdmin && !isEditingSelf) {
           // Nếu không phải admin và không phải đang chỉnh sửa thông tin của chính mình
           setAccessDenied(true);
@@ -182,14 +182,14 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
         setLoading(false);
       }
     };
-    
+
     checkSessionAndPermission();
   }, [mounted, router, userId]);
 
   // Hàm tải thông tin người dùng từ database
   const loadUserData = async () => {
     if (!userId) return;
-    
+
     try {
       setLoading(true);
       setError(null);
@@ -197,35 +197,35 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
       // Lấy thông tin phiên của người dùng hiện tại
       const supabase = createClient();
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
+
       if (sessionError || !session) {
         console.error('Không có phiên đăng nhập hợp lệ:', sessionError?.message);
         router.push('/auth/signin');
         return;
       }
-      
+
       const currentUserId = session.user.id;
       setIsCurrentUser(currentUserId === userId);
-      
+
       // Kiểm tra quyền của người dùng hiện tại
       const { data: currentUserRoleData, error: currentUserRoleError } = await supabase
         .from('accounts')
         .select('role')
         .eq('user_id', currentUserId)
         .maybeSingle();
-      
+
       if (currentUserRoleError) {
         console.error('Lỗi khi lấy quyền người dùng hiện tại:', currentUserRoleError);
         setError('Không thể xác minh quyền của bạn. Vui lòng đăng nhập lại.');
         setLoading(false);
         return;
       }
-      
+
       const currentUserRole = currentUserRoleData?.role || '';
       setUserRole(currentUserRole);
-      
+
       console.log('Đang tải thông tin người dùng với ID:', userId);
-      
+
       // Đầu tiên lấy thông tin từ bảng users
       const { data: userData, error: userError } = await supabase
         .from('users')
@@ -241,7 +241,7 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
         `)
         .eq('user_id', userId)
         .maybeSingle();
-      
+
       // Nếu không tìm thấy bằng user_id, thử với id
       if (userError || !userData) {
         console.log('Không tìm thấy user với user_id, thử với id');
@@ -260,7 +260,7 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
           `)
           .eq('id', userId)
           .maybeSingle();
-        
+
         if (userError2 || !userData2) {
           console.error('Không tìm thấy user với cả id và user_id:', userError2);
           // Hiển thị form với dữ liệu mẫu
@@ -277,7 +277,7 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
             status: 'active',
             last_login: new Date().toISOString()
           };
-          
+
           console.log('Sử dụng dữ liệu mẫu để kiểm tra giao diện:', sampleData);
           setOriginalData(sampleData);
           populateForm(sampleData);
@@ -285,18 +285,18 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
           setError('⚠️ Đang hiển thị dữ liệu mẫu do không thể tải thông tin từ cơ sở dữ liệu');
           return;
         }
-        
+
         // Lấy thêm thông tin từ bảng accounts
         const { data: accountData, error: accountError } = await supabase
           .from('accounts')
           .select('role, status, last_login')
           .eq('user_id', userData2.user_id)
           .maybeSingle();
-        
+
         if (accountError) {
           console.warn('Không tìm thấy thông tin tài khoản:', accountError);
         }
-        
+
         // Gộp thông tin từ cả users và accounts
         const combinedData = {
           ...userData2,
@@ -304,30 +304,30 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
           status: accountData?.status || 'active',
           last_login: accountData?.last_login || null
         };
-        
+
         console.log('Dữ liệu người dùng (id):', combinedData);
-        
+
         setOriginalData(combinedData);
-        
+
         populateForm(combinedData);
         setLoading(false);
         return;
       }
-      
+
       // Trường hợp tìm thấy bằng user_id
       console.log('Đã tìm thấy thông tin người dùng (user_id):', userData);
-      
+
       // Lấy thêm thông tin từ bảng accounts
       const { data: accountData, error: accountError } = await supabase
         .from('accounts')
         .select('role, status, last_login')
         .eq('user_id', userData.user_id)
         .maybeSingle();
-      
+
       if (accountError) {
         console.warn('Không tìm thấy thông tin tài khoản:', accountError);
       }
-      
+
       // Gộp thông tin từ cả users và accounts
       const combinedData = {
         ...userData,
@@ -335,21 +335,21 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
         status: accountData?.status || 'active',
         last_login: accountData?.last_login || null
       };
-      
+
       console.log('Dữ liệu người dùng (user_id):', combinedData);
-      
+
       setOriginalData(combinedData);
-      
+
       populateForm(combinedData);
       setLoading(false);
-      
+
     } catch (error: any) {
       console.error('Lỗi khi tải thông tin người dùng:', error);
       setError('Không thể tải thông tin người dùng: ' + error.message);
       setLoading(false);
     }
   };
-  
+
   // Hàm định dạng ngày mặc định nếu không có
   const getDefaultBirthDate = (): string => {
     // Mặc định là 01/01/2005 (18 tuổi)
@@ -359,22 +359,22 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
   // Hàm điền thông tin vào form khi tải dữ liệu từ DB
   const populateForm = (userData: any) => {
     if (!userData) return;
-    
+
     // Điền các giá trị vào form
     setValue('fullName', userData.full_name || '');
     setValue('email', userData.email || '');
     setValue('phone', userData.phone || '');
     setValue('birthDate', userData.birth_date ? formatDate(userData.birth_date) : '');
     setValue('hometown', userData.hometown || '');
-    
+
     if (userData.role) {
       setValue('role', userData.role);
     }
-    
+
     if (userData.status) {
       setValue('status', userData.status);
     }
-    
+
     console.log('Đã điền form với dữ liệu:', userData);
   };
 
@@ -383,12 +383,12 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
     try {
       const date = new Date(dateStr);
       if (isNaN(date.getTime())) return ''; // Trả về chuỗi rỗng nếu ngày không hợp lệ
-      
+
       // Format theo định dạng yyyy-MM-dd cho input type="date"
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const day = String(date.getDate()).padStart(2, '0');
-      
+
       return `${year}-${month}-${day}`;
     } catch (error) {
       console.error('Lỗi khi định dạng ngày tháng:', error);
@@ -402,7 +402,7 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
       setSaving(true);
       setError(null);
       setSuccess(null);
-      
+
       // Kiểm tra nếu người dùng đang chỉnh sửa là admin khác
       if (originalData?.role === 'admin' && userRole === 'admin' && !isCurrentUser) {
         // Không cho phép chỉnh sửa admin khác
@@ -410,24 +410,31 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
         setSaving(false);
         return;
       }
-      
+
+      // Kiểm tra trường quê quán không được để trống
+      if (!data.hometown || data.hometown.trim() === '') {
+        setError('Địa chỉ không được để trống');
+        setSaving(false);
+        return;
+      }
+
       const supabase = createClient();
-      
+
       // Xác định trường ID cần dùng
       const user_id = originalData?.user_id || userId;
-      
+
       if (!user_id) {
         throw new Error('Không thể xác định ID của người dùng cần cập nhật');
       }
-      
+
       console.log('Đang cập nhật thông tin người dùng:', data);
-      
+
       // Định dạng ngày tháng từ chuỗi ngày nhập vào
       let formattedBirthDate = null;
       if (data.birthDate) {
         formattedBirthDate = data.birthDate;
       }
-      
+
       // Cập nhật thông tin trong bảng users
       const { error: updateError } = await supabase
         .from('users')
@@ -440,15 +447,15 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
           updated_at: new Date().toISOString()
         })
         .eq('user_id', user_id);
-      
+
       if (updateError) {
         console.error('Lỗi khi cập nhật người dùng:', updateError);
         throw updateError;
       }
-      
+
       // Hiển thị thông báo thành công
       setSuccess('Cập nhật thông tin người dùng thành công');
-      
+
       // Cập nhật lại dữ liệu gốc sau khi lưu
       setOriginalData({
         ...originalData,
@@ -459,7 +466,7 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
         hometown: data.hometown,
         updated_at: new Date().toISOString()
       });
-      
+
     } catch (error: any) {
       console.error('Lỗi khi cập nhật:', error);
       setError(error.message || 'Đã xảy ra lỗi khi cập nhật thông tin');
@@ -491,7 +498,7 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
           </button>
           <h1 className="text-2xl font-semibold text-gray-900">Chỉnh sửa thông tin người dùng</h1>
         </div>
-        
+
         <div className="mt-4 md:mt-0 flex space-x-2">
           {userId && originalData && (
             <button
@@ -566,7 +573,7 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
               </div>
             </div>
           )}
-          
+
           {/* Form content */}
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="p-6 space-y-6">
@@ -579,28 +586,28 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
                   <p className="text-sm text-yellow-700">Người dùng này cũng là admin. Bạn chỉ có thể xem nhưng không thể chỉnh sửa thông tin của họ.</p>
                 </div>
               )}
-              
+
               {success && (
                 <div className="p-4 bg-green-50 border border-green-200 rounded-md flex items-start mb-4">
                   <CheckCircleIcon className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
                   <p className="text-sm text-green-700">{success}</p>
                 </div>
               )}
-              
+
               {error && !accessDenied && (
                 <div className="p-4 bg-red-50 border border-red-200 rounded-md flex items-start mb-4">
                   <XCircleIcon className="h-5 w-5 text-red-500 mr-2 flex-shrink-0 mt-0.5" />
                   <p className="text-sm text-red-700">{error}</p>
                 </div>
               )}
-              
+
               {/* Thông tin cơ bản */}
               <div className="bg-gray-50 p-6 rounded-lg">
                 <h3 className={`text-lg font-medium text-${themeColor}-600 mb-5 flex items-center`}>
                   <UserCircleIcon className="h-5 w-5 mr-2" />
                   Thông tin cá nhân
                 </h3>
-                
+
                 <div className="space-y-6">
                   <div className="flex flex-col md:flex-row md:space-x-6">
                     <div className="w-full md:w-1/2">
@@ -612,8 +619,8 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
                         id="fullName"
                         {...register('fullName')}
                         className={`block w-full px-4 py-3 rounded-md shadow-sm ${
-                          errors.fullName 
-                            ? 'border-red-300 bg-red-50' 
+                          errors.fullName
+                            ? 'border-red-300 bg-red-50'
                             : originalData?.role === 'admin' && userRole === 'admin' && !isCurrentUser
                               ? 'border-gray-300 bg-gray-100 text-gray-700'
                               : `border-${themeColor}-300`
@@ -624,7 +631,7 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
                         <p className="mt-1.5 text-sm text-red-600">{errors.fullName.message}</p>
                       )}
                     </div>
-                    
+
                     <div className="w-full md:w-1/2 mt-6 md:mt-0">
                       <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                         Email <span className="text-red-500">*</span>
@@ -634,8 +641,8 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
                         id="email"
                         {...register('email')}
                         className={`block w-full px-4 py-3 rounded-md shadow-sm ${
-                          errors.email 
-                            ? 'border-red-300 bg-red-50' 
+                          errors.email
+                            ? 'border-red-300 bg-red-50'
                             : originalData?.role === 'admin' && userRole === 'admin' && !isCurrentUser
                               ? 'border-gray-300 bg-gray-100 text-gray-700'
                               : `border-${themeColor}-300`
@@ -647,7 +654,7 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
                       )}
                     </div>
                   </div>
-                  
+
                   <div className="flex flex-col md:flex-row md:space-x-6">
                     <div className="w-full md:w-1/2">
                       <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
@@ -659,8 +666,8 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
                         {...register('phone')}
                         placeholder="VD: 0912345678"
                         className={`block w-full px-4 py-3 rounded-md shadow-sm ${
-                          errors.phone 
-                            ? 'border-red-300 bg-red-50' 
+                          errors.phone
+                            ? 'border-red-300 bg-red-50'
                             : originalData?.role === 'admin' && userRole === 'admin' && !isCurrentUser
                               ? 'border-gray-300 bg-gray-100 text-gray-700'
                               : `border-${themeColor}-300`
@@ -671,7 +678,7 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
                         <p className="mt-1.5 text-sm text-red-600">{errors.phone.message}</p>
                       )}
                     </div>
-                    
+
                     <div className="w-full md:w-1/2 mt-6 md:mt-0">
                       <label htmlFor="birthDate" className="block text-sm font-medium text-gray-700 mb-2">
                         Ngày sinh
@@ -681,8 +688,8 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
                         id="birthDate"
                         {...register('birthDate')}
                         className={`block w-full px-4 py-3 rounded-md shadow-sm ${
-                          errors.birthDate 
-                            ? 'border-red-300 bg-red-50' 
+                          errors.birthDate
+                            ? 'border-red-300 bg-red-50'
                             : originalData?.role === 'admin' && userRole === 'admin' && !isCurrentUser
                               ? 'border-gray-300 bg-gray-100 text-gray-700'
                               : `border-${themeColor}-300`
@@ -694,28 +701,31 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
                       )}
                     </div>
                   </div>
-                  
+
                   <div>
                     <label htmlFor="hometown" className="block text-sm font-medium text-gray-700 mb-2">
-                      Địa chỉ
+                      Địa chỉ <span className="text-red-500">*</span>
                     </label>
                     <textarea
                       id="hometown"
                       rows={3}
                       {...register('hometown')}
                       className={`block w-full px-4 py-3 rounded-md shadow-sm ${
-                        errors.hometown 
-                          ? 'border-red-300 bg-red-50' 
+                        errors.hometown
+                          ? 'border-red-300 bg-red-50'
                           : originalData?.role === 'admin' && userRole === 'admin' && !isCurrentUser
                             ? 'border-gray-300 bg-gray-100 text-gray-700'
                             : `border-${themeColor}-300`
                       } focus:ring-${themeColor}-500 focus:border-${themeColor}-500 text-base`}
                       disabled={originalData?.role === 'admin' && userRole === 'admin' && !isCurrentUser}
                     ></textarea>
+                    {errors.hometown && (
+                      <p className="mt-1.5 text-sm text-red-600">{errors.hometown.message}</p>
+                    )}
                   </div>
                 </div>
               </div>
-              
+
               {/* Thông tin thời gian */}
               {originalData && (
                 <div className="bg-gray-50 p-6 rounded-lg">
@@ -723,18 +733,18 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
                     <ClockIcon className="h-5 w-5 mr-2" />
                     Thông tin thời gian
                   </h3>
-                  
+
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 text-sm">
                     <div className="bg-white p-4 rounded-md border border-gray-200 shadow-sm">
                       <div className="text-gray-500 mb-1.5">Ngày tạo</div>
                       <div className="font-medium">{originalData.created_at ? new Date(originalData.created_at).toLocaleString('vi-VN') : 'Không có dữ liệu'}</div>
                     </div>
-                    
+
                     <div className="bg-white p-4 rounded-md border border-gray-200 shadow-sm">
                       <div className="text-gray-500 mb-1.5">Cập nhật lần cuối</div>
                       <div className="font-medium">{originalData.updated_at ? new Date(originalData.updated_at).toLocaleString('vi-VN') : 'Chưa cập nhật'}</div>
                     </div>
-                    
+
                     <div className="bg-white p-4 rounded-md border border-gray-200 shadow-sm">
                       <div className="text-gray-500 mb-1.5">Đăng nhập gần đây</div>
                       <div className="font-medium">{originalData.last_login ? new Date(originalData.last_login).toLocaleString('vi-VN') : 'Chưa đăng nhập'}</div>
@@ -743,7 +753,7 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
                 </div>
               )}
             </div>
-            
+
             {/* Form actions */}
             <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end">
               <button
@@ -753,7 +763,7 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
               >
                 Quay lại
               </button>
-              
+
               {/* Hiển thị nút lưu chỉ khi người dùng là admin và không phải đang chỉnh sửa admin khác, hoặc khi người dùng đang chỉnh sửa chính mình */}
               {((userRole === 'admin' && (originalData?.role !== 'admin' || isCurrentUser)) || (originalData?.user_id === userId)) && (
                 <button
@@ -782,7 +792,7 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
         <>
           {/* Overlay để làm tối nền bên dưới, nhưng không có màu xám */}
           <div className="fixed inset-0 z-40 backdrop-brightness-[0.5] backdrop-blur-[0.8px]" onClick={() => setShowDetailModal(false)}></div>
-          
+
           {/* Modal */}
           <div className="fixed inset-0 z-50 overflow-y-auto">
             <div className="flex items-center justify-center min-h-screen">
@@ -802,7 +812,7 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
                     <XCircleIcon className="h-6 w-6" aria-hidden="true" />
                   </button>
                 </div>
-                
+
                 {/* Modal content */}
                 <div className="bg-white px-6 py-5">
                   <div>
@@ -826,14 +836,14 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
                         </div>
                       </div>
                     </div>
-                    
+
                     {/* Thông tin chi tiết */}
                     <div className="mt-6">
                       <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
                         <UserCircleIcon className="h-5 w-5 mr-2 text-gray-500" />
                         Thông tin chi tiết
                       </h3>
-                      
+
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-4 rounded-lg">
                         <div>
                           <dl className="space-y-4">
@@ -844,7 +854,7 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
                               </dt>
                               <dd className="text-sm text-gray-900 font-medium">{originalData.full_name || 'Chưa cập nhật'}</dd>
                             </div>
-                            
+
                             <div className="flex">
                               <dt className="flex items-center text-sm font-medium text-gray-500 w-32">
                                 <svg className="h-5 w-5 mr-2 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
@@ -854,7 +864,7 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
                               </dt>
                               <dd className="text-sm text-gray-900">{originalData.email}</dd>
                             </div>
-                            
+
                             <div className="flex">
                               <dt className="flex items-center text-sm font-medium text-gray-500 w-32">
                                 <svg className="h-5 w-5 mr-2 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
@@ -864,7 +874,7 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
                               </dt>
                               <dd className="text-sm text-gray-900">{originalData.phone || 'Chưa cập nhật'}</dd>
                             </div>
-                            
+
                             <div className="flex">
                               <dt className="flex items-center text-sm font-medium text-gray-500 w-32">
                                 <svg className="h-5 w-5 mr-2 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
@@ -876,7 +886,7 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
                             </div>
                           </dl>
                         </div>
-                        
+
                         <div>
                           <dl className="space-y-4">
                             <div className="flex">
@@ -889,7 +899,7 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
                               </dt>
                               <dd className="text-sm text-gray-900">{originalData.hometown || 'Chưa cập nhật'}</dd>
                             </div>
-                            
+
                             <div className="flex">
                               <dt className="flex items-center text-sm font-medium text-gray-500 w-32">
                                 <svg className="h-5 w-5 mr-2 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
@@ -899,7 +909,7 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
                               </dt>
                               <dd className="text-sm text-gray-900">{originalData.created_at ? new Date(originalData.created_at).toLocaleString('vi-VN') : 'Không có dữ liệu'}</dd>
                             </div>
-                            
+
                             <div className="flex">
                               <dt className="flex items-center text-sm font-medium text-gray-500 w-32">
                                 <svg className="h-5 w-5 mr-2 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
@@ -909,7 +919,7 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
                               </dt>
                               <dd className="text-sm text-gray-900">{originalData.updated_at ? new Date(originalData.updated_at).toLocaleString('vi-VN') : 'Chưa cập nhật'}</dd>
                             </div>
-                            
+
                             <div className="flex">
                               <dt className="flex items-center text-sm font-medium text-gray-500 w-32">
                                 <svg className="h-5 w-5 mr-2 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
@@ -925,7 +935,7 @@ export default function EditUserPage(props: { params: Promise<{ id: string }> })
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Modal footer */}
                 <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end">
                   <button

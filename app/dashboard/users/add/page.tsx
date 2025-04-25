@@ -57,14 +57,14 @@ export default function AddUserPage() {
   const [sendPassword, setSendPassword] = useState(true);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [accessDenied, setAccessDenied] = useState(false);
-  
+
   // Lấy thông tin theme từ context nhưng chỉ sử dụng khi component đã mounted
   const themeContext = useTheme();
-  
+
   const [themeState, setThemeState] = useState({
     theme: themeColors.indigo
   });
-  
+
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -76,7 +76,7 @@ export default function AddUserPage() {
       });
     }
   }, [mounted, themeContext.currentTheme]);
-  
+
   // Thêm giá trị mặc định cho theme để tránh lỗi
   useEffect(() => {
     // Đảm bảo theme luôn có giá trị mặc định ngay cả khi context chưa load xong
@@ -90,7 +90,7 @@ export default function AddUserPage() {
       });
     }
   }, [themeState.theme]);
-  
+
   const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useForm<UserFormValues>({
     resolver: zodResolver(userSchema),
     defaultValues: {
@@ -104,10 +104,10 @@ export default function AddUserPage() {
       sendPassword: true,
     }
   });
-  
+
   // Theo dõi giá trị mật khẩu
   const password = watch('password');
-  
+
   // Hàm tạo mật khẩu ngẫu nhiên
   const generatePassword = () => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%^&*()';
@@ -115,57 +115,61 @@ export default function AddUserPage() {
     for (let i = 0; i < 10; i++) {
       newPassword += chars.charAt(Math.floor(Math.random() * chars.length));
     }
+
+    // Cập nhật cả state và giá trị form
     setPasswordValue(newPassword);
     setConfirmPasswordValue(newPassword);
-    setValue('password', newPassword);
-    setValue('confirmPassword', newPassword);
+
+    // Sử dụng setValue để cập nhật giá trị form và trigger validation
+    setValue('password', newPassword, { shouldValidate: true });
+    setValue('confirmPassword', newPassword, { shouldValidate: true });
   };
-  
+
   // Kiểm tra phiên đăng nhập và chuyển hướng nếu không hợp lệ
   useEffect(() => {
     const checkSession = async () => {
       if (!mounted) return;
-      
+
       try {
         const supabase = createClient();
-        
+
         // Kiểm tra phiên đăng nhập
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
+
         // Nếu không có phiên hoặc có lỗi, chuyển hướng đến trang đăng nhập
         if (sessionError || !session) {
           console.error('Không có phiên đăng nhập hợp lệ:', sessionError?.message);
-          
+
           // Xóa dữ liệu phiên trước khi chuyển hướng
           await supabase.auth.signOut();
-          
+
           // Chuyển hướng đến trang đăng nhập
           router.push('/auth/signin?redirectTo=/dashboard/users/add');
           return;
         }
-        
+
         // Nếu có phiên, tiếp tục kiểm tra quyền
         const { data: accountData, error: accountError } = await supabase
           .from('accounts')
           .select('role')
           .eq('user_id', session.user.id)
           .maybeSingle();
-        
+
         if (accountError) {
           console.error('Lỗi khi lấy vai trò:', accountError);
           setAccessDenied(true);
           setError('Không thể xác minh quyền của bạn. Vui lòng đăng nhập lại.');
           return;
         }
-        
+
         if (!accountData) {
           setAccessDenied(true);
           setError('Không tìm thấy thông tin tài khoản của bạn.');
           return;
         }
-        
+
         setUserRole(accountData.role);
-        
+
         // Kiểm tra quyền admin
         const isAdmin = accountData.role && accountData.role.toLowerCase() === 'admin';
         if (!isAdmin) {
@@ -177,26 +181,26 @@ export default function AddUserPage() {
         }
       } catch (error) {
         console.error('Lỗi khi kiểm tra phiên:', error);
-        
+
         // Trong trường hợp lỗi, cũng chuyển hướng đến trang đăng nhập
         router.push('/auth/signin?redirectTo=/dashboard/users/add');
       }
     };
-    
+
     checkSession();
   }, [mounted, router]);
-  
-  // Tự động ẩn thông báo thành công sau 1 giây
+
+  // Tự động ẩn thông báo thành công sau 3 giây
   useEffect(() => {
     if (success) {
       const timer = setTimeout(() => {
         setSuccess(null);
-      }, 1000);
-      
+      }, 3000);
+
       return () => clearTimeout(timer);
     }
   }, [success]);
-  
+
   const onSubmit = async (data: UserFormValues) => {
     // Nếu không phải admin thì không cho thực hiện hành động này
     const isAdmin = userRole && userRole.toLowerCase() === 'admin';
@@ -205,12 +209,35 @@ export default function AddUserPage() {
       setError(`Truy cập bị từ chối. Bạn là ${friendlyRoleName}, bạn không có quyền truy cập. Chỉ có admin mới truy cập được.`);
       return;
     }
-    
+
     setIsLoading(true);
     setError(null);
     setSuccess(null);
-    
+
+    // Kiểm tra mật khẩu trước khi gửi
+    if (!data.password || data.password.length < 6) {
+      setError('Mật khẩu phải có ít nhất 6 ký tự');
+      setIsLoading(false);
+      return;
+    }
+
+    // Kiểm tra xác nhận mật khẩu
+    if (data.password !== data.confirmPassword) {
+      setError('Mật khẩu xác nhận không khớp');
+      setIsLoading(false);
+      return;
+    }
+
     try {
+      // Log để debug
+      console.log('Đang gửi dữ liệu người dùng mới:', {
+        email: data.email,
+        passwordLength: data.password.length,
+        fullName: data.fullName,
+        role: data.role,
+        sendPassword: data.sendPassword
+      });
+
       // Gửi request tạo người dùng mới
       const response = await fetch('/api/admin/create-user', {
         method: 'POST',
@@ -226,18 +253,18 @@ export default function AddUserPage() {
           sendPassword: data.sendPassword
         })
       });
-      
+
       // Xử lý response
       const result = await response.json();
-      
+
       if (!response.ok) {
         setError(result?.error || 'Đã xảy ra lỗi khi tạo người dùng');
         return;
       }
-      
+
       // Hiển thị thông báo thành công ngắn gọn hơn
       setSuccess(`Đã tạo người dùng ${result.user.fullName} thành công.`);
-      
+
       // Kiểm tra kết quả gửi email
       if (data.sendPassword) {
         if (result.emailSent) {
@@ -246,10 +273,19 @@ export default function AddUserPage() {
           setSuccess(prev => `${prev} Tuy nhiên, không thể gửi email: ${result.emailError}`);
         }
       }
-      
-      // Reset form
-      reset();
-      
+
+      // Reset form với các giá trị mặc định
+      reset({
+        email: '',
+        password: '',
+        confirmPassword: '',
+        fullName: '',
+        phone: '',
+        address: '',
+        role: '',
+        sendPassword: true,
+      });
+
       // Đặt lại các state
       setPasswordValue('');
       setConfirmPasswordValue('');
@@ -257,7 +293,7 @@ export default function AddUserPage() {
       setShowConfirmPassword(false);
       setExistingUser(null);
       setCheckingEmail(false);
-      
+
     } catch (error: any) {
       console.error('Lỗi khi tạo người dùng:', error);
       setError(error.message || 'Đã xảy ra lỗi không xác định');
@@ -265,28 +301,28 @@ export default function AddUserPage() {
       setIsLoading(false);
     }
   };
-  
+
   // Hàm kiểm tra email đã tồn tại
   const checkExistingEmail = useCallback(
     debounce(async (email: string) => {
       if (!email || !email.includes('@') || !email.includes('.')) return;
-      
+
       setCheckingEmail(true);
       try {
         const supabase = createClient();
-        
+
         // Kiểm tra trong bảng users
         const { data, error } = await supabase
           .from('users')
           .select('user_id, full_name, email')
           .eq('email', email)
           .maybeSingle();
-          
+
         if (error) {
           console.error('Lỗi khi kiểm tra email:', JSON.stringify(error));
           return;
         }
-        
+
         if (data) {
           // Nếu tìm thấy email, kiểm tra role từ bảng accounts
           const { data: accountData, error: accountError } = await supabase
@@ -294,11 +330,11 @@ export default function AddUserPage() {
             .select('role, status')
             .eq('user_id', data.user_id)
             .maybeSingle();
-            
+
           if (accountError) {
             console.error('Lỗi khi kiểm tra vai trò người dùng:', JSON.stringify(accountError));
           }
-          
+
           setExistingUser({
             email: email,
             full_name: data.full_name || '',
@@ -316,7 +352,7 @@ export default function AddUserPage() {
     }, 500),
     []
   );
-  
+
   // Xử lý khi email thay đổi
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const email = e.target.value;
@@ -326,22 +362,22 @@ export default function AddUserPage() {
       setExistingUser(null);
     }
   };
-  
+
   if (!mounted) {
     return null;
   }
-  
+
   const { theme = themeColors.indigo } = themeState;
   const themeName = theme?.name || 'indigo';
-  const themeColor = themeName === 'indigo' ? '#4f46e5' : 
-                    themeName === 'blue' ? '#2563eb' : 
-                    themeName === 'green' ? '#16a34a' : 
-                    themeName === 'red' ? '#dc2626' : 
+  const themeColor = themeName === 'indigo' ? '#4f46e5' :
+                    themeName === 'blue' ? '#2563eb' :
+                    themeName === 'green' ? '#16a34a' :
+                    themeName === 'red' ? '#dc2626' :
                     themeName === 'purple' ? '#9333ea' : '#4f46e5';
-  
+
   // Định nghĩa biến textColor đúng cách với fallback
   const textColor = theme?.textColor || `text-${themeName}-600`;
-  
+
   // Nếu không có quyền truy cập, hiển thị thông báo từ chối
   if (accessDenied) {
     return (
@@ -366,7 +402,7 @@ export default function AddUserPage() {
       </div>
     );
   }
-  
+
   return (
     <div className="max-w-5xl mx-auto">
       <div className="bg-white shadow-lg rounded-xl overflow-hidden">
@@ -383,7 +419,7 @@ export default function AddUserPage() {
             </div>
           </div>
         </div>
-        
+
         <div className="p-6">
           {error && (
             <div className="p-3 rounded-lg bg-red-50 border border-red-200 mb-4">
@@ -401,34 +437,34 @@ export default function AddUserPage() {
               </div>
             </div>
           )}
-          
+
           {success && (
-            <div className="p-3 rounded-lg bg-green-50 border border-green-200 mb-4">
-              <div className="flex">
+            <div className="p-4 rounded-lg bg-green-100 border-l-4 border-green-500 mb-6 shadow-md animate-fade-in">
+              <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <svg className="h-6 w-6 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
                 </div>
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-green-800">
+                  <p className="text-base font-medium text-green-800">
                     {success}
                   </p>
-                  <div className="mt-2 flex space-x-2">
+                  <div className="mt-3 flex space-x-3">
                     <button
                       type="button"
                       onClick={() => {
                         setSuccess(null);
                         // Reset form đã được xử lý trước đó, không cần gọi lại
                       }}
-                      className={`px-3 py-1.5 text-xs font-medium text-white bg-${themeName}-600 hover:bg-${themeName}-700 rounded-md`}
+                      className={`px-4 py-2 text-sm font-medium text-white bg-${themeName}-600 hover:bg-${themeName}-700 rounded-md shadow-sm transition-colors duration-150`}
                     >
                       Tạo người dùng khác
                     </button>
                     <button
                       type="button"
                       onClick={() => router.push('/dashboard/users')}
-                      className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+                      className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md shadow-sm transition-colors duration-150"
                     >
                       Quay lại danh sách
                     </button>
@@ -437,7 +473,7 @@ export default function AddUserPage() {
               </div>
             </div>
           )}
-          
+
           <div className="bg-blue-50 border-l-4 border-blue-400 p-3 mb-4 rounded-r-lg">
             <div className="flex">
               <div className="flex-shrink-0">
@@ -445,13 +481,13 @@ export default function AddUserPage() {
               </div>
               <div className="ml-3">
                 <p className="text-sm text-blue-700">
-                  Tài khoản mới được tạo sẽ ở trạng thái <span className="font-medium">hoạt động</span>. 
+                  Tài khoản mới được tạo sẽ ở trạng thái <span className="font-medium">hoạt động</span>.
                   Email xác nhận sẽ được gửi tới địa chỉ email của người dùng.
                 </p>
               </div>
             </div>
           </div>
-          
+
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {/* Hiển thị người dùng đã tồn tại */}
             {existingUser && (
@@ -474,11 +510,11 @@ export default function AddUserPage() {
                     </h3>
                     <div className="mt-1">
                       <p className="text-sm text-yellow-700">
-                        <span className="font-medium">{existingUser.full_name}</span> - 
+                        <span className="font-medium">{existingUser.full_name}</span> -
                         <span className="italic ml-1">{
-                          existingUser.role === "admin" ? "Quản trị viên" : 
-                          existingUser.role === "NVBH" ? "Nhân viên bán hàng" : 
-                          existingUser.role === "NVK" ? "Nhân viên kho" : 
+                          existingUser.role === "admin" ? "Quản trị viên" :
+                          existingUser.role === "NVBH" ? "Nhân viên bán hàng" :
+                          existingUser.role === "NVK" ? "Nhân viên kho" :
                           existingUser.role
                         }</span>
                       </p>
@@ -490,11 +526,11 @@ export default function AddUserPage() {
                 </div>
               </div>
             )}
-            
+
             {/* Thông tin tài khoản */}
             <div>
               <h2 className={`text-lg font-semibold ${textColor} mb-3`}>Thông tin tài khoản</h2>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {/* Email */}
                 <div>
@@ -534,7 +570,7 @@ export default function AddUserPage() {
                     <p className="mt-2 text-sm text-red-600">{errors.email.message}</p>
                   )}
                 </div>
-                
+
                 {/* Vai trò */}
                 <div>
                   <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
@@ -564,7 +600,7 @@ export default function AddUserPage() {
                     <p className="mt-2 text-sm text-red-600">{errors.role.message}</p>
                   )}
                 </div>
-                
+
                 {/* Mật khẩu */}
                 <div>
                   <div className="flex justify-between items-center mb-1">
@@ -586,11 +622,12 @@ export default function AddUserPage() {
                       autoComplete="new-password"
                       className={`block w-full h-11 text-base px-4 border-gray-300 rounded-md focus:ring-2 focus:ring-opacity-50 focus:ring-${themeName}-500 focus:border-${themeName}-500 ${errors.password ? 'border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500' : ''}`}
                       style={{ borderColor: errors.password ? '#f87171' : undefined, boxShadow: errors.password ? '0 0 0 1px #f87171' : undefined }}
+                      {...register('password', {
+                        onChange: (e) => {
+                          setPasswordValue(e.target.value);
+                        }
+                      })}
                       value={passwordValue}
-                      onChange={(e) => {
-                        setPasswordValue(e.target.value);
-                        register('password').onChange(e);
-                      }}
                     />
                     <button
                       type="button"
@@ -615,7 +652,7 @@ export default function AddUserPage() {
                     <p className="mt-2 text-sm text-red-600">{errors.password.message}</p>
                   )}
                 </div>
-                
+
                 {/* Xác nhận mật khẩu */}
                 <div>
                   <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
@@ -628,11 +665,12 @@ export default function AddUserPage() {
                       autoComplete="new-password"
                       className={`block w-full h-11 text-base px-4 border-gray-300 rounded-md focus:ring-2 focus:ring-opacity-50 focus:ring-${themeName}-500 focus:border-${themeName}-500 ${errors.confirmPassword ? 'border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500' : ''}`}
                       style={{ borderColor: errors.confirmPassword ? '#f87171' : undefined, boxShadow: errors.confirmPassword ? '0 0 0 1px #f87171' : undefined }}
+                      {...register('confirmPassword', {
+                        onChange: (e) => {
+                          setConfirmPasswordValue(e.target.value);
+                        }
+                      })}
                       value={confirmPasswordValue}
-                      onChange={(e) => {
-                        setConfirmPasswordValue(e.target.value);
-                        register('confirmPassword').onChange(e);
-                      }}
                     />
                     <button
                       type="button"
@@ -659,11 +697,11 @@ export default function AddUserPage() {
                 </div>
               </div>
             </div>
-            
+
             {/* Thông tin cá nhân */}
             <div>
               <h2 className={`text-lg font-semibold ${textColor} mb-3`}>Thông tin cá nhân</h2>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {/* Họ tên */}
                 <div>
@@ -691,7 +729,7 @@ export default function AddUserPage() {
                     <p className="mt-2 text-sm text-red-600">{errors.fullName.message}</p>
                   )}
                 </div>
-                
+
                 {/* Số điện thoại */}
                 <div>
                   <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
@@ -719,7 +757,7 @@ export default function AddUserPage() {
                     <p className="mt-2 text-sm text-red-600">{errors.phone.message}</p>
                   )}
                 </div>
-                
+
                 {/* Địa chỉ */}
                 <div className="md:col-span-2">
                   <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
@@ -737,7 +775,7 @@ export default function AddUserPage() {
                 </div>
               </div>
             </div>
-            
+
             {/* Tùy chọn gửi mật khẩu qua email */}
             <div className="flex items-center">
               <input
@@ -754,7 +792,7 @@ export default function AddUserPage() {
                 Gửi email kèm thông tin mật khẩu tạm thời
               </label>
             </div>
-            
+
             <div className="pt-4 border-t border-gray-200">
               <div className="flex justify-end space-x-3">
                 <button
@@ -788,4 +826,4 @@ export default function AddUserPage() {
       </div>
     </div>
   );
-} 
+}
