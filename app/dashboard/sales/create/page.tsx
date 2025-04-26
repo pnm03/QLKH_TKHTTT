@@ -1019,6 +1019,16 @@ export default function CreateOrderPage() {
   const confirmPayment = async () => {
     setLoading(true);
 
+    // Đóng popup xác nhận thanh toán
+    setShowConfirmPaymentPopup(false);
+
+    // Kiểm tra nếu đang trong quá trình tạo đơn gửi đi
+    if (showShippingPopup) {
+      // Xử lý đơn gửi đi
+      await handleShipOrder();
+      return;
+    }
+
     try {
       // Tạo đơn hàng mới trong cơ sở dữ liệu
       // Lấy thông tin người dùng hiện tại (người tạo đơn hàng) từ hàm fetchCurrentUser
@@ -1487,7 +1497,34 @@ export default function CreateOrderPage() {
     return uuid;
   };
 
-  // Xử lý gửi đơn hàng
+  // Xử lý hiển thị popup xác nhận thanh toán cho đơn gửi đi
+  const handleShipOrderConfirmation = () => {
+    if (!validateOrder()) return;
+
+    // Nếu có phương thức thanh toán được chọn, hiển thị popup xác nhận thanh toán
+    if (selectedPaymentMethod) {
+      // Lấy thông tin phương thức thanh toán đã chọn
+      const selectedMethod = paymentMethods.find(method => method.payment_id === selectedPaymentMethod);
+
+      // Chuẩn bị dữ liệu thanh toán để hiển thị trong popup xác nhận
+      setPaymentData({
+        invoice: invoices[activeInvoiceIndex],
+        totalAmount: calculateTotalAllInvoices().amountToPay,
+        customerPaid: parseFloat(customerPrepaid) || 0,
+        change: 0,
+        paymentMethod: selectedMethod
+      });
+
+      // Hiển thị popup xác nhận thanh toán và ẩn popup gửi đơn hàng
+      setShowConfirmPaymentPopup(true);
+      setShowShippingPopup(false);
+    } else {
+      // Nếu không có phương thức thanh toán (chọn COD), xử lý đơn hàng trực tiếp
+      handleShipOrder();
+    }
+  };
+
+  // Xử lý gửi đơn hàng sau khi xác nhận thanh toán
   const handleShipOrder = async () => {
     if (!validateOrder()) return;
 
@@ -1679,9 +1716,35 @@ export default function CreateOrderPage() {
       setSuccessMessage('Đơn hàng đã được tạo thành công!');
       setTimeout(() => {
         setSuccessMessage('');
-      }, 2000); // Tự động ẩn sau 2 giây
+      }, 3000); // Tự động ẩn sau 3 giây
 
+      // Đóng popup gửi đơn hàng
       setShowShippingPopup(false);
+
+      // Chuẩn bị dữ liệu cho hóa đơn
+      const orderDate = new Date().toLocaleDateString('vi-VN');
+      const orderTime = new Date().toLocaleTimeString('vi-VN');
+
+      setInvoiceData({
+        orderId: orderId,
+        orderDate: orderDate,
+        orderTime: orderTime,
+        customer: {
+          full_name: recipientName,
+          phone: recipientPhone,
+          hometown: `${recipientAddress}, ${recipientWard}, ${recipientDistrict}`
+        },
+        products: invoices[activeInvoiceIndex].products,
+        totalAmount: totalOrderAmount,
+        totalDiscount: invoices[activeInvoiceIndex].totalDiscount,
+        amountToPay: totalOrderAmount,
+        customerPaid: prepaidAmount,
+        change: 0,
+        paymentMethod: selectedPaymentMethod ? paymentMethods.find(method => method.payment_id === selectedPaymentMethod) : { payment_method_name: 'COD (Thu hộ khi giao hàng)' }
+      });
+
+      // Hiển thị popup in hóa đơn
+      setShowPrintInvoicePopup(true);
 
       // Reset thông tin hóa đơn hiện tại
       let updatedInvoices = [...invoices]
@@ -1699,9 +1762,6 @@ export default function CreateOrderPage() {
       // Tải lại dữ liệu sản phẩm để cập nhật thông tin tồn kho mới nhất
       console.log('Tải lại dữ liệu sản phẩm để cập nhật thông tin tồn kho mới nhất');
       fetchDefaultProducts();
-
-      // Đóng popup
-      setShowShippingPopup(false);
     } catch (error) {
       console.error('Lỗi khi tạo đơn hàng:', error);
       alert('Có lỗi xảy ra khi tạo đơn hàng: ' + (error instanceof Error ? error.message : 'Lỗi không xác định'));
@@ -2873,8 +2933,8 @@ export default function CreateOrderPage() {
                 Hủy
               </button>
               <button
-                onClick={handleShipOrder}
-                disabled={loading || !recipientName || !recipientPhone || !recipientAddress}
+                onClick={handleShipOrderConfirmation}
+                disabled={loading || (!currentInvoice.customer && (!recipientName || !recipientPhone || !recipientAddress))}
                 className={`px-5 py-2 text-white rounded-md disabled:bg-gray-400 transition-colors duration-200 flex items-center ${currentTheme?.buttonBg || 'bg-blue-600'} ${currentTheme?.buttonHoverBg || 'hover:bg-blue-700'}`}
               >
                 {loading ? (
