@@ -10,5 +10,7 @@
   "git": {
     "submodules": false
   },
-  "ignoreCommand": "git submodule deinit -f PageNotFound"
+  "buildCommand": "npm run build",
+  "installCommand": "npm install --legacy-peer-deps",
+  "framework": "nextjs"
 }
