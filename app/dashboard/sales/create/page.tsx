@@ -1389,6 +1389,9 @@ export default function CreateOrderPage() {
 
       setInvoices(updatedInvoices);
 
+      // Xóa thông tin khách hàng đã chọn
+      setSelectedCustomer(null);
+
       // Tải lại dữ liệu sản phẩm để cập nhật thông tin tồn kho mới nhất
       console.log('Tải lại dữ liệu sản phẩm để cập nhật thông tin tồn kho mới nhất');
       fetchDefaultProducts();
@@ -1764,6 +1767,9 @@ export default function CreateOrderPage() {
         customer: null
       }
       setInvoices(updatedInvoices)
+
+      // Xóa thông tin khách hàng đã chọn
+      setSelectedCustomer(null)
 
       // Tải lại dữ liệu sản phẩm để cập nhật thông tin tồn kho mới nhất
       console.log('Tải lại dữ liệu sản phẩm để cập nhật thông tin tồn kho mới nhất');
