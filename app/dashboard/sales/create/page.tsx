@@ -775,6 +775,12 @@ export default function CreateOrderPage() {
       return false;
     }
 
+    // Kiểm tra phương thức thanh toán hoặc COD cho đơn gửi đi
+    if (showShippingPopup && !selectedPaymentMethod && !codAmount) {
+      alert('Vui lòng chọn phương thức thanh toán hoặc tích chọn thu hộ tiền (COD)');
+      return false;
+    }
+
     return true;
   };
 
@@ -2934,7 +2940,11 @@ export default function CreateOrderPage() {
               </button>
               <button
                 onClick={handleShipOrderConfirmation}
-                disabled={loading || (!currentInvoice.customer && (!recipientName || !recipientPhone || !recipientAddress))}
+                disabled={
+                  loading ||
+                  (!currentInvoice.customer && (!recipientName || !recipientPhone || !recipientAddress)) ||
+                  (!selectedPaymentMethod && !codAmount)
+                }
                 className={`px-5 py-2 text-white rounded-md disabled:bg-gray-400 transition-colors duration-200 flex items-center ${currentTheme?.buttonBg || 'bg-blue-600'} ${currentTheme?.buttonHoverBg || 'hover:bg-blue-700'}`}
               >
                 {loading ? (
