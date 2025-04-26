@@ -64,7 +64,9 @@ export default function CreateOrderPage() {
   const [showQuickSalePopup, setShowQuickSalePopup] = useState(false)
   const [showShippingPopup, setShowShippingPopup] = useState(false)
   const [showConfirmPaymentPopup, setShowConfirmPaymentPopup] = useState(false)
+  const [showPrintInvoicePopup, setShowPrintInvoicePopup] = useState(false)
   const [paymentData, setPaymentData] = useState<any>(null)
+  const [invoiceData, setInvoiceData] = useState<any>(null)
   const [paymentMethods, setPaymentMethods] = useState<{payment_id: number, payment_method_name: string, description?: string, image?: string}[]>([])
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<number | null>(null)
   const [customerPaid, setCustomerPaid] = useState<string>('')
@@ -878,6 +880,52 @@ export default function CreateOrderPage() {
     setPaymentData(null);
   };
 
+  // Đóng popup in hóa đơn
+  const closePrintInvoicePopup = () => {
+    setShowPrintInvoicePopup(false);
+    setInvoiceData(null);
+  };
+
+  // Mở cửa sổ in
+  const handlePrint = () => {
+    // Thêm style cho chế độ in
+    const style = document.createElement('style');
+    style.id = 'print-style';
+    style.innerHTML = `
+      @media print {
+        body * {
+          visibility: hidden;
+        }
+        #invoice-preview, #invoice-preview * {
+          visibility: visible;
+        }
+        #invoice-preview {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100%;
+          padding: 20px;
+        }
+        @page {
+          size: A4;
+          margin: 10mm;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+
+    // In hóa đơn
+    window.print();
+
+    // Xóa style sau khi in
+    setTimeout(() => {
+      const printStyle = document.getElementById('print-style');
+      if (printStyle) {
+        printStyle.remove();
+      }
+    }, 1000);
+  };
+
   // Xử lý khi thay đổi giảm giá - hiện tại không sử dụng
   // const handleDiscountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
   //   const value = e.target.value;
@@ -1284,9 +1332,30 @@ export default function CreateOrderPage() {
         setSuccessMessage('');
       }, 3000); // Tự động ẩn sau 3 giây
 
-      // Đóng cả hai popup
+      // Đóng popup xác nhận thanh toán
       setShowConfirmPaymentPopup(false);
       setShowQuickSalePopup(false);
+
+      // Chuẩn bị dữ liệu cho hóa đơn
+      const orderDate = new Date().toLocaleDateString('vi-VN');
+      const orderTime = new Date().toLocaleTimeString('vi-VN');
+
+      setInvoiceData({
+        orderId: orderId,
+        orderDate: orderDate,
+        orderTime: orderTime,
+        customer: currentInvoice.customer,
+        products: currentInvoice.products,
+        totalAmount: currentInvoice.totalAmount,
+        totalDiscount: currentInvoice.totalDiscount,
+        amountToPay: currentInvoice.amountToPay,
+        customerPaid: parseInt(customerPaid) || 0,
+        change: calculateChange(),
+        paymentMethod: paymentMethods.find(method => method.payment_id === selectedPaymentMethod)
+      });
+
+      // Hiển thị popup in hóa đơn
+      setShowPrintInvoicePopup(true);
       setPaymentData(null);
       setLoading(false);
 
@@ -2350,6 +2419,141 @@ export default function CreateOrderPage() {
                     Xác nhận thanh toán
                   </>
                 )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Popup in hóa đơn */}
+      {showPrintInvoicePopup && invoiceData && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="absolute inset-0 bg-black opacity-10" onClick={closePrintInvoicePopup}></div>
+          <div className={`bg-white rounded-lg shadow-xl w-full max-w-3xl p-6 border-2 ${currentTheme?.borderColor || 'border-blue-500'} relative max-h-[90vh] overflow-y-auto`}>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-semibold">In hóa đơn</h3>
+              <button
+                onClick={closePrintInvoicePopup}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <XMarkIcon className="h-6 w-6" />
+              </button>
+            </div>
+
+            {/* Xem trước hóa đơn */}
+            <div className="border border-gray-200 rounded-lg p-6 mb-6 bg-white print:shadow-none" id="invoice-preview">
+              {/* Header hóa đơn */}
+              <div className="text-center mb-6">
+                <h2 className="text-xl font-bold">HÓA ĐƠN BÁN HÀNG</h2>
+                <p className="text-gray-600 text-sm mt-1">Mã đơn hàng: {invoiceData.orderId}</p>
+                <p className="text-gray-600 text-sm">Ngày: {invoiceData.orderDate} - {invoiceData.orderTime}</p>
+              </div>
+
+              {/* Thông tin khách hàng */}
+              <div className="mb-6">
+                <h3 className="font-semibold border-b pb-2 mb-2">Thông tin khách hàng</h3>
+                <p>
+                  <span className="font-medium">Khách hàng:</span> {invoiceData.customer ? invoiceData.customer.full_name : 'Khách vãng lai'}
+                </p>
+                {invoiceData.customer && (
+                  <>
+                    <p>
+                      <span className="font-medium">Số điện thoại:</span> {invoiceData.customer.phone || 'N/A'}
+                    </p>
+                    {invoiceData.customer.email && (
+                      <p>
+                        <span className="font-medium">Email:</span> {invoiceData.customer.email}
+                      </p>
+                    )}
+                    {invoiceData.customer.hometown && (
+                      <p>
+                        <span className="font-medium">Địa chỉ:</span> {invoiceData.customer.hometown}
+                      </p>
+                    )}
+                  </>
+                )}
+              </div>
+
+              {/* Chi tiết sản phẩm */}
+              <div className="mb-6">
+                <h3 className="font-semibold border-b pb-2 mb-2">Chi tiết sản phẩm</h3>
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-gray-50">
+                      <th className="py-2 px-2 text-left">Sản phẩm</th>
+                      <th className="py-2 px-2 text-right">Đơn giá</th>
+                      <th className="py-2 px-2 text-right">SL</th>
+                      <th className="py-2 px-2 text-right">Giảm giá</th>
+                      <th className="py-2 px-2 text-right">Thành tiền</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {invoiceData.products.map((product: any, index: number) => (
+                      <tr key={index} className="border-b border-gray-100">
+                        <td className="py-2 px-2">{product.product_name}</td>
+                        <td className="py-2 px-2 text-right">{formatCurrency(product.price)}</td>
+                        <td className="py-2 px-2 text-right">{product.quantity}</td>
+                        <td className="py-2 px-2 text-right">{formatCurrency(product.discount)}</td>
+                        <td className="py-2 px-2 text-right">{formatCurrency(product.price * product.quantity - product.discount)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Tổng cộng */}
+              <div className="mb-6">
+                <div className="flex justify-between py-2">
+                  <span className="font-medium">Tổng tiền hàng:</span>
+                  <span>{formatCurrency(invoiceData.totalAmount)}</span>
+                </div>
+                <div className="flex justify-between py-2">
+                  <span className="font-medium">Giảm giá:</span>
+                  <span>{formatCurrency(invoiceData.totalDiscount)}</span>
+                </div>
+                <div className="flex justify-between py-2 font-bold">
+                  <span>Tổng thanh toán:</span>
+                  <span className={currentTheme?.textColor || 'text-blue-600'}>
+                    {formatCurrency(invoiceData.amountToPay)}
+                  </span>
+                </div>
+                <div className="flex justify-between py-2">
+                  <span className="font-medium">Khách thanh toán:</span>
+                  <span>{formatCurrency(invoiceData.customerPaid)}</span>
+                </div>
+                <div className="flex justify-between py-2">
+                  <span className="font-medium">Tiền thừa:</span>
+                  <span>{formatCurrency(invoiceData.change)}</span>
+                </div>
+                <div className="flex justify-between py-2">
+                  <span className="font-medium">Phương thức thanh toán:</span>
+                  <span>{invoiceData.paymentMethod?.payment_method_name || 'Không xác định'}</span>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="mt-8 text-center text-sm text-gray-600">
+                <p>Cảm ơn quý khách đã mua hàng!</p>
+                <p>Hotline hỗ trợ: (028) 1234 5678</p>
+              </div>
+            </div>
+
+            {/* Nút in và hủy */}
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={closePrintInvoicePopup}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+              >
+                Đóng
+              </button>
+              <button
+                onClick={handlePrint}
+                className={`px-5 py-2 text-white rounded-md transition-colors duration-200 flex items-center ${currentTheme?.buttonBg || 'bg-blue-600'} ${currentTheme?.buttonHoverBg || 'hover:bg-blue-700'}`}
+              >
+                <svg className="w-5 h-5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                </svg>
+                In hóa đơn
               </button>
             </div>
           </div>
