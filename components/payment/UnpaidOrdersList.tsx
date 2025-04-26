@@ -3,14 +3,17 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { useTheme, themeColors } from '@/app/context/ThemeContext'
-import { 
-  MagnifyingGlassIcon, 
+import {
+  MagnifyingGlassIcon,
   ArrowPathIcon,
   CreditCardIcon,
   CalendarDaysIcon,
   UserIcon
 } from '@heroicons/react/24/outline'
-import Link from 'next/link'
+import { toast } from 'react-toastify'
+import OrderDetailsPopup from './OrderDetailsPopup'
+import PaymentMethodSelectionPopup from './PaymentMethodSelectionPopup'
+import PaymentConfirmationPopup from './PaymentConfirmationPopup'
 
 interface Order {
   order_id: string
@@ -39,6 +42,14 @@ export default function UnpaidOrdersList() {
   const [themeState, setThemeState] = useState({
     theme: themeColors.indigo
   })
+
+  // State cho các popup
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+  const [showOrderDetails, setShowOrderDetails] = useState(false)
+  const [showPaymentMethodSelection, setShowPaymentMethodSelection] = useState(false)
+  const [showPaymentConfirmation, setShowPaymentConfirmation] = useState(false)
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<any>(null)
+  const [processingPayment, setProcessingPayment] = useState(false)
 
   // Set mounted = true sau khi component được render ở client
   useEffect(() => {
@@ -116,10 +127,10 @@ export default function UnpaidOrdersList() {
       const processedOrders = ordersData.map(order => {
         // Tìm tên phương thức thanh toán
         const paymentMethod = paymentsData?.find(p => p.payment_id === order.payment_method)
-        
+
         // Tìm tên người tạo đơn
         const creator = usersData?.find(u => u.user_id === order.user_id)
-        
+
         return {
           ...order,
           customer_name: order.customers?.full_name || 'Khách vãng lai',
@@ -187,6 +198,119 @@ export default function UnpaidOrdersList() {
 
   // Chuyển trang
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber)
+
+  // Xem chi tiết đơn hàng
+  const viewOrderDetails = (order: Order) => {
+    setSelectedOrder(order)
+    setShowOrderDetails(true)
+  }
+
+  // Đóng popup chi tiết đơn hàng
+  const closeOrderDetails = () => {
+    setShowOrderDetails(false)
+    setSelectedOrder(null)
+  }
+
+  // Mở popup chọn phương thức thanh toán
+  const openPaymentMethodSelection = (order: Order) => {
+    setSelectedOrder(order)
+    setShowPaymentMethodSelection(true)
+    setShowOrderDetails(false) // Đóng popup chi tiết đơn hàng nếu đang mở
+  }
+
+  // Đóng popup chọn phương thức thanh toán
+  const closePaymentMethodSelection = () => {
+    setShowPaymentMethodSelection(false)
+    if (selectedOrder) {
+      setShowOrderDetails(true) // Mở lại popup chi tiết đơn hàng
+    }
+  }
+
+  // Xử lý khi chọn phương thức thanh toán
+  const handleSelectPaymentMethod = async (paymentMethod: any) => {
+    try {
+      console.log('Đã nhận thông tin phương thức thanh toán:', paymentMethod)
+
+      if (!paymentMethod || !paymentMethod.payment_id) {
+        toast.error('Thông tin phương thức thanh toán không hợp lệ')
+        return
+      }
+
+      // Lưu thông tin phương thức thanh toán đã chọn
+      setSelectedPaymentMethod(paymentMethod)
+      setShowPaymentMethodSelection(false)
+
+      // Đảm bảo dữ liệu đã được cập nhật trước khi hiển thị popup xác nhận
+      setTimeout(() => {
+        setShowPaymentConfirmation(true)
+      }, 100)
+    } catch (error: any) {
+      console.error('Lỗi khi xử lý phương thức thanh toán:', error)
+      toast.error(`Đã xảy ra lỗi khi xử lý yêu cầu: ${error.message || 'Lỗi không xác định'}`)
+    }
+  }
+
+  // Đóng popup xác nhận thanh toán
+  const closePaymentConfirmation = () => {
+    setShowPaymentConfirmation(false)
+    setShowPaymentMethodSelection(true) // Mở lại popup chọn phương thức thanh toán
+  }
+
+  // Xử lý thanh toán đơn hàng
+  const processPayment = async () => {
+    if (!selectedOrder || !selectedPaymentMethod) {
+      toast.error('Không có thông tin đơn hàng hoặc phương thức thanh toán')
+      return
+    }
+
+    setProcessingPayment(true)
+
+    try {
+      console.log('Thông tin thanh toán:', {
+        order_id: selectedOrder.order_id,
+        payment_id: selectedPaymentMethod.payment_id
+      })
+
+      // Cập nhật trạng thái đơn hàng và phương thức thanh toán
+      const { data, error } = await supabase
+        .from('orders')
+        .update({
+          status: 'Đã thanh toán',
+          payment_method: selectedPaymentMethod.payment_id
+        })
+        .eq('order_id', selectedOrder.order_id)
+        .select()
+
+      if (error) {
+        console.error('Lỗi khi cập nhật trạng thái đơn hàng:', error)
+        toast.error(`Không thể cập nhật trạng thái đơn hàng: ${error.message || 'Lỗi không xác định'}`)
+        setProcessingPayment(false)
+        return
+      }
+
+      console.log('Cập nhật thành công:', data)
+
+      // Hiển thị thông báo thành công
+      toast.success('Thanh toán đơn hàng thành công', {
+        autoClose: 3000
+      })
+
+      // Đóng tất cả các popup
+      setShowPaymentConfirmation(false)
+      setShowPaymentMethodSelection(false)
+      setShowOrderDetails(false)
+      setSelectedOrder(null)
+      setSelectedPaymentMethod(null)
+
+      // Làm mới danh sách đơn hàng
+      fetchUnpaidOrders()
+    } catch (error: any) {
+      console.error('Lỗi khi xử lý thanh toán:', error)
+      toast.error(`Đã xảy ra lỗi khi xử lý thanh toán: ${error.message || 'Lỗi không xác định'}`)
+    } finally {
+      setProcessingPayment(false)
+    }
+  }
 
   if (!mounted) {
     return null
@@ -294,7 +418,11 @@ export default function UnpaidOrdersList() {
               </tr>
             ) : (
               currentOrders.map((order) => (
-                <tr key={order.order_id} className="hover:bg-gray-50">
+                <tr
+                  key={order.order_id}
+                  className="hover:bg-gray-50 cursor-pointer"
+                  onClick={() => viewOrderDetails(order)}
+                >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">{order.order_id}</div>
                   </td>
@@ -315,19 +443,16 @@ export default function UnpaidOrdersList() {
                       {order.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <Link 
-                      href={`/dashboard/orders/search?id=${order.order_id}`}
-                      className={`text-${themeColor}-600 hover:text-${themeColor}-900 mr-4`}
-                    >
-                      Xem chi tiết
-                    </Link>
-                    <Link 
-                      href={`/dashboard/orders/create?order_id=${order.order_id}`}
-                      className={`text-${themeColor}-600 hover:text-${themeColor}-900`}
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium" onClick={(e) => e.stopPropagation()}>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        openPaymentMethodSelection(order)
+                      }}
+                      className={`text-${themeColor}-600 hover:text-${themeColor}-900 font-medium`}
                     >
                       Thanh toán
-                    </Link>
+                    </button>
                   </td>
                 </tr>
               ))
@@ -396,6 +521,38 @@ export default function UnpaidOrdersList() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Popup chi tiết đơn hàng */}
+      {showOrderDetails && selectedOrder && (
+        <OrderDetailsPopup
+          order={selectedOrder}
+          onClose={closeOrderDetails}
+          onPayment={openPaymentMethodSelection}
+          themeColor={themeColor}
+        />
+      )}
+
+      {/* Popup chọn phương thức thanh toán */}
+      {showPaymentMethodSelection && selectedOrder && (
+        <PaymentMethodSelectionPopup
+          order={selectedOrder}
+          onClose={closePaymentMethodSelection}
+          onConfirm={handleSelectPaymentMethod}
+          themeColor={themeColor}
+        />
+      )}
+
+      {/* Popup xác nhận thanh toán */}
+      {showPaymentConfirmation && selectedOrder && selectedPaymentMethod && (
+        <PaymentConfirmationPopup
+          order={selectedOrder}
+          paymentMethod={selectedPaymentMethod}
+          onClose={closePaymentConfirmation}
+          onConfirm={processPayment}
+          themeColor={themeColor}
+          isProcessing={processingPayment}
+        />
       )}
     </div>
   )

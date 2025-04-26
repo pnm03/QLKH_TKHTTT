@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { useRouter } from 'next/navigation'
+// Xóa các import không được sử dụng
 import { useTheme, themeColors } from '@/app/context/ThemeContext'
 import Link from 'next/link'
 import { 
@@ -35,7 +35,7 @@ interface RecentOrder {
 }
 
 export default function OrdersPage() {
-  const router = useRouter()
+  // Xóa các biến không được sử dụng
   const supabase = createClientComponentClient()
   const [mounted, setMounted] = useState(false)
   const themeContext = useTheme()
@@ -54,6 +54,8 @@ export default function OrdersPage() {
   // State cho đơn hàng gần đây
   const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([])
   const [loading, setLoading] = useState(true)
+  // Xóa các biến không được sử dụng
+  // Xóa các biến không được sử dụng
 
   // Set mounted = true sau khi component được render ở client
   useEffect(() => {
@@ -273,12 +275,12 @@ export default function OrdersPage() {
           </div>
           <div className="bg-gray-50 px-5 py-3 border-t border-gray-200">
             <div className="text-sm">
-              <Link 
-                href="/dashboard/orders/search?status=Chưa thanh toán" 
+              <button
+                // Xóa các tham chiếu không được sử dụng
                 className={`font-medium text-${themeColor}-600 hover:text-${themeColor}-900`}
               >
                 Xem chi tiết
-              </Link>
+              </button>
             </div>
           </div>
         </div>
@@ -378,12 +380,18 @@ export default function OrdersPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            order.status === 'Đã thanh toán' 
-                              ? 'bg-green-100 text-green-800' 
+                            order.status === 'Đã thanh toán'
+                              ? 'bg-green-100 text-green-800'
                               : 'bg-yellow-100 text-yellow-800'
                           }`}>
                             {order.status}
                           </span>
+                          <button
+                            // Xóa các tham chiếu không được sử dụng
+                            className={`ml-2 font-medium text-${themeColor}-600 hover:text-${themeColor}-900`}
+                          >
+                            Thanh toán
+                          </button>
                         </td>
                       </tr>
                     ))
@@ -408,74 +416,6 @@ export default function OrdersPage() {
         </div>
 
         {/* Các liên kết nhanh */}
-        <div className="bg-white shadow rounded-lg">
-          <div className="px-4 py-5 sm:px-6">
-            <h2 className="text-lg font-medium text-gray-900">Thao tác nhanh</h2>
-          </div>
-          <div className="border-t border-gray-200 px-4 py-5 sm:p-6">
-            <div className="space-y-4">
-              <Link
-                href="/dashboard/orders/create"
-                className={`block w-full text-left px-4 py-4 border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${themeColor}-500`}
-              >
-                <div className="flex items-center">
-                  <div className={`flex-shrink-0 rounded-md p-2 bg-${themeColor}-100`}>
-                    <ShoppingBagIcon className={`h-6 w-6 text-${themeColor}-600`} />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-base font-medium text-gray-900">Tạo đơn hàng mới</p>
-                    <p className="text-sm text-gray-500">Tạo đơn hàng mới cho khách hàng</p>
-                  </div>
-                </div>
-              </Link>
-              
-              <Link
-                href="/dashboard/orders/search"
-                className={`block w-full text-left px-4 py-4 border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${themeColor}-500`}
-              >
-                <div className="flex items-center">
-                  <div className={`flex-shrink-0 rounded-md p-2 bg-${themeColor}-100`}>
-                    <MagnifyingGlassIcon className={`h-6 w-6 text-${themeColor}-600`} />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-base font-medium text-gray-900">Tìm kiếm đơn hàng</p>
-                    <p className="text-sm text-gray-500">Tìm kiếm và xem chi tiết đơn hàng</p>
-                  </div>
-                </div>
-              </Link>
-              
-              <Link
-                href="/dashboard/payment"
-                className={`block w-full text-left px-4 py-4 border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${themeColor}-500`}
-              >
-                <div className="flex items-center">
-                  <div className={`flex-shrink-0 rounded-md p-2 bg-${themeColor}-100`}>
-                    <CreditCardIcon className={`h-6 w-6 text-${themeColor}-600`} />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-base font-medium text-gray-900">Quản lý thanh toán</p>
-                    <p className="text-sm text-gray-500">Xem và quản lý các phương thức thanh toán</p>
-                  </div>
-                </div>
-              </Link>
-              
-              <Link
-                href="/dashboard/reports"
-                className={`block w-full text-left px-4 py-4 border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${themeColor}-500`}
-              >
-                <div className="flex items-center">
-                  <div className={`flex-shrink-0 rounded-md p-2 bg-${themeColor}-100`}>
-                    <ArrowTrendingUpIcon className={`h-6 w-6 text-${themeColor}-600`} />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-base font-medium text-gray-900">Báo cáo doanh thu</p>
-                    <p className="text-sm text-gray-500">Xem báo cáo doanh thu từ đơn hàng</p>
-                  </div>
-                </div>
-              </Link>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   )
