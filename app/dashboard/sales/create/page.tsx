@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/utils/supabase/client'
-import { PlusIcon, XMarkIcon, MagnifyingGlassIcon, UserIcon, EnvelopeIcon, PhoneIcon, HomeIcon, CheckCircleIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
+import { PlusIcon, XMarkIcon, MagnifyingGlassIcon, UserIcon, EnvelopeIcon, PhoneIcon, HomeIcon, CheckCircleIcon, InformationCircleIcon, CheckIcon } from '@heroicons/react/24/outline'
 import { useTheme } from '@/app/context/ThemeContext'
 // Đã loại bỏ việc import các hàm cập nhật tồn kho vì sử dụng trigger trong cơ sở dữ liệu
 
@@ -63,6 +63,8 @@ export default function CreateOrderPage() {
   // State cho popup bán hàng nhanh và gửi đơn hàng
   const [showQuickSalePopup, setShowQuickSalePopup] = useState(false)
   const [showShippingPopup, setShowShippingPopup] = useState(false)
+  const [showConfirmPaymentPopup, setShowConfirmPaymentPopup] = useState(false)
+  const [paymentData, setPaymentData] = useState<any>(null)
   const [paymentMethods, setPaymentMethods] = useState<{payment_id: number, payment_method_name: string, description?: string, image?: string}[]>([])
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<number | null>(null)
   const [customerPaid, setCustomerPaid] = useState<string>('')
@@ -869,6 +871,13 @@ export default function CreateOrderPage() {
     setShowQuickSalePopup(false);
   };
 
+  // Đóng popup xác nhận thanh toán và hiển thị lại popup thanh toán nhanh
+  const closeConfirmPaymentPopup = () => {
+    setShowConfirmPaymentPopup(false);
+    setShowQuickSalePopup(true);
+    setPaymentData(null);
+  };
+
   // Xử lý khi thay đổi giảm giá - hiện tại không sử dụng
   // const handleDiscountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
   //   const value = e.target.value;
@@ -921,8 +930,8 @@ export default function CreateOrderPage() {
     };
   };
 
-  // Xử lý thanh toán nhanh
-  const handleQuickSale = async () => {
+  // Xử lý hiển thị popup xác nhận thanh toán
+  const handleQuickSale = () => {
     if (!selectedPaymentMethod) {
       alert('Vui lòng chọn phương thức thanh toán');
       return;
@@ -941,8 +950,25 @@ export default function CreateOrderPage() {
       return;
     }
 
-    // Đã loại bỏ việc cập nhật tồn kho thủ công vì sử dụng trigger trong cơ sở dữ liệu
+    // Lấy thông tin phương thức thanh toán đã chọn
+    const selectedMethod = paymentMethods.find(method => method.payment_id === selectedPaymentMethod);
 
+    // Chuẩn bị dữ liệu thanh toán để hiển thị trong popup xác nhận
+    setPaymentData({
+      invoice: invoices[activeInvoiceIndex],
+      totalAmount: totalAmountToPay,
+      customerPaid: paid,
+      change: calculateChange(),
+      paymentMethod: selectedMethod
+    });
+
+    // Hiển thị popup xác nhận thanh toán và ẩn popup thanh toán nhanh
+    setShowConfirmPaymentPopup(true);
+    setShowQuickSalePopup(false);
+  };
+
+  // Xử lý thanh toán thực sự sau khi xác nhận
+  const confirmPayment = async () => {
     setLoading(true);
 
     try {
@@ -1256,9 +1282,12 @@ export default function CreateOrderPage() {
       setSuccessMessage('Thanh toán thành công!');
       setTimeout(() => {
         setSuccessMessage('');
-      }, 2000); // Tự động ẩn sau 2 giây
+      }, 3000); // Tự động ẩn sau 3 giây
 
+      // Đóng cả hai popup
+      setShowConfirmPaymentPopup(false);
       setShowQuickSalePopup(false);
+      setPaymentData(null);
       setLoading(false);
 
       // Chỉ reset hóa đơn hiện tại sau khi thanh toán
@@ -2199,6 +2228,126 @@ export default function CreateOrderPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     Thanh toán
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Popup xác nhận thanh toán */}
+      {showConfirmPaymentPopup && paymentData && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="absolute inset-0 bg-black opacity-10" onClick={closeConfirmPaymentPopup}></div>
+          <div className={`bg-white rounded-lg shadow-xl w-full max-w-xl p-6 border-2 ${currentTheme?.borderColor || 'border-blue-500'} relative max-h-[90vh] overflow-y-auto`}>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-semibold">Xác nhận thanh toán</h3>
+              <button
+                onClick={closeConfirmPaymentPopup}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <XMarkIcon className="h-6 w-6" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {/* Thông tin sản phẩm */}
+              <div className="border border-gray-200 rounded-md p-3 bg-gray-50 max-h-40 overflow-y-auto">
+                <h4 className="font-medium text-gray-700 mb-2">Sản phẩm:</h4>
+                <ul className="space-y-1">
+                  {paymentData.invoice.products.map((product: any, index: number) => (
+                    <li key={index} className="text-sm flex justify-between">
+                      <span>{product.product_name} x{product.quantity}</span>
+                      <span>{formatCurrency(product.price * product.quantity)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Thông tin thanh toán */}
+              <div className="border border-gray-200 rounded-md p-3">
+                <div className="flex justify-between mb-1">
+                  <span className="text-gray-600">Tổng tiền hàng:</span>
+                  <span>{formatCurrency(paymentData.invoice.totalAmount)}</span>
+                </div>
+                <div className="flex justify-between mb-1">
+                  <span className="text-gray-600">Giảm giá:</span>
+                  <span>{formatCurrency(paymentData.invoice.totalDiscount)}</span>
+                </div>
+                <div className="flex justify-between mb-1 font-medium">
+                  <span className="text-gray-700">Khách cần trả:</span>
+                  <span className={currentTheme?.textColor || 'text-blue-600'}>
+                    {formatCurrency(paymentData.totalAmount)}
+                  </span>
+                </div>
+                <div className="flex justify-between mb-1">
+                  <span className="text-gray-600">Khách thanh toán:</span>
+                  <span>{formatCurrency(paymentData.customerPaid)}</span>
+                </div>
+                <div className="flex justify-between font-medium">
+                  <span className="text-gray-700">Tiền thừa:</span>
+                  <span className="text-green-600">{formatCurrency(paymentData.change)}</span>
+                </div>
+              </div>
+
+              {/* Phương thức thanh toán */}
+              <div className="border border-gray-200 rounded-md p-3 bg-gray-50">
+                <h4 className="font-medium text-gray-700 mb-2">Phương thức thanh toán:</h4>
+                <div className="flex flex-col items-center">
+                  <div className="flex items-center mb-2">
+                    {paymentData.paymentMethod.image ? (
+                      <img
+                        src={paymentData.paymentMethod.image}
+                        alt={paymentData.paymentMethod.payment_method_name}
+                        className="w-8 h-8 mr-2 object-contain"
+                      />
+                    ) : (
+                      <svg className="w-6 h-6 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                      </svg>
+                    )}
+                    <span className="font-medium">{paymentData.paymentMethod.payment_method_name}</span>
+                  </div>
+
+                  {/* Hiển thị hình ảnh lớn của phương thức thanh toán nếu có */}
+                  {paymentData.paymentMethod.image && (
+                    <div className="mt-2 flex justify-center w-full">
+                      <img
+                        src={paymentData.paymentMethod.image}
+                        alt={paymentData.paymentMethod.payment_method_name}
+                        className="max-w-full h-auto max-h-64 object-contain border border-gray-200 rounded-md p-2"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={closeConfirmPaymentPopup}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+              >
+                Hủy thanh toán
+              </button>
+              <button
+                onClick={confirmPayment}
+                disabled={loading}
+                className={`px-5 py-2 text-white rounded-md disabled:bg-gray-400 transition-colors duration-200 flex items-center ${currentTheme?.buttonBg || 'bg-blue-600'} ${currentTheme?.buttonHoverBg || 'hover:bg-blue-700'}`}
+              >
+                {loading ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Đang xử lý...
+                  </>
+                ) : (
+                  <>
+                    <CheckIcon className="w-5 h-5 mr-1.5" />
+                    Xác nhận thanh toán
                   </>
                 )}
               </button>
