@@ -4,9 +4,10 @@ import { useState, useEffect } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { useRouter } from 'next/navigation'
 import { useTheme, themeColors } from '@/app/context/ThemeContext'
-import { 
-  PlusIcon, 
-  PencilIcon, 
+import UnpaidOrdersList from '@/components/payment/UnpaidOrdersList'
+import {
+  PlusIcon,
+  PencilIcon,
   TrashIcon,
   CreditCardIcon,
   BanknotesIcon,
@@ -40,14 +41,14 @@ export default function PaymentPage() {
   const [showAddForm, setShowAddForm] = useState(false)
   const [showEditForm, setShowEditForm] = useState(false)
   const [selectedPayment, setSelectedPayment] = useState<PaymentMethod | null>(null)
-  
+
   // State cho form thêm/sửa
   const [formData, setFormData] = useState({
     payment_method_name: '',
     description: '',
     image: ''
   })
-  
+
   // State cho thông báo
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
@@ -63,7 +64,7 @@ export default function PaymentPage() {
       setThemeState({
         theme: themeContext.currentTheme || themeColors.indigo
       })
-      
+
       // Lấy danh sách phương thức thanh toán
       fetchPaymentMethods()
     }
@@ -77,9 +78,9 @@ export default function PaymentPage() {
         .from('payments')
         .select('*')
         .order('payment_method_name', { ascending: true })
-      
+
       if (error) throw error
-      
+
       setPaymentMethods(data || [])
     } catch (error) {
       console.error('Lỗi khi lấy danh sách phương thức thanh toán:', error)
@@ -134,22 +135,22 @@ export default function PaymentPage() {
   // Thêm phương thức thanh toán
   const addPaymentMethod = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     try {
       // Kiểm tra dữ liệu
       if (!formData.payment_method_name.trim()) {
         setError('Vui lòng nhập tên phương thức thanh toán')
         return
       }
-      
+
       // Lấy thông tin người dùng hiện tại
       const { data: { user } } = await supabase.auth.getUser()
-      
+
       if (!user) {
         setError('Bạn cần đăng nhập để thực hiện chức năng này')
         return
       }
-      
+
       // Thêm phương thức thanh toán
       const { data, error } = await supabase
         .from('payments')
@@ -162,16 +163,16 @@ export default function PaymentPage() {
           }
         ])
         .select()
-      
+
       if (error) throw error
-      
+
       // Cập nhật danh sách
       fetchPaymentMethods()
-      
+
       // Đóng form và hiển thị thông báo thành công
       closeForm()
       setSuccessMessage('Thêm phương thức thanh toán thành công')
-      
+
       // Tự động ẩn thông báo sau 3 giây
       setTimeout(() => {
         setSuccessMessage(null)
@@ -185,16 +186,16 @@ export default function PaymentPage() {
   // Cập nhật phương thức thanh toán
   const updatePaymentMethod = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!selectedPayment) return
-    
+
     try {
       // Kiểm tra dữ liệu
       if (!formData.payment_method_name.trim()) {
         setError('Vui lòng nhập tên phương thức thanh toán')
         return
       }
-      
+
       // Cập nhật phương thức thanh toán
       const { data, error } = await supabase
         .from('payments')
@@ -206,16 +207,16 @@ export default function PaymentPage() {
         })
         .eq('payment_id', selectedPayment.payment_id)
         .select()
-      
+
       if (error) throw error
-      
+
       // Cập nhật danh sách
       fetchPaymentMethods()
-      
+
       // Đóng form và hiển thị thông báo thành công
       closeForm()
       setSuccessMessage('Cập nhật phương thức thanh toán thành công')
-      
+
       // Tự động ẩn thông báo sau 3 giây
       setTimeout(() => {
         setSuccessMessage(null)
@@ -231,35 +232,35 @@ export default function PaymentPage() {
     if (!confirm('Bạn có chắc chắn muốn xóa phương thức thanh toán này?')) {
       return
     }
-    
+
     try {
       // Kiểm tra xem phương thức thanh toán có đang được sử dụng không
       const { count, error: checkError } = await supabase
         .from('orders')
         .select('*', { count: 'exact', head: true })
         .eq('payment_method', paymentId)
-      
+
       if (checkError) throw checkError
-      
+
       if (count && count > 0) {
         setError('Không thể xóa phương thức thanh toán này vì đang được sử dụng trong đơn hàng')
         return
       }
-      
+
       // Xóa phương thức thanh toán
       const { error } = await supabase
         .from('payments')
         .delete()
         .eq('payment_id', paymentId)
-      
+
       if (error) throw error
-      
+
       // Cập nhật danh sách
       fetchPaymentMethods()
-      
+
       // Hiển thị thông báo thành công
       setSuccessMessage('Xóa phương thức thanh toán thành công')
-      
+
       // Tự động ẩn thông báo sau 3 giây
       setTimeout(() => {
         setSuccessMessage(null)
@@ -323,8 +324,8 @@ export default function PaymentPage() {
             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
           </svg>
           <span>{error}</span>
-          <button 
-            onClick={() => setError(null)} 
+          <button
+            onClick={() => setError(null)}
             className="ml-auto text-red-700 hover:text-red-900"
           >
             <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
@@ -462,7 +463,7 @@ export default function PaymentPage() {
                       <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
                         Thêm phương thức thanh toán
                       </h3>
-                      
+
                       <div className="mb-4">
                         <label htmlFor="payment_method_name" className="block text-sm font-medium text-gray-700 mb-1">
                           Tên phương thức thanh toán <span className="text-red-500">*</span>
@@ -477,7 +478,7 @@ export default function PaymentPage() {
                           required
                         />
                       </div>
-                      
+
                       <div className="mb-4">
                         <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
                           Mô tả
@@ -491,7 +492,7 @@ export default function PaymentPage() {
                           className={`block w-full rounded-md focus:ring-${themeColor}-500 focus:border-${themeColor}-500 border border-gray-300 pl-3 pr-3 py-2`}
                         />
                       </div>
-                      
+
                       <div className="mb-4">
                         <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-1">
                           URL hình ảnh
@@ -551,7 +552,7 @@ export default function PaymentPage() {
                       <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
                         Sửa phương thức thanh toán
                       </h3>
-                      
+
                       <div className="mb-4">
                         <label htmlFor="payment_method_name" className="block text-sm font-medium text-gray-700 mb-1">
                           Tên phương thức thanh toán <span className="text-red-500">*</span>
@@ -566,7 +567,7 @@ export default function PaymentPage() {
                           required
                         />
                       </div>
-                      
+
                       <div className="mb-4">
                         <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
                           Mô tả
@@ -580,7 +581,7 @@ export default function PaymentPage() {
                           className={`block w-full rounded-md focus:ring-${themeColor}-500 focus:border-${themeColor}-500 border border-gray-300 pl-3 pr-3 py-2`}
                         />
                       </div>
-                      
+
                       <div className="mb-4">
                         <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-1">
                           URL hình ảnh
@@ -621,6 +622,9 @@ export default function PaymentPage() {
           </div>
         </div>
       )}
+
+      {/* Danh sách đơn hàng chưa thanh toán */}
+      <UnpaidOrdersList />
     </div>
   )
 }
