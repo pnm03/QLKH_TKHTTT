@@ -906,10 +906,12 @@ export default function CreateOrderPage() {
     return Math.max(0, paid - amountToPay);
   };
 
-  // Tính tổng tiền của tất cả các hóa đơn
+  // Tính tổng tiền của hóa đơn hiện tại (thay vì tất cả các hóa đơn)
   const calculateTotalAllInvoices = () => {
-    const totalAmount = invoices.reduce((sum, invoice) => sum + invoice.totalAmount, 0);
-    const totalDiscount = invoices.reduce((sum, invoice) => sum + invoice.totalDiscount, 0);
+    // Chỉ tính tổng tiền của hóa đơn hiện tại
+    const invoice = invoices[activeInvoiceIndex];
+    const totalAmount = invoice.totalAmount;
+    const totalDiscount = invoice.totalDiscount;
     const amountToPay = totalAmount - totalDiscount;
 
     return {
@@ -1048,16 +1050,16 @@ export default function CreateOrderPage() {
         // Mảng để lưu các chi tiết đơn hàng đã thêm thành công
         const successfulDetails = [];
 
-        // Xử lý từng hóa đơn
-        for (const invoice of invoices) {
-          console.log(`Xử lý hóa đơn: ${invoice.name} với ${invoice.products.length} sản phẩm`);
+        // Chỉ xử lý hóa đơn hiện tại
+        const invoice = invoices[activeInvoiceIndex];
+        console.log(`Xử lý hóa đơn: ${invoice.name} với ${invoice.products.length} sản phẩm`);
 
-          // Xử lý từng sản phẩm trong hóa đơn
-          for (const product of invoice.products) {
-            if (!product.product_id) {
-              console.error('Sản phẩm không có product_id:', product);
-              continue;
-            }
+        // Xử lý từng sản phẩm trong hóa đơn hiện tại
+        for (const product of invoice.products) {
+          if (!product.product_id) {
+            console.error('Sản phẩm không có product_id:', product);
+            continue;
+          }
 
             try {
               console.log(`Thêm sản phẩm: ${product.product_name} (ID: ${product.product_id}), SL: ${product.quantity}, Hóa đơn: ${invoice.name}`);
@@ -1122,7 +1124,6 @@ export default function CreateOrderPage() {
               console.error(`Lỗi không xác định khi xử lý sản phẩm ${product.product_id}:`, error);
             }
           }
-        }
 
         // Tồn kho sẽ được cập nhật sau khi thêm chi tiết đơn hàng thành công
         console.log('Chi tiết đơn hàng đã được thêm, chuẩn bị cập nhật tồn kho...');
@@ -1260,20 +1261,19 @@ export default function CreateOrderPage() {
       setShowQuickSalePopup(false);
       setLoading(false);
 
-      // Reset tất cả các hóa đơn sau khi thanh toán
-      const resetInvoices = invoices.map(invoice => ({
-        ...invoice,
+      // Chỉ reset hóa đơn hiện tại sau khi thanh toán
+      const updatedInvoices = [...invoices];
+      updatedInvoices[activeInvoiceIndex] = {
+        ...updatedInvoices[activeInvoiceIndex],
         products: [],
         note: '',
         totalAmount: 0,
         totalDiscount: 0,
         amountToPay: 0,
         customer: null
-      }));
+      };
 
-      // Chỉ giữ lại hóa đơn đầu tiên và đặt nó làm active
-      setInvoices([resetInvoices[0]]);
-      setActiveInvoiceIndex(0);
+      setInvoices(updatedInvoices);
 
       // Tải lại dữ liệu sản phẩm để cập nhật thông tin tồn kho mới nhất
       console.log('Tải lại dữ liệu sản phẩm để cập nhật thông tin tồn kho mới nhất');
@@ -1485,24 +1485,23 @@ export default function CreateOrderPage() {
 
       const orderDetails = [];
 
-      // Lặp qua tất cả các hóa đơn và sản phẩm
-      for (const invoice of invoices) {
-        for (const product of invoice.products) {
-          // Tạo ID ngẫu nhiên cho chi tiết đơn hàng
-          const orderDetailId = generateOrderDetailId();
+      // Chỉ lặp qua hóa đơn hiện tại
+      const invoice = invoices[activeInvoiceIndex];
+      for (const product of invoice.products) {
+        // Tạo ID ngẫu nhiên cho chi tiết đơn hàng
+        const orderDetailId = generateOrderDetailId();
 
-          // Tạo đối tượng chi tiết đơn hàng phù hợp với cấu trúc bảng orderdetails
-          orderDetails.push({
-            orderdetail_id: orderDetailId, // Thêm trường orderdetail_id
-            order_id: orderId,
-            product_id: product.product_id,
-            name_product: product.product_name,
-            name_check: invoice.name,
-            quantity: product.quantity,
-            unit_price: product.price,
-            subtotal: product.price * product.quantity - product.discount
-          });
-        }
+        // Tạo đối tượng chi tiết đơn hàng phù hợp với cấu trúc bảng orderdetails
+        orderDetails.push({
+          orderdetail_id: orderDetailId, // Thêm trường orderdetail_id
+          order_id: orderId,
+          product_id: product.product_id,
+          name_product: product.product_name,
+          name_check: invoice.name,
+          quantity: product.quantity,
+          unit_price: product.price,
+          subtotal: product.price * product.quantity - product.discount
+        });
       }
 
       console.log('Chi tiết đơn hàng:', orderDetails);
@@ -1594,7 +1593,8 @@ export default function CreateOrderPage() {
         note: '',
         totalAmount: 0,
         totalDiscount: 0,
-        amountToPay: 0
+        amountToPay: 0,
+        customer: null
       }
       setInvoices(updatedInvoices)
 
@@ -1602,21 +1602,8 @@ export default function CreateOrderPage() {
       console.log('Tải lại dữ liệu sản phẩm để cập nhật thông tin tồn kho mới nhất');
       fetchDefaultProducts();
 
-      // Đóng popup và reset form
+      // Đóng popup
       setShowShippingPopup(false);
-
-      // Reset thông tin hóa đơn hiện tại
-      let resetInvoices = [...invoices];
-      resetInvoices[activeInvoiceIndex] = {
-        ...resetInvoices[activeInvoiceIndex],
-        products: [],
-        note: '',
-        totalAmount: 0,
-        totalDiscount: 0,
-        amountToPay: 0,
-        customer: null
-      };
-      setInvoices(resetInvoices);
     } catch (error) {
       console.error('Lỗi khi tạo đơn hàng:', error);
       alert('Có lỗi xảy ra khi tạo đơn hàng: ' + (error instanceof Error ? error.message : 'Lỗi không xác định'));
