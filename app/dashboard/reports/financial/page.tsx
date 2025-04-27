@@ -6,6 +6,8 @@ import { useTheme, themeColors } from '@/app/context/ThemeContext'
 import Link from 'next/link'
 import { jsPDF } from 'jspdf'
 import html2canvas from 'html2canvas'
+import { createClient } from '@/utils/supabase/client'
+import AccessDenied from '@/components/AccessDenied'
 import {
   ArrowLeftIcon,
   DocumentArrowDownIcon,
@@ -61,6 +63,8 @@ export default function FinancialReportsPage() {
   const [themeState, setThemeState] = useState({
     theme: themeColors.indigo
   })
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [authLoading, setAuthLoading] = useState(true)
 
   // Hàm xử lý chuyển tab và lọc giao dịch
   const handleFilterAndSwitchTab = (transactionType: 'income' | 'expense') => {
@@ -116,6 +120,47 @@ export default function FinancialReportsPage() {
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  // Kiểm tra vai trò người dùng hiện tại có phải admin không
+  useEffect(() => {
+    if (mounted) {
+      const checkUserRole = async () => {
+        try {
+          const client = createClient()
+          const { data: { session }, error: sessionError } = await client.auth.getSession()
+
+          if (sessionError || !session) {
+            console.error('Không có phiên đăng nhập:', sessionError?.message)
+            setIsAdmin(false)
+            setAuthLoading(false)
+            return
+          }
+
+          const { data: accountData, error: accountError } = await client
+            .from('accounts')
+            .select('role')
+            .eq('user_id', session.user.id)
+            .maybeSingle()
+
+          if (accountError || !accountData) {
+            console.error('Lỗi khi lấy thông tin tài khoản:', accountError)
+            setIsAdmin(false)
+            setAuthLoading(false)
+            return
+          }
+
+          setIsAdmin(accountData.role === 'admin')
+          setAuthLoading(false)
+        } catch (error) {
+          console.error('Lỗi khi kiểm tra vai trò:', error)
+          setIsAdmin(false)
+          setAuthLoading(false)
+        }
+      }
+
+      checkUserRole()
+    }
+  }, [mounted])
 
   // Hàm lấy dữ liệu báo cáo tài chính
   const fetchFinancialData = useCallback(async () => {
@@ -549,6 +594,21 @@ export default function FinancialReportsPage() {
   const { theme } = themeState
   // Đảm bảo theme có giá trị trước khi sử dụng
   const themeColor = theme && theme.textColor ? theme.textColor.split('-')[1] : 'indigo'
+
+  // Hiển thị loading khi đang kiểm tra quyền
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900"></div>
+        <p className="ml-2 text-gray-500">Đang tải...</p>
+      </div>
+    )
+  }
+
+  // Hiển thị thông báo từ chối truy cập nếu không phải admin
+  if (!isAdmin) {
+    return <AccessDenied message="Truy cập bị từ chối. Bạn không có quyền truy cập chức năng báo cáo tài chính. Chỉ có admin mới truy cập được." />
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

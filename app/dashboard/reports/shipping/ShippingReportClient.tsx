@@ -107,11 +107,11 @@ export default function ShippingReportClient({
       doc.setTextColor(0);
       doc.setFontSize(10);
       doc.text(`Ngay tao: ${new Date().toLocaleDateString('vi-VN')}`, 20, 30);
-      doc.text(`Tong so don: ${totalShipments}`, 20, 36);
-      doc.text(`Don da thanh toan: ${successfulShipments}`, 20, 42);
-      doc.text(`Ty le thanh toan: ${successRate.toFixed(1)}%`, 20, 48);
-      doc.text(`Don da giao hang: ${deliveredShipments}`, 20, 54);
-      doc.text(`Ty le giao thanh cong: ${deliverySuccessRate.toFixed(1)}%`, 20, 60);
+      doc.text(`Tong so don: ${isNaN(totalShipments) ? 0 : totalShipments}`, 20, 36);
+      doc.text(`Don da thanh toan: ${isNaN(successfulShipments) ? 0 : successfulShipments}`, 20, 42);
+      doc.text(`Ty le thanh toan: ${isNaN(successRate) ? '0.0' : successRate.toFixed(1)}%`, 20, 48);
+      doc.text(`Don da giao hang: ${isNaN(deliveredShipments) ? 0 : deliveredShipments}`, 20, 54);
+      doc.text(`Ty le giao thanh cong: ${isNaN(deliverySuccessRate) ? '0.0' : deliverySuccessRate.toFixed(1)}%`, 20, 60);
 
       // --- Add Divider ---
       doc.setDrawColor(200, 200, 200);
@@ -127,11 +127,11 @@ export default function ShippingReportClient({
         startY: 80,
         head: [['Chi Tieu', 'So Luong']], // ASCII safe header
         body: [
-          ['Tong don van chuyen', totalShipments.toString()], // ASCII safe label
-          ['Don da thanh toan', successfulShipments.toString()], // ASCII safe label
-          ['Ty le thanh toan (%)', successRate.toFixed(1)], // ASCII safe label
-          ['Don da giao hang', deliveredShipments.toString()], // ASCII safe label
-          ['Ty le giao thanh cong (%)', deliverySuccessRate.toFixed(1)], // ASCII safe label
+          ['Tong don van chuyen', isNaN(totalShipments) ? '0' : totalShipments.toString()], // ASCII safe label
+          ['Don da thanh toan', isNaN(successfulShipments) ? '0' : successfulShipments.toString()], // ASCII safe label
+          ['Ty le thanh toan (%)', isNaN(successRate) ? '0.0' : successRate.toFixed(1)], // ASCII safe label
+          ['Don da giao hang', isNaN(deliveredShipments) ? '0' : deliveredShipments.toString()], // ASCII safe label
+          ['Ty le giao thanh cong (%)', isNaN(deliverySuccessRate) ? '0.0' : deliverySuccessRate.toFixed(1)], // ASCII safe label
         ],
         theme: 'grid',
         headStyles: {
@@ -290,23 +290,23 @@ export default function ShippingReportClient({
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
             <div className="bg-white p-4 rounded-lg shadow hover:shadow-lg transition-shadow duration-200 border border-gray-200">
               <h2 className="text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Tổng đơn vận chuyển</h2>
-              <p className="text-3xl font-semibold text-gray-900">{totalShipments}</p>
+              <p className="text-3xl font-semibold text-gray-900">{isNaN(totalShipments) ? 0 : totalShipments}</p>
             </div>
             <div className="bg-white p-4 rounded-lg shadow hover:shadow-lg transition-shadow duration-200 border border-gray-200">
               <h2 className="text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Đơn đã thanh toán</h2>
-              <p className="text-3xl font-semibold text-green-600">{successfulShipments}</p>
+              <p className="text-3xl font-semibold text-green-600">{isNaN(successfulShipments) ? 0 : successfulShipments}</p>
             </div>
             <div className="bg-white p-4 rounded-lg shadow hover:shadow-lg transition-shadow duration-200 border border-gray-200">
               <h2 className="text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Tỷ lệ thanh toán</h2>
-              <p className="text-3xl font-semibold text-blue-600">{successRate.toFixed(1)}%</p>
+              <p className="text-3xl font-semibold text-blue-600">{isNaN(successRate) ? '0.0' : successRate.toFixed(1)}%</p>
             </div>
             <div className="bg-white p-4 rounded-lg shadow hover:shadow-lg transition-shadow duration-200 border border-gray-200">
               <h2 className="text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Đơn đã giao hàng</h2>
-              <p className="text-3xl font-semibold text-orange-600">{deliveredShipments}</p>
+              <p className="text-3xl font-semibold text-orange-600">{isNaN(deliveredShipments) ? 0 : deliveredShipments}</p>
             </div>
             <div className="bg-white p-4 rounded-lg shadow hover:shadow-lg transition-shadow duration-200 border border-gray-200">
               <h2 className="text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Tỷ lệ giao thành công</h2>
-              <p className="text-3xl font-semibold text-purple-600">{deliverySuccessRate.toFixed(1)}%</p>
+              <p className="text-3xl font-semibold text-purple-600">{isNaN(deliverySuccessRate) ? '0.0' : deliverySuccessRate.toFixed(1)}%</p>
             </div>
           </div>
 

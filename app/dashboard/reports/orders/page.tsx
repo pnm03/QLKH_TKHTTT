@@ -7,7 +7,9 @@ import { useTheme, themeColors } from '@/app/context/ThemeContext'
 import Link from 'next/link'
 import { jsPDF } from 'jspdf'
 import html2canvas from 'html2canvas'
-import { 
+import { createClient } from '@/utils/supabase/client'
+import AccessDenied from '@/components/AccessDenied'
+import {
   ArrowLeftIcon,
   DocumentArrowDownIcon,
   ArrowPathIcon,
@@ -98,6 +100,8 @@ export default function OrderReportsPage() {
   const [themeState, setThemeState] = useState({
     theme: themeColors.indigo
   })
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [authLoading, setAuthLoading] = useState(true)
 
   // Refs cho xuất PDF
   const reportRef = useRef<HTMLDivElement>(null)
@@ -109,7 +113,7 @@ export default function OrderReportsPage() {
   const [isShippingFilter, setIsShippingFilter] = useState<string>('all')
   const [minAmount, setMinAmount] = useState('')
   const [maxAmount, setMaxAmount] = useState('')
-  
+
   // State cho dữ liệu
   const [orders, setOrders] = useState<Order[]>([])
   const [orderSummary, setOrderSummary] = useState<OrderSummary>({
@@ -141,13 +145,54 @@ export default function OrderReportsPage() {
     setMounted(true)
   }, [])
 
+  // Kiểm tra vai trò người dùng hiện tại có phải admin không
+  useEffect(() => {
+    if (mounted) {
+      const checkUserRole = async () => {
+        try {
+          const client = createClient()
+          const { data: { session }, error: sessionError } = await client.auth.getSession()
+
+          if (sessionError || !session) {
+            console.error('Không có phiên đăng nhập:', sessionError?.message)
+            setIsAdmin(false)
+            setAuthLoading(false)
+            return
+          }
+
+          const { data: accountData, error: accountError } = await client
+            .from('accounts')
+            .select('role')
+            .eq('user_id', session.user.id)
+            .maybeSingle()
+
+          if (accountError || !accountData) {
+            console.error('Lỗi khi lấy thông tin tài khoản:', accountError)
+            setIsAdmin(false)
+            setAuthLoading(false)
+            return
+          }
+
+          setIsAdmin(accountData.role === 'admin')
+          setAuthLoading(false)
+        } catch (error) {
+          console.error('Lỗi khi kiểm tra vai trò:', error)
+          setIsAdmin(false)
+          setAuthLoading(false)
+        }
+      }
+
+      checkUserRole()
+    }
+  }, [mounted])
+
   // Cập nhật themeState từ context
   useEffect(() => {
     if (mounted) {
       setThemeState({
         theme: themeContext.currentTheme || themeColors.indigo
       })
-      
+
       // Tải dữ liệu báo cáo khi component đã mounted
       fetchReportData()
     }
@@ -157,14 +202,14 @@ export default function OrderReportsPage() {
   const fetchReportData = async () => {
     setLoading(true)
     setError(null)
-    
+
     try {
       // Xây dựng query cơ bản
       let query = supabase
         .from('orders')
         .select('*')
         .order('order_date', { ascending: false })
-      
+
       // Áp dụng bộ lọc theo ngày
       if (dateRange.from) {
         query = query.gte('order_date', `${dateRange.from}T00:00:00.000Z`)
@@ -172,18 +217,18 @@ export default function OrderReportsPage() {
       if (dateRange.to) {
         query = query.lte('order_date', `${dateRange.to}T23:59:59.999Z`)
       }
-      
+
       // Áp dụng bộ lọc theo trạng thái
       if (statusFilter !== 'all') {
         query = query.eq('status', statusFilter)
       }
-      
+
       // Áp dụng bộ lọc theo vận chuyển
       if (isShippingFilter !== 'all') {
         const isShipping = isShippingFilter === 'true'
         query = query.eq('is_shipping', isShipping)
       }
-      
+
       // Áp dụng bộ lọc theo giá trị đơn hàng
       if (minAmount && !isNaN(parseFloat(minAmount))) {
         query = query.gte('price', parseFloat(minAmount))
@@ -191,29 +236,29 @@ export default function OrderReportsPage() {
       if (maxAmount && !isNaN(parseFloat(maxAmount))) {
         query = query.lte('price', parseFloat(maxAmount))
       }
-      
+
       // Thực hiện truy vấn
       const { data: ordersData, error: ordersError } = await query
-      
+
       if (ordersError) {
         throw ordersError
       }
-      
+
       // Lấy thông tin chi tiết đơn hàng
       let enrichedOrdersData = [...(ordersData || [])]
-      
+
       // Lấy thông tin vận chuyển cho các đơn hàng có vận chuyển
       const orderIdsWithShipping = enrichedOrdersData
         .filter(order => order.is_shipping)
         .map(order => order.order_id)
-      
+
       if (orderIdsWithShipping.length > 0) {
         try {
           const { data: shippingsData, error: shippingsError } = await supabase
             .from('shippings')
             .select('*')
             .in('order_id', orderIdsWithShipping)
-          
+
           if (!shippingsError && shippingsData) {
             // Thêm thông tin vận chuyển vào đơn hàng
             enrichedOrdersData = enrichedOrdersData.map(order => {
@@ -234,7 +279,7 @@ export default function OrderReportsPage() {
           console.error('Lỗi khi lấy dữ liệu vận chuyển:', error)
         }
       }
-      
+
       // Xử lý dữ liệu đơn hàng
       setOrders(enrichedOrdersData)
       calculateSummary(enrichedOrdersData)
@@ -265,7 +310,7 @@ export default function OrderReportsPage() {
       setLoading(false)
     }
   }
-  
+
   // Tính toán tổng kết từ dữ liệu đơn hàng
   const calculateSummary = (ordersData: Order[]) => {
     const totalOrders = ordersData.length
@@ -274,7 +319,7 @@ export default function OrderReportsPage() {
     const shippingOrders = ordersData.filter(order => order.is_shipping).length
     const paidOrders = ordersData.filter(order => order.status === 'Đã thanh toán').length
     const unpaidOrders = ordersData.filter(order => order.status === 'Chưa thanh toán').length
-    
+
     setOrderSummary({
       totalOrders,
       totalRevenue,
@@ -284,59 +329,59 @@ export default function OrderReportsPage() {
       unpaidOrders
     })
   }
-  
+
   // Tính toán doanh thu theo ngày
   const calculateRevenueByDay = (ordersData: Order[]) => {
     // Nhóm đơn hàng theo ngày và tính tổng doanh thu
     const revenueMap = new Map<string, number>()
-    
+
     ordersData.forEach(order => {
       const orderDate = new Date(order.order_date)
       const dateKey = orderDate.toISOString().split('T')[0] // Lấy phần ngày YYYY-MM-DD
-      
+
       const currentRevenue = revenueMap.get(dateKey) || 0
       revenueMap.set(dateKey, currentRevenue + (order.price || 0))
     })
-    
+
     // Sắp xếp theo ngày
     const sortedEntries = Array.from(revenueMap.entries()).sort((a, b) => a[0].localeCompare(b[0]))
-    
+
     // Giới hạn hiển thị 7 ngày gần nhất nếu có nhiều dữ liệu
     const limitedEntries = sortedEntries.slice(-7)
-    
+
     // Định dạng ngày để hiển thị
     const labels = limitedEntries.map(([date]) => {
       const [year, month, day] = date.split('-')
       return `${day}/${month}`
     })
-    
+
     const values = limitedEntries.map(([_, revenue]) => revenue)
-    
+
     setRevenueByDay({
       labels,
       values
     })
   }
-  
+
   // Tính toán đơn hàng theo trạng thái
   const calculateOrdersByStatus = (ordersData: Order[]) => {
     const statusMap = new Map<string, number>()
-    
+
     ordersData.forEach(order => {
       const status = order.status || 'Không xác định'
       const currentCount = statusMap.get(status) || 0
       statusMap.set(status, currentCount + 1)
     })
-    
+
     const labels = Array.from(statusMap.keys())
     const values = Array.from(statusMap.values())
-    
+
     setOrdersByStatus({
       labels,
       values
     })
   }
-  
+
   // Lấy dữ liệu phương thức thanh toán
   const fetchPaymentMethodsData = async (ordersData: Order[]) => {
     try {
@@ -344,10 +389,10 @@ export default function OrderReportsPage() {
       const { data: paymentMethodsData, error: paymentMethodsError } = await supabase
         .from('payments')
         .select('payment_id, payment_method_name')
-      
+
       if (paymentMethodsError) {
         console.error('Lỗi khi lấy dữ liệu phương thức thanh toán:', paymentMethodsError)
-        
+
         // Sử dụng danh sách mặc định nếu có lỗi
         const defaultPaymentMethods = [
           { payment_id: 1, payment_method_name: 'Tiền mặt' },
@@ -355,10 +400,10 @@ export default function OrderReportsPage() {
           { payment_id: 3, payment_method_name: 'Thẻ tín dụng' },
           { payment_id: 4, payment_method_name: 'Ví điện tử' }
         ]
-        
+
         // Tính toán số lượng và tổng giá trị đơn hàng theo phương thức thanh toán
         const methodMap = new Map<number, { count: number, total: number }>()
-        
+
         ordersData.forEach(order => {
           if (order.payment_method) {
             const methodId = order.payment_method
@@ -369,11 +414,11 @@ export default function OrderReportsPage() {
             })
           }
         })
-        
+
         // Tổng hợp dữ liệu
         const totalOrders = ordersData.length
         const totalRevenue = ordersData.reduce((sum, order) => sum + (order.price || 0), 0)
-        
+
         const paymentSummary: PaymentMethodSummary[] = defaultPaymentMethods.map(method => {
           const stats = methodMap.get(method.payment_id) || { count: 0, total: 0 }
           return {
@@ -384,14 +429,14 @@ export default function OrderReportsPage() {
             percentage: totalOrders > 0 ? (stats.count / totalOrders) * 100 : 0
           }
         })
-        
+
         setPaymentMethods(paymentSummary)
         return
       }
-      
+
       // Tính toán số lượng và tổng giá trị đơn hàng theo phương thức thanh toán
       const methodMap = new Map<number, { count: number, total: number }>()
-      
+
       ordersData.forEach(order => {
         if (order.payment_method) {
           const methodId = order.payment_method
@@ -402,11 +447,11 @@ export default function OrderReportsPage() {
           })
         }
       })
-      
+
       // Tổng hợp dữ liệu
       const totalOrders = ordersData.length
       const totalRevenue = ordersData.reduce((sum, order) => sum + (order.price || 0), 0)
-      
+
       const paymentSummary: PaymentMethodSummary[] = paymentMethodsData?.map(method => {
         const stats = methodMap.get(method.payment_id) || { count: 0, total: 0 }
         return {
@@ -417,35 +462,35 @@ export default function OrderReportsPage() {
           percentage: totalOrders > 0 ? (stats.count / totalOrders) * 100 : 0
         }
       }) || []
-      
+
       setPaymentMethods(paymentSummary)
     } catch (error) {
       console.error('Lỗi khi lấy dữ liệu phương thức thanh toán:', error)
     }
   }
-  
+
   // Lấy dữ liệu khách hàng hàng đầu
   const fetchTopCustomers = async (ordersData: Order[]) => {
     try {
       // Nhóm đơn hàng theo khách hàng
-      const customerMap = new Map<string, { 
-        order_count: number, 
-        total_spent: number, 
-        customer_name: string 
+      const customerMap = new Map<string, {
+        order_count: number,
+        total_spent: number,
+        customer_name: string
       }>()
-      
+
       // Lọc ra các đơn hàng có customer_id và customer_name
       ordersData.forEach(order => {
         if (order.customer_id) {
           const customerId = order.customer_id
           const customerName = order.customer_name || 'Khách hàng ' + customerId.substring(0, 8)
-          
-          const current = customerMap.get(customerId) || { 
-            order_count: 0, 
-            total_spent: 0, 
-            customer_name: customerName 
+
+          const current = customerMap.get(customerId) || {
+            order_count: 0,
+            total_spent: 0,
+            customer_name: customerName
           }
-          
+
           customerMap.set(customerId, {
             order_count: current.order_count + 1,
             total_spent: current.total_spent + (order.price || 0),
@@ -453,7 +498,7 @@ export default function OrderReportsPage() {
           })
         }
       })
-      
+
       // Tạo danh sách khách hàng hàng đầu trực tiếp từ dữ liệu đơn hàng
       const topCustomersList: TopCustomer[] = Array.from(customerMap.entries()).map(([customerId, stats]) => {
         return {
@@ -463,42 +508,42 @@ export default function OrderReportsPage() {
           total_spent: stats.total_spent
         }
       })
-      
+
       // Sắp xếp theo tổng chi tiêu giảm dần và lấy 5 khách hàng hàng đầu
       const sortedCustomers = topCustomersList.sort((a, b) => b.total_spent - a.total_spent).slice(0, 5)
-      
+
       setTopCustomers(sortedCustomers)
     } catch (error) {
       console.error('Lỗi khi lấy dữ liệu khách hàng hàng đầu:', error)
       setTopCustomers([])
     }
   }
-  
+
   // Tính toán xu hướng đơn hàng theo tháng
   const calculateOrderTrends = (ordersData: Order[]) => {
     // Nhóm đơn hàng theo tháng
     const monthMap = new Map<string, { order_count: number, revenue: number }>()
-    
+
     ordersData.forEach(order => {
       const orderDate = new Date(order.order_date)
       const monthKey = `${orderDate.getFullYear()}-${String(orderDate.getMonth() + 1).padStart(2, '0')}`
-      
+
       const current = monthMap.get(monthKey) || { order_count: 0, revenue: 0 }
       monthMap.set(monthKey, {
         order_count: current.order_count + 1,
         revenue: current.revenue + (order.price || 0)
       })
     })
-    
+
     // Sắp xếp theo tháng
     const sortedEntries = Array.from(monthMap.entries()).sort((a, b) => a[0].localeCompare(b[0]))
-    
+
     // Tính toán xu hướng
     const trends: OrderTrend[] = sortedEntries.map(([monthKey, stats], index) => {
       const [year, month] = monthKey.split('-')
       const period = `${month}/${year}`
       const avg_value = stats.order_count > 0 ? stats.revenue / stats.order_count : 0
-      
+
       // Tính tỷ lệ tăng trưởng so với tháng trước
       let growth_rate: number | undefined = undefined
       if (index > 0) {
@@ -507,7 +552,7 @@ export default function OrderReportsPage() {
           growth_rate = ((stats.revenue - prevRevenue) / prevRevenue) * 100
         }
       }
-      
+
       return {
         period,
         order_count: stats.order_count,
@@ -516,26 +561,26 @@ export default function OrderReportsPage() {
         growth_rate
       }
     })
-    
+
     // Lấy 6 tháng gần nhất
     const recentTrends = trends.slice(-6)
-    
+
     setOrderTrends(recentTrends)
   }
-  
+
   // Xử lý thay đổi bộ lọc
   const handleDateChange = (field: 'from' | 'to') => (e: React.ChangeEvent<HTMLInputElement>) => {
     setDateRange(prev => ({ ...prev, [field]: e.target.value }))
   }
-  
+
   const handleStatusFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setStatusFilter(e.target.value)
   }
-  
+
   const handleIsShippingFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setIsShippingFilter(e.target.value)
   }
-  
+
   const handleAmountChange = (field: 'min' | 'max') => (e: React.ChangeEvent<HTMLInputElement>) => {
     if (field === 'min') {
       setMinAmount(e.target.value)
@@ -543,11 +588,11 @@ export default function OrderReportsPage() {
       setMaxAmount(e.target.value)
     }
   }
-  
+
   const handleApplyFilters = () => {
     fetchReportData()
   }
-  
+
   const handleResetFilters = () => {
     setDateRange({ from: '', to: '' })
     setStatusFilter('all')
@@ -557,13 +602,13 @@ export default function OrderReportsPage() {
     // Gọi lại API để lấy dữ liệu không có bộ lọc
     fetchReportData()
   }
-  
+
   // Xuất báo cáo PDF
   const exportToPDF = async () => {
     if (!reportRef.current) return
-    
+
     setExportingPdf(true)
-    
+
     try {
       // Tạo PDF với kích thước A4
       const pdf = new jsPDF({
@@ -571,10 +616,10 @@ export default function OrderReportsPage() {
         unit: 'mm',
         format: 'a4'
       })
-      
+
       // Sử dụng font Times New Roman
       pdf.setFont("times", "normal")
-      
+
       // Thêm tiêu đề và thông tin chính thức
       pdf.setFontSize(13)
       pdf.setTextColor(0, 0, 0)
@@ -585,11 +630,11 @@ export default function OrderReportsPage() {
       pdf.setFontSize(12)
       pdf.text("Độc lập - Tự do - Hạnh phúc", 105, 23, { align: "center" })
       pdf.line(75, 25, 135, 25)
-      
+
       // Thêm tiêu đề báo cáo
       pdf.setFontSize(16)
       pdf.text("BÁO CÁO TỔNG HỢP ĐƠN HÀNG", 105, 35, { align: "center" })
-      
+
       // Thêm thông tin thời gian và bộ lọc
       const now = new Date()
       let reportPeriod = "Tất cả thời gian"
@@ -600,26 +645,26 @@ export default function OrderReportsPage() {
       } else if (dateRange.to) {
         reportPeriod = `Đến ngày ${dateRange.to}`
       }
-      
+
       pdf.setFont("times", "normal")
       pdf.setFontSize(10)
       pdf.text(`Kỳ báo cáo: ${reportPeriod}`, 105, 42, { align: "center" })
       pdf.text(`Ngày xuất báo cáo: ${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()} ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`, 105, 47, { align: "center" })
-      
+
       if (statusFilter !== 'all') {
         pdf.text(`Trạng thái: ${statusFilter}`, 105, 52, { align: "center" })
       }
-      
+
       // Thêm thông tin tổng quan
       pdf.setFont("times", "bold")
       pdf.setFontSize(12)
       pdf.text("I. THÔNG TIN TỔNG QUAN", 20, 60)
       pdf.setLineWidth(0.2)
       pdf.line(20, 62, 80, 62)
-      
+
       pdf.setFont("times", "normal")
       pdf.setFontSize(10)
-      
+
       // Tạo bảng thông tin tổng quan
       const summaryData = [
         ["Tổng số đơn hàng:", `${orderSummary.totalOrders} đơn`],
@@ -629,125 +674,125 @@ export default function OrderReportsPage() {
         ["Đơn hàng đã thanh toán:", `${orderSummary.paidOrders} đơn (${orderSummary.totalOrders > 0 ? ((orderSummary.paidOrders / orderSummary.totalOrders) * 100).toFixed(1) : 0}%)`],
         ["Đơn hàng chưa thanh toán:", `${orderSummary.unpaidOrders} đơn (${orderSummary.totalOrders > 0 ? ((orderSummary.unpaidOrders / orderSummary.totalOrders) * 100).toFixed(1) : 0}%)`]
       ]
-      
+
       let yPos = 68
       summaryData.forEach(row => {
         pdf.text(row[0], 25, yPos)
         pdf.text(row[1], 80, yPos)
         yPos += 7
       })
-      
+
       // Thêm thông tin đơn hàng theo trạng thái
       pdf.setFont("times", "bold")
       pdf.setFontSize(12)
       pdf.text("II. ĐƠN HÀNG THEO TRẠNG THÁI", 20, yPos + 5)
       pdf.line(20, yPos + 7, 100, yPos + 7)
-      
+
       pdf.setFont("times", "normal")
       pdf.setFontSize(10)
       yPos += 13
-      
+
       // Hiển thị dữ liệu đơn hàng theo trạng thái dạng bảng thay vì biểu đồ
       ordersByStatus.labels.forEach((label, index) => {
         const value = ordersByStatus.values[index]
         const total = ordersByStatus.values.reduce((sum, val) => sum + val, 0)
         const percentage = total > 0 ? (value / total) * 100 : 0
-        
+
         pdf.text(`${label}:`, 25, yPos)
         pdf.text(`${value} đơn hàng (${percentage.toFixed(1)}%)`, 80, yPos)
-        
+
         yPos += 7
       })
-      
+
       // Thêm thông tin phương thức thanh toán
       pdf.setFont("times", "bold")
       pdf.setFontSize(12)
       pdf.text("III. PHƯƠNG THỨC THANH TOÁN", 20, yPos + 5)
       pdf.line(20, yPos + 7, 100, yPos + 7)
-      
+
       pdf.setFont("times", "normal")
       pdf.setFontSize(10)
       yPos += 13
-      
+
       // Vẽ bảng phương thức thanh toán
       const paymentHeaders = ["Phương thức", "Số đơn hàng", "Tổng giá trị", "Tỷ lệ"]
       const paymentCellWidth = [50, 30, 50, 30]
       const paymentMargin = 25
-      
+
       // Vẽ header
       pdf.setFillColor(240, 240, 240)
       pdf.rect(paymentMargin, yPos, paymentCellWidth.reduce((a, b) => a + b, 0), 8, 'F')
-      
+
       pdf.setFont("times", "bold")
       let currentX = paymentMargin
       paymentHeaders.forEach((header, i) => {
         pdf.text(header, currentX + 2, yPos + 5)
         currentX += paymentCellWidth[i]
       })
-      
+
       yPos += 8
-      
+
       // Vẽ dữ liệu phương thức thanh toán
       pdf.setFont("times", "normal")
       paymentMethods.forEach(method => {
         currentX = paymentMargin
-        
+
         const rowData = [
           method.method_name,
           method.count.toString(),
           formatCurrency(method.total),
           `${method.percentage.toFixed(1)}%`
         ]
-        
+
         rowData.forEach((cell, i) => {
           pdf.text(cell, currentX + 2, yPos + 5)
           currentX += paymentCellWidth[i]
         })
-        
+
         pdf.setDrawColor(200, 200, 200)
         pdf.line(paymentMargin, yPos, paymentMargin + paymentCellWidth.reduce((a, b) => a + b, 0), yPos)
-        
+
         yPos += 8
       })
-      
+
       // Kiểm tra nếu cần thêm trang mới
       if (yPos > 250) {
         pdf.addPage()
         pdf.setFont("times", "normal")
         yPos = 20
       }
-      
+
       // Thêm thông tin doanh thu theo ngày
       pdf.setFont("times", "bold")
       pdf.setFontSize(12)
       pdf.text("IV. DOANH THU THEO NGÀY", 20, yPos + 10)
       pdf.line(20, yPos + 12, 90, yPos + 12)
-      
+
       pdf.setFont("times", "normal")
       pdf.setFontSize(10)
       yPos += 20
-      
+
       // Tạo bảng doanh thu theo ngày
       const tableHeaders = ["Ngày", "Doanh thu", "Số đơn hàng", "Giá trị trung bình"]
       const cellWidth = [30, 60, 30, 60]
       const cellHeight = 8
       const margin = 25
-      
+
       // Vẽ header
       pdf.setFillColor(240, 240, 240)
       pdf.rect(margin, yPos, cellWidth.reduce((a, b) => a + b, 0), cellHeight, 'F')
-      
+
       pdf.setFont("times", "bold")
       currentX = margin
       tableHeaders.forEach((header, i) => {
         pdf.text(header, currentX + 2, yPos + 5)
         currentX += cellWidth[i]
       })
-      
+
       // Vẽ dữ liệu
       pdf.setFont("times", "normal")
       let currentY = yPos + cellHeight
-      
+
       // Tạo dữ liệu bảng
       const tableData = revenueByDay.labels.map((label, index) => {
         const value = revenueByDay.values[index]
@@ -765,64 +810,64 @@ export default function OrderReportsPage() {
         const avgValue = orderCount > 0 ? value / orderCount : 0
         return [label, formatCurrency(value), orderCount.toString(), formatCurrency(avgValue)]
       })
-      
+
       tableData.forEach((row, rowIndex) => {
         currentX = margin
-        
+
         // Kiểm tra nếu cần thêm trang mới
         if (currentY > 270) {
           pdf.addPage()
           pdf.setFont("times", "normal")
           currentY = 20
-          
+
           // Vẽ lại header trên trang mới
           pdf.setFillColor(240, 240, 240)
           pdf.rect(margin, currentY, cellWidth.reduce((a, b) => a + b, 0), cellHeight, 'F')
-          
+
           pdf.setFont("times", "bold")
           currentX = margin
           tableHeaders.forEach((header, i) => {
             pdf.text(header, currentX + 2, currentY + 5)
             currentX += cellWidth[i]
           })
-          
+
           pdf.setFont("times", "normal")
           currentY += cellHeight
         }
-        
+
         // Vẽ hàng
         row.forEach((cell, i) => {
           pdf.text(cell, currentX + 2, currentY + 5)
           currentX += cellWidth[i]
         })
-        
+
         // Vẽ đường kẻ
         pdf.setDrawColor(200, 200, 200)
         pdf.line(margin, currentY, margin + cellWidth.reduce((a, b) => a + b, 0), currentY)
-        
+
         currentY += cellHeight
       })
-      
+
       // Thêm chữ ký
       const signatureY = currentY + 20
       pdf.setFont("times", "bold")
       pdf.text("Người lập báo cáo", 50, signatureY, { align: "center" })
       pdf.text("Người phê duyệt", 160, signatureY, { align: "center" })
-      
+
       pdf.setFont("times", "italic")
       pdf.setFontSize(10)
       pdf.text("(Ký, ghi rõ họ tên)", 50, signatureY + 7, { align: "center" })
       pdf.text("(Ký, ghi rõ họ tên)", 160, signatureY + 7, { align: "center" })
-      
+
       // Thêm thông tin công ty ở footer
       pdf.setFont("times", "normal")
       pdf.setFontSize(8)
       pdf.text("© Hệ thống quản lý bán hàng - Công ty TNHH ABC", 105, 290, { align: "center" })
-      
+
       // Tạo tên file với timestamp
       const timestamp = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}_${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}`
       const filename = `bao_cao_don_hang_${timestamp}.pdf`
-      
+
       // Tải xuống PDF
       pdf.save(filename)
     } catch (error) {
@@ -832,13 +877,13 @@ export default function OrderReportsPage() {
       setExportingPdf(false)
     }
   }
-  
+
   // Xuất bảng dữ liệu sang PDF
   const exportTableToPDF = async () => {
     if (!tableRef.current) return
-    
+
     setExportingPdf(true)
-    
+
     try {
       const tableElement = tableRef.current
       const canvas = await html2canvas(tableElement, {
@@ -847,30 +892,30 @@ export default function OrderReportsPage() {
         logging: false,
         backgroundColor: '#ffffff'
       })
-      
+
       const imgData = canvas.toDataURL('image/png')
-      
+
       // Tạo PDF với kích thước A4 landscape
       const pdf = new jsPDF({
         orientation: 'landscape',
         unit: 'mm',
         format: 'a4'
       })
-      
+
       const imgWidth = 297 // A4 landscape width in mm
       const imgHeight = (canvas.height * imgWidth) / canvas.width
-      
+
       pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight)
-      
+
       // Nếu nội dung dài hơn 1 trang
       if (imgHeight > 210) { // A4 landscape height in mm
         let remainingHeight = imgHeight
         let position = 0
-        
+
         // Trang đầu tiên đã được thêm
         remainingHeight -= 210
         position += 210
-        
+
         // Thêm các trang tiếp theo nếu cần
         while (remainingHeight > 0) {
           pdf.addPage()
@@ -879,12 +924,12 @@ export default function OrderReportsPage() {
           position += 210
         }
       }
-      
+
       // Tạo tên file với timestamp
       const now = new Date()
       const timestamp = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}_${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}`
       const filename = `bang_don_hang_${timestamp}.pdf`
-      
+
       // Tải xuống PDF
       pdf.save(filename)
     } catch (error) {
@@ -894,13 +939,13 @@ export default function OrderReportsPage() {
       setExportingPdf(false)
     }
   }
-  
+
   // Format tiền tệ
   const formatCurrency = (amount: number | null | undefined): string => {
     if (amount === null || amount === undefined) return '0 ₫'
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount)
   }
-  
+
   // Format ngày tháng
   const formatDate = (dateString: string | null | undefined): string => {
     if (!dateString) return 'N/A'
@@ -917,13 +962,13 @@ export default function OrderReportsPage() {
       return 'Ngày không hợp lệ'
     }
   }
-  
+
   // Lấy tên trạng thái
   const getStatusName = (status: string | null | undefined): string => {
     if (!status) return 'Không xác định'
     return status
   }
-  
+
   // Lấy màu trạng thái
   const getStatusColor = (status: string | null | undefined): string => {
     switch (status) {
@@ -932,14 +977,29 @@ export default function OrderReportsPage() {
       default: return 'gray'
     }
   }
-  
+
   if (!mounted) {
     return null
   }
-  
+
   const { theme } = themeState
   const themeColor = theme && theme.textColor ? theme.textColor.split('-')[1] : 'indigo'
-  
+
+  // Hiển thị loading khi đang kiểm tra quyền
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900"></div>
+        <p className="ml-2 text-gray-500">Đang tải...</p>
+      </div>
+    )
+  }
+
+  // Hiển thị thông báo từ chối truy cập nếu không phải admin
+  if (!isAdmin) {
+    return <AccessDenied message="Truy cập bị từ chối. Bạn không có quyền truy cập chức năng báo cáo đơn hàng. Chỉ có admin mới truy cập được." />
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <div className="flex justify-between items-center mb-6">
@@ -970,7 +1030,7 @@ export default function OrderReportsPage() {
           </button>
         </div>
       </div>
-      
+
       {/* Bộ lọc */}
       <div className="bg-white shadow rounded-lg mb-6 overflow-hidden">
         <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
@@ -1006,7 +1066,7 @@ export default function OrderReportsPage() {
                 className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md h-10"
               />
             </div>
-            
+
             {/* Lọc theo trạng thái */}
             <div className="bg-white p-3 rounded-md border border-gray-200 shadow-sm">
               <label htmlFor="status-filter" className="block text-sm font-medium text-gray-700 mb-2">
@@ -1023,7 +1083,7 @@ export default function OrderReportsPage() {
                 <option value="Chưa thanh toán">Chưa thanh toán</option>
               </select>
             </div>
-            
+
             {/* Lọc theo vận chuyển */}
             <div className="bg-white p-3 rounded-md border border-gray-200 shadow-sm">
               <label htmlFor="shipping-filter" className="block text-sm font-medium text-gray-700 mb-2">
@@ -1040,7 +1100,7 @@ export default function OrderReportsPage() {
                 <option value="false">Không vận chuyển</option>
               </select>
             </div>
-            
+
             {/* Lọc theo giá trị đơn hàng */}
             <div className="bg-white p-3 rounded-md border border-gray-200 shadow-sm">
               <label htmlFor="min-amount" className="block text-sm font-medium text-gray-700 mb-2">
@@ -1069,7 +1129,7 @@ export default function OrderReportsPage() {
               />
             </div>
           </div>
-          
+
           <div className="mt-4 flex justify-end">
             <button
               onClick={handleApplyFilters}
@@ -1081,18 +1141,18 @@ export default function OrderReportsPage() {
           </div>
         </div>
       </div>
-      
+
       {/* Nội dung báo cáo */}
       <div ref={reportRef} className="space-y-6 bg-white p-6 rounded-lg shadow">
         {/* Tiêu đề báo cáo */}
         <div className="text-center border-b pb-4">
           <h2 className="text-2xl font-bold text-gray-900">BÁO CÁO ĐƠN HÀNG</h2>
           <p className="text-gray-500 mt-1">
-            {dateRange.from && dateRange.to 
+            {dateRange.from && dateRange.to
               ? `Từ ngày ${dateRange.from} đến ngày ${dateRange.to}`
-              : dateRange.from 
-                ? `Từ ngày ${dateRange.from}` 
-                : dateRange.to 
+              : dateRange.from
+                ? `Từ ngày ${dateRange.from}`
+                : dateRange.to
                   ? `Đến ngày ${dateRange.to}`
                   : 'Tất cả thời gian'
             }
@@ -1101,7 +1161,7 @@ export default function OrderReportsPage() {
             Ngày xuất báo cáo: {new Date().toLocaleDateString('vi-VN')}
           </p>
         </div>
-        
+
         {/* Tab điều hướng */}
         <div className="border-b border-gray-200">
           <nav className="-mb-px flex space-x-8">
@@ -1118,7 +1178,7 @@ export default function OrderReportsPage() {
                 Tổng quan
               </div>
             </button>
-            
+
             <button
               onClick={() => setActiveTab('details')}
               className={`${
@@ -1132,7 +1192,7 @@ export default function OrderReportsPage() {
                 Chi tiết đơn hàng
               </div>
             </button>
-            
+
             <button
               onClick={() => setActiveTab('trends')}
               className={`${
@@ -1146,7 +1206,7 @@ export default function OrderReportsPage() {
                 Xu hướng
               </div>
             </button>
-            
+
             <button
               onClick={() => setActiveTab('customers')}
               className={`${
@@ -1162,7 +1222,7 @@ export default function OrderReportsPage() {
             </button>
           </nav>
         </div>
-        
+
         {/* Tab Tổng quan */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
@@ -1172,7 +1232,7 @@ export default function OrderReportsPage() {
                 <ChartBarIcon className="h-5 w-5 mr-2 text-gray-500" />
                 Thống kê tổng quan
               </h3>
-              
+
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                 {/* Tổng số đơn hàng */}
                 <div className="bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow rounded-lg border border-gray-200">
@@ -1186,7 +1246,7 @@ export default function OrderReportsPage() {
                     <div className="text-xl font-bold text-gray-900 text-center">{orderSummary.totalOrders}</div>
                   </div>
                 </div>
-                
+
                 {/* Tổng doanh thu */}
                 <div className="bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow rounded-lg border border-gray-200">
                   <div className="p-3">
@@ -1199,7 +1259,7 @@ export default function OrderReportsPage() {
                     <div className="text-xl font-bold text-gray-900 text-center">{formatCurrency(orderSummary.totalRevenue)}</div>
                   </div>
                 </div>
-                
+
                 {/* Giá trị trung bình */}
                 <div className="bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow rounded-lg border border-gray-200">
                   <div className="p-3">
@@ -1212,7 +1272,7 @@ export default function OrderReportsPage() {
                     <div className="text-xl font-bold text-gray-900 text-center">{formatCurrency(orderSummary.avgOrderValue)}</div>
                   </div>
                 </div>
-                
+
                 {/* Đơn hàng có vận chuyển */}
                 <div className="bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow rounded-lg border border-gray-200">
                   <div className="p-3">
@@ -1225,7 +1285,7 @@ export default function OrderReportsPage() {
                     <div className="text-xl font-bold text-gray-900 text-center">{orderSummary.shippingOrders}</div>
                   </div>
                 </div>
-                
+
                 {/* Đơn hàng đã thanh toán */}
                 <div className="bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow rounded-lg border border-gray-200">
                   <div className="p-3">
@@ -1238,7 +1298,7 @@ export default function OrderReportsPage() {
                     <div className="text-xl font-bold text-gray-900 text-center">{orderSummary.paidOrders}</div>
                   </div>
                 </div>
-                
+
                 {/* Đơn hàng chưa thanh toán */}
                 <div className="bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow rounded-lg border border-gray-200">
                   <div className="p-3">
@@ -1253,14 +1313,14 @@ export default function OrderReportsPage() {
                 </div>
               </div>
             </div>
-            
+
             {/* Biểu đồ doanh thu theo ngày */}
             <div>
               <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
                 <CalendarDaysIcon className="h-5 w-5 mr-2 text-gray-500" />
                 Doanh thu theo ngày
               </h3>
-              
+
               <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
                 {revenueByDay.labels.length > 0 ? (
                   <div className="overflow-x-auto">
@@ -1297,7 +1357,7 @@ export default function OrderReportsPage() {
                           })
                           const orderCount = ordersInDay.length
                           const avgValue = orderCount > 0 ? value / orderCount : 0
-                          
+
                           return (
                             <tr key={label} className="hover:bg-gray-50">
                               <td className="px-4 py-2 whitespace-nowrap">
@@ -1325,14 +1385,14 @@ export default function OrderReportsPage() {
                 )}
               </div>
             </div>
-            
+
             {/* Biểu đồ đơn hàng theo trạng thái */}
             <div>
               <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
                 <CircleStackIcon className="h-5 w-5 mr-2 text-gray-500" />
                 Đơn hàng theo trạng thái
               </h3>
-              
+
               <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
                 {ordersByStatus.labels.length > 0 ? (
                   <div className="h-auto">
@@ -1344,7 +1404,7 @@ export default function OrderReportsPage() {
                         const percentage = total > 0 ? (value / total) * 100 : 0
                         const colors = ['bg-green-500', 'bg-yellow-500', 'bg-gray-500', 'bg-blue-500', 'bg-red-500']
                         const color = colors[index % colors.length]
-                        
+
                         return (
                           <div key={label} className="flex flex-col">
                             <div className="flex justify-between mb-1">
@@ -1352,7 +1412,7 @@ export default function OrderReportsPage() {
                               <span className="text-sm font-medium text-gray-700">{value} ({percentage.toFixed(1)}%)</span>
                             </div>
                             <div className="w-full bg-gray-200 rounded-full h-4">
-                              <div 
+                              <div
                                 className={`h-4 rounded-full ${color} shadow-sm`}
                                 style={{ width: `${percentage}%` }}
                               ></div>
@@ -1369,14 +1429,14 @@ export default function OrderReportsPage() {
                 )}
               </div>
             </div>
-            
+
             {/* Phương thức thanh toán */}
             <div>
               <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
                 <CurrencyDollarIcon className="h-5 w-5 mr-2 text-gray-500" />
                 Phương thức thanh toán
               </h3>
-              
+
               <div className="bg-white overflow-hidden shadow rounded-lg border border-gray-200">
                 {paymentMethods.length > 0 ? (
                   <div className="overflow-x-auto">
@@ -1412,8 +1472,8 @@ export default function OrderReportsPage() {
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div className="flex items-center">
                                 <div className="w-full bg-gray-200 rounded-full h-2.5">
-                                  <div 
-                                    className={`bg-${themeColor}-600 h-2.5 rounded-full`} 
+                                  <div
+                                    className={`bg-${themeColor}-600 h-2.5 rounded-full`}
                                     style={{ width: `${method.percentage}%` }}
                                   ></div>
                                 </div>
@@ -1434,7 +1494,7 @@ export default function OrderReportsPage() {
             </div>
           </div>
         )}
-        
+
         {/* Tab Chi tiết đơn hàng */}
         {activeTab === 'details' && (
           <div>
@@ -1452,7 +1512,7 @@ export default function OrderReportsPage() {
                 {exportingPdf ? 'Đang xuất...' : 'Xuất bảng'}
               </button>
             </div>
-            
+
             <div ref={tableRef} className="bg-white overflow-hidden border border-gray-200 rounded-lg">
               {loading ? (
                 <div className="py-12 flex justify-center">
@@ -1514,8 +1574,8 @@ export default function OrderReportsPage() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                              getStatusColor(order.status) === 'green' 
-                                ? 'bg-green-100 text-green-800' 
+                              getStatusColor(order.status) === 'green'
+                                ? 'bg-green-100 text-green-800'
                                 : getStatusColor(order.status) === 'yellow'
                                   ? 'bg-yellow-100 text-yellow-800'
                                   : 'bg-gray-100 text-gray-800'
@@ -1526,8 +1586,8 @@ export default function OrderReportsPage() {
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
                               <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                order.is_shipping 
-                                  ? 'bg-blue-100 text-blue-800' 
+                                order.is_shipping
+                                  ? 'bg-blue-100 text-blue-800'
                                   : 'bg-gray-100 text-gray-800'
                               }`}>
                                 {order.is_shipping ? 'Có' : 'Không'}
@@ -1558,7 +1618,7 @@ export default function OrderReportsPage() {
             </div>
           </div>
         )}
-        
+
         {/* Tab Xu hướng */}
         {activeTab === 'trends' && (
           <div className="space-y-6">
@@ -1566,7 +1626,7 @@ export default function OrderReportsPage() {
               <PresentationChartLineIcon className="h-5 w-5 mr-2 text-gray-500" />
               Xu hướng đơn hàng theo tháng
             </h3>
-            
+
             <div className="bg-white overflow-hidden shadow rounded-lg border border-gray-200">
               {orderTrends.length > 0 ? (
                 <div className="overflow-x-auto">
@@ -1625,7 +1685,7 @@ export default function OrderReportsPage() {
                 </div>
               )}
             </div>
-            
+
             {/* Biểu đồ xu hướng */}
             <div className="bg-white p-4 rounded-lg border border-gray-200">
               {orderTrends.length > 0 ? (
@@ -1633,11 +1693,11 @@ export default function OrderReportsPage() {
                   {orderTrends.map((trend, index) => {
                     const maxRevenue = Math.max(...orderTrends.map(t => t.revenue))
                     const height = maxRevenue > 0 ? (trend.revenue / maxRevenue) * 100 : 0
-                    
+
                     return (
                       <div key={index} className="flex-1 flex flex-col items-center">
-                        <div 
-                          className={`w-full ${trend.growth_rate !== undefined && trend.growth_rate >= 0 ? 'bg-green-500' : 'bg-red-500'} rounded-t`} 
+                        <div
+                          className={`w-full ${trend.growth_rate !== undefined && trend.growth_rate >= 0 ? 'bg-green-500' : 'bg-red-500'} rounded-t`}
                           style={{ height: `${height}%` }}
                         ></div>
                         <div className="text-xs mt-1 text-gray-600">{trend.period}</div>
@@ -1654,7 +1714,7 @@ export default function OrderReportsPage() {
             </div>
           </div>
         )}
-        
+
         {/* Tab Khách hàng */}
         {activeTab === 'customers' && (
           <div className="space-y-6">
@@ -1662,7 +1722,7 @@ export default function OrderReportsPage() {
               <UserGroupIcon className="h-5 w-5 mr-2 text-gray-500" />
               Top khách hàng
             </h3>
-            
+
             <div className="bg-white overflow-hidden shadow rounded-lg border border-gray-200">
               {topCustomers.length > 0 ? (
                 <div className="overflow-x-auto">
@@ -1709,7 +1769,7 @@ export default function OrderReportsPage() {
                 </div>
               )}
             </div>
-            
+
             {/* Biểu đồ khách hàng */}
             {topCustomers.length > 0 && (
               <div className="bg-white p-4 rounded-lg border border-gray-200">
@@ -1719,15 +1779,15 @@ export default function OrderReportsPage() {
                     const width = maxSpent > 0 ? (customer.total_spent / maxSpent) * 100 : 0
                     const colors = ['bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-yellow-500', 'bg-red-500']
                     const color = colors[index % colors.length]
-                    
+
                     return (
                       <div key={customer.customer_id} className="mb-4">
                         <div className="flex items-center mb-1">
                           <div className="w-32 truncate text-sm font-medium text-gray-900">{customer.customer_name}</div>
                           <div className="flex-1 ml-2">
                             <div className="w-full bg-gray-200 rounded-full h-2.5">
-                              <div 
-                                className={`${color} h-2.5 rounded-full`} 
+                              <div
+                                className={`${color} h-2.5 rounded-full`}
                                 style={{ width: `${width}%` }}
                               ></div>
                             </div>
