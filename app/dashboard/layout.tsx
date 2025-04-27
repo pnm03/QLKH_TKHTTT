@@ -190,7 +190,7 @@ export default function DashboardLayout({
             } else {
               console.log('Không tìm thấy tên người dùng, sử dụng email');
               // Nếu không có full_name, sử dụng email làm tên hiển thị
-              setUserFullName(session.user.email?.split('@')[0] || '');
+              setUserFullName('');
             }
 
             // Kiểm tra xem user_id có tồn tại trong bảng accounts chưa
@@ -627,8 +627,8 @@ export default function DashboardLayout({
               </button>
               <div className="relative" ref={userMenuRef}>
                 <div className="flex items-center space-x-3">
-                  <div className="hidden sm:flex flex-col items-end">
-                    <span className="text-sm font-medium text-gray-700">{userFullName || user?.user_metadata?.full_name || user?.email?.split('@')[0]}</span>
+                  <div className="hidden sm:flex flex-col items-center">
+                    <span className="text-sm font-medium text-gray-700">{userFullName || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Người dùng'}</span>
                     <span className="text-xs text-gray-500">{user?.email}</span>
                   </div>
                   <button
@@ -646,8 +646,8 @@ export default function DashboardLayout({
                   <div className="origin-top-right absolute right-0 mt-2 w-60 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50 transform transition-all duration-100 ease-out">
                     <div className="py-1" role="menu" aria-orientation="vertical">
                       <div className="px-4 py-3 border-b border-gray-100">
-                        <p className="text-sm font-medium text-gray-900 truncate">{userFullName || user?.user_metadata?.full_name || user?.email?.split('@')[0]}</p>
-                        <p className="text-sm text-gray-500 truncate">{user?.email}</p>
+                        <p className="text-sm font-medium text-gray-900 truncate">{userFullName || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Người dùng'}</p>
+                        <p className="text-xs text-gray-500 truncate">{user?.email}</p>
                       </div>
 
                       <Link

@@ -203,8 +203,8 @@ export default function DashboardPage() {
             setUserFullName(userData.full_name)
           } else {
             console.log('Không tìm thấy tên người dùng, sử dụng email')
-            // Nếu không có full_name, sử dụng email làm tên hiển thị
-            setUserFullName(data.user.email?.split('@')[0] || '')
+            // Nếu không có full_name, để trống
+            setUserFullName('')
           }
         }
 
@@ -688,7 +688,7 @@ export default function DashboardPage() {
       {loginSuccess && (
         <div className="mt-4 p-3 bg-green-100 text-green-700 rounded-md flex justify-between items-center">
           <div>
-            <span className="font-medium">Đăng nhập thành công!</span> Chào mừng trở lại, {userFullName || user?.user_metadata?.full_name || user?.email?.split('@')[0] || user?.email}
+            <span className="font-medium">Đăng nhập thành công!</span> Chào mừng trở lại
           </div>
           <button
             onClick={() => setLoginSuccess(false)}
@@ -702,7 +702,7 @@ export default function DashboardPage() {
 
       <div className="mt-4">
         <div className="px-4 py-3 bg-white shadow-sm rounded-lg">
-          <h2 className="text-lg font-medium text-gray-900">Chào mừng trở lại, {userFullName || user?.user_metadata?.full_name || user?.email?.split('@')[0] || user?.email}</h2>
+          <h2 className="text-lg font-medium text-gray-900">Chào mừng trở lại</h2>
           <p className="mt-1 text-sm text-gray-500">
             Dưới đây là tổng quan về hoạt động của hệ thống.
           </p>
