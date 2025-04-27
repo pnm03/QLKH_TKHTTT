@@ -299,7 +299,6 @@ export default function DashboardLayout({
         { name: language === 'vi' ? 'Tìm & Xem đơn hàng' : 'Find & View Orders', href: '/dashboard/orders/search', icon: null, current: pathname.includes('/dashboard/orders/search') },
         { name: language === 'vi' ? 'Đơn vận chuyển' : 'Shipping Orders', href: '/dashboard/orders/shipping', icon: null, current: pathname.includes('/dashboard/orders/shipping') },
         { name: language === 'vi' ? 'Thanh toán' : 'Payment', href: '/dashboard/payment', icon: null, current: pathname.includes('/dashboard/payment') },
-        { name: language === 'vi' ? 'In hóa đơn' : 'Print Invoice', href: '/dashboard/orders/invoice', icon: null, current: pathname.includes('/dashboard/orders/invoice') },
       ]
     },
     {
