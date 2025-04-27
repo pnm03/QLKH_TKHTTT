@@ -6,6 +6,8 @@ import { useTheme } from '@/app/context/ThemeContext'
 import { UserIcon, PlusIcon, PencilIcon, TrashIcon, XMarkIcon, CalendarIcon, CurrencyDollarIcon, ClockIcon, UserCircleIcon } from '@heroicons/react/24/outline'
 import { format, parseISO } from 'date-fns'
 import { vi } from 'date-fns/locale'
+import { createClient } from '@/utils/supabase/client'
+import AccessDenied from '@/components/AccessDenied'
 
 // Định nghĩa kiểu dữ liệu cho chi nhánh
 interface Branch {
@@ -106,20 +108,22 @@ export default function StaffPage() {
   const supabase = createClientComponentClient()
   const themeContext = useTheme()
   const [mounted, setMounted] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [authLoading, setAuthLoading] = useState(true)
   const [staffList, setStaffList] = useState<Staff[]>([])
   const [users, setUsers] = useState<User[]>([])
   const [branches, setBranches] = useState<Branch[]>([])
   const [managers, setManagers] = useState<(User & { branch?: Branch })[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  
+
   // State cho popup
   const [showAddPopup, setShowAddPopup] = useState(false)
   const [showViewPopup, setShowViewPopup] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null)
-  
+
   // Form data
   const [formData, setFormData] = useState<{
     user_id: string
@@ -142,20 +146,20 @@ export default function StaffPage() {
     reports_to_user_id: null,
     branch_id: null
   })
-  
+
   // Hệ thống thông báo
   interface NotificationState {
     visible: boolean;
     message: string;
     type: 'success' | 'error' | 'info';
   }
-  
+
   const [notification, setNotification] = useState<NotificationState>({
     visible: false,
     message: '',
     type: 'info'
   })
-  
+
   // Hàm hiển thị thông báo
   const showNotification = (message: string, type: 'success' | 'error' | 'info') => {
     setNotification({
@@ -163,7 +167,7 @@ export default function StaffPage() {
       message,
       type
     })
-    
+
     // Tự động ẩn thông báo sau một khoảng thời gian
     const timeout = type === 'error' ? 5000 : 2000 // Thông báo lỗi hiển thị lâu hơn
     setTimeout(() => {
@@ -176,10 +180,51 @@ export default function StaffPage() {
     setMounted(true)
   }, [])
 
+  // Kiểm tra vai trò người dùng hiện tại có phải admin không
+  useEffect(() => {
+    if (mounted) {
+      const checkUserRole = async () => {
+        try {
+          const client = createClient()
+          const { data: { session }, error: sessionError } = await client.auth.getSession()
+
+          if (sessionError || !session) {
+            console.error('Không có phiên đăng nhập:', sessionError?.message)
+            setIsAdmin(false)
+            setAuthLoading(false)
+            return
+          }
+
+          const { data: accountData, error: accountError } = await client
+            .from('accounts')
+            .select('role')
+            .eq('user_id', session.user.id)
+            .maybeSingle()
+
+          if (accountError || !accountData) {
+            console.error('Lỗi khi lấy thông tin tài khoản:', accountError)
+            setIsAdmin(false)
+            setAuthLoading(false)
+            return
+          }
+
+          setIsAdmin(accountData.role === 'admin')
+          setAuthLoading(false)
+        } catch (error) {
+          console.error('Lỗi khi kiểm tra vai trò:', error)
+          setIsAdmin(false)
+          setAuthLoading(false)
+        }
+      }
+
+      checkUserRole()
+    }
+  }, [mounted])
+
   // Fetch dữ liệu nhân viên và người dùng
   useEffect(() => {
     if (!mounted) return
-    
+
     const fetchData = async () => {
       setLoading(true)
       try {
@@ -189,7 +234,7 @@ export default function StaffPage() {
           .from('branches')
           .select('branch_id, branch_name, branch_address, manager_id')
           .order('branch_id', { ascending: true })
-        
+
         if (branchError) {
           console.error('Lỗi khi tải dữ liệu chi nhánh:', branchError)
           console.error('Chi tiết lỗi:', JSON.stringify(branchError, null, 2))
@@ -197,17 +242,17 @@ export default function StaffPage() {
           setLoading(false)
           return
         }
-        
+
         console.log('Đã tải dữ liệu chi nhánh thành công:', branchData?.length || 0, 'chi nhánh')
         setBranches(branchData || [])
-        
+
         // Fetch danh sách người dùng
         console.log('Đang tải dữ liệu người dùng...')
         const { data: userData, error: userError } = await supabase
           .from('users')
           .select('user_id, full_name, email, phone, birth_date, hometown, branch_id')
           .order('full_name', { ascending: true })
-        
+
         if (userError) {
           console.error('Lỗi khi tải dữ liệu người dùng:', userError)
           console.error('Chi tiết lỗi:', JSON.stringify(userError, null, 2))
@@ -215,9 +260,9 @@ export default function StaffPage() {
           setLoading(false)
           return
         }
-        
+
         console.log('Đã tải dữ liệu người dùng thành công:', userData?.length || 0, 'người dùng')
-        
+
         // Kết hợp thông tin chi nhánh vào người dùng
         const enhancedUserData = userData.map((user: User) => {
           const branch = branchData.find((b: Branch) => b.branch_id === user.branch_id)
@@ -226,14 +271,14 @@ export default function StaffPage() {
             branch
           }
         })
-        
+
         setUsers(enhancedUserData || [])
-        
+
         // Tạo danh sách quản lý (người dùng là quản lý của chi nhánh)
         const managerList = enhancedUserData.filter((user: User) => {
           return branchData.some((branch: Branch) => branch.manager_id === user.user_id)
         })
-        
+
         // Thêm thông tin chi nhánh vào quản lý
         const managersWithBranch = managerList.map((manager: User) => {
           const branch = branchData.find((b: Branch) => b.manager_id === manager.user_id)
@@ -242,17 +287,17 @@ export default function StaffPage() {
             branch
           }
         })
-        
+
         setManagers(managersWithBranch || [])
         console.log('Đã tải dữ liệu quản lý thành công:', managersWithBranch?.length || 0, 'quản lý')
-        
+
         // Fetch danh sách nhân viên
         console.log('Đang tải dữ liệu nhân viên...')
         const { data: staffData, error: staffError } = await supabase
           .from('staff')
           .select('*')
           .order('staff_id', { ascending: true })
-        
+
         if (staffError) {
           console.error('Lỗi khi tải dữ liệu nhân viên:', staffError)
           console.error('Chi tiết lỗi:', JSON.stringify(staffError, null, 2))
@@ -260,21 +305,21 @@ export default function StaffPage() {
           setLoading(false)
           return
         }
-        
+
         console.log('Đã tải dữ liệu nhân viên thành công:', staffData?.length || 0, 'nhân viên')
-        
+
         // Kết hợp dữ liệu nhân viên với thông tin người dùng và chi nhánh
         console.log('Đang kết hợp dữ liệu...')
         const enhancedStaffData = staffData.map((staff: Staff) => {
           const user = enhancedUserData.find((u: User) => u.user_id === staff.user_id)
           const manager = enhancedUserData.find((u: User) => u.user_id === staff.reports_to_user_id)
-          
+
           // Tìm chi nhánh của người quản lý
           let manager_branch = null
           if (manager) {
             manager_branch = branchData.find((b: Branch) => b.manager_id === manager.user_id)
           }
-          
+
           return {
             ...staff,
             user,
@@ -282,28 +327,28 @@ export default function StaffPage() {
             manager_branch
           }
         })
-        
+
         setStaffList(enhancedStaffData || [])
         console.log('Đã hoàn thành việc tải dữ liệu')
       } catch (error: any) {
         // Hiển thị chi tiết lỗi
         console.error('Lỗi khi tải dữ liệu:', error)
-        
+
         // Hiển thị thêm thông tin về lỗi
         console.error('Loại lỗi:', typeof error)
         console.error('Chuỗi lỗi:', String(error))
         console.error('Stack trace:', error?.stack)
-        
+
         // Thử chuyển đổi lỗi thành JSON để xem tất cả thuộc tính
         try {
           console.error('Chi tiết lỗi (JSON):', JSON.stringify(error, Object.getOwnPropertyNames(error), 2))
         } catch (jsonError) {
           console.error('Không thể chuyển đổi lỗi thành JSON:', jsonError)
         }
-        
+
         // Hiển thị thông báo lỗi chi tiết hơn
         let errorMessage = 'Không thể tải dữ liệu: ';
-        
+
         if (error instanceof Error) {
           errorMessage += `${error.name}: ${error.message}`;
           if (error.stack) {
@@ -314,21 +359,21 @@ export default function StaffPage() {
         } else {
           errorMessage += String(error);
         }
-        
+
         setError(errorMessage)
         setUsers([]) // Đặt mảng rỗng để tránh lỗi khi render
       } finally {
         setLoading(false)
       }
     }
-    
+
     fetchData()
   }, [mounted, supabase])
 
   // Xử lý thay đổi input
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target
-    
+
     if (name === 'salary') {
       // Chỉ cho phép nhập số
       const numericValue = value.replace(/[^0-9]/g, '')
@@ -361,7 +406,7 @@ export default function StaffPage() {
         // Tìm chi nhánh của quản lý đã chọn
         const manager = managers.find(m => m.user_id === value)
         const managerBranch = branches.find(b => b.manager_id === value)
-        
+
         // Nếu quản lý có chi nhánh, cập nhật branch_id
         if (manager && manager.branch) {
           setFormData(prev => ({
@@ -459,11 +504,11 @@ export default function StaffPage() {
   // Xử lý xóa nhân viên
   const handleDelete = async () => {
     if (!selectedStaff) return
-    
+
     try {
       // Lấy ngày hiện tại ở định dạng ISO
       const currentDate = new Date().toISOString().split('T')[0];
-      
+
       // Gọi API để xóa tài khoản từ bảng accounts
       const response = await fetch('/api/delete-user', {
         method: 'POST',
@@ -474,37 +519,37 @@ export default function StaffPage() {
           userId: selectedStaff.user_id
         }),
       });
-      
+
       const result = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(result.error || 'Không thể xóa tài khoản');
       }
-      
+
       // Cập nhật trạng thái nhân viên thành "terminated" và ngày kết thúc thành ngày hiện tại
       const { error: updateError } = await supabase
         .from('staff')
-        .update({ 
+        .update({
           employment_status: 'terminated',
           end_date: currentDate
         })
         .eq('staff_id', selectedStaff.staff_id);
-      
+
       if (updateError) throw updateError;
-      
+
       // Cập nhật state
-      setStaffList(prev => prev.map(staff => 
-        staff.staff_id === selectedStaff.staff_id 
-          ? { 
-              ...staff, 
+      setStaffList(prev => prev.map(staff =>
+        staff.staff_id === selectedStaff.staff_id
+          ? {
+              ...staff,
               employment_status: 'terminated',
               end_date: currentDate
-            } 
+            }
           : staff
       ));
-      
+
       showNotification('Đã vô hiệu hóa tài khoản nhân viên thành công!', 'success');
-      
+
       // Đóng popup
       setShowDeleteConfirm(false);
       setSelectedStaff(null);
@@ -517,7 +562,7 @@ export default function StaffPage() {
   // Xử lý thêm/sửa nhân viên
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     try {
       // Kiểm tra người dùng đã tồn tại trong bảng staff chưa
       if (!isEditing) {
@@ -525,31 +570,31 @@ export default function StaffPage() {
           .from('staff')
           .select('staff_id')
           .eq('user_id', formData.user_id)
-        
+
         if (checkError) throw checkError
-        
+
         if (existingStaff && existingStaff.length > 0) {
           throw new Error('Người dùng này đã là nhân viên. Vui lòng chọn người dùng khác.')
         }
       }
-      
+
       // Cập nhật branch_id trong bảng users
       if (formData.user_id && formData.branch_id !== undefined) {
         console.log('Cập nhật chi nhánh cho người dùng:', formData.user_id, 'thành', formData.branch_id)
-        
+
         const { error: updateUserError } = await supabase
           .from('users')
           .update({
             branch_id: formData.branch_id
           })
           .eq('user_id', formData.user_id)
-        
+
         if (updateUserError) {
           console.error('Lỗi khi cập nhật chi nhánh cho người dùng:', updateUserError)
           // Không throw lỗi ở đây, vẫn tiếp tục lưu thông tin nhân viên
         }
       }
-      
+
       if (isEditing && selectedStaff) {
         // Cập nhật nhân viên
         const { error } = await supabase
@@ -565,24 +610,24 @@ export default function StaffPage() {
             reports_to_user_id: formData.reports_to_user_id
           })
           .eq('staff_id', selectedStaff.staff_id)
-        
+
         if (error) throw error
-        
+
         // Tìm thông tin người dùng và người quản lý
         const user = users.find(u => u.user_id === formData.user_id)
         const manager = users.find(u => u.user_id === formData.reports_to_user_id)
-        
+
         // Tìm chi nhánh của người quản lý
         let manager_branch = null
         if (manager) {
           manager_branch = branches.find(b => b.manager_id === manager.user_id)
         }
-        
+
         // Cập nhật state
-        setStaffList(prev => prev.map(staff => 
-          staff.staff_id === selectedStaff.staff_id 
-            ? { 
-                ...staff, 
+        setStaffList(prev => prev.map(staff =>
+          staff.staff_id === selectedStaff.staff_id
+            ? {
+                ...staff,
                 ...formData,
                 user: {
                   ...user,
@@ -590,12 +635,12 @@ export default function StaffPage() {
                 },
                 manager,
                 manager_branch
-              } 
+              }
             : staff
         ))
-        
+
         // Cập nhật danh sách users
-        setUsers(prev => prev.map(user => 
+        setUsers(prev => prev.map(user =>
           user.user_id === formData.user_id
             ? {
                 ...user,
@@ -603,7 +648,7 @@ export default function StaffPage() {
               }
             : user
         ))
-        
+
         showNotification('Cập nhật nhân viên thành công!', 'success')
       } else {
         // Thêm nhân viên mới
@@ -620,19 +665,19 @@ export default function StaffPage() {
             reports_to_user_id: formData.reports_to_user_id
           })
           .select()
-        
+
         if (error) throw error
-        
+
         // Tìm thông tin người dùng và người quản lý
         const user = users.find(u => u.user_id === formData.user_id)
         const manager = users.find(u => u.user_id === formData.reports_to_user_id)
-        
+
         // Tìm chi nhánh của người quản lý
         let manager_branch = null
         if (manager) {
           manager_branch = branches.find(b => b.manager_id === manager.user_id)
         }
-        
+
         // Cập nhật state
         if (data && data.length > 0) {
           const newStaff = {
@@ -645,9 +690,9 @@ export default function StaffPage() {
             manager_branch
           }
           setStaffList(prev => [...prev, newStaff])
-          
+
           // Cập nhật danh sách users
-          setUsers(prev => prev.map(user => 
+          setUsers(prev => prev.map(user =>
             user.user_id === formData.user_id
               ? {
                   ...user,
@@ -656,13 +701,13 @@ export default function StaffPage() {
               : user
           ))
         }
-        
+
         showNotification('Thêm nhân viên thành công!', 'success')
       }
-      
+
       // Đóng popup
       closeAddPopup()
-      
+
       // Reset form
       setFormData({
         user_id: '',
@@ -675,7 +720,7 @@ export default function StaffPage() {
         reports_to_user_id: null,
         branch_id: null
       })
-      
+
       setIsEditing(false)
       setSelectedStaff(null)
     } catch (error: any) {
@@ -689,11 +734,26 @@ export default function StaffPage() {
   // Lấy theme hiện tại
   const currentTheme = themeContext.currentTheme
 
+  // Hiển thị loading khi đang kiểm tra quyền
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900"></div>
+        <p className="ml-2 text-gray-500">Đang tải...</p>
+      </div>
+    )
+  }
+
+  // Hiển thị thông báo từ chối truy cập nếu không phải admin
+  if (!isAdmin) {
+    return <AccessDenied message="Truy cập bị từ chối. Bạn không có quyền truy cập chức năng quản lý nhân viên. Chỉ có admin mới truy cập được." />
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       {/* Hệ thống thông báo */}
       {notification.visible && (
-        <div 
+        <div
           className={`fixed top-4 right-4 z-50 rounded-md p-4 shadow-lg max-w-md transition-all duration-300 transform translate-y-0 opacity-100 ${
             notification.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' :
             notification.type === 'error' ? 'bg-red-50 text-red-800 border border-red-200' :
@@ -783,7 +843,7 @@ export default function StaffPage() {
                     <div className="mt-1 text-sm text-red-700 break-words whitespace-pre-wrap">
                       {error}
                     </div>
-                    
+
                     <div className="mt-3">
                       <button
                         onClick={() => window.location.reload()}
@@ -852,8 +912,8 @@ export default function StaffPage() {
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {staffList.map(staff => (
-                      <tr 
-                        key={staff.staff_id} 
+                      <tr
+                        key={staff.staff_id}
                         className="hover:bg-gray-50 cursor-pointer"
                         onClick={() => openViewPopup(staff)}
                       >
@@ -898,7 +958,7 @@ export default function StaffPage() {
                           {staff.manager ? truncateText(staff.manager.full_name, 20) : 'Không có'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500" title={branches.find(b => b.branch_id === staff.user?.branch_id)?.branch_name || 'Chưa có chi nhánh'}>
-                          {staff.user?.branch_id 
+                          {staff.user?.branch_id
                             ? truncateText(branches.find(b => b.branch_id === staff.user?.branch_id)?.branch_name || 'Không xác định', 20)
                             : 'Chưa có chi nhánh'}
                         </td>
@@ -1016,7 +1076,7 @@ export default function StaffPage() {
                 <div>
                   <h4 className="text-sm font-medium text-gray-500">Chi nhánh</h4>
                   <p className="mt-1 text-sm text-gray-900">
-                    {selectedStaff.user?.branch_id 
+                    {selectedStaff.user?.branch_id
                       ? branches.find(b => b.branch_id === selectedStaff.user?.branch_id)?.branch_name || 'Không xác định'
                       : 'Chưa có chi nhánh'}
                   </p>

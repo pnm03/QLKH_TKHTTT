@@ -6,6 +6,8 @@ import { useTheme } from '@/app/context/ThemeContext'
 import { BuildingOfficeIcon, PlusIcon, PencilIcon, TrashIcon, XMarkIcon, MapPinIcon } from '@heroicons/react/24/outline'
 import dynamic from 'next/dynamic'
 import './leaflet.css'
+import { createClient } from '@/utils/supabase/client'
+import AccessDenied from '@/components/AccessDenied'
 
 // Định nghĩa kiểu dữ liệu cho chi nhánh
 interface Branch {
@@ -63,7 +65,7 @@ function MapEventHandler({ onLocationSelect }: { onLocationSelect: (lat: number,
       const { lat, lng } = e.latlng;
       onLocationSelect(lat, lng);
     },
-  }); 
+  });
   return null;
 }
 
@@ -78,6 +80,8 @@ export default function BranchesPage() {
   const supabase = createClientComponentClient()
   const themeContext = useTheme()
   const [mounted, setMounted] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [authLoading, setAuthLoading] = useState(true)
   const [branches, setBranches] = useState<Branch[]>([])
   const [users, setUsers] = useState<User[]>([])
   const [branchEmployees, setBranchEmployees] = useState<User[]>([])
@@ -89,7 +93,7 @@ export default function BranchesPage() {
   })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  
+
   // State cho popup
   const [showAddPopup, setShowAddPopup] = useState(false)
   const [showViewPopup, setShowViewPopup] = useState(false)
@@ -97,12 +101,12 @@ export default function BranchesPage() {
   const [showMapPopup, setShowMapPopup] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null)
-  
+
   // Leaflet state
   const [mapPosition, setMapPosition] = useState<[number, number]>([21.0278, 105.8342]) // Hà Nội
   const [markerPosition, setMarkerPosition] = useState<[number, number] | null>(null)
   const [searchAddress, setSearchAddress] = useState('')
-  
+
   // Form data
   const [formData, setFormData] = useState<{
     branch_name: string
@@ -124,13 +128,13 @@ export default function BranchesPage() {
     message: string
     type: 'success' | 'error' | 'info'
   }
-  
+
   const [notification, setNotification] = useState<NotificationState>({
     visible: false,
     message: '',
     type: 'info'
   })
-  
+
   // Hiển thị thông báo
   const showNotification = (message: string, type: 'success' | 'error' | 'info') => {
     setNotification({
@@ -138,7 +142,7 @@ export default function BranchesPage() {
       message,
       type
     })
-    
+
     // Tự động ẩn thông báo sau một khoảng thời gian
     const timeout = type === 'error' ? 5000 : 2000 // Thông báo lỗi hiển thị lâu hơn
     setTimeout(() => {
@@ -151,30 +155,30 @@ export default function BranchesPage() {
     // Đảm bảo lat và lng là số
     const numLat = Number(lat);
     const numLng = Number(lng);
-    
+
     if (isNaN(numLat) || isNaN(numLng)) {
       console.error('Tọa độ không hợp lệ:', lat, lng);
       return;
     }
-    
+
     setMarkerPosition([numLat, numLng]);
     setFormData(prev => ({
       ...prev,
       latitude: numLat,
       longitude: numLng
     }));
-    
+
     // Cập nhật địa chỉ từ tọa độ (nếu có thể)
     fetchAddressFromCoordinates(numLat, numLng);
   };
-  
+
   // Cập nhật địa chỉ từ tọa độ (Reverse Geocoding)
   const fetchAddressFromCoordinates = async (lat: number, lng: number) => {
     try {
       // Sử dụng Nominatim API (OpenStreetMap)
       const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
       const data = await response.json();
-      
+
       if (data && data.display_name) {
         setFormData(prev => ({
           ...prev,
@@ -185,29 +189,29 @@ export default function BranchesPage() {
       console.error('Lỗi khi lấy địa chỉ:', error);
     }
   };
-  
+
   // Tìm kiếm địa chỉ và cập nhật bản đồ
   const searchAddressOnMap = async () => {
     if (!searchAddress) return;
-    
+
     try {
       // Sử dụng Nominatim API (OpenStreetMap)
       const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchAddress)}&limit=1`);
       const data = await response.json();
-      
+
       if (data && data.length > 0) {
         const lat = parseFloat(data[0].lat);
         const lon = parseFloat(data[0].lon);
-        
+
         // Kiểm tra tọa độ hợp lệ
         if (isNaN(lat) || isNaN(lon)) {
           showNotification('Tọa độ không hợp lệ từ kết quả tìm kiếm.', 'error');
           return;
         }
-        
+
         setMapPosition([lat, lon]);
         setMarkerPosition([lat, lon]);
-        
+
         setFormData(prev => ({
           ...prev,
           latitude: lat,
@@ -222,7 +226,7 @@ export default function BranchesPage() {
       showNotification('Lỗi khi tìm kiếm địa chỉ.', 'error');
     }
   };
-  
+
   // Mở popup bản đồ
   const openMapPopup = () => {
     // Nếu đã có tọa độ, sử dụng tọa độ đó cho bản đồ
@@ -230,15 +234,15 @@ export default function BranchesPage() {
       setMapPosition([formData.latitude, formData.longitude]);
       setMarkerPosition([formData.latitude, formData.longitude]);
     }
-    
+
     setShowMapPopup(true);
   };
-  
+
   // Đóng popup bản đồ
   const closeMapPopup = () => {
     setShowMapPopup(false);
   };
-  
+
   // Xác nhận vị trí từ bản đồ
   const confirmLocation = () => {
     closeMapPopup();
@@ -249,10 +253,51 @@ export default function BranchesPage() {
     setMounted(true);
   }, [])
 
+  // Kiểm tra vai trò người dùng hiện tại có phải admin không
+  useEffect(() => {
+    if (mounted) {
+      const checkUserRole = async () => {
+        try {
+          const client = createClient()
+          const { data: { session }, error: sessionError } = await client.auth.getSession()
+
+          if (sessionError || !session) {
+            console.error('Không có phiên đăng nhập:', sessionError?.message)
+            setIsAdmin(false)
+            setAuthLoading(false)
+            return
+          }
+
+          const { data: accountData, error: accountError } = await client
+            .from('accounts')
+            .select('role')
+            .eq('user_id', session.user.id)
+            .maybeSingle()
+
+          if (accountError || !accountData) {
+            console.error('Lỗi khi lấy thông tin tài khoản:', accountError)
+            setIsAdmin(false)
+            setAuthLoading(false)
+            return
+          }
+
+          setIsAdmin(accountData.role === 'admin')
+          setAuthLoading(false)
+        } catch (error) {
+          console.error('Lỗi khi kiểm tra vai trò:', error)
+          setIsAdmin(false)
+          setAuthLoading(false)
+        }
+      }
+
+      checkUserRole()
+    }
+  }, [mounted])
+
   // Fetch dữ liệu chi nhánh và người dùng
   useEffect(() => {
     if (!mounted) return
-    
+
     const fetchData = async () => {
       setLoading(true)
       try {
@@ -261,17 +306,17 @@ export default function BranchesPage() {
           .from('branches')
           .select('*')
           .order('branch_id', { ascending: true })
-        
+
         if (branchError) throw branchError
-        
+
         // Fetch danh sách người dùng (để chọn quản lý)
         const { data: userData, error: userError } = await supabase
           .from('users')
           .select('user_id, full_name, email')
           .order('full_name', { ascending: true })
-        
+
         if (userError) throw userError
-        
+
         setBranches(branchData || [])
         setUsers(userData || [])
       } catch (error) {
@@ -281,7 +326,7 @@ export default function BranchesPage() {
         setLoading(false)
       }
     }
-    
+
     fetchData()
   }, [mounted, supabase])
 
@@ -322,30 +367,30 @@ export default function BranchesPage() {
         .select('user_id, full_name, email, phone, birth_date, hometown')
         .eq('branch_id', branchId)
         .order('full_name', { ascending: true })
-      
+
       if (userError) throw userError
-      
+
       // Lấy thông tin về trạng thái làm việc của nhân viên từ bảng staff
       const { data: staffData, error: staffError } = await supabase
         .from('staff')
         .select('user_id, employment_status')
         .in('user_id', allUsers.map(user => user.user_id))
-      
+
       if (staffError) throw staffError
-      
+
       // Tạo map để dễ dàng tra cứu trạng thái làm việc
       const staffStatusMap = new Map()
       staffData.forEach(staff => {
         staffStatusMap.set(staff.user_id, staff.employment_status)
       })
-      
+
       // Phân loại nhân viên
       const activeEmployees = []
       let terminatedCount = 0
-      
+
       allUsers.forEach(user => {
         const status = staffStatusMap.get(user.user_id)
-        
+
         // Nếu nhân viên không có trong bảng staff hoặc đang hoạt động
         if (!status || status !== 'terminated') {
           activeEmployees.push(user)
@@ -353,17 +398,17 @@ export default function BranchesPage() {
           terminatedCount++
         }
       })
-      
+
       // Lưu thông tin tổng số nhân viên
       const totalEmployees = {
         active: activeEmployees.length,
         terminated: terminatedCount,
         total: allUsers.length
       }
-      
+
       // Chỉ hiển thị nhân viên đang hoạt động
       setBranchEmployees(activeEmployees)
-      
+
       // Lưu thông tin tổng số vào state
       setEmployeeStats(totalEmployees)
     } catch (error) {
@@ -394,14 +439,14 @@ export default function BranchesPage() {
   const startEditing = () => {
     if (selectedBranch) {
       // Đảm bảo tọa độ là số hoặc null
-      const latitude = selectedBranch.latitude !== undefined && selectedBranch.latitude !== null 
-        ? Number(selectedBranch.latitude) 
+      const latitude = selectedBranch.latitude !== undefined && selectedBranch.latitude !== null
+        ? Number(selectedBranch.latitude)
         : null;
-      
-      const longitude = selectedBranch.longitude !== undefined && selectedBranch.longitude !== null 
-        ? Number(selectedBranch.longitude) 
+
+      const longitude = selectedBranch.longitude !== undefined && selectedBranch.longitude !== null
+        ? Number(selectedBranch.longitude)
         : null;
-      
+
       setFormData({
         branch_name: selectedBranch.branch_name,
         branch_address: selectedBranch.branch_address,
@@ -409,13 +454,13 @@ export default function BranchesPage() {
         latitude: latitude,
         longitude: longitude
       });
-      
+
       // Cập nhật vị trí marker nếu có tọa độ
       if (latitude !== null && longitude !== null) {
         setMarkerPosition([latitude, longitude]);
         setMapPosition([latitude, longitude]);
       }
-      
+
       setIsEditing(true);
       setShowViewPopup(false);
       setShowAddPopup(true);
@@ -435,7 +480,7 @@ export default function BranchesPage() {
   // Xử lý thêm chi nhánh mới
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     try {
       if (isEditing && selectedBranch) {
         // Cập nhật chi nhánh
@@ -449,16 +494,16 @@ export default function BranchesPage() {
             longitude: formData.longitude
           })
           .eq('branch_id', selectedBranch.branch_id)
-        
+
         if (error) throw error
-        
+
         // Cập nhật state
-        setBranches(prev => prev.map(branch => 
-          branch.branch_id === selectedBranch.branch_id 
-            ? { ...branch, ...formData } 
+        setBranches(prev => prev.map(branch =>
+          branch.branch_id === selectedBranch.branch_id
+            ? { ...branch, ...formData }
             : branch
         ))
-        
+
         showNotification('Cập nhật chi nhánh thành công!', 'success')
       } else {
         // Thêm chi nhánh mới
@@ -472,20 +517,20 @@ export default function BranchesPage() {
             longitude: formData.longitude
           })
           .select()
-        
+
         if (error) throw error
-        
+
         // Cập nhật state
         if (data && data.length > 0) {
           setBranches(prev => [...prev, data[0]])
         }
-        
+
         showNotification('Thêm chi nhánh thành công!', 'success')
       }
-      
+
       // Đóng popup
       closeAddPopup()
-      
+
       // Reset form
       setFormData({
         branch_name: '',
@@ -494,7 +539,7 @@ export default function BranchesPage() {
         latitude: null,
         longitude: null
       })
-      
+
       setIsEditing(false)
       setSelectedBranch(null)
     } catch (error: any) {
@@ -506,33 +551,33 @@ export default function BranchesPage() {
   // Xử lý xóa chi nhánh
   const handleDelete = async () => {
     if (!selectedBranch) return
-    
+
     try {
       // Kiểm tra xem chi nhánh có người dùng không
       const { data: usersInBranch, error: checkError } = await supabase
         .from('users')
         .select('user_id')
         .eq('branch_id', selectedBranch.branch_id)
-      
+
       if (checkError) throw checkError
-      
+
       if (usersInBranch && usersInBranch.length > 0) {
         throw new Error('Không thể xóa chi nhánh này vì có người dùng đang thuộc về chi nhánh')
       }
-      
+
       // Xóa chi nhánh
       const { error } = await supabase
         .from('branches')
         .delete()
         .eq('branch_id', selectedBranch.branch_id)
-      
+
       if (error) throw error
-      
+
       // Cập nhật state
       setBranches(prev => prev.filter(branch => branch.branch_id !== selectedBranch.branch_id))
-      
+
       showNotification('Xóa chi nhánh thành công!', 'success')
-      
+
       // Đóng popup
       setShowDeleteConfirm(false)
       setShowViewPopup(false)
@@ -556,11 +601,26 @@ export default function BranchesPage() {
   // Lấy theme hiện tại
   const currentTheme = themeContext.currentTheme
 
+  // Hiển thị loading khi đang kiểm tra quyền
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900"></div>
+        <p className="ml-2 text-gray-500">Đang tải...</p>
+      </div>
+    )
+  }
+
+  // Hiển thị thông báo từ chối truy cập nếu không phải admin
+  if (!isAdmin) {
+    return <AccessDenied message="Truy cập bị từ chối. Bạn không có quyền truy cập chức năng quản lý chi nhánh. Chỉ có admin mới truy cập được." />
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       {/* Hệ thống thông báo */}
       {notification.visible && (
-        <div 
+        <div
           className={`fixed top-4 right-4 z-50 rounded-md p-4 shadow-lg max-w-md transition-all duration-300 transform translate-y-0 opacity-100 ${
             notification.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' :
             notification.type === 'error' ? 'bg-red-50 text-red-800 border border-red-200' :
@@ -684,8 +744,8 @@ export default function BranchesPage() {
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {branches.map((branch) => (
-                      <tr 
-                        key={branch.branch_id} 
+                      <tr
+                        key={branch.branch_id}
                         className="hover:bg-gray-50 cursor-pointer"
                         onClick={() => openViewPopup(branch)}
                       >
@@ -799,7 +859,7 @@ export default function BranchesPage() {
                   </div>
                   {formData.latitude !== null && formData.longitude !== null && (
                     <div className="mt-1 text-xs text-gray-500">
-                      Tọa độ: {typeof formData.latitude === 'number' ? formData.latitude.toFixed(6) : formData.latitude}, 
+                      Tọa độ: {typeof formData.latitude === 'number' ? formData.latitude.toFixed(6) : formData.latitude},
                       {typeof formData.longitude === 'number' ? formData.longitude.toFixed(6) : formData.longitude}
                     </div>
                   )}
@@ -899,12 +959,12 @@ export default function BranchesPage() {
                 <h4 className="text-sm font-medium text-gray-500">Địa chỉ</h4>
                 <p className="mt-1 text-sm text-gray-900 break-words">{selectedBranch.branch_address}</p>
               </div>
-              
+
               {/* Danh sách nhân viên của chi nhánh */}
               <div className="mt-6">
                 <div className="flex justify-between items-center border-b pb-2 mb-3">
                   <h4 className="text-sm font-medium text-gray-700">Danh sách nhân viên đang hoạt động</h4>
-                  
+
                   {/* Thống kê nhân viên */}
                   {!loadingEmployees && employeeStats.total > 0 && (
                     <div className="text-xs text-gray-500">
@@ -913,15 +973,15 @@ export default function BranchesPage() {
                     </div>
                   )}
                 </div>
-                
+
                 {loadingEmployees ? (
                   <div className="flex justify-center py-4">
                     <div className={`animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 ${currentTheme?.borderColor || 'border-blue-500'}`}></div>
                   </div>
                 ) : branchEmployees.length === 0 ? (
                   <div className="text-center py-4 text-sm text-gray-500">
-                    {employeeStats.total === 0 
-                      ? "Chưa có nhân viên nào trong chi nhánh này" 
+                    {employeeStats.total === 0
+                      ? "Chưa có nhân viên nào trong chi nhánh này"
                       : "Không có nhân viên đang hoạt động trong chi nhánh này"}
                   </div>
                 ) : (
@@ -1007,7 +1067,7 @@ export default function BranchesPage() {
 
             <div className="mb-4">
               <p className="text-sm text-gray-500">
-                Bạn có chắc chắn muốn xóa chi nhánh <span className="font-semibold">{selectedBranch.branch_name}</span>? 
+                Bạn có chắc chắn muốn xóa chi nhánh <span className="font-semibold">{selectedBranch.branch_name}</span>?
                 Hành động này không thể hoàn tác.
               </p>
             </div>
@@ -1078,9 +1138,9 @@ export default function BranchesPage() {
                   border-radius: 0.375rem;
                 }
               `}</style>
-              <MapContainer 
-                center={mapPosition} 
-                zoom={13} 
+              <MapContainer
+                center={mapPosition}
+                zoom={13}
                 style={{ height: '400px', width: '100%' }}
               >
                 <TileLayer
@@ -1107,7 +1167,7 @@ export default function BranchesPage() {
               <div className="text-sm text-gray-500">
                 {formData.latitude !== null && formData.longitude !== null ? (
                   <span>
-                    Tọa độ đã chọn: {typeof formData.latitude === 'number' ? formData.latitude.toFixed(6) : formData.latitude}, 
+                    Tọa độ đã chọn: {typeof formData.latitude === 'number' ? formData.latitude.toFixed(6) : formData.latitude},
                     {typeof formData.longitude === 'number' ? formData.longitude.toFixed(6) : formData.longitude}
                   </span>
                 ) : (
