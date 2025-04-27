@@ -22,6 +22,7 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const [user, setUser] = useState<User | null>(null) // Updated user type
+  const [userFullName, setUserFullName] = useState<string>('') // State for user's full name
   const [loading, setLoading] = useState(true)
   const [activeNavItem, setActiveNavItem] = useState('dashboard')
   const [expandedItems, setExpandedItems] = useState<string[]>([])
@@ -174,6 +175,24 @@ export default function DashboardLayout({
         // Cập nhật thông tin đăng nhập nếu có user_id
         if (session.user.id) {
           try {
+            // Lấy thông tin người dùng từ bảng users để lấy full_name
+            const { data: userData, error: userError } = await supabase
+              .from('users')
+              .select('full_name')
+              .eq('user_id', session.user.id)
+              .maybeSingle();
+
+            if (userError) {
+              console.error('Lỗi khi lấy thông tin người dùng:', userError.message);
+            } else if (userData && userData.full_name) {
+              console.log('Đã lấy được tên người dùng:', userData.full_name);
+              setUserFullName(userData.full_name);
+            } else {
+              console.log('Không tìm thấy tên người dùng, sử dụng email');
+              // Nếu không có full_name, sử dụng email làm tên hiển thị
+              setUserFullName(session.user.email?.split('@')[0] || '');
+            }
+
             // Kiểm tra xem user_id có tồn tại trong bảng accounts chưa
             const { data: existingAccount, error: checkError } = await supabase
               .from('accounts')
@@ -608,7 +627,10 @@ export default function DashboardLayout({
               </button>
               <div className="relative" ref={userMenuRef}>
                 <div className="flex items-center space-x-3">
-                  <span className="text-sm font-medium text-gray-700 hidden sm:inline">{user?.email}</span>
+                  <div className="hidden sm:flex flex-col items-end">
+                    <span className="text-sm font-medium text-gray-700">{userFullName || user?.user_metadata?.full_name || user?.email?.split('@')[0]}</span>
+                    <span className="text-xs text-gray-500">{user?.email}</span>
+                  </div>
                   <button
                     onClick={() => setShowUserMenu(!showUserMenu)}
                     className="flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-gray-500"
@@ -624,8 +646,8 @@ export default function DashboardLayout({
                   <div className="origin-top-right absolute right-0 mt-2 w-60 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50 transform transition-all duration-100 ease-out">
                     <div className="py-1" role="menu" aria-orientation="vertical">
                       <div className="px-4 py-3 border-b border-gray-100">
-                        <p className="text-sm text-gray-500">Đăng nhập với</p>
-                        <p className="text-sm font-medium text-gray-900 truncate">{user?.email}</p>
+                        <p className="text-sm font-medium text-gray-900 truncate">{userFullName || user?.user_metadata?.full_name || user?.email?.split('@')[0]}</p>
+                        <p className="text-sm text-gray-500 truncate">{user?.email}</p>
                       </div>
 
                       <Link
