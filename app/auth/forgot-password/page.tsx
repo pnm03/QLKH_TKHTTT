@@ -21,7 +21,7 @@ export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [unlockAccount, setUnlockAccount] = useState(false)
-  
+
   // Sử dụng useSearchParams để lấy email từ URL
   const searchParams = useSearchParams()
   const emailFromUrl = searchParams.get('email')
@@ -54,9 +54,12 @@ export default function ForgotPasswordPage() {
 
       const supabase = createClient()
 
+      // Lấy site URL từ biến môi trường hoặc sử dụng window.location.origin nếu không có
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
+
       // Gửi email đặt lại mật khẩu
       const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
-        redirectTo: `${window.location.origin}/auth/reset-password`
+        redirectTo: `${siteUrl}/auth/reset-password`
       })
 
       if (error) {
@@ -70,7 +73,7 @@ export default function ForgotPasswordPage() {
           // Cập nhật trạng thái tài khoản trong database
           const { error: updateError } = await supabase
             .from('accounts')
-            .update({ 
+            .update({
               status: 'active'
             })
             .eq('username', data.email);
@@ -200,4 +203,4 @@ export default function ForgotPasswordPage() {
       </div>
     </div>
   )
-} 
+}
