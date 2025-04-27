@@ -6,6 +6,8 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { useTheme, themeColors } from '@/app/context/ThemeContext'
 import { convertImageToBase64, validateImage } from '@/app/utils/imageUtils'
 import Image from 'next/image'
+import AccessDenied from '@/components/AccessDenied'
+import { createClient } from '@/utils/supabase/client'
 
 interface Category {
   category_id: number
@@ -29,10 +31,11 @@ interface NotificationState {
 
 export default function CategoriesPage() {
   const router = useRouter()
-  const supabase = createClientComponentClient()
   const [categories, setCategories] = useState<Category[]>([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [authLoading, setAuthLoading] = useState(true)
   const [newCategory, setNewCategory] = useState({
     name_category: '',
     description_category: '',
@@ -42,21 +45,21 @@ export default function CategoriesPage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [imageError, setImageError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  
+
   // Modal state
   const [modal, setModal] = useState<ModalState>({
     isOpen: false,
     mode: 'view',
     category: null
   })
-  
+
   // Notification state
   const [notification, setNotification] = useState<NotificationState>({
     type: 'info',
     message: '',
     visible: false
   })
-  
+
   // Show notification
   const showNotification = (type: 'success' | 'error' | 'info', message: string) => {
     setNotification({
@@ -64,7 +67,7 @@ export default function CategoriesPage() {
       message,
       visible: true
     })
-    
+
     // Auto hide notification after delay
     const timeout = type === 'success' ? 2000 : 5000
     setTimeout(() => {
@@ -72,10 +75,10 @@ export default function CategoriesPage() {
     }, timeout)
   }
 
-  const fetchCategories = async () => {
+  const fetchCategories = async (supabase) => {
     setLoading(true)
     setError(null)
-    
+
     try {
       // Fetch categories from Supabase
       const { data, error } = await supabase
@@ -88,10 +91,10 @@ export default function CategoriesPage() {
         console.log('Error details:', JSON.stringify(error, null, 2))
         throw new Error(`Lỗi khi tải danh mục: ${error.message || 'Không xác định'}`)
       }
-      
+
       // Set categories data
       setCategories(data || [])
-      
+
       if (data?.length === 0) {
         console.log('No categories found')
       } else {
@@ -112,7 +115,7 @@ export default function CategoriesPage() {
       mode,
       category
     })
-    
+
     if (mode === 'edit') {
       // Set form data for editing
       setNewCategory({
@@ -120,7 +123,7 @@ export default function CategoriesPage() {
         description_category: category.description_category,
         image_category: category.image_category || ''
       })
-      
+
       // Set image preview if available
       if (category.image_category) {
         setImagePreview(category.image_category)
@@ -129,14 +132,14 @@ export default function CategoriesPage() {
       }
     }
   }
-  
+
   const closeModal = () => {
     setModal({
       isOpen: false,
       mode: 'view',
       category: null
     })
-    
+
     // Reset form if was in edit mode
     if (modal.mode === 'edit') {
       setNewCategory({
@@ -151,32 +154,33 @@ export default function CategoriesPage() {
       }
     }
   }
-  
+
   const handleDeleteCategory = async () => {
     if (!modal.category) return
-    
+
     setLoading(true)
     setError(null)
-    
+
     try {
+      const supabase = createClient()
       const { error } = await supabase
         .from('category')
         .delete()
         .eq('category_id', modal.category.category_id)
-      
+
       if (error) {
         console.error('Error deleting category:', error)
         console.log('Error details:', JSON.stringify(error, null, 2))
         throw new Error(`Lỗi khi xóa danh mục: ${error.message || 'Không xác định'}`)
       }
-      
+
       // Close modal and refresh categories
       closeModal()
-      await fetchCategories()
-      
+      await fetchCategories(supabase)
+
       // Show success notification
       showNotification('success', `Đã xóa danh mục "${modal.category.name_category}" thành công!`)
-      
+
     } catch (err) {
       console.error('Failed to delete category:', err)
       const errorMessage = err instanceof Error ? err.message : 'Lỗi khi xóa danh mục'
@@ -186,15 +190,15 @@ export default function CategoriesPage() {
       setLoading(false)
     }
   }
-  
+
   const handleUpdateCategory = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!modal.category) return
-    
+
     setLoading(true)
     setError(null)
-    
+
     // Validate required fields
     if (!newCategory.name_category.trim()) {
       const errorMessage = 'Tên danh mục không được để trống'
@@ -211,8 +215,9 @@ export default function CategoriesPage() {
       setLoading(false)
       return
     }
-    
+
     try {
+      const supabase = createClient()
       const { error } = await supabase
         .from('category')
         .update({
@@ -221,20 +226,20 @@ export default function CategoriesPage() {
           image_category: newCategory.image_category || null
         })
         .eq('category_id', modal.category.category_id)
-      
+
       if (error) {
         console.error('Error updating category:', error)
         console.log('Error details:', JSON.stringify(error, null, 2))
         throw new Error(`Lỗi khi cập nhật danh mục: ${error.message || 'Không xác định'}`)
       }
-      
+
       // Close modal and refresh categories
       closeModal()
-      await fetchCategories()
-      
+      await fetchCategories(supabase)
+
       // Show success notification
       showNotification('success', `Đã cập nhật danh mục "${newCategory.name_category}" thành công!`)
-      
+
     } catch (err) {
       console.error('Failed to update category:', err)
       const errorMessage = err instanceof Error ? err.message : 'Lỗi khi cập nhật danh mục'
@@ -245,8 +250,50 @@ export default function CategoriesPage() {
     }
   }
 
+  // Kiểm tra vai trò người dùng
   useEffect(() => {
-    fetchCategories()
+    const checkUserRole = async () => {
+      try {
+        setAuthLoading(true)
+        const supabase = createClient()
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+
+        if (sessionError || !session) {
+          console.error('Không có phiên đăng nhập:', sessionError?.message)
+          setIsAdmin(false)
+          setAuthLoading(false)
+          return
+        }
+
+        const { data: accountData, error: accountError } = await supabase
+          .from('accounts')
+          .select('role')
+          .eq('user_id', session.user.id)
+          .maybeSingle()
+
+        if (accountError || !accountData) {
+          console.error('Lỗi khi lấy thông tin tài khoản:', accountError)
+          setIsAdmin(false)
+          setAuthLoading(false)
+          return
+        }
+
+        setIsAdmin(accountData.role === 'admin')
+
+        // Nếu là admin, tiếp tục lấy dữ liệu danh mục
+        if (accountData.role === 'admin') {
+          await fetchCategories(supabase)
+        }
+
+        setAuthLoading(false)
+      } catch (error) {
+        console.error('Lỗi khi kiểm tra vai trò:', error)
+        setIsAdmin(false)
+        setAuthLoading(false)
+      }
+    }
+
+    checkUserRole()
   }, [])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -256,38 +303,38 @@ export default function CategoriesPage() {
       [name]: value
     }))
   }
-  
+
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    
+
     // Validate image
     const validation = validateImage(file, 5 * 1024 * 1024) // 5MB limit
     if (!validation.valid) {
       setImageError(validation.error)
       return
     }
-    
+
     setImageError(null)
     setImageFile(file)
-    
+
     try {
       // Create preview immediately using URL.createObjectURL for faster preview
       const objectUrl = URL.createObjectURL(file)
       setImagePreview(objectUrl)
-      
+
       // Convert to base64 in background for storage
       const base64 = await convertImageToBase64(file)
-      
+
       // Update category state with base64 image
       setNewCategory(prev => ({
         ...prev,
         image_category: base64 as string
       }))
-      
+
       // Revoke object URL to free memory
       URL.revokeObjectURL(objectUrl)
-      
+
       // Update preview with base64 after conversion is complete
       setImagePreview(base64 as string)
     } catch (err) {
@@ -319,7 +366,8 @@ export default function CategoriesPage() {
     }
 
     try {
-      const { data, error } = await supabase
+      const supabase = createClient()
+      const { error } = await supabase
         .from('category')
         .insert([newCategory])
         .select()
@@ -344,8 +392,8 @@ export default function CategoriesPage() {
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
       }
-      
-      await fetchCategories()
+
+      await fetchCategories(supabase)
     } catch (err) {
       console.error('Error adding category:', err)
       const errorMessage = err instanceof Error ? err.message : 'Lỗi khi thêm danh mục'
@@ -358,9 +406,19 @@ export default function CategoriesPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
+      {/* Kiểm tra quyền admin */}
+      {authLoading ? (
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+          <p className="ml-2 text-gray-500">Đang tải...</p>
+        </div>
+      ) : !isAdmin ? (
+        <AccessDenied message="Truy cập bị từ chối. Bạn không có quyền truy cập chức năng quản lý danh mục sản phẩm. Chỉ có admin mới truy cập được." />
+      ) : (
+        <>
       {/* Notification */}
       {notification.visible && (
-        <div 
+        <div
           className={`fixed top-4 right-4 z-50 rounded-md p-4 shadow-lg max-w-md transition-all duration-300 transform translate-y-0 opacity-100 ${
             notification.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' :
             notification.type === 'error' ? 'bg-red-50 text-red-800 border border-red-200' :
@@ -410,7 +468,7 @@ export default function CategoriesPage() {
           </div>
         </div>
       )}
-      
+
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
           <div className="px-6 py-8 border-b border-gray-200">
@@ -452,12 +510,12 @@ export default function CategoriesPage() {
                     style={{ minHeight: "160px", resize: "none" }}
                   />
                 </div>
-                
+
                 <div className="flex flex-col">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Hình ảnh danh mục
                   </label>
-                  
+
                   <input
                     type="file"
                     name="image_category"
@@ -467,15 +525,15 @@ export default function CategoriesPage() {
                     onChange={handleImageChange}
                     className="hidden"
                   />
-                  
+
                   {imagePreview ? (
-                    <div 
+                    <div
                       className="relative h-40 w-40 overflow-hidden rounded-md border-2 border-gray-200 cursor-pointer hover:opacity-90 transition-opacity mx-auto"
                       onClick={() => fileInputRef.current?.click()}
                     >
-                      <img 
-                        src={imagePreview} 
-                        alt="Preview" 
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
                         className="h-full w-full object-cover"
                       />
                       <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
@@ -483,7 +541,7 @@ export default function CategoriesPage() {
                       </div>
                     </div>
                   ) : (
-                    <div 
+                    <div
                       className="h-40 w-40 border-2 border-dashed border-gray-300 rounded-md flex flex-col items-center justify-center cursor-pointer hover:border-indigo-500 transition-colors mx-auto"
                       onClick={() => fileInputRef.current?.click()}
                     >
@@ -493,7 +551,7 @@ export default function CategoriesPage() {
                       <span className="mt-2 text-sm text-gray-500">Nhấp để chọn ảnh</span>
                     </div>
                   )}
-                  
+
                   {imageError && (
                     <p className="mt-1 text-sm text-red-600 text-center">{imageError}</p>
                   )}
@@ -519,8 +577,8 @@ export default function CategoriesPage() {
                     <p className="text-sm text-gray-700 mb-2">
                       Bảng danh mục chưa được tạo. Bạn có thể tạo bảng bằng cách nhấn nút bên dưới:
                     </p>
-                    <a 
-                      href="/debug/category" 
+                    <a
+                      href="/debug/category"
                       target="_blank"
                       className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                     >
@@ -561,7 +619,7 @@ export default function CategoriesPage() {
                     </tr>
                   ) : (
                     categories.map((category) => (
-                      <tr 
+                      <tr
                         key={category.category_id}
                         onClick={() => openModal(category, 'view')}
                         className="cursor-pointer hover:bg-gray-50 transition-colors"
@@ -572,8 +630,8 @@ export default function CategoriesPage() {
                         <td className="px-6 py-4 whitespace-nowrap">
                           {category.image_category ? (
                             <div className="h-12 w-12 relative overflow-hidden rounded-md">
-                              <img 
-                                src={category.image_category} 
+                              <img
+                                src={category.image_category}
                                 alt={category.name_category}
                                 className="h-full w-full object-cover"
                               />
@@ -614,7 +672,7 @@ export default function CategoriesPage() {
           </div>
         </div>
       </div>
-      
+
       {/* Modal */}
       {modal.isOpen && (
         <div className="fixed inset-0 z-10 overflow-y-auto">
@@ -665,7 +723,7 @@ export default function CategoriesPage() {
                             </div>
                           )}
                         </div>
-                        
+
                         <div>
                           <label htmlFor="edit_name_category" className="block text-sm font-medium text-gray-700">
                             Tên danh mục {modal.mode === 'edit' && <span className="text-red-500">*</span>}
@@ -709,12 +767,12 @@ export default function CategoriesPage() {
                           )}
                         </div>
                       </div>
-                      
+
                       <div className="flex flex-col">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Hình ảnh danh mục
                         </label>
-                        
+
                         {modal.mode === 'edit' && (
                           <input
                             type="file"
@@ -726,12 +784,12 @@ export default function CategoriesPage() {
                             ref={fileInputRef}
                           />
                         )}
-                        
+
                         {modal.mode === 'view' ? (
                           modal.category.image_category ? (
                             <div className="relative h-40 w-40 overflow-hidden rounded-md border-2 border-gray-200 mx-auto">
-                              <img 
-                                src={modal.category.image_category} 
+                              <img
+                                src={modal.category.image_category}
                                 alt={modal.category.name_category}
                                 className="h-full w-full object-cover"
                               />
@@ -746,13 +804,13 @@ export default function CategoriesPage() {
                           )
                         ) : (
                           imagePreview ? (
-                            <div 
+                            <div
                               className="relative h-40 w-40 overflow-hidden rounded-md border-2 border-gray-200 cursor-pointer hover:opacity-90 transition-opacity mx-auto"
                               onClick={() => fileInputRef.current?.click()}
                             >
-                              <img 
-                                src={imagePreview} 
-                                alt="Preview" 
+                              <img
+                                src={imagePreview}
+                                alt="Preview"
                                 className="h-full w-full object-cover"
                               />
                               <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
@@ -760,7 +818,7 @@ export default function CategoriesPage() {
                               </div>
                             </div>
                           ) : (
-                            <div 
+                            <div
                               className="h-40 w-40 border-2 border-dashed border-gray-300 rounded-md flex flex-col items-center justify-center cursor-pointer hover:border-indigo-500 transition-colors mx-auto"
                               onClick={() => fileInputRef.current?.click()}
                             >
@@ -771,7 +829,7 @@ export default function CategoriesPage() {
                             </div>
                           )
                         )}
-                        
+
                         {modal.mode === 'edit' && imageError && (
                           <p className="mt-1 text-sm text-red-600 text-center">{imageError}</p>
                         )}
@@ -779,7 +837,7 @@ export default function CategoriesPage() {
                     </div>
                   </div>
                 )}
-                
+
                 {modal.mode === 'delete' && modal.category && (
                   <div className="flex items-start space-x-4">
                     <div className="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
@@ -793,7 +851,7 @@ export default function CategoriesPage() {
                       </h3>
                       <div className="mt-2">
                         <p className="text-sm text-gray-500">
-                          Bạn có chắc chắn muốn xóa danh mục "<span className="font-medium">{modal.category.name_category}</span>"? 
+                          Bạn có chắc chắn muốn xóa danh mục "<span className="font-medium">{modal.category.name_category}</span>"?
                           Hành động này không thể hoàn tác.
                         </p>
                       </div>
@@ -816,7 +874,7 @@ export default function CategoriesPage() {
                       </svg>
                       Chỉnh sửa
                     </button>
-                    
+
                     <button
                       type="button"
                       onClick={() => openModal(modal.category!, 'delete')}
@@ -827,7 +885,7 @@ export default function CategoriesPage() {
                       </svg>
                       Xóa
                     </button>
-                    
+
                     <button
                       type="button"
                       onClick={closeModal}
@@ -837,7 +895,7 @@ export default function CategoriesPage() {
                     </button>
                   </>
                 )}
-                
+
                 {modal.mode === 'edit' && (
                   <>
                     <button
@@ -872,7 +930,7 @@ export default function CategoriesPage() {
                     </button>
                   </>
                 )}
-                
+
                 {modal.mode === 'delete' && (
                   <>
                     <button
@@ -911,6 +969,8 @@ export default function CategoriesPage() {
             </div>
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   )

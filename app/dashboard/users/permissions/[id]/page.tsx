@@ -599,7 +599,7 @@ export default function UserPermissionsPage(props: { params: Promise<{ id: strin
                   <p><strong>Quản trị viên (Admin):</strong> Có toàn quyền quản lý hệ thống, bao gồm phân quyền, quản lý người dùng, và tất cả các chức năng khác.</p>
                   <p><strong>Nhân viên bán hàng (NVBH):</strong> Có quyền quản lý đơn hàng, tạo đơn hàng mới, xem danh sách sản phẩm, quản lý khách hàng.</p>
                   <p><strong>Nhân viên kho (NVK):</strong> Có quyền quản lý kho, nhập/xuất hàng, kiểm kho, quản lý sản phẩm.</p>
-                  <p><strong>Nhân viên quản lý đơn hàng (NVQLDH):</strong> Có quyền xem và cập nhật trạng thái đơn hàng, quản lý giao hàng.</p>
+                  /*<p><strong>Nhân viên quản lý đơn hàng (NVQLDH):</strong> Có quyền xem và cập nhật trạng thái đơn hàng, quản lý giao hàng.</p>*/
                 </div>
               </div>
             </div>
