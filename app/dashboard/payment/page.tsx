@@ -4,12 +4,8 @@ import { useState, useEffect } from 'react'
 import UnpaidOrdersList from '@/components/payment/UnpaidOrdersList'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-import { createClient } from '@/utils/supabase/client'
-import AccessDenied from '@/components/AccessDenied'
 
 export default function PaymentPage() {
-  const [isAdmin, setIsAdmin] = useState(false)
-  const [loading, setLoading] = useState(true)
   const [mounted, setMounted] = useState(false)
 
   // Set mounted = true sau khi component được render ở client
@@ -17,83 +13,27 @@ export default function PaymentPage() {
     setMounted(true)
   }, [])
 
-  // Kiểm tra vai trò người dùng hiện tại có phải admin không
-  useEffect(() => {
-    if (mounted) {
-      const checkUserRole = async () => {
-        try {
-          const supabase = createClient()
-          const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-
-          if (sessionError || !session) {
-            console.error('Không có phiên đăng nhập:', sessionError?.message)
-            setIsAdmin(false)
-            setLoading(false)
-            return
-          }
-
-          const { data: accountData, error: accountError } = await supabase
-            .from('accounts')
-            .select('role')
-            .eq('user_id', session.user.id)
-            .maybeSingle()
-
-          if (accountError || !accountData) {
-            console.error('Lỗi khi lấy thông tin tài khoản:', accountError)
-            setIsAdmin(false)
-            setLoading(false)
-            return
-          }
-
-          setIsAdmin(accountData.role === 'admin')
-          setLoading(false)
-        } catch (error: any) {
-          console.error('Lỗi khi kiểm tra vai trò:', error)
-          setIsAdmin(false)
-          setLoading(false)
-        }
-      }
-
-      checkUserRole()
-    }
-  }, [mounted])
-
   if (!mounted) {
     return null
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900"></div>
-        <p className="ml-2 text-gray-500">Đang tải...</p>
-      </div>
-    )
-  }
-
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      {isAdmin ? (
-        <>
-          {/* Danh sách đơn hàng chưa thanh toán */}
-          <UnpaidOrdersList />
+      {/* Danh sách đơn hàng chưa thanh toán */}
+      <UnpaidOrdersList />
 
-          {/* Toast container for notifications */}
-          <ToastContainer
-            position="top-right"
-            autoClose={3000}
-            hideProgressBar={false}
-            newestOnTop
-            closeOnClick
-            rtl={false}
-            pauseOnFocusLoss
-            draggable
-            pauseOnHover
-          />
-        </>
-      ) : (
-        <AccessDenied />
-      )}
+      {/* Toast container for notifications */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </div>
   )
 }
