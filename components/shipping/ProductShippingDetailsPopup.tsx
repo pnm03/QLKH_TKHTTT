@@ -159,12 +159,25 @@ export default function ProductShippingDetailsPopup({
 
   return (
     <div className="fixed inset-0 overflow-y-auto z-50" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-      <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onClick={onClose}></div>
+      <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0">
+        <div className="fixed inset-0 backdrop-blur-[2px] backdrop-brightness-[0.9]" aria-hidden="true" onClick={onClose}></div>
 
         <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
-        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+        <div
+          style={{
+            borderWidth: '2px',
+            borderStyle: 'solid',
+            borderColor: themeColor === 'indigo' ? '#818cf8' :
+                        themeColor === 'blue' ? '#60a5fa' :
+                        themeColor === 'red' ? '#f87171' :
+                        themeColor === 'green' ? '#6ee7b7' :
+                        themeColor === 'purple' ? '#c084fc' :
+                        themeColor === 'pink' ? '#f472b6' :
+                        themeColor === 'yellow' ? '#fcd34d' :
+                        themeColor === 'orange' ? '#fb923c' : '#818cf8' /* mặc định indigo */
+          }}
+          className="inline-block align-bottom backdrop-filter backdrop-blur-sm bg-white bg-opacity-50 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
           <div className="absolute top-0 right-0 pt-4 pr-4">
             <button
               type="button"
@@ -176,7 +189,7 @@ export default function ProductShippingDetailsPopup({
             </button>
           </div>
 
-          <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+          <div className="bg-white bg-opacity-90 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
             <div className="sm:flex sm:items-start">
               <div className="mt-3 text-center sm:mt-0 sm:text-left w-full">
                 <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
@@ -268,7 +281,7 @@ export default function ProductShippingDetailsPopup({
               </div>
             </div>
           </div>
-          <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+          <div className="bg-white bg-opacity-70 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
             <button
               type="button"
               className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-${themeColor}-600 text-base font-medium text-white hover:bg-${themeColor}-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${themeColor}-500 sm:ml-3 sm:w-auto sm:text-sm`}

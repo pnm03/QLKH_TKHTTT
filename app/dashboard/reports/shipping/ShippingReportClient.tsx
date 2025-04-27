@@ -343,7 +343,6 @@ export default function ShippingReportClient({
                         </td>
                         <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-800 border-b border-gray-200">
                           {product.name}
-                          <div className="text-xs text-blue-600 mt-1">Nhấp để xem chi tiết</div>
                         </td>
                         <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-800 text-right font-medium border-b border-gray-200">
                           <span className="bg-blue-100 text-blue-800 px-2.5 py-0.5 rounded-full">
