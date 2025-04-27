@@ -16,6 +16,7 @@ import {
   XCircleIcon,
   DocumentTextIcon
 } from '@heroicons/react/24/outline'
+import OrderDetailsPopup from '@/components/payment/OrderDetailsPopup'
 // Các thư viện PDF sẽ được import động khi cần
 // import { jsPDF } from 'jspdf'
 // import html2canvas from 'html2canvas'
@@ -85,7 +86,7 @@ export default function SearchOrdersPage() {
   // State cho phân trang
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
-  const ordersPerPage = 10
+  const [ordersPerPage, setOrdersPerPage] = useState(10)
 
   // State cho thông báo lỗi
   const [error, setError] = useState<string | null>(null)
@@ -939,6 +940,31 @@ export default function SearchOrdersPage() {
         </div>
       )}
 
+      {/* Lựa chọn số dòng hiển thị */}
+      <div className="flex justify-end mb-4">
+        <div className="flex items-center">
+          <label htmlFor="rows-per-page" className="mr-2 text-sm text-gray-700">
+            Hiển thị:
+          </label>
+          <select
+            id="rows-per-page"
+            value={ordersPerPage}
+            onChange={(e) => {
+              const newValue = parseInt(e.target.value);
+              setOrdersPerPage(newValue);
+              setCurrentPage(1); // Reset về trang 1 khi thay đổi số dòng hiển thị
+              setTotalPages(Math.ceil(orders.length / newValue));
+            }}
+            className={`block rounded-md border-gray-300 shadow-sm focus:border-${themeColor}-500 focus:ring-${themeColor}-500 sm:text-sm`}
+          >
+            <option value={10}>10 dòng</option>
+            <option value={20}>20 dòng</option>
+            <option value={50}>50 dòng</option>
+            <option value={100}>100 dòng</option>
+          </select>
+        </div>
+      </div>
+
       {/* Danh sách đơn hàng */}
       <div className="bg-white shadow rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
@@ -1180,164 +1206,13 @@ export default function SearchOrdersPage() {
 
       {/* Modal chi tiết đơn hàng */}
       {showOrderDetails && selectedOrder && (
-        <div className="fixed inset-0 overflow-y-auto z-50">
-          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
-              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
-            </div>
-
-            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-
-            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
-              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                <div className="sm:flex sm:items-start">
-                  <div className="mt-3 text-center sm:mt-0 sm:text-left w-full">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-                      Chi tiết đơn hàng #{selectedOrder.order_id}
-                    </h3>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-500 mb-2">Thông tin đơn hàng</h4>
-                        <div className="bg-gray-50 p-3 rounded-md">
-                          <div className="flex items-center mb-2">
-                            <CalendarIcon className="h-5 w-5 text-gray-400 mr-2" />
-                            <span className="text-sm text-gray-700">Ngày đặt: {formatDate(selectedOrder.order_date)}</span>
-                          </div>
-                          <div className="flex items-center mb-2">
-                            <CreditCardIcon className="h-5 w-5 text-gray-400 mr-2" />
-                            <span className="text-sm text-gray-700">Phương thức thanh toán: {selectedOrder.payment_method_name}</span>
-                          </div>
-                          <div className="flex items-center mb-2">
-                            {selectedOrder.status === 'Đã thanh toán' ? (
-                              <CheckCircleIcon className="h-5 w-5 text-green-500 mr-2" />
-                            ) : (
-                              <XCircleIcon className="h-5 w-5 text-yellow-500 mr-2" />
-                            )}
-                            <span className="text-sm text-gray-700">Trạng thái: {selectedOrder.status}</span>
-                          </div>
-                          <div className="flex items-center">
-                            <TruckIcon className="h-5 w-5 text-gray-400 mr-2" />
-                            <span className="text-sm text-gray-700">Vận chuyển: {selectedOrder.is_shipping ? 'Có' : 'Không'}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-500 mb-2">Thông tin người tạo & khách hàng</h4>
-                        <div className="bg-gray-50 p-3 rounded-md">
-                          <p className="text-sm text-gray-700 mb-2">Người tạo: {selectedOrder.creator_name}</p>
-                          <p className="text-sm text-gray-700">Khách hàng: {selectedOrder.customer_name || 'Khách vãng lai'}</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Chi tiết sản phẩm */}
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-500 mb-2">Chi tiết sản phẩm</h4>
-                      <div className="overflow-x-auto max-h-60 overflow-y-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                          <thead className="bg-gray-50 sticky top-0 z-10">
-                            <tr>
-                              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Sản phẩm
-                              </th>
-                              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Đơn giá
-                              </th>
-                              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Số lượng
-                              </th>
-                              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Thành tiền
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody className="bg-white divide-y divide-gray-200">
-                            {orderDetails.map((detail, index) => (
-                              <tr key={`${detail.order_id}-${detail.product_id}-${index}`}>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                  <div className="flex items-center">
-                                    {detail.product_image ? (
-                                      <img src={detail.product_image} alt={detail.name_product} className="w-10 h-10 object-cover mr-2" />
-                                    ) : (
-                                      <div className="w-10 h-10 bg-gray-200 flex items-center justify-center mr-2">
-                                        <span className="text-xs text-gray-500">No img</span>
-                                      </div>
-                                    )}
-                                    <div>
-                                      <div className="font-medium text-gray-900">{detail.name_product}</div>
-                                      {detail.name_check && (
-                                        <div className="text-sm text-gray-500">{detail.name_check}</div>
-                                      )}
-                                    </div>
-                                  </div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                  <div className="text-sm text-gray-900">{formatCurrency(detail.unit_price)}</div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                  <div className="text-sm text-gray-900">{detail.quantity}</div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                  <div className="text-sm font-medium text-gray-900">{formatCurrency(detail.subtotal)}</div>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                          <tfoot>
-                            <tr className="bg-gray-50">
-                              <td colSpan={3} className="px-6 py-4 text-right font-medium">
-                                Tổng tiền:
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap font-bold text-gray-900">
-                                {formatCurrency(selectedOrder.price)}
-                              </td>
-                            </tr>
-                          </tfoot>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                {/* Nút xuất hóa đơn */}
-                <button
-                  type="button"
-                  onClick={() => exportOrderToPDF(selectedOrder.order_id)}
-                  className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm`}
-                >
-                  <ArrowDownTrayIcon className="h-5 w-5 mr-2" />
-                  Xuất hóa đơn
-                </button>
-
-                {/* Nút xem đơn vận chuyển nếu có vận chuyển */}
-                {selectedOrder.is_shipping && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      // TODO: Implement shipping details view
-                      console.log('Xem đơn vận chuyển cho đơn hàng', selectedOrder.order_id);
-                    }}
-                    className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm`}
-                  >
-                    <TruckIcon className="h-5 w-5 mr-2" />
-                    Xem đơn vận chuyển
-                  </button>
-                )}
-
-                <button
-                  type="button"
-                  onClick={closeOrderDetails}
-                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                >
-                  Đóng
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <OrderDetailsPopup
+          order={selectedOrder}
+          onClose={closeOrderDetails}
+          onPayment={(order) => exportOrderToPDF(order.order_id)}
+          themeColor={themeColor}
+          onRefresh={searchOrders}
+        />
       )}
     </div>
   )

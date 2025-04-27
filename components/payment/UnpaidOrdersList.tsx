@@ -35,7 +35,7 @@ export default function UnpaidOrdersList() {
   const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
-  const [ordersPerPage] = useState(10)
+  const [ordersPerPage, setOrdersPerPage] = useState(10)
   const [totalPages, setTotalPages] = useState(1)
   const [mounted, setMounted] = useState(false)
   const themeContext = useTheme()
@@ -364,6 +364,31 @@ export default function UnpaidOrdersList() {
         </div>
       </div>
 
+      {/* Lựa chọn số dòng hiển thị */}
+      <div className="flex justify-end px-4 py-2">
+        <div className="flex items-center">
+          <label htmlFor="rows-per-page" className="mr-2 text-sm text-gray-700">
+            Hiển thị:
+          </label>
+          <select
+            id="rows-per-page"
+            value={ordersPerPage}
+            onChange={(e) => {
+              const newValue = parseInt(e.target.value);
+              setOrdersPerPage(newValue);
+              setCurrentPage(1); // Reset về trang 1 khi thay đổi số dòng hiển thị
+              setTotalPages(Math.ceil(orders.length / newValue));
+            }}
+            className={`block rounded-md border-gray-300 shadow-sm focus:border-${themeColor}-500 focus:ring-${themeColor}-500 sm:text-sm`}
+          >
+            <option value={10}>10 dòng</option>
+            <option value={20}>20 dòng</option>
+            <option value={50}>50 dòng</option>
+            <option value={100}>100 dòng</option>
+          </select>
+        </div>
+      </div>
+
       {/* Danh sách đơn hàng */}
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
@@ -530,6 +555,7 @@ export default function UnpaidOrdersList() {
           onClose={closeOrderDetails}
           onPayment={openPaymentMethodSelection}
           themeColor={themeColor}
+          onRefresh={fetchUnpaidOrders}
         />
       )}
 
