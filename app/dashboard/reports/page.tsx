@@ -5,15 +5,13 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { useRouter } from 'next/navigation'
 import { useTheme, themeColors } from '@/app/context/ThemeContext'
 import Link from 'next/link'
-import { 
-  ChartBarIcon, 
-  DocumentTextIcon, 
-  UserGroupIcon, 
-  ShoppingBagIcon,
+import {
+  ChartBarIcon,
+  DocumentTextIcon,
   ArrowTrendingUpIcon,
   CurrencyDollarIcon,
   CalendarDaysIcon,
-  ClipboardDocumentListIcon
+  TruckIcon
 } from '@heroicons/react/24/outline'
 
 export default function ReportsPage() {
@@ -109,53 +107,7 @@ export default function ReportsPage() {
           </div>
         </Link>
 
-        {/* Báo cáo khách hàng */}
-        <div className={`bg-white overflow-hidden shadow rounded-lg opacity-60 cursor-not-allowed`}>
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className={`flex-shrink-0 rounded-md p-3 bg-gray-100`}>
-                <UserGroupIcon className={`h-6 w-6 text-gray-600`} />
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <h3 className="text-lg font-medium text-gray-900">Báo cáo khách hàng</h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  Thống kê về khách hàng, tần suất mua hàng
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className={`bg-gray-50 px-5 py-3 border-t border-gray-200`}>
-            <div className="text-sm">
-              <span className={`font-medium text-gray-400`}>
-                Đang phát triển
-              </span>
-            </div>
-          </div>
-        </div>
 
-        {/* Báo cáo sản phẩm */}
-        <div className={`bg-white overflow-hidden shadow rounded-lg opacity-60 cursor-not-allowed`}>
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className={`flex-shrink-0 rounded-md p-3 bg-gray-100`}>
-                <ShoppingBagIcon className={`h-6 w-6 text-gray-600`} />
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <h3 className="text-lg font-medium text-gray-900">Báo cáo sản phẩm</h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  Thống kê về sản phẩm bán chạy, tồn kho
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className={`bg-gray-50 px-5 py-3 border-t border-gray-200`}>
-            <div className="text-sm">
-              <span className={`font-medium text-gray-400`}>
-                Đang phát triển
-              </span>
-            </div>
-          </div>
-        </div>
 
         {/* Báo cáo xu hướng */}
         <div className={`bg-white overflow-hidden shadow rounded-lg opacity-60 cursor-not-allowed`}>
@@ -182,11 +134,14 @@ export default function ReportsPage() {
         </div>
 
         {/* Báo cáo vận chuyển */}
-        <div className={`bg-white overflow-hidden shadow rounded-lg opacity-60 cursor-not-allowed`}>
+        <Link
+          href="/dashboard/reports/shipping"
+          className={`bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow duration-300`}
+        >
           <div className="p-5">
             <div className="flex items-center">
-              <div className={`flex-shrink-0 rounded-md p-3 bg-gray-100`}>
-                <ClipboardDocumentListIcon className={`h-6 w-6 text-gray-600`} />
+              <div className={`flex-shrink-0 rounded-md p-3 bg-${themeColor}-100`}>
+                <TruckIcon className={`h-6 w-6 text-${themeColor}-600`} />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <h3 className="text-lg font-medium text-gray-900">Báo cáo vận chuyển</h3>
@@ -198,12 +153,12 @@ export default function ReportsPage() {
           </div>
           <div className={`bg-gray-50 px-5 py-3 border-t border-gray-200`}>
             <div className="text-sm">
-              <span className={`font-medium text-gray-400`}>
-                Đang phát triển
+              <span className={`font-medium text-${themeColor}-600`}>
+                Xem báo cáo
               </span>
             </div>
           </div>
-        </div>
+        </Link>
 
         {/* Báo cáo theo thời gian */}
         <div className={`bg-white overflow-hidden shadow rounded-lg opacity-60 cursor-not-allowed`}>
