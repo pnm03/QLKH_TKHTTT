@@ -6,6 +6,8 @@ import { useTheme, themeColors } from '@/app/context/ThemeContext'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import Image from 'next/image'
 import { convertImageToBase64, validateImage } from '@/app/utils/imageUtils'
+import { createClient } from '@/utils/supabase/client'
+import AccessDenied from '@/components/AccessDenied'
 
 interface ProductFormData {
   product_name: string
@@ -34,6 +36,8 @@ export default function AddProductPage() {
   const themeContext = useTheme()
   const [themeState, setThemeState] = useState(themeColors.indigo)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [isAuthorized, setIsAuthorized] = useState(false)
+  const [authLoading, setAuthLoading] = useState(true)
 
   const [categories, setCategories] = useState<Category[]>([])
   const [formData, setFormData] = useState<ProductFormData>({
@@ -49,20 +53,20 @@ export default function AddProductPage() {
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  
+
   // Hệ thống thông báo mới
   interface NotificationState {
     visible: boolean;
     message: string;
     type: 'success' | 'error' | 'info';
   }
-  
+
   const [notification, setNotification] = useState<NotificationState>({
     visible: false,
     message: '',
     type: 'info'
   })
-  
+
   // Hàm hiển thị thông báo
   const showNotification = (message: string, type: 'success' | 'error' | 'info') => {
     setNotification({
@@ -70,7 +74,7 @@ export default function AddProductPage() {
       message,
       type
     })
-    
+
     // Tự động ẩn thông báo sau một khoảng thời gian
     const timeout = type === 'error' ? 5000 : 2000 // Thông báo lỗi hiển thị lâu hơn
     setTimeout(() => {
@@ -95,28 +99,70 @@ export default function AddProductPage() {
     }
     fetchCategories()
   }, [supabase])
-  
+
+  // Kiểm tra vai trò người dùng hiện tại có phải admin hoặc NVK không
+  useEffect(() => {
+    if (mounted) {
+      const checkUserRole = async () => {
+        try {
+          const client = createClient()
+          const { data: { session }, error: sessionError } = await client.auth.getSession()
+
+          if (sessionError || !session) {
+            console.error('Không có phiên đăng nhập:', sessionError?.message)
+            setIsAuthorized(false)
+            setAuthLoading(false)
+            return
+          }
+
+          const { data: accountData, error: accountError } = await client
+            .from('accounts')
+            .select('role')
+            .eq('user_id', session.user.id)
+            .maybeSingle()
+
+          if (accountError || !accountData) {
+            console.error('Lỗi khi lấy thông tin tài khoản:', accountError)
+            setIsAuthorized(false)
+            setAuthLoading(false)
+            return
+          }
+
+          // Kiểm tra nếu role là admin hoặc NVK (Nhân viên kho)
+          setIsAuthorized(accountData.role === 'admin' || accountData.role === 'NVK')
+          setAuthLoading(false)
+        } catch (error) {
+          console.error('Lỗi khi kiểm tra vai trò:', error)
+          setIsAuthorized(false)
+          setAuthLoading(false)
+        }
+      }
+
+      checkUserRole()
+    }
+  }, [mounted])
+
   // Xử lý đóng dropdown khi click ra ngoài
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement
-      
+
       // Đóng category dropdown
       if (formData.showCategoryDropdown && !target.closest('.category-dropdown')) {
         setFormData(prev => ({ ...prev, showCategoryDropdown: false }))
       }
-      
+
       // Đóng color picker
       if (formData.showColorPicker && !target.closest('.color-picker-container')) {
         setFormData(prev => ({ ...prev, showColorPicker: false }))
       }
-      
+
       // Đóng size dropdown
       if (formData.showSizeDropdown && !target.closest('.size-dropdown-container')) {
         setFormData(prev => ({ ...prev, showSizeDropdown: false }))
       }
     }
-    
+
     document.addEventListener('mousedown', handleClickOutside)
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
@@ -244,13 +290,13 @@ export default function AddProductPage() {
     } catch (err) {
       console.error('Chi tiết lỗi khi thêm sản phẩm:', err)
       let errorMessage = 'Có lỗi xảy ra khi thêm sản phẩm. Vui lòng kiểm tra console để biết chi tiết.'
-      
+
       if (err instanceof Error) {
         errorMessage = `Lỗi: ${err.message}`
       } else if (typeof err === 'object' && err !== null && 'message' in err) {
         errorMessage = `Lỗi từ Supabase: ${(err as any).message}`
       }
-      
+
       setError(errorMessage)
       showNotification(errorMessage, 'error')
     } finally {
@@ -260,11 +306,26 @@ export default function AddProductPage() {
 
   if (!mounted || !themeState) return null
 
+  // Hiển thị loading khi đang kiểm tra quyền
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900"></div>
+        <p className="ml-2 text-gray-500">Đang tải...</p>
+      </div>
+    )
+  }
+
+  // Hiển thị thông báo từ chối truy cập nếu không phải admin hoặc NVK
+  if (!isAuthorized) {
+    return <AccessDenied message="Truy cập bị từ chối. Bạn không có quyền truy cập chức năng thêm sản phẩm. Chỉ có admin hoặc nhân viên kho mới truy cập được." />
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       {/* Hệ thống thông báo */}
       {notification.visible && (
-        <div 
+        <div
           className={`fixed top-4 right-4 z-50 rounded-md p-4 shadow-lg max-w-md transition-all duration-300 transform translate-y-0 opacity-100 ${
             notification.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' :
             notification.type === 'error' ? 'bg-red-50 text-red-800 border border-red-200' :
@@ -489,8 +550,8 @@ export default function AddProductPage() {
                       <div className="flex items-center">
                         {categories.find(c => c.category_id === formData.category_id)?.image_category ? (
                           <div className="flex-shrink-0 h-6 w-6 mr-2">
-                            <img 
-                              src={categories.find(c => c.category_id === formData.category_id)?.image_category} 
+                            <img
+                              src={categories.find(c => c.category_id === formData.category_id)?.image_category}
                               alt=""
                               className="h-6 w-6 rounded-full object-cover"
                             />
@@ -515,7 +576,7 @@ export default function AddProductPage() {
                       </svg>
                     </span>
                   </button>
-                  
+
                   {formData.showCategoryDropdown && (
                     <div className="absolute z-10 bottom-full mb-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
                       {categories.length === 0 ? (
@@ -528,8 +589,8 @@ export default function AddProductPage() {
                             key={category.category_id}
                             className={`cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-gray-100 ${formData.category_id === category.category_id ? 'bg-indigo-50 text-indigo-900' : 'text-gray-900'}`}
                             onClick={() => {
-                              setFormData(prev => ({ 
-                                ...prev, 
+                              setFormData(prev => ({
+                                ...prev,
                                 category_id: category.category_id,
                                 showCategoryDropdown: false
                               }))
@@ -538,8 +599,8 @@ export default function AddProductPage() {
                             <div className="flex items-center">
                               {category.image_category ? (
                                 <div className="flex-shrink-0 h-6 w-6 mr-2">
-                                  <img 
-                                    src={category.image_category} 
+                                  <img
+                                    src={category.image_category}
                                     alt=""
                                     className="h-6 w-6 rounded-full object-cover"
                                   />
@@ -555,7 +616,7 @@ export default function AddProductPage() {
                                 {category.name_category}
                               </span>
                             </div>
-                            
+
                             {formData.category_id === category.category_id && (
                               <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600">
                                 <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -581,22 +642,22 @@ export default function AddProductPage() {
                 </label>
                 <div className="mt-1 relative color-picker-container">
                   <div className="flex items-center">
-                    <div 
+                    <div
                       className="w-8 h-8 rounded-full border border-gray-300 mr-2 cursor-pointer"
-                      style={{ backgroundColor: formData.color === 'Đỏ' ? '#FF0000' : 
-                                              formData.color === 'Xanh lá' ? '#00FF00' : 
-                                              formData.color === 'Xanh dương' ? '#0000FF' : 
-                                              formData.color === 'Vàng' ? '#FFFF00' : 
-                                              formData.color === 'Hồng' ? '#FF00FF' : 
-                                              formData.color === 'Xanh ngọc' ? '#00FFFF' : 
-                                              formData.color === 'Đen' ? '#000000' : 
-                                              formData.color === 'Trắng' ? '#FFFFFF' : 
-                                              formData.color === 'Xám' ? '#808080' : 
-                                              formData.color === 'Nâu đỏ' ? '#800000' : 
-                                              formData.color === 'Olive' ? '#808000' : 
-                                              formData.color === 'Xanh lục' ? '#008000' : 
-                                              formData.color === 'Tím' ? '#800080' : 
-                                              formData.color === 'Xanh lam' ? '#008080' : 
+                      style={{ backgroundColor: formData.color === 'Đỏ' ? '#FF0000' :
+                                              formData.color === 'Xanh lá' ? '#00FF00' :
+                                              formData.color === 'Xanh dương' ? '#0000FF' :
+                                              formData.color === 'Vàng' ? '#FFFF00' :
+                                              formData.color === 'Hồng' ? '#FF00FF' :
+                                              formData.color === 'Xanh ngọc' ? '#00FFFF' :
+                                              formData.color === 'Đen' ? '#000000' :
+                                              formData.color === 'Trắng' ? '#FFFFFF' :
+                                              formData.color === 'Xám' ? '#808080' :
+                                              formData.color === 'Nâu đỏ' ? '#800000' :
+                                              formData.color === 'Olive' ? '#808000' :
+                                              formData.color === 'Xanh lục' ? '#008000' :
+                                              formData.color === 'Tím' ? '#800080' :
+                                              formData.color === 'Xanh lam' ? '#008080' :
                                               formData.color === 'Cam' ? '#FFA500' : '#ffffff' }}
                       onClick={() => setFormData(prev => ({ ...prev, showColorPicker: !prev.showColorPicker }))}
                     ></div>
@@ -611,7 +672,7 @@ export default function AddProductPage() {
                       readOnly
                     />
                   </div>
-                  
+
                   {formData.showColorPicker && (
                     <div className="absolute z-10 bottom-full mb-1 bg-white rounded-md shadow-lg p-3 border border-gray-200">
                       <div className="grid grid-cols-5 gap-2">
@@ -632,13 +693,13 @@ export default function AddProductPage() {
                           { color: '#008080', name: 'Xanh lam' },
                           { color: '#FFA500', name: 'Cam' }
                         ].map((item, index) => (
-                          <div 
+                          <div
                             key={index}
                             className="w-8 h-8 rounded-full border border-gray-300 cursor-pointer hover:scale-110 transition-transform"
                             style={{ backgroundColor: item.color }}
                             onClick={() => {
-                              setFormData(prev => ({ 
-                                ...prev, 
+                              setFormData(prev => ({
+                                ...prev,
                                 color: item.name,
                                 showColorPicker: false
                               }))
@@ -667,7 +728,7 @@ export default function AddProductPage() {
                   Kích cỡ
                 </label>
                 <div className="mt-1 relative size-dropdown-container">
-                  <div 
+                  <div
                     className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border border-gray-200 rounded-md h-10 px-3 py-2 cursor-pointer flex items-center justify-between"
                     onClick={() => setFormData(prev => ({ ...prev, showSizeDropdown: !prev.showSizeDropdown }))}
                   >
@@ -678,7 +739,7 @@ export default function AddProductPage() {
                       <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                     </svg>
                   </div>
-                  
+
                   {formData.showSizeDropdown && (
                     <div className="absolute z-10 bottom-full mb-1 w-full bg-white rounded-md shadow-lg max-h-60 overflow-auto border border-gray-200">
                       <ul className="py-1">
@@ -693,12 +754,12 @@ export default function AddProductPage() {
                           { size: '4XL', description: '70-75kg' },
                           { size: '5XL', description: '75-80kg' }
                         ].map((item, index) => (
-                          <li 
+                          <li
                             key={index}
                             className={`px-3 py-2 cursor-pointer hover:bg-gray-100 ${formData.size === item.size ? 'bg-indigo-50 text-indigo-900' : 'text-gray-900'}`}
                             onClick={() => {
-                              setFormData(prev => ({ 
-                                ...prev, 
+                              setFormData(prev => ({
+                                ...prev,
                                 size: item.size,
                                 showSizeDropdown: false
                               }))

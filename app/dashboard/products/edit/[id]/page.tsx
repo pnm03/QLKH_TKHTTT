@@ -8,6 +8,8 @@ import { useTheme, themeColors } from '@/app/context/ThemeContext'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { use } from 'react'
 import { convertImageToBase64, validateImage } from '@/app/utils/imageUtils'
+import { createClient } from '@/utils/supabase/client'
+import AccessDenied from '@/components/AccessDenied'
 
 interface ProductFormData {
   product_name: string
@@ -37,6 +39,8 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [originalData, setOriginalData] = useState<any>(null)
+  const [isAuthorized, setIsAuthorized] = useState(false)
+  const [authLoading, setAuthLoading] = useState(true)
 
   const [formData, setFormData] = useState<ProductFormData>({
     product_name: '',
@@ -53,6 +57,48 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  // Kiểm tra vai trò người dùng hiện tại có phải admin hoặc NVK không
+  useEffect(() => {
+    if (mounted) {
+      const checkUserRole = async () => {
+        try {
+          const client = createClient()
+          const { data: { session }, error: sessionError } = await client.auth.getSession()
+
+          if (sessionError || !session) {
+            console.error('Không có phiên đăng nhập:', sessionError?.message)
+            setIsAuthorized(false)
+            setAuthLoading(false)
+            return
+          }
+
+          const { data: accountData, error: accountError } = await client
+            .from('accounts')
+            .select('role')
+            .eq('user_id', session.user.id)
+            .maybeSingle()
+
+          if (accountError || !accountData) {
+            console.error('Lỗi khi lấy thông tin tài khoản:', accountError)
+            setIsAuthorized(false)
+            setAuthLoading(false)
+            return
+          }
+
+          // Kiểm tra nếu role là admin hoặc NVK (Nhân viên kho)
+          setIsAuthorized(accountData.role === 'admin' || accountData.role === 'NVK')
+          setAuthLoading(false)
+        } catch (error) {
+          console.error('Lỗi khi kiểm tra vai trò:', error)
+          setIsAuthorized(false)
+          setAuthLoading(false)
+        }
+      }
+
+      checkUserRole()
+    }
+  }, [mounted])
 
   // Cập nhật themeState từ context khi component đã mounted
   useEffect(() => {
@@ -267,6 +313,21 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
   const { theme } = themeState
   // Đảm bảo theme có giá trị trước khi sử dụng
   const themeColor = theme && theme.textColor ? theme.textColor.split('-')[1] : 'indigo'
+
+  // Hiển thị loading khi đang kiểm tra quyền
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900"></div>
+        <p className="ml-2 text-gray-500">Đang tải...</p>
+      </div>
+    )
+  }
+
+  // Hiển thị thông báo từ chối truy cập nếu không phải admin hoặc NVK
+  if (!isAuthorized) {
+    return <AccessDenied message="Truy cập bị từ chối. Bạn không có quyền truy cập chức năng chỉnh sửa sản phẩm. Chỉ có admin hoặc nhân viên kho mới truy cập được." />
+  }
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
