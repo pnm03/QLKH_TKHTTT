@@ -642,7 +642,7 @@ export default function AddUserPage() {
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
                     Email <span className="text-red-500">*</span>
                   </label>
-                  <div className="relative rounded-md shadow-sm">
+                  <div className="relative rounded-md">
                     <input
                       type="email"
                       id="email"
@@ -681,7 +681,7 @@ export default function AddUserPage() {
                   <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
                     Vai trò <span className="text-red-500">*</span>
                   </label>
-                  <div className="relative rounded-md shadow-sm">
+                  <div className="relative rounded-md">
                     <select
                       id="role"
                       className={`block w-full h-11 text-base px-4 border border-gray-300 rounded-md focus:ring-2 focus:ring-opacity-50 focus:ring-${themeName}-500 focus:border-${themeName}-500 ${errors.role ? 'border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500' : ''}`}
@@ -720,7 +720,7 @@ export default function AddUserPage() {
                       Tạo mật khẩu ngẫu nhiên
                     </button>
                   </div>
-                  <div className="relative rounded-md shadow-sm">
+                  <div className="relative rounded-md">
                     <input
                       type={showPassword ? "text" : "password"}
                       id="password"
@@ -763,7 +763,7 @@ export default function AddUserPage() {
                   <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
                     Xác nhận mật khẩu <span className="text-red-500">*</span>
                   </label>
-                  <div className="relative rounded-md shadow-sm">
+                  <div className="relative rounded-md">
                     <input
                       type={showConfirmPassword ? "text" : "password"}
                       id="confirmPassword"
@@ -813,7 +813,7 @@ export default function AddUserPage() {
                   <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
                     Họ và tên <span className="text-red-500">*</span>
                   </label>
-                  <div className="relative rounded-md shadow-sm">
+                  <div className="relative rounded-md">
                     <input
                       type="text"
                       id="fullName"
@@ -840,7 +840,7 @@ export default function AddUserPage() {
                   <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
                     Số điện thoại
                   </label>
-                  <div className="relative rounded-md shadow-sm">
+                  <div className="relative rounded-md">
                     <input
                       type="text"
                       id="phone"
@@ -880,7 +880,7 @@ export default function AddUserPage() {
                   <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
                     Địa chỉ
                   </label>
-                  <div className="relative rounded-md shadow-sm">
+                  <div className="relative rounded-md">
                     <input
                       type="text"
                       id="address"
