@@ -40,6 +40,7 @@ type ExistingUser = {
   full_name: string;
   role: string;
   avatar_url?: string;
+  phone?: string;
 };
 
 export default function AddUserPage() {
@@ -51,7 +52,9 @@ export default function AddUserPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [existingUser, setExistingUser] = useState<ExistingUser | null>(null);
+  const [existingPhone, setExistingPhone] = useState<ExistingUser | null>(null);
   const [checkingEmail, setCheckingEmail] = useState(false);
+  const [checkingPhone, setCheckingPhone] = useState(false);
   const [passwordValue, setPasswordValue] = useState<string>('');
   const [confirmPasswordValue, setConfirmPasswordValue] = useState<string>('');
   const [sendPassword, setSendPassword] = useState(true);
@@ -292,7 +295,9 @@ export default function AddUserPage() {
       setShowPassword(false);
       setShowConfirmPassword(false);
       setExistingUser(null);
+      setExistingPhone(null);
       setCheckingEmail(false);
+      setCheckingPhone(false);
 
     } catch (error: any) {
       console.error('Lỗi khi tạo người dùng:', error);
@@ -353,6 +358,58 @@ export default function AddUserPage() {
     []
   );
 
+  // Hàm kiểm tra số điện thoại đã tồn tại
+  const checkExistingPhone = useCallback(
+    debounce(async (phone: string) => {
+      if (!phone || phone.length < 10) return;
+
+      setCheckingPhone(true);
+      try {
+        const supabase = createClient();
+
+        // Kiểm tra trong bảng users
+        const { data, error } = await supabase
+          .from('users')
+          .select('user_id, full_name, email, phone')
+          .eq('phone', phone)
+          .maybeSingle();
+
+        if (error) {
+          console.error('Lỗi khi kiểm tra số điện thoại:', JSON.stringify(error));
+          return;
+        }
+
+        if (data) {
+          // Nếu tìm thấy số điện thoại, kiểm tra role từ bảng accounts
+          const { data: accountData, error: accountError } = await supabase
+            .from('accounts')
+            .select('role, status')
+            .eq('user_id', data.user_id)
+            .maybeSingle();
+
+          if (accountError) {
+            console.error('Lỗi khi kiểm tra vai trò người dùng:', JSON.stringify(accountError));
+          }
+
+          setExistingPhone({
+            email: data.email || '',
+            full_name: data.full_name || '',
+            role: accountData?.role || 'customer',
+            avatar_url: undefined, // Cập nhật nếu có avatar trong database
+            phone: phone
+          });
+        } else {
+          setExistingPhone(null);
+        }
+      } catch (error: any) {
+        console.error('Lỗi khi kiểm tra số điện thoại:', error?.message || JSON.stringify(error));
+      } finally {
+        setCheckingPhone(false);
+      }
+    }, 500),
+    []
+  );
+
   // Xử lý khi email thay đổi
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const email = e.target.value;
@@ -360,6 +417,16 @@ export default function AddUserPage() {
       checkExistingEmail(email);
     } else {
       setExistingUser(null);
+    }
+  };
+
+  // Xử lý khi số điện thoại thay đổi
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const phone = e.target.value;
+    if (phone) {
+      checkExistingPhone(phone);
+    } else {
+      setExistingPhone(null);
     }
   };
 
@@ -489,7 +556,7 @@ export default function AddUserPage() {
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {/* Hiển thị người dùng đã tồn tại */}
+            {/* Hiển thị người dùng đã tồn tại (email) */}
             {existingUser && (
               <div className="p-3 rounded-lg bg-yellow-50 border border-yellow-200 mb-4">
                 <div className="flex items-center">
@@ -520,6 +587,44 @@ export default function AddUserPage() {
                       </p>
                       <p className="text-sm text-yellow-700">
                         {existingUser.email}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Hiển thị người dùng đã tồn tại (số điện thoại) */}
+            {existingPhone && (
+              <div className="p-3 rounded-lg bg-yellow-50 border border-yellow-200 mb-4">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <div className={`h-12 w-12 rounded-full bg-${themeName}-100 flex items-center justify-center`}>
+                      {existingPhone.avatar_url ? (
+                        <img src={existingPhone.avatar_url} alt={existingPhone.full_name} className="h-12 w-12 rounded-full" />
+                      ) : (
+                        <span className={`text-${themeName}-700 font-medium text-lg`}>
+                          {existingPhone.full_name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="text-sm font-medium text-yellow-800">
+                      Số điện thoại đã tồn tại trong hệ thống!
+                    </h3>
+                    <div className="mt-1">
+                      <p className="text-sm text-yellow-700">
+                        <span className="font-medium">{existingPhone.full_name}</span> -
+                        <span className="italic ml-1">{
+                          existingPhone.role === "admin" ? "Quản trị viên" :
+                          existingPhone.role === "NVBH" ? "Nhân viên bán hàng" :
+                          existingPhone.role === "NVK" ? "Nhân viên kho" :
+                          existingPhone.role
+                        }</span>
+                      </p>
+                      <p className="text-sm text-yellow-700">
+                        {existingPhone.email}
                       </p>
                     </div>
                   </div>
@@ -744,7 +849,19 @@ export default function AddUserPage() {
                       className={`block w-full h-11 text-base px-4 border-gray-300 rounded-md focus:ring-2 focus:ring-opacity-50 focus:ring-${themeName}-500 focus:border-${themeName}-500 ${errors.phone ? 'border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500' : ''}`}
                       style={{ borderColor: errors.phone ? '#f87171' : undefined, boxShadow: errors.phone ? '0 0 0 1px #f87171' : undefined }}
                       {...register('phone')}
+                      onChange={(e) => {
+                        register('phone').onChange(e);
+                        handlePhoneChange(e);
+                      }}
                     />
+                    {checkingPhone && (
+                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <svg className="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                      </div>
+                    )}
                     {errors.phone && (
                       <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                         <svg className="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -805,9 +922,9 @@ export default function AddUserPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={isLoading || (existingUser !== null)}
-                  className={`py-2.5 px-5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-${themeName}-600 hover:bg-${themeName}-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${themeName}-500 transition duration-150 ${existingUser ? 'opacity-70 cursor-not-allowed' : ''}`}
-                  style={{ backgroundColor: existingUser ? undefined : themeColor }}
+                  disabled={isLoading || (existingUser !== null) || (existingPhone !== null)}
+                  className={`py-2.5 px-5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-${themeName}-600 hover:bg-${themeName}-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${themeName}-500 transition duration-150 ${(existingUser || existingPhone) ? 'opacity-70 cursor-not-allowed' : ''}`}
+                  style={{ backgroundColor: (existingUser || existingPhone) ? undefined : themeColor }}
                 >
                   {isLoading ? (
                     <span className="flex items-center">
@@ -817,7 +934,7 @@ export default function AddUserPage() {
                       </svg>
                       Đang xử lý...
                     </span>
-                  ) : existingUser ? 'Email đã tồn tại' : 'Thêm người dùng'}
+                  ) : existingUser ? 'Email đã tồn tại' : existingPhone ? 'Số điện thoại đã tồn tại' : 'Thêm người dùng'}
                 </button>
               </div>
             </div>

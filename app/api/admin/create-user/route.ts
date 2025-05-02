@@ -59,7 +59,29 @@ export async function POST(request: NextRequest) {
       }, { status: 500 });
     }
 
-    // 2. Thêm vào bảng users nếu chưa tồn tại
+    // 2. Kiểm tra số điện thoại đã tồn tại chưa
+    if (userData.phone) {
+      try {
+        const { data: existingPhoneData, error: phoneCheckError } = await adminClient
+          .from('users')
+          .select('user_id, full_name, email, phone')
+          .eq('phone', userData.phone)
+          .maybeSingle();
+
+        if (phoneCheckError) {
+          console.error('Lỗi khi kiểm tra số điện thoại:', phoneCheckError);
+        } else if (existingPhoneData) {
+          console.error('Số điện thoại đã tồn tại:', userData.phone);
+          return NextResponse.json({
+            error: `Số điện thoại ${userData.phone} đã được sử dụng bởi người dùng khác (${existingPhoneData.full_name})`
+          }, { status: 400 });
+        }
+      } catch (phoneError: any) {
+        console.error('Exception khi kiểm tra số điện thoại:', phoneError);
+      }
+    }
+
+    // 3. Thêm vào bảng users nếu chưa tồn tại
     try {
       // Kiểm tra xem người dùng đã tồn tại trong bảng users chưa
       const { data: existingUserData } = await adminClient
@@ -91,7 +113,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: userError.message || 'Lỗi khi thêm người dùng' }, { status: 500 });
     }
 
-    // 3. Thêm vào bảng accounts nếu chưa tồn tại
+    // 4. Thêm vào bảng accounts nếu chưa tồn tại
     try {
       // Kiểm tra xem tài khoản đã tồn tại trong bảng accounts chưa
       const { data: existingAccountData } = await adminClient
@@ -122,7 +144,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: accountError.message || 'Lỗi khi thêm tài khoản' }, { status: 500 });
     }
 
-    // 4. Gửi email khôi phục mật khẩu nếu yêu cầu
+    // 5. Gửi email khôi phục mật khẩu nếu yêu cầu
     let emailSent = false;
     let emailError = null;
 
@@ -147,7 +169,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 5. Trả về thông tin người dùng đã tạo
+    // 6. Trả về thông tin người dùng đã tạo
     return NextResponse.json({
       success: true,
       user: {
