@@ -70,6 +70,8 @@ export default function UnpaidOrdersList() {
     setLoading(true)
     setError(null)
     try {
+      let ordersData = []
+
       // Truy vấn dữ liệu từ bảng orders với bộ lọc status = 'Chưa thanh toán'
       let query = supabase
         .from('orders')
@@ -80,25 +82,82 @@ export default function UnpaidOrdersList() {
         .eq('status', 'Chưa thanh toán')
         .order('order_date', { ascending: false })
 
-      // Áp dụng tìm kiếm nếu có
+      // Nếu có từ khóa tìm kiếm
       if (searchTerm) {
-        query = query.or(`order_id.ilike.%${searchTerm}%,customers.full_name.ilike.%${searchTerm}%`)
-      }
+        // Tìm theo mã đơn hàng
+        const { data: orderIdResults, error: orderIdError } = await query
+          .ilike('order_id', `%${searchTerm}%`)
 
-      // Thực hiện truy vấn
-      const { data: ordersData, error: ordersError } = await query
+        if (orderIdError) {
+          console.error('Lỗi khi tìm kiếm theo mã đơn hàng:', orderIdError)
+          setError(`Lỗi khi truy vấn dữ liệu: ${orderIdError.message}`)
+          setOrders([])
+          setTotalPages(1)
+          setLoading(false)
+          return
+        }
 
-      if (ordersError) {
-        console.error('Lỗi truy vấn orders:', ordersError)
-        setError(`Lỗi khi truy vấn dữ liệu: ${ordersError.message}`)
-        setOrders([])
-        setTotalPages(1)
-        setLoading(false)
-        return
+        // Tìm theo tên khách hàng
+        // Lấy danh sách khách hàng có tên chứa từ khóa tìm kiếm
+        const { data: customerResults, error: customerError } = await supabase
+          .from('customers')
+          .select('customer_id, full_name')
+          .ilike('full_name', `%${searchTerm}%`)
+
+        if (customerError) {
+          console.error('Lỗi khi tìm kiếm theo tên khách hàng:', customerError)
+        }
+
+        // Nếu có khách hàng phù hợp, tìm các đơn hàng của họ
+        let customerOrdersData = []
+        if (customerResults && customerResults.length > 0) {
+          const customerIds = customerResults.map(c => c.customer_id)
+
+          const { data: customerOrders, error: customerOrdersError } = await supabase
+            .from('orders')
+            .select(`
+              *,
+              customers (full_name, phone)
+            `)
+            .eq('status', 'Chưa thanh toán')
+            .in('customer_id', customerIds)
+            .order('order_date', { ascending: false })
+
+          if (customerOrdersError) {
+            console.error('Lỗi khi tìm kiếm đơn hàng theo khách hàng:', customerOrdersError)
+          } else {
+            customerOrdersData = customerOrders || []
+          }
+        }
+
+        // Kết hợp kết quả từ cả hai truy vấn và loại bỏ trùng lặp
+        const combinedResults = [...(orderIdResults || []), ...(customerOrdersData || [])]
+        const uniqueOrderIds = new Set()
+        ordersData = combinedResults.filter(order => {
+          if (uniqueOrderIds.has(order.order_id)) {
+            return false
+          }
+          uniqueOrderIds.add(order.order_id)
+          return true
+        })
+      } else {
+        // Nếu không có từ khóa tìm kiếm, lấy tất cả đơn hàng chưa thanh toán
+        const { data: allOrdersData, error: ordersError } = await query
+
+        if (ordersError) {
+          console.error('Lỗi truy vấn orders:', ordersError)
+          setError(`Lỗi khi truy vấn dữ liệu: ${ordersError.message}`)
+          setOrders([])
+          setTotalPages(1)
+          setLoading(false)
+          return
+        }
+
+        ordersData = allOrdersData || []
       }
 
       // Xử lý dữ liệu trả về
-      if (!ordersData || ordersData.length === 0) {
+      if (ordersData.length === 0) {
         setOrders([])
         setTotalPages(1)
         setLoading(false)
