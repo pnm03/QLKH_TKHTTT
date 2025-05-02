@@ -940,7 +940,7 @@ export default function AddUserPage() {
                     setError(null);
                     setSuccess(null);
                   }}
-                  className="py-2.5 px-5 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150"
+                  className="py-2.5 px-5 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150"
                   disabled={isLoading}
                 >
                   Làm mới
@@ -948,7 +948,7 @@ export default function AddUserPage() {
                 <button
                   type="submit"
                   disabled={isLoading || (existingUser !== null) || (existingPhone !== null)}
-                  className={`py-2.5 px-5 border rounded-md shadow-sm text-sm font-medium transition duration-150 ${
+                  className={`py-2.5 px-5 border rounded-md text-sm font-medium transition duration-150 ${
                     isLoading || existingUser || existingPhone
                       ? 'border-gray-300 bg-white text-gray-500 cursor-not-allowed'
                       : `border-transparent text-white bg-${themeName}-600 hover:bg-${themeName}-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${themeName}-500`
