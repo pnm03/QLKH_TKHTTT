@@ -647,7 +647,7 @@ export default function AddUserPage() {
                       type="email"
                       id="email"
                       autoComplete="email"
-                      className={`block w-full h-11 text-base px-4 border-gray-300 rounded-md focus:ring-2 focus:ring-opacity-50 focus:ring-${themeName}-500 focus:border-${themeName}-500 ${errors.email ? 'border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500' : ''}`}
+                      className={`block w-full h-11 text-base px-4 border border-gray-300 rounded-md focus:ring-2 focus:ring-opacity-50 focus:ring-${themeName}-500 focus:border-${themeName}-500 ${errors.email ? 'border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500' : ''}`}
                       style={{ borderColor: errors.email ? '#f87171' : undefined, boxShadow: errors.email ? '0 0 0 1px #f87171' : undefined }}
                       {...register('email')}
                       onChange={(e) => {
@@ -684,7 +684,7 @@ export default function AddUserPage() {
                   <div className="relative rounded-md shadow-sm">
                     <select
                       id="role"
-                      className={`block w-full h-11 text-base px-4 border-gray-300 rounded-md focus:ring-2 focus:ring-opacity-50 focus:ring-${themeName}-500 focus:border-${themeName}-500 ${errors.role ? 'border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500' : ''}`}
+                      className={`block w-full h-11 text-base px-4 border border-gray-300 rounded-md focus:ring-2 focus:ring-opacity-50 focus:ring-${themeName}-500 focus:border-${themeName}-500 ${errors.role ? 'border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500' : ''}`}
                       style={{ borderColor: errors.role ? '#f87171' : undefined, boxShadow: errors.role ? '0 0 0 1px #f87171' : undefined }}
                       {...register('role')}
                     >
@@ -725,7 +725,7 @@ export default function AddUserPage() {
                       type={showPassword ? "text" : "password"}
                       id="password"
                       autoComplete="new-password"
-                      className={`block w-full h-11 text-base px-4 border-gray-300 rounded-md focus:ring-2 focus:ring-opacity-50 focus:ring-${themeName}-500 focus:border-${themeName}-500 ${errors.password ? 'border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500' : ''}`}
+                      className={`block w-full h-11 text-base px-4 border border-gray-300 rounded-md focus:ring-2 focus:ring-opacity-50 focus:ring-${themeName}-500 focus:border-${themeName}-500 ${errors.password ? 'border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500' : ''}`}
                       style={{ borderColor: errors.password ? '#f87171' : undefined, boxShadow: errors.password ? '0 0 0 1px #f87171' : undefined }}
                       {...register('password', {
                         onChange: (e) => {
@@ -768,7 +768,7 @@ export default function AddUserPage() {
                       type={showConfirmPassword ? "text" : "password"}
                       id="confirmPassword"
                       autoComplete="new-password"
-                      className={`block w-full h-11 text-base px-4 border-gray-300 rounded-md focus:ring-2 focus:ring-opacity-50 focus:ring-${themeName}-500 focus:border-${themeName}-500 ${errors.confirmPassword ? 'border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500' : ''}`}
+                      className={`block w-full h-11 text-base px-4 border border-gray-300 rounded-md focus:ring-2 focus:ring-opacity-50 focus:ring-${themeName}-500 focus:border-${themeName}-500 ${errors.confirmPassword ? 'border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500' : ''}`}
                       style={{ borderColor: errors.confirmPassword ? '#f87171' : undefined, boxShadow: errors.confirmPassword ? '0 0 0 1px #f87171' : undefined }}
                       {...register('confirmPassword', {
                         onChange: (e) => {
@@ -818,7 +818,7 @@ export default function AddUserPage() {
                       type="text"
                       id="fullName"
                       autoComplete="name"
-                      className={`block w-full h-11 text-base px-4 border-gray-300 rounded-md focus:ring-2 focus:ring-opacity-50 focus:ring-${themeName}-500 focus:border-${themeName}-500 ${errors.fullName ? 'border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500' : ''}`}
+                      className={`block w-full h-11 text-base px-4 border border-gray-300 rounded-md focus:ring-2 focus:ring-opacity-50 focus:ring-${themeName}-500 focus:border-${themeName}-500 ${errors.fullName ? 'border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500' : ''}`}
                       style={{ borderColor: errors.fullName ? '#f87171' : undefined, boxShadow: errors.fullName ? '0 0 0 1px #f87171' : undefined }}
                       {...register('fullName')}
                     />
@@ -846,7 +846,7 @@ export default function AddUserPage() {
                       id="phone"
                       autoComplete="tel"
                       placeholder="0xxxxxxxxx"
-                      className={`block w-full h-11 text-base px-4 border-gray-300 rounded-md focus:ring-2 focus:ring-opacity-50 focus:ring-${themeName}-500 focus:border-${themeName}-500 ${errors.phone ? 'border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500' : ''}`}
+                      className={`block w-full h-11 text-base px-4 border border-gray-300 rounded-md focus:ring-2 focus:ring-opacity-50 focus:ring-${themeName}-500 focus:border-${themeName}-500 ${errors.phone ? 'border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500' : ''}`}
                       style={{ borderColor: errors.phone ? '#f87171' : undefined, boxShadow: errors.phone ? '0 0 0 1px #f87171' : undefined }}
                       {...register('phone')}
                       onChange={(e) => {
@@ -885,7 +885,7 @@ export default function AddUserPage() {
                       type="text"
                       id="address"
                       autoComplete="street-address"
-                      className={`block w-full h-11 text-base px-4 border-gray-300 rounded-md focus:ring-2 focus:ring-opacity-50 focus:ring-${themeName}-500 focus:border-${themeName}-500`}
+                      className={`block w-full h-11 text-base px-4 border border-gray-300 rounded-md focus:ring-2 focus:ring-opacity-50 focus:ring-${themeName}-500 focus:border-${themeName}-500`}
                       {...register('address')}
                     />
                   </div>
@@ -914,21 +914,50 @@ export default function AddUserPage() {
               <div className="flex justify-end space-x-3">
                 <button
                   type="button"
-                  onClick={() => router.push('/dashboard/users')}
+                  onClick={() => {
+                    // Reset form với các giá trị mặc định
+                    reset({
+                      email: '',
+                      password: '',
+                      confirmPassword: '',
+                      fullName: '',
+                      phone: '',
+                      address: '',
+                      role: '',
+                      sendPassword: true,
+                    });
+
+                    // Đặt lại các state
+                    setPasswordValue('');
+                    setConfirmPasswordValue('');
+                    setShowPassword(false);
+                    setShowConfirmPassword(false);
+                    setExistingUser(null);
+                    setExistingPhone(null);
+                    setCheckingEmail(false);
+                    setCheckingPhone(false);
+                    setSendPassword(true);
+                    setError(null);
+                    setSuccess(null);
+                  }}
                   className="py-2.5 px-5 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150"
                   disabled={isLoading}
                 >
-                  Hủy
+                  Làm mới
                 </button>
                 <button
                   type="submit"
                   disabled={isLoading || (existingUser !== null) || (existingPhone !== null)}
-                  className={`py-2.5 px-5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-${themeName}-600 hover:bg-${themeName}-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${themeName}-500 transition duration-150 ${(existingUser || existingPhone) ? 'opacity-70 cursor-not-allowed' : ''}`}
-                  style={{ backgroundColor: (existingUser || existingPhone) ? undefined : themeColor }}
+                  className={`py-2.5 px-5 border rounded-md shadow-sm text-sm font-medium transition duration-150 ${
+                    isLoading || existingUser || existingPhone
+                      ? 'border-gray-300 bg-white text-gray-500 cursor-not-allowed'
+                      : `border-transparent text-white bg-${themeName}-600 hover:bg-${themeName}-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${themeName}-500`
+                  }`}
+                  style={{ backgroundColor: (existingUser || existingPhone || isLoading) ? undefined : themeColor }}
                 >
                   {isLoading ? (
                     <span className="flex items-center">
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
