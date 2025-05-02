@@ -75,7 +75,7 @@ export default function SearchOrdersPage() {
     from: '',
     to: ''
   })
-  const [statusFilter, setStatusFilter] = useState('all') // all, paid, unpaid
+  const [statusFilter, setStatusFilter] = useState('all') // all, Đã thanh toán, Chưa thanh toán
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
@@ -108,6 +108,14 @@ export default function SearchOrdersPage() {
     }
   }, [mounted, themeContext.currentTheme])
 
+  // Theo dõi thay đổi của statusFilter và tải lại dữ liệu
+  useEffect(() => {
+    if (mounted) {
+      console.log('statusFilter đã thay đổi thành:', statusFilter)
+      searchOrders()
+    }
+  }, [statusFilter])
+
   // Tìm kiếm đơn hàng
   const searchOrders = async () => {
     setLoading(true)
@@ -119,7 +127,19 @@ export default function SearchOrdersPage() {
         .select('*')
         .order('order_date', { ascending: false })
 
-      // Không lọc theo trạng thái ở đây, sẽ lọc sau khi lấy dữ liệu
+      // Thêm log để kiểm tra giá trị statusFilter
+      console.log('Giá trị statusFilter hiện tại:', statusFilter)
+
+      // Lọc theo trạng thái ngay trong truy vấn nếu không phải "all"
+      if (statusFilter === 'Đã thanh toán') {
+        query = query.eq('status', 'Đã thanh toán')
+        console.log('Đang lọc đơn hàng đã thanh toán')
+      } else if (statusFilter === 'Chưa thanh toán') {
+        query = query.eq('status', 'Chưa thanh toán')
+        console.log('Đang lọc đơn hàng chưa thanh toán')
+      } else {
+        console.log('Hiển thị tất cả đơn hàng')
+      }
 
       // Áp dụng bộ lọc theo ngày
       if (dateRange.from) {
@@ -155,11 +175,8 @@ export default function SearchOrdersPage() {
       // Lọc dữ liệu theo trạng thái và từ khóa tìm kiếm
       let filteredOrders = ordersData;
 
-      // Lọc theo trạng thái
-      if (statusFilter !== 'all') {
-        filteredOrders = filteredOrders.filter(order => order.status === statusFilter);
-        console.log('Sau khi lọc theo trạng thái:', filteredOrders.length, 'đơn hàng');
-      }
+      // Không cần lọc theo trạng thái ở đây nữa vì đã lọc trong truy vấn
+      console.log('Số lượng đơn hàng sau khi truy vấn:', filteredOrders.length);
 
       // Lọc theo từ khóa tìm kiếm
       if (searchTerm && searchTerm.trim() !== '') {
@@ -844,8 +861,10 @@ export default function SearchOrdersPage() {
               <select
                 value={statusFilter}
                 onChange={(e) => {
-                  setStatusFilter(e.target.value);
-                  setTimeout(() => searchOrders(), 100);
+                  const newValue = e.target.value;
+                  console.log('Đã chọn trạng thái:', newValue);
+                  setStatusFilter(newValue);
+                  // Không cần gọi searchOrders() ở đây nữa vì đã có useEffect theo dõi statusFilter
                 }}
                 className={`block w-full rounded-md focus:ring-${themeColor}-500 focus:border-${themeColor}-500 h-10 border border-gray-300 pl-3 pr-10`}
               >
