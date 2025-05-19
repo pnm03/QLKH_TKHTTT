@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hướng dẫn sử dụng hệ thống</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+        h1 { text-align: center; color: #333; }
+        h2 { color: #555; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-top: 30px;}
+        h3 { color: #666; margin-top: 20px; }
+        p { margin-bottom: 10px; }
+        ul { list-style-type: disc; margin-left: 20px; }
+        .container { max-width: 900px; margin: auto; background: #f9f9f9; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        nav { background: #333; padding: 10px; text-align: center; margin-bottom: 20px; }
+        nav a { color: white; margin: 0 15px; text-decoration: none; font-weight: bold; }
+        nav a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Hướng dẫn sử dụng hệ thống</h1>
+
+        <nav>
+            <a href="#auth">Xác thực</a>
+            <a href="#dashboard">Bảng điều khiển</a>
+            <a href="#other_features">Chức năng khác</a>
+        </nav>
+
+        <section id="introduction">
+            <h2>Lời giới thiệu</h2>
+            <p>Chào mừng bạn đến với tài liệu hướng dẫn sử dụng hệ thống Quản lý Bán hàng (QLBH). Tài liệu này sẽ cung cấp cho bạn thông tin chi tiết về cách sử dụng các chức năng chính của hệ thống.</p>
+        </section>
+
+        <section id="auth">
+            <h2>1. Xác thực người dùng</h2>
+            <p>Phần này mô tả các quy trình liên quan đến việc xác thực người dùng, bao gồm đăng nhập, đăng ký, quên mật khẩu, v.v.</p>
+            <h3>1.1. Đăng nhập (Sign In)</h3>
+            <p>Trang đăng nhập cho phép người dùng truy cập vào hệ thống bằng tài khoản đã đăng ký. Các chức năng chính bao gồm:</p>
+            <ul>
+                <li><strong>Đăng nhập bằng Email và Mật khẩu:</strong>
+                    <ul>
+                        <li>Người dùng nhập địa chỉ email và mật khẩu đã đăng ký.</li>
+                        <li>Hệ thống sẽ kiểm tra thông tin đăng nhập. Nếu hợp lệ, người dùng sẽ được chuyển hướng đến trang Bảng điều khiển (Dashboard) hoặc trang được chỉ định trước đó.</li>
+                        <li>Nếu thông tin không chính xác, một thông báo lỗi sẽ hiển thị.</li>
+                        <li>Sau 3 lần nhập sai mật khẩu, tài khoản có thể bị tạm khóa vì lý do bảo mật. Khi đó, người dùng sẽ được yêu cầu thực hiện quy trình "Quên mật khẩu" để mở khóa.</li>
+                    </ul>
+                </li>
+                <li><strong>Ghi nhớ đăng nhập (Remember Me):</strong>
+                    <ul>
+                        <li>Nếu người dùng chọn tùy chọn "Ghi nhớ đăng nhập", thông tin tài khoản (email, tên, avatar nếu có) sẽ được lưu trữ cục bộ trên trình duyệt để thuận tiện cho các lần đăng nhập sau.</li>
+                        <li>Lần đăng nhập tiếp theo, người dùng có thể chọn tài khoản đã lưu và chỉ cần nhập mật khẩu.</li>
+                    </ul>
+                </li>
+                <li><strong>Sử dụng tài khoản đã lưu:</strong>
+                    <ul>
+                        <li>Nếu có các tài khoản đã được lưu trước đó, chúng sẽ được hiển thị trên trang đăng nhập.</li>
+                        <li>Người dùng có thể nhấp vào một tài khoản đã lưu. Một cửa sổ popup sẽ xuất hiện yêu cầu nhập mật khẩu cho tài khoản đó.</li>
+                        <li>Có thể xóa các tài khoản đã lưu khỏi danh sách.</li>
+                    </ul>
+                </li>
+                <li><strong>Thông báo và Chuyển hướng:</strong>
+                    <ul>
+                        <li>Hiển thị thông báo lỗi (ví dụ: "Email hoặc mật khẩu không chính xác", "Tài khoản bị khóa").</li>
+                        <li>Hiển thị thông báo thành công (ví dụ: "Đăng nhập thành công!", "Bạn đã đăng xuất thành công.").</li>
+                        <li>Tự động chuyển hướng người dùng đã đăng nhập đến trang Dashboard.</li>
+                        <li>Xử lý trường hợp phiên đăng nhập hết hạn, yêu cầu người dùng đăng nhập lại.</li>
+                    </ul>
+                </li>
+                <li><strong>Liên kết khác:</strong>
+                    <ul>
+                        <li>Cung cấp liên kết đến trang "Đăng ký tài khoản mới" (Sign Up).</li>
+                        <li>Cung cấp liên kết đến trang "Quên mật khẩu?" (Forgot Password).</li>
+                    </ul>
+                </li>
+            </ul>
+            <p><strong>Quy trình đăng nhập cơ bản:</strong></p>
+            <ol>
+                <li>Truy cập trang Đăng nhập.</li>
+                <li>Nhập địa chỉ email vào ô "Email".</li>
+                <li>Nhập mật khẩu vào ô "Mật khẩu".</li>
+                <li>(Tùy chọn) Đánh dấu vào ô "Ghi nhớ đăng nhập" nếu bạn muốn lưu thông tin tài khoản cho lần đăng nhập sau.</li>
+                <li>Nhấn nút "Đăng nhập".</li>
+            </ol>
+            <p><strong>Đăng nhập bằng tài khoản đã lưu:</strong></p>
+            <ol>
+                <li>Truy cập trang Đăng nhập.</li>
+                <li>Chọn một tài khoản từ danh sách "Tài khoản đã lưu".</li>
+                <li>Một cửa sổ popup sẽ hiện ra, nhập mật khẩu cho tài khoản đã chọn.</li>
+                <li>Nhấn nút "Đăng nhập" trong popup.</li>
+            </ol>
+            <h3>1.2. Đăng ký (Sign Up)</h3>
+            <p>Trang đăng ký cho phép người dùng mới tạo tài khoản để sử dụng hệ thống. Các thông tin cần cung cấp và quy trình như sau:</p>
+            <ul>
+                <li><strong>Thông tin bắt buộc:</strong>
+                    <ul>
+                        <li><strong>Họ và tên (Full Name):</strong> Yêu cầu ít nhất 2 ký tự.</li>
+                        <li><strong>Email:</strong> Phải là địa chỉ email hợp lệ và chưa được đăng ký trước đó.</li>
+                        <li><strong>Mật khẩu (Password):</strong> Yêu cầu ít nhất 6 ký tự.</li>
+                        <li><strong>Xác nhận mật khẩu (Confirm Password):</strong> Phải trùng khớp với mật khẩu đã nhập.</li>
+                    </ul>
+                </li>
+                <li><strong>Thông tin tùy chọn:</strong>
+                    <ul>
+                        <li><strong>Số điện thoại (Phone):</strong> Nếu cung cấp, yêu cầu ít nhất 10 ký tự.</li>
+                        <li><strong>Địa chỉ (Hometown):</strong> Địa chỉ của người dùng.</li>
+                        <li><strong>Ngày sinh (Birth Date):</strong> Ngày sinh của người dùng.</li>
+                    </ul>
+                </li>
+                <li><strong>Quy trình đăng ký:</strong>
+                    <ol>
+                        <li>Người dùng điền đầy đủ các thông tin vào biểu mẫu đăng ký.</li>
+                        <li>Hệ thống kiểm tra tính hợp lệ của dữ liệu (ví dụ: email đúng định dạng, mật khẩu đủ mạnh, mật khẩu xác nhận khớp).</li>
+                        <li>Nếu có lỗi (ví dụ: email đã tồn tại, mật khẩu không khớp), thông báo lỗi sẽ được hiển thị.</li>
+                        <li>Nếu thông tin hợp lệ, hệ thống sẽ tạo tài khoản mới.</li>
+                        <li>Sau khi đăng ký thành công, một thông báo yêu cầu người dùng kiểm tra email để xác nhận tài khoản sẽ hiển thị.</li>
+                        <li>Người dùng sẽ được tự động chuyển hướng đến trang Đăng nhập sau một khoảng thời gian ngắn (ví dụ: 5 giây) hoặc có thể nhấp vào liên kết để đến trang Đăng nhập ngay.</li>
+                    </ol>
+                </li>
+                <li><strong>Xử lý lỗi:</strong>
+                    <ul>
+                        <li>Hiển thị thông báo lỗi cụ thể nếu email đã được đăng ký.</li>
+                        <li>Hiển thị thông báo lỗi nếu có vấn đề với cơ sở dữ liệu.</li>
+                        <li>Cung cấp gợi ý sửa lỗi nếu có thể (ví dụ: định dạng email, kiểm tra cấu hình Supabase).</li>
+                    </ul>
+                </li>
+                 <li><strong>Liên kết khác:</strong>
+                    <ul>
+                        <li>Cung cấp liên kết đến trang "Đăng nhập với tài khoản hiện có" (Sign In).</li>
+                    </ul>
+                </li>
+            </ul>
+            <p><strong>Các bước thực hiện đăng ký:</strong></p>
+            <ol>
+                <li>Truy cập trang Đăng ký.</li>
+                <li>Điền "Họ và tên".</li>
+                <li>Nhập "Email".</li>
+                <li>(Tùy chọn) Nhập "Số điện thoại".</li>
+                <li>(Tùy chọn) Nhập "Địa chỉ".</li>
+                <li>(Tùy chọn) Chọn "Ngày sinh".</li>
+                <li>Nhập "Mật khẩu".</li>
+                <li>Nhập lại mật khẩu vào ô "Xác nhận mật khẩu".</li>
+                <li>Nhấn nút "Đăng ký".</li>
+                <li>Kiểm tra email để hoàn tất quá trình xác thực tài khoản (nếu hệ thống yêu cầu).</li>
+            </ol>
+            <h3>1.3. Quên mật khẩu (Forgot Password)</h3>
+            <p>Chức năng này cho phép người dùng khôi phục mật khẩu nếu họ quên mật khẩu hiện tại hoặc cần mở khóa tài khoản đã bị khóa.</p>
+            <ul>
+                <li><strong>Nhập Email:</strong>
+                    <ul>
+                        <li>Người dùng cần nhập địa chỉ email đã đăng ký với hệ thống.</li>
+                        <li>Nếu người dùng truy cập trang này từ một liên kết (ví dụ: từ trang thông báo tài khoản bị khóa), địa chỉ email có thể được điền sẵn.</li>
+                    </ul>
+                </li>
+                <li><strong>Gửi Email Khôi Phục:</strong>
+                    <ul>
+                        <li>Sau khi người dùng nhập email và nhấn nút gửi, hệ thống sẽ gửi một email đến địa chỉ đó.</li>
+                        <li>Email này chứa một liên kết đặc biệt để người dùng có thể đặt lại mật khẩu của mình. Liên kết này sẽ chuyển hướng người dùng đến trang "Đặt lại mật khẩu" (Reset Password).</li>
+                    </ul>
+                </li>
+                <li><strong>Mở khóa tài khoản:</strong>
+                    <ul>
+                        <li>Nếu tài khoản người dùng bị khóa (ví dụ: do nhập sai mật khẩu nhiều lần), quy trình này cũng đồng thời kích hoạt việc mở khóa tài khoản.</li>
+                        <li>Sau khi người dùng đặt lại mật khẩu thành công thông qua email, trạng thái tài khoản sẽ được cập nhật thành "active" (hoạt động).</li>
+                    </ul>
+                </li>
+                <li><strong>Thông báo:</strong>
+                    <ul>
+                        <li>Hiển thị thông báo lỗi nếu có vấn đề xảy ra trong quá trình gửi email (ví dụ: email không tồn tại, lỗi máy chủ).</li>
+                        <li>Hiển thị thông báo thành công, hướng dẫn người dùng kiểm tra hộp thư email (bao gồm cả thư mục spam) để tìm email khôi phục.</li>
+                        <li>Nếu đang trong quá trình mở khóa tài khoản, một lưu ý sẽ được hiển thị rằng tài khoản sẽ được mở khóa sau khi đặt lại mật khẩu thành công.</li>
+                    </ul>
+                </li>
+                <li><strong>Liên kết khác:</strong>
+                    <ul>
+                        <li>Cung cấp liên kết để quay lại trang "Đăng nhập" (Sign In).</li>
+                    </ul>
+                </li>
+            </ul>
+            <p><strong>Các bước thực hiện khôi phục mật khẩu:</strong></p>
+            <ol>
+                <li>Truy cập trang "Quên mật khẩu" (thường có liên kết từ trang Đăng nhập).</li>
+                <li>Nhập địa chỉ email đã đăng ký vào ô "Email".</li>
+                <li>Nhấn nút "Gửi email khôi phục" (hoặc "Gửi email mở khóa tài khoản" nếu tài khoản đang bị khóa).</li>
+                <li>Kiểm tra hộp thư email của bạn (bao gồm cả thư mục spam/junk) để tìm email từ hệ thống.</li>
+                <li>Nhấp vào liên kết trong email đó để được chuyển đến trang "Đặt lại mật khẩu".</li>
+            </ol>
+
+            <h4>1.3.1. Đặt lại mật khẩu (Reset Password Page)</h4>
+            <p>Sau khi nhấp vào liên kết trong email khôi phục, người dùng sẽ được chuyển đến trang này để nhập mật khẩu mới.</p>
+            <ul>
+                <li><strong>Nhập mật khẩu mới:</strong>
+                    <ul>
+                        <li>Người dùng cần nhập mật khẩu mới vào ô "Mật khẩu mới". Mật khẩu phải có ít nhất 6 ký tự.</li>
+                        <li>Nhập lại mật khẩu mới vào ô "Xác nhận mật khẩu mới". Mật khẩu này phải khớp với mật khẩu đã nhập ở trên.</li>
+                    </ul>
+                </li>
+                <li><strong>Xác minh reCAPTCHA:</strong>
+                    <ul>
+                        <li>Người dùng cần hoàn thành xác minh reCAPTCHA để chứng minh họ không phải là robot.</li>
+                    </ul>
+                </li>
+                <li><strong>Cập nhật mật khẩu:</strong>
+                    <ul>
+                        <li>Sau khi điền đầy đủ thông tin và xác minh reCAPTCHA, người dùng nhấn nút "Đặt lại mật khẩu".</li>
+                        <li>Hệ thống sẽ cập nhật mật khẩu mới cho tài khoản người dùng.</li>
+                        <li>Nếu tài khoản trước đó bị khóa, trạng thái tài khoản sẽ được cập nhật thành "active" (hoạt động).</li>
+                        <li>Nếu đây là tài khoản mới yêu cầu thay đổi mật khẩu lần đầu, cờ "require_password_change" sẽ được gỡ bỏ.</li>
+                    </ul>
+                </li>
+                <li><strong>Thông báo và Chuyển hướng:</strong>
+                    <ul>
+                        <li>Hiển thị thông báo lỗi nếu mật khẩu không khớp, reCAPTCHA không hợp lệ, hoặc có lỗi trong quá trình cập nhật.</li>
+                        <li>Hiển thị thông báo thành công sau khi mật khẩu được đặt lại.</li>
+                        <li>Tự động chuyển hướng người dùng đến trang Đăng nhập (hoặc Dashboard nếu là tài khoản mới thiết lập) sau một khoảng thời gian ngắn.</li>
+                    </ul>
+                </li>
+                 <li><strong>Liên kết khác:</strong>
+                    <ul>
+                        <li>Cung cấp liên kết để quay lại trang "Đăng nhập" (Sign In).</li>
+                    </ul>
+                </li>
+            </ul>
+            <p><strong>Các bước thực hiện đặt lại mật khẩu trên trang "Đặt lại mật khẩu":</strong></p>
+            <ol>
+                <li>Nhập mật khẩu mới vào ô "Mật khẩu mới".</li>
+                <li>Nhập lại mật khẩu mới vào ô "Xác nhận mật khẩu mới".</li>
+                <li>Hoàn thành xác minh reCAPTCHA.</li>
+                <li>Nhấn nút "Đặt lại mật khẩu".</li>
+                <li>Sau khi thành công, bạn sẽ được thông báo và chuyển hướng đến trang đăng nhập (hoặc dashboard).</li>
+            </ol>
+            <h3>1.4. Thay đổi mật khẩu (Change Password)</h3>
+            <p>Chức năng này cho phép người dùng đang đăng nhập thay đổi mật khẩu hiện tại của họ. Nó cũng được sử dụng trong trường hợp người dùng được yêu cầu phải đổi mật khẩu (ví dụ: sau khi xác thực tài khoản mới hoặc theo yêu cầu của quản trị viên).</p>
+            <ul>
+                <li><strong>Điều kiện truy cập:</strong>
+                    <ul>
+                        <li>Người dùng phải đang đăng nhập để truy cập trang này.</li>
+                        <li>Nếu phiên đăng nhập không hợp lệ, người dùng sẽ được thông báo và chuyển hướng đến trang Đăng nhập.</li>
+                    </ul>
+                </li>
+                <li><strong>Trường hợp bắt buộc đổi mật khẩu:</strong>
+                    <ul>
+                        <li>Nếu tài khoản người dùng có cờ `require_password_change` (thường được đặt cho tài khoản mới sau khi xác thực email hoặc do quản trị viên thiết lập), họ sẽ được chuyển đến trang này để đặt mật khẩu mới.</li>
+                        <li>Hệ thống có thể hiển thị mật khẩu tạm thời (nếu có) và thông báo rằng đây là bước hoàn tất xác thực tài khoản hoặc yêu cầu bắt buộc.</li>
+                    </ul>
+                </li>
+                <li><strong>Nhập mật khẩu mới:</strong>
+                    <ul>
+                        <li>Người dùng cần nhập mật khẩu mới vào ô "Mật khẩu mới". Mật khẩu phải có ít nhất 6 ký tự.</li>
+                        <li>Nhập lại mật khẩu mới vào ô "Xác nhận mật khẩu". Mật khẩu này phải khớp với mật khẩu đã nhập ở trên.</li>
+                    </ul>
+                </li>
+                <li><strong>Cập nhật mật khẩu:</strong>
+                    <ul>
+                        <li>Sau khi điền đầy đủ thông tin, người dùng nhấn nút "Đổi mật khẩu".</li>
+                        <li>Hệ thống sẽ cập nhật mật khẩu mới cho tài khoản người dùng.</li>
+                        <li>Nếu đây là trường hợp bắt buộc đổi mật khẩu, cờ `require_password_change` sẽ được gỡ bỏ khỏi thông tin người dùng.</li>
+                        <li>Trạng thái tài khoản trong bảng `accounts` (nếu có) cũng có thể được cập nhật thành "active".</li>
+                    </ul>
+                </li>
+                <li><strong>Thông báo và Chuyển hướng:</strong>
+                    <ul>
+                        <li>Hiển thị thông báo lỗi nếu mật khẩu không khớp hoặc có lỗi trong quá trình cập nhật.</li>
+                        <li>Hiển thị thông báo thành công sau khi mật khẩu được thay đổi.</li>
+                        <li>Tự động chuyển hướng người dùng đến trang Bảng điều khiển (Dashboard) sau khi đổi mật khẩu thành công.</li>
+                    </ul>
+                </li>
+                <li><strong>Liên kết khác:</strong>
+                    <ul>
+                        <li>Nếu không phải trường hợp bắt buộc đổi mật khẩu, có thể có liên kết để quay lại trang chủ (Dashboard).</li>
+                    </ul>
+                </li>
+            </ul>
+            <p><strong>Các bước thực hiện thay đổi mật khẩu:</strong></p>
+            <ol>
+                <li>Truy cập trang "Đổi mật khẩu" (thường từ trang Hồ sơ cá nhân hoặc được chuyển hướng tự động nếu bắt buộc).</li>
+                <li>Nhập mật khẩu mới vào ô "Mật khẩu mới".</li>
+                <li>Nhập lại mật khẩu mới vào ô "Xác nhận mật khẩu".</li>
+                <li>Nhấn nút "Đổi mật khẩu".</li>
+                <li>Sau khi thành công, bạn sẽ được thông báo và chuyển hướng đến trang Bảng điều khiển (Dashboard).</li>
+            </ol>
+            <h3>1.5. Đăng xuất (Sign Out)</h3>
+            <p>Chức năng này cho phép người dùng kết thúc phiên làm việc hiện tại và đăng xuất khỏi hệ thống một cách an toàn.</p>
+            <ul>
+                <li><strong>Kích hoạt Đăng xuất:</strong>
+                    <ul>
+                        <li>Người dùng thường kích hoạt chức năng đăng xuất bằng cách nhấp vào một nút hoặc liên kết "Đăng xuất" (thường nằm ở khu vực hồ sơ người dùng hoặc menu chính).</li>
+                        <li>Hành động này sẽ điều hướng người dùng đến trang xử lý đăng xuất (ví dụ: <em>/auth/signout</em>).</li>
+                    </ul>
+                </li>
+                <li><strong>Quá trình xử lý:</strong>
+                    <ul>
+                        <li>Khi truy cập trang đăng xuất, hệ thống sẽ tự động thực hiện lệnh đăng xuất khỏi Supabase (dịch vụ xác thực).</li>
+                        <li>Tất cả các thông tin phiên làm việc của người dùng (session tokens, cookies liên quan đến xác thực) sẽ bị xóa hoặc vô hiệu hóa.</li>
+                    </ul>
+                </li>
+                <li><strong>Chuyển hướng sau khi đăng xuất:</strong>
+                    <ul>
+                        <li>Sau khi quá trình đăng xuất hoàn tất, người dùng sẽ tự động được chuyển hướng đến trang Đăng nhập (Sign In).</li>
+                        <li>Trang Đăng nhập có thể hiển thị thông báo "Bạn đã đăng xuất thành công" (xử lý bởi trang Sign In dựa trên tham số URL).</li>
+                    </ul>
+                </li>
+                <li><strong>Hiển thị tạm thời:</strong>
+                    <ul>
+                        <li>Trong khi quá trình đăng xuất đang diễn ra, trang <em>/auth/signout</em> có thể hiển thị một thông báo ngắn gọn như "Đang đăng xuất... Vui lòng đợi trong giây lát."</li>
+                    </ul>
+                </li>
+            </ul>
+            <p><strong>Cách thực hiện đăng xuất:</strong></p>
+            <ol>
+                <li>Tìm và nhấp vào nút hoặc liên kết "Đăng xuất" trên giao diện hệ thống (ví dụ: trong menu người dùng, thanh điều hướng trên cùng, hoặc trang hồ sơ).</li>
+                <li>Hệ thống sẽ tự động xử lý việc đăng xuất và chuyển bạn về trang Đăng nhập.</li>
+            </ol>
+        </section>
+
+        <section id="dashboard">
+            <h2>2. Bảng điều khiển (Dashboard)</h2>
+            <p>Sau khi đăng nhập thành công, người dùng sẽ được chuyển đến trang Bảng điều khiển (Dashboard). Đây là trang tổng quan chính, cung cấp cái nhìn nhanh về các hoạt động và số liệu quan trọng của hệ thống. Từ đây, người dùng có thể truy cập vào các module chức năng chi tiết hơn thông qua menu điều hướng (sidebar).</p>
+            <p><strong>Các thông tin và chức năng chính trên trang Dashboard:</strong></p>
+            <ul>
+                <li><strong>Lời chào mừng:</strong> Hiển thị lời chào đến người dùng, có thể kèm theo tên người dùng.</li>
+                <li><strong>Thông báo đăng nhập thành công:</strong> Một thông báo ngắn gọn có thể xuất hiện khi người dùng vừa đăng nhập thành công.</li>
+                <li><strong>Thống kê tổng quan (Summary Statistics):</strong>
+                    <ul>
+                        <li><strong>Tổng đơn hàng:</strong> Số lượng tổng cộng các đơn hàng trong hệ thống.</li>
+                        <li><strong>Người dùng:</strong> Tổng số lượng tài khoản người dùng.</li>
+                        <li><strong>Sản phẩm:</strong> Tổng số lượng sản phẩm đang quản lý.</li>
+                        <li><strong>Đơn hàng cần xử lý:</strong> Số lượng đơn hàng đang ở trạng thái "Chưa thanh toán" hoặc các trạng thái cần chú ý khác.</li>
+                        <li><strong>Doanh số tháng:</strong> Tổng doanh thu từ các đơn hàng đã thanh toán trong tháng hiện tại.</li>
+                        <li>Các chỉ số này thường đi kèm với tỷ lệ phần trăm thay đổi so với kỳ trước (ví dụ: tháng trước).</li>
+                    </ul>
+                </li>
+                <li><strong>Biểu đồ (Charts):</strong>
+                    <ul>
+                        <li><strong>Biểu đồ doanh số theo tháng:</strong> Thường là biểu đồ đường (Line Chart) thể hiện xu hướng doanh thu qua các tháng (ví dụ: 12 tháng gần nhất).</li>
+                        <li><strong>Biểu đồ đơn hàng theo trạng thái:</strong> Thường là biểu đồ tròn (Doughnut Chart hoặc Pie Chart) hiển thị tỷ lệ phần trăm của các đơn hàng theo trạng thái (ví dụ: Đã thanh toán, Chưa thanh toán, Đang vận chuyển, Đã hủy).</li>
+                        <li><strong>Biểu đồ sản phẩm bán chạy:</strong> Thường là biểu đồ cột (Bar Chart) liệt kê các sản phẩm có số lượng bán cao nhất.</li>
+                    </ul>
+                </li>
+                <li><strong>Hoạt động gần đây (Recent Activities):</strong>
+                    <ul>
+                        <li>Hiển thị danh sách các đơn hàng mới nhất hoặc các hoạt động quan trọng khác vừa diễn ra trong hệ thống.</li>
+                        <li>Thông tin có thể bao gồm mã đơn hàng, tên khách hàng, giá trị đơn hàng, trạng thái và thời gian.</li>
+                    </ul>
+                </li>
+                <li><strong>Cập nhật hệ thống (System Updates):</strong>
+                    <ul>
+                        <li>Thông báo về trạng thái hoạt động của hệ thống.</li>
+                        <li>Liệt kê các cập nhật hoặc thay đổi gần đây của hệ thống.</li>
+                    </ul>
+                </li>
+            </ul>
+            <p><em>Lưu ý: Các số liệu và biểu đồ hiển thị trên Dashboard thường được lấy từ dữ liệu thực tế của hệ thống và được cập nhật định kỳ hoặc theo thời gian thực, tùy thuộc vào cấu hình.</em></p>
+
+            <h3>2.1. Quản trị (Admin)</h3>
+            <p>Module Quản trị cung cấp các công cụ cho quản trị viên để quản lý các khía cạnh cốt lõi của hệ thống, bao gồm quản lý người dùng và các cài đặt khác.</p>
+            <h4>2.1.1. Quản lý người dùng (Admin Users Management - <em>app/dashboard/admin/users</em>)</h4>
+            <p>Trang này cho phép quản trị viên xem danh sách tất cả người dùng trong hệ thống và thực hiện các thao tác quản lý cơ bản.</p>
+            <ul>
+                <li><strong>Hiển thị danh sách người dùng:</strong>
+                    <ul>
+                        <li>Một bảng liệt kê tất cả người dùng với các thông tin chi tiết như:
+                            <ul>
+                                <li><strong>Email:</strong> Địa chỉ email đăng nhập của người dùng.</li>
+                                <li><strong>Tên (Full Name):</strong> Họ và tên đầy đủ của người dùng (nếu có).</li>
+                                <li><strong>Vai trò (Role):</strong> Vai trò của người dùng trong hệ thống (ví dụ: admin, user, manager).</li>
+                                <li><strong>Trạng thái (Status):</strong> Trạng thái hiện tại của tài khoản (ví dụ: Đang hoạt động, Chờ xác nhận, Bị khóa).</li>
+                                <li><strong>Ngày tạo:</strong> Ngày tài khoản được tạo.</li>
+                                <li><strong>Đăng nhập lần cuối:</strong> Thời điểm đăng nhập cuối cùng của người dùng.</li>
+                            </ul>
+                        </li>
+                        <li>Danh sách người dùng được sắp xếp theo ngày tạo, với người dùng mới nhất hiển thị ở trên cùng.</li>
+                    </ul>
+                </li>
+                <li><strong>Xóa người dùng:</strong>
+                    <ul>
+                        <li>Quản trị viên có thể xóa tài khoản người dùng khỏi hệ thống.</li>
+                        <li>Khi nhấp vào nút "Xóa" bên cạnh một người dùng, một hộp thoại xác nhận sẽ xuất hiện để đảm bảo quản trị viên chắc chắn về hành động này.</li>
+                        <li>Nếu xác nhận, người dùng sẽ bị xóa. Hành động này thường không thể hoàn tác.</li>
+                        <li>Một thông báo sẽ hiển thị kết quả của thao tác xóa (thành công hoặc thất bại).</li>
+                    </ul>
+                </li>
+                <li><strong>Tải dữ liệu và Thông báo lỗi:</strong>
+                    <ul>
+                        <li>Trong khi tải danh sách người dùng, một thông báo "Đang tải dữ liệu..." sẽ được hiển thị.</li>
+                        <li>Nếu có lỗi xảy ra trong quá trình tải hoặc xóa người dùng, một thông báo lỗi chi tiết sẽ được hiển thị cho quản trị viên.</li>
+                    </ul>
+                </li>
+            </ul>
+            <p><strong>Các bước thực hiện quản lý người dùng:</strong></p>
+            <ol>
+                <li>Truy cập vào mục "Quản trị" (Admin) từ menu điều hướng, sau đó chọn "Người dùng" (Users).</li>
+                <li>Xem danh sách người dùng và thông tin của họ.</li>
+                <li>Để xóa một người dùng:
+                    <ol type="a">
+                        <li>Nhấp vào nút "Xóa" ở hàng của người dùng bạn muốn xóa.</li>
+                        <li>Trong hộp thoại xác nhận hiện ra, nhấp vào nút "Xóa" để xác nhận, hoặc "Hủy" để hủy bỏ.</li>
+                    </ol>
+                </li>
+            </ol>
+            <!-- Add more specific admin functions based on other files in app/dashboard/admin if any -->
+
+            <h3>2.2. Kinh doanh (Business)</h3>
+            <p>Module Kinh doanh (Business) tập trung vào việc quản lý các khía cạnh vận hành nội bộ của doanh nghiệp. Trang chính của module này (<em>app/dashboard/business/page.tsx</em>) cung cấp lối vào các chức năng con.</p>
+            <p><strong>Các module con trong Quản lý Kinh doanh:</strong></p>
+            <ul>
+                <li>
+                    <strong>Chi nhánh (Branches):</strong>
+                    <ul>
+                        <li>Truy cập qua đường dẫn: <em>/dashboard/business/branches</em></li>
+                        <li>Chức năng: Quản lý thông tin các chi nhánh của doanh nghiệp.</li>
+                        <li>Biểu tượng: <span class="inline-icon">🏢</span> (BuildingOfficeIcon)</li>
+                    </ul>
+                </li>
+                <li>
+                    <strong>Nhân viên (Staff):</strong>
+                    <ul>
+                        <li>Truy cập qua đường dẫn: <em>/dashboard/business/staff</em></li>
+                        <li>Chức năng: Quản lý thông tin nhân viên trong doanh nghiệp.</li>
+                        <li>Biểu tượng: <span class="inline-icon">👤</span> (UserIcon)</li>
+                    </ul>
+                </li>
+                <li>
+                    <strong>Chat (Nội bộ):</strong>
+                    <ul>
+                        <li>Truy cập qua đường dẫn: <em>/dashboard/business/chat</em></li>
+                        <li>Chức năng: Cung cấp nền tảng trò chuyện và trao đổi thông tin nội bộ giữa các nhân viên.</li>
+                        <li>Biểu tượng: <span class="inline-icon">💬</span> (ChatBubbleLeftRightIcon)</li>
+                        <li><em>(Có thể được đánh dấu là tính năng "Mới")</em></li>
+                    </ul>
+                </li>
+            </ul>
+            <p>Người dùng có thể nhấp vào từng module để truy cập các chức năng chi tiết tương ứng.</p>
+            <style>
+                .inline-icon { font-size: 1.2em; vertical-align: middle; }
+            </style>
+
+            <h4>2.2.1. Quản lý Chi nhánh (Branches Management - <em>app/dashboard/business/branches</em>)</h4>
+            <p>Trang này cho phép <strong>quản trị viên (admin)</strong> quản lý thông tin về các chi nhánh của doanh nghiệp. Người dùng không có quyền admin sẽ không thể truy cập chức năng này.</p>
+            <ul>
+                <li><strong>Hiển thị danh sách chi nhánh:</strong>
+                    <ul>
+                        <li>Một bảng liệt kê các chi nhánh hiện có với các cột: ID, Tên chi nhánh, Địa chỉ, Quản lý.</li>
+                        <li>Tên và địa chỉ dài có thể được rút gọn trong bảng, nhưng đầy đủ khi xem chi tiết.</li>
+                    </ul>
+                </li>
+                <li><strong>Thêm chi nhánh mới:</strong>
+                    <ul>
+                        <li>Nhấn nút "Thêm chi nhánh" để mở cửa sổ popup.</li>
+                        <li>Điền thông tin bắt buộc: Tên chi nhánh, Địa chỉ.</li>
+                        <li>Tùy chọn: Chọn người quản lý từ danh sách người dùng hiện có.</li>
+                        <li>Tùy chọn: Xác định vị trí chính xác trên bản đồ bằng cách:
+                            <ul>
+                                <li>Nhấp vào nút bản đồ (<MapPinIcon className="inline-block h-4 w-4" />) bên cạnh ô địa chỉ.</li>
+                                <li>Trong popup bản đồ, tìm kiếm địa chỉ hoặc nhấp trực tiếp vào bản đồ để chọn tọa độ (Latitude, Longitude).</li>
+                                <li>Nhấn "Xác nhận vị trí" để lưu tọa độ.</li>
+                            </ul>
+                        </li>
+                        <li>Nhấn "Thêm mới" để lưu chi nhánh.</li>
+                    </ul>
+                </li>
+                <li><strong>Xem chi tiết chi nhánh:</strong>
+                    <ul>
+                        <li>Nhấp vào một hàng trong bảng danh sách chi nhánh để mở cửa sổ popup xem chi tiết.</li>
+                        <li>Hiển thị đầy đủ thông tin: ID, Tên, Địa chỉ, Tên người quản lý.</li>
+                        <li>Hiển thị danh sách nhân viên <strong>đang hoạt động</strong> thuộc chi nhánh đó (Họ tên, Email, Số điện thoại).</li>
+                        <li>Hiển thị thống kê số lượng nhân viên (đang hoạt động, đã nghỉ, tổng số).</li>
+                    </ul>
+                </li>
+                <li><strong>Chỉnh sửa chi nhánh:</strong>
+                    <ul>
+                        <li>Trong cửa sổ xem chi tiết, nhấn nút "Chỉnh sửa" (<PencilIcon className="inline-block h-4 w-4" />).</li>
+                        <li>Cửa sổ popup thêm/sửa sẽ hiện ra với thông tin chi nhánh đã được điền sẵn.</li>
+                        <li>Thay đổi thông tin cần thiết (tên, địa chỉ, quản lý, vị trí bản đồ).</li>
+                        <li>Nhấn "Cập nhật" để lưu thay đổi.</li>
+                    </ul>
+                </li>
+                <li><strong>Xóa chi nhánh:</strong>
+                    <ul>
+                        <li>Trong cửa sổ xem chi tiết, nhấn nút "Xóa" (<TrashIcon className="inline-block h-4 w-4" />).</li>
+                        <li>Một hộp thoại xác nhận sẽ xuất hiện.</li>
+                        <li><strong>Lưu ý:</strong> Hệ thống sẽ kiểm tra xem có nhân viên nào đang được gán cho chi nhánh này không. Nếu có, việc xóa sẽ bị chặn và thông báo lỗi sẽ hiển thị.</li>
+                        <li>Nếu không có nhân viên nào được gán, nhấn "Xác nhận xóa" để xóa vĩnh viễn chi nhánh.</li>
+                    </ul>
+                </li>
+                <li><strong>Thông báo:</strong> Hệ thống sẽ hiển thị thông báo thành công hoặc lỗi cho các thao tác thêm, sửa, xóa.</li>
+            </ul>
+            <p><strong>Các bước thực hiện quản lý chi nhánh:</strong></p>
+            <ol>
+                <li>Truy cập mục "Kinh doanh" (Business) -> "Chi nhánh" (Branches).</li>
+                <li><strong>Để thêm:</strong> Nhấn "Thêm chi nhánh", điền thông tin, chọn vị trí (tùy chọn), chọn quản lý (tùy chọn), rồi nhấn "Thêm mới".</li>
+                <li><strong>Để xem/sửa/xóa:</strong>
+                    <ol type="a">
+                        <li>Nhấp vào hàng của chi nhánh muốn xem.</li>
+                        <li>Trong popup chi tiết:
+                            <ul>
+                                <li>Xem thông tin và danh sách nhân viên.</li>
+                                <li>Nhấn "Chỉnh sửa" (<PencilIcon className="inline-block h-4 w-4" />), thay đổi thông tin, rồi nhấn "Cập nhật".</li>
+                                <li>Nhấn "Xóa" (<TrashIcon className="inline-block h-4 w-4" />), đọc cảnh báo, rồi nhấn "Xác nhận xóa" (nếu được phép).</li>
+                            </ul>
+                        </li>
+                    </ol>
+                </li>
+            </ol>
+            <style>
+                .inline-icon { font-size: 1.2em; vertical-align: middle; }
+                /* Add simple icons for documentation */
+                svg.inline-block { display: inline-block; vertical-align: middle; margin: 0 2px; }
+            </style>
+
+            <h3>2.3. Đơn hàng (Orders)</h3>
+            <p>Quản lý toàn bộ quy trình đơn hàng.</p>
+            <ul>
+                <li>Xem danh sách đơn hàng</li>
+                <li>Tạo đơn hàng mới (Create Order) - <em>app/dashboard/orders/create</em></li>
+                <li>Tìm kiếm đơn hàng (Search Orders) - <em>app/dashboard/orders/search</em></li>
+                <li>Quản lý giao nhận (Shipping Management) - <em>app/dashboard/orders/shipping</em></li>
+                <!-- Add more specific order functions -->
+            </ul>
+
+            <h3>2.4. Đối tác (Partners)</h3>
+            <p>Quản lý thông tin đối tác.</p>
+            <ul>
+                <li>Chăm sóc khách hàng (Customer Care) - <em>app/dashboard/partners/customer-care</em></li>
+                <li>Quản lý khách hàng (Customers Management) - <em>app/dashboard/partners/customers</em></li>
+                <!-- Add more specific partner functions -->
+            </ul>
+
+            <h3>2.5. Thanh toán (Payment)</h3>
+            <p>Quản lý các giao dịch thanh toán trong hệ thống.</p>
+            <!-- Add more specific payment functions based on app/dashboard/payment -->
+
+            <h3>2.6. Sản phẩm (Products)</h3>
+            <p>Quản lý danh mục sản phẩm.</p>
+            <ul>
+                <li>Xem danh sách sản phẩm</li>
+                <li>Thêm sản phẩm mới (Add Product) - <em>app/dashboard/products/add</em></li>
+                <li>Chỉnh sửa sản phẩm (Edit Product) - <em>app/dashboard/products/edit, app/dashboard/products/edit/[id]</em></li>
+                <li>Quản lý danh mục sản phẩm (Categories Management) - <em>app/dashboard/products/categories</em></li>
+                <li>Tìm kiếm sản phẩm (Search Products) - <em>app/dashboard/products/search</em></li>
+            </ul>
+
+            <h3>2.7. Hồ sơ (Profile)</h3>
+            <p>Quản lý thông tin cá nhân của người dùng.</p>
+            <!-- Add more specific profile functions based on app/dashboard/profile -->
+
+            <h3>2.8. Báo cáo (Reports)</h3>
+            <p>Xem và xuất các báo cáo thống kê.</p>
+            <ul>
+                <li>Báo cáo tài chính (Financial Reports) - <em>app/dashboard/reports/financial</em></li>
+                <li>Báo cáo đơn hàng (Orders Reports) - <em>app/dashboard/reports/orders</em></li>
+                <li>Báo cáo giao nhận (Shipping Reports) - <em>app/dashboard/reports/shipping</em></li>
+            </ul>
+
+            <h3>2.9. Bán hàng (Sales)</h3>
+            <p>Các chức năng hỗ trợ quy trình bán hàng.</p>
+             <ul>
+                <li>Tạo đơn bán hàng (Create Sales Order) - <em>app/dashboard/sales/create</em></li>
+                <li>Thanh toán đơn hàng (Sales Payment) - <em>app/dashboard/sales/payment</em></li>
+            </ul>
+
+            <h3>2.10. Người dùng (Users)</h3>
+            <p>Quản lý tài khoản người dùng trong hệ thống (khác với Admin Users).</p>
+            <ul>
+                <li>Xem danh sách người dùng</li>
+                <li>Thêm người dùng mới (Add User) - <em>app/dashboard/users/add</em></li>
+                <li>Xem chi tiết người dùng (User Detail) - <em>app/dashboard/users/detail/[id]</em></li>
+                <li>Chỉnh sửa người dùng (Edit User) - <em>app/dashboard/users/edit/[id]</em></li>
+                <li>Phân quyền người dùng (User Permissions) - <em>app/dashboard/users/permissions/[id]</em></li>
+                <li>Tìm kiếm người dùng (Search Users) - <em>app/dashboard/users/search</em></li>
+            </ul>
+        </section>
+
+        <section id="other_features">
+            <h2>3. Các chức năng khác</h2>
+            <p>Mô tả các trang hoặc chức năng không thuộc Bảng điều khiển chính.</p>
+            <h3>3.1. Trang Thanh toán (Standalone Payment Page)</h3>
+            <p>Mô tả chức năng của trang <em>app/payment/page.tsx</em>.</p>
+            <h3>3.2. Trang Hồ sơ (Standalone Profile Page)</h3>
+            <p>Mô tả chức năng của trang <em>app/profile/page.tsx</em>.</p>
+            <h3>3.3. Trang Bán hàng (Standalone Sales Pages)</h3>
+            <p>Mô tả chức năng của các trang trong <em>app/sales/</em>.</p>
+            <h3>3.4. Ví dụ Todo (Todo Example)</h3>
+            <p>Mô tả chức năng của trang <em>app/todo-example/page.tsx</em> (nếu cần đưa vào hướng dẫn).</p>
+            <!-- Add more sections as needed -->
+        </section>
+
+        <footer>
+            <p style="text-align:center; font-size:0.9em; color:#777;">Tài liệu được tạo tự động - &copy; 2025</p>
+        </footer>
+    </div>
+</body>
+</html>

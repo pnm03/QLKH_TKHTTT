@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cấu Trúc Dự Án (Tổng Quan Cốt Lõi)</title>
+    <style>
+        body { font-family: "Courier New", Courier, monospace; margin: 20px; }
+        pre { white-space: pre-wrap; word-wrap: break-word; }
+        .comment { color: #008000; font-style: italic; }
+    </style>
+</head>
+<body>
+    <h1>Cấu Trúc Dự Án (Tổng Quan Cốt Lõi để Sao Chép vào Word)</h1>
+    <pre>
+.  <span class="comment"> (Thư mục gốc của dự án)</span>
+├── middleware.ts                 <span class="comment"> (TypeScript - Middleware xử lý request chung)</span>
+├── next.config.js                <span class="comment"> (Cấu hình cho Next.js framework)</span>
+├── package.json                  <span class="comment"> (Thông tin dự án và danh sách các gói phụ thuộc)</span>
+├── schema.ts                     <span class="comment"> (TypeScript - Định nghĩa schema dữ liệu chung)</span>
+├── app/                          <span class="comment"> (Thư mục chính của ứng dụng Next.js - Frontend & API Routes)</span>
+│   ├── globals.css               <span class="comment"> (CSS toàn cục)</span>
+│   ├── layout.tsx                <span class="comment"> (Layout chung ứng dụng)</span>
+│   ├── page.tsx                  <span class="comment"> (Trang chủ)</span>
+│   ├── not-found.tsx             <span class="comment"> (Trang lỗi 404)</span>
+│   ├── favicon.ico               <span class="comment"> (Icon ứng dụng)</span>
+│   ├── actions/                  <span class="comment"> (Server Actions - Logic xử lý phía server)</span>
+│   ├── api/                      <span class="comment"> (API Routes - Điểm cuối cho các yêu cầu từ client)</span>
+│   │   ├── admin/                <span class="comment"> (API cho chức năng quản trị)</span>
+│   │   ├── auth/                 <span class="comment"> (API cho xác thực người dùng)</span>
+│   │   ├── categories/           <span class="comment"> (API cho danh mục sản phẩm)</span>
+│   │   ├── chat/                 <span class="comment"> (API cho chức năng chat)</span>
+│   │   ├── check-tables/         <span class="comment"> (API kiểm tra bảng CSDL)</span>
+│   │   ├── create-category/      <span class="comment"> (API tạo danh mục)</span>
+│   │   ├── delete-user/          <span class="comment"> (API xóa người dùng)</span>
+│   │   ├── partners/             <span class="comment"> (API cho đối tác)</span>
+│   │   └── send-account-email/   <span class="comment"> (API gửi email tài khoản)</span>
+│   ├── auth/                     <span class="comment"> (Các trang giao diện cho xác thực: đăng nhập, đăng ký,...)</span>
+│   ├── components/               <span class="comment"> (Components React dùng trong thư mục 'app')</span>
+│   ├── context/                  <span class="comment"> (React Context - Quản lý state toàn cục)</span>
+│   │   └── ThemeContext.tsx      <span class="comment"> (Context cho giao diện (theme))</span>
+│   ├── dashboard/                <span class="comment"> (Các trang giao diện cho khu vực quản trị (Dashboard))</span>
+│   │   ├── layout.tsx            <span class="comment"> (Layout riêng cho Dashboard)</span>
+│   │   ├── page.tsx              <span class="comment"> (Trang chính Dashboard)</span>
+│   │   ├── admin/                <span class="comment"> (Module quản trị)</span>
+│   │   ├── business/             <span class="comment"> (Module nghiệp vụ)</span>
+│   │   ├── orders/               <span class="comment"> (Module quản lý đơn hàng)</span>
+│   │   ├── partners/             <span class="comment"> (Module quản lý đối tác)</span>
+│   │   ├── payment/              <span class="comment"> (Module quản lý thanh toán)</span>
+│   │   ├── products/             <span class="comment"> (Module quản lý sản phẩm)</span>
+│   │   ├── profile/              <span class="comment"> (Module quản lý hồ sơ)</span>
+│   │   ├── reports/              <span class="comment"> (Module báo cáo)</span>
+│   │   ├── sales/                <span class="comment"> (Module bán hàng)</span>
+│   │   └── users/                <span class="comment"> (Module quản lý người dùng)</span>
+│   ├── not-found/                <span class="comment"> (Giao diện tùy chỉnh cho trang lỗi 404)</span>
+│   ├── payment/                  <span class="comment"> (Các trang giao diện cho quy trình thanh toán)</span>
+│   ├── profile/                  <span class="comment"> (Trang giao diện hồ sơ người dùng)</span>
+│   └── sales/                    <span class="comment"> (Các trang giao diện liên quan đến bán hàng)</span>
+├── components/                   <span class="comment"> (Thư mục chứa các UI components tái sử dụng toàn cục)</span>
+│   ├── AccessDenied.tsx          <span class="comment"> (Component báo truy cập bị từ chối)</span>
+│   ├── LogoutButton.tsx          <span class="comment"> (Component nút đăng xuất)</span>
+│   ├── payment/                  <span class="comment"> (Components cho chức năng thanh toán)</span>
+│   ├── shipping/                 <span class="comment"> (Components cho chức năng vận chuyển)</span>
+│   └── ui/                       <span class="comment"> (Components UI cơ bản: button, card, input,...)</span>
+├── public/                       <span class="comment"> (Thư mục chứa các file tĩnh: hình ảnh, fonts,...)</span>
+│   └── logo.png                  <span class="comment"> (Logo chính của ứng dụng)</span>
+├── supabase/                     <span class="comment"> (Thư mục cấu hình cho Supabase - Backend as a Service)</span>
+│   ├── functions/                <span class="comment"> (Supabase Edge Functions - Logic backend tùy chỉnh)</span>
+│   │   └── create_chat_tables.sql <span class="comment"> (Ví dụ: Script SQL tạo bảng chat)</span>
+│   └── migrations/               <span class="comment"> (Quản lý các thay đổi CSDL)</span>
+└── utils/                        <span class="comment"> (Thư mục chứa các hàm tiện ích chung)</span>
+    └── supabase/                 <span class="comment"> (Tiện ích kết nối và tương tác với Supabase)</span>
+        ├── client.tsx            <span class="comment"> (Supabase client cho phía client)</span>
+        ├── middleware.tsx        <span class="comment"> (Supabase middleware)</span>
+        └── server.tsx            <span class="comment"> (Supabase client cho phía server)</span>
+    </pre>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kịch bản kiểm thử</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        .section-title {
+            margin-top: 30px;
+            margin-bottom: 15px;
+            color: #3498db;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Kịch bản kiểm thử</h1>
+    
+    <h2 class="section-title">1. Chức năng "Tạo đơn hàng" (Trong Bán hàng)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th width="15%">ID</th>
+                <th width="85%">Ca kiểm thử</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>TC-CO-01</td>
+                <td>Kiểm tra giao diện chức năng "Tạo đơn hàng"</td>
+            </tr>
+            <tr>
+                <td>TC-CO-02</td>
+                <td>Kiểm tra chức năng tìm kiếm sản phẩm</td>
+            </tr>
+            <tr>
+                <td>TC-CO-03</td>
+                <td>Kiểm tra chức năng thêm sản phẩm vào đơn hàng</td>
+            </tr>
+            <tr>
+                <td>TC-CO-04</td>
+                <td>Kiểm tra chức năng thay đổi số lượng sản phẩm trong đơn hàng</td>
+            </tr>
+            <tr>
+                <td>TC-CO-05</td>
+                <td>Kiểm tra chức năng xóa sản phẩm khỏi đơn hàng</td>
+            </tr>
+            <tr>
+                <td>TC-CO-06</td>
+                <td>Kiểm tra chức năng tìm kiếm khách hàng</td>
+            </tr>
+            <tr>
+                <td>TC-CO-07</td>
+                <td>Kiểm tra chức năng chọn khách hàng cho đơn hàng</td>
+            </tr>
+            <tr>
+                <td>TC-CO-08</td>
+                <td>Kiểm tra chức năng tạo đơn hàng mới (bán hàng nhanh)</td>
+            </tr>
+            <tr>
+                <td>TC-CO-09</td>
+                <td>Kiểm tra chức năng tạo đơn gửi đi (shipping)</td>
+            </tr>
+            <tr>
+                <td>TC-CO-10</td>
+                <td>Kiểm tra tính toán tổng tiền, giảm giá và số tiền phải trả</td>
+            </tr>
+            <tr>
+                <td>TC-CO-11</td>
+                <td>Kiểm tra xác nhận thanh toán và chọn phương thức thanh toán</td>
+            </tr>
+            <tr>
+                <td>TC-CO-12</td>
+                <td>Kiểm tra tạo đơn hàng với dữ liệu không hợp lệ</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h2 class="section-title">2. Chức năng "Tìm & xem đơn hàng" (Trong Đơn hàng và thanh toán)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th width="15%">ID</th>
+                <th width="85%">Ca kiểm thử</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>TC-SO-01</td>
+                <td>Kiểm tra giao diện chức năng "Tìm & xem đơn hàng"</td>
+            </tr>
+            <tr>
+                <td>TC-SO-02</td>
+                <td>Kiểm tra chức năng tìm kiếm đơn hàng theo mã đơn hàng</td>
+            </tr>
+            <tr>
+                <td>TC-SO-03</td>
+                <td>Kiểm tra chức năng lọc đơn hàng theo trạng thái thanh toán</td>
+            </tr>
+            <tr>
+                <td>TC-SO-04</td>
+                <td>Kiểm tra chức năng phân trang danh sách đơn hàng</td>
+            </tr>
+            <tr>
+                <td>TC-SO-05</td>
+                <td>Kiểm tra chức năng xem chi tiết đơn hàng</td>
+            </tr>
+            <tr>
+                <td>TC-SO-06</td>
+                <td>Kiểm tra chức năng xuất hóa đơn dưới dạng PDF</td>
+            </tr>
+            <tr>
+                <td>TC-SO-07</td>
+                <td>Kiểm tra hiển thị thông tin khách hàng trong chi tiết đơn hàng</td>
+            </tr>
+            <tr>
+                <td>TC-SO-08</td>
+                <td>Kiểm tra hiển thị danh sách sản phẩm trong chi tiết đơn hàng</td>
+            </tr>
+            <tr>
+                <td>TC-SO-09</td>
+                <td>Kiểm tra chức năng tìm kiếm đơn hàng với dữ liệu không tồn tại</td>
+            </tr>
+            <tr>
+                <td>TC-SO-10</td>
+                <td>Kiểm tra hiển thị thông tin thanh toán trong chi tiết đơn hàng</td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>

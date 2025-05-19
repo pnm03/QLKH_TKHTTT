@@ -28,7 +28,8 @@ interface Shipping {
   carrier: string
   tracking_number: string
   shipping_cost: number
-  status: string // 'pending', 'shipped', 'delivered', 'cancelled'
+  status: string // 'Chưa giao hàng', 'Đang chuẩn bị', 'Đang giao hàng', 'Đã giao hàng', 'Đang hoàn về', 'Đã hủy'
+  original_status?: string // Trạng thái gốc tiếng Anh: 'pending', 'shipped', 'delivered', 'returning', 'cancelled'
   created_at: string
   actual_delivery_date: string | null
   delivery_date: string | null
@@ -39,6 +40,7 @@ interface Shipping {
   hight?: number | null // Sửa lỗi chính tả: height -> hight (theo code gốc)
   unit_size?: string | null
   cod_shipping?: boolean | null
+  order_status?: string // Trạng thái đơn hàng
 }
 
 interface Order {
@@ -83,7 +85,7 @@ export default function ShippingOrdersPage() {
   // State cho tìm kiếm và kết quả
   const [searchTerm, setSearchTerm] = useState('')
   const [dateRange, setDateRange] = useState({ from: '', to: '' })
-  const [statusFilter, setStatusFilter] = useState('all') // 'all', 'pending', 'shipped', 'delivered', 'cancelled'
+  const [statusFilter, setStatusFilter] = useState('all') // 'all', 'Chưa giao hàng', 'Đang chuẩn bị', 'Đang giao hàng', 'Đã giao hàng', 'Đang hoàn về', 'Đã hủy'
   const [shippings, setShippings] = useState<Shipping[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null) // State cho thông báo lỗi
@@ -162,10 +164,35 @@ export default function ShippingOrdersPage() {
   }
 
   // Lấy màu trạng thái (cải thiện với kiểu trả về rõ ràng và fallback)
-  type StatusColor = 'yellow' | 'blue' | 'green' | 'red' | 'gray';
+  type StatusColor = 'yellow' | 'blue' | 'green' | 'red' | 'orange' | 'gray';
   const getStatusColor = (status: string | null | undefined): StatusColor => {
     const foundStatus = shippingStatuses.find(s => s.value === status);
     return (foundStatus?.color as StatusColor) || 'gray';
+  }
+
+  // Ánh xạ giữa trạng thái tiếng Việt và tiếng Anh
+  const mapStatusToEnglish = (status: string): string => {
+    switch (status) {
+      case 'Chưa giao hàng': return 'pending';
+      case 'Đang chuẩn bị': return 'pending';
+      case 'Đang giao hàng': return 'shipped';
+      case 'Đã giao hàng': return 'delivered';
+      case 'Đang hoàn về': return 'returning';
+      case 'Đã hủy': return 'cancelled';
+      default: return status;
+    }
+  }
+
+  // Ánh xạ từ trạng thái tiếng Anh sang tiếng Việt
+  const mapStatusToVietnamese = (status: string): string => {
+    switch (status) {
+      case 'pending': return 'Đang chuẩn bị';
+      case 'shipped': return 'Đang giao hàng';
+      case 'delivered': return 'Đã giao hàng';
+      case 'returning': return 'Đang hoàn về';
+      case 'cancelled': return 'Đã hủy';
+      default: return status;
+    }
   }
 
   // Hàm cập nhật một shipping trong danh sách mà không cần tải lại toàn bộ danh sách
@@ -263,6 +290,10 @@ export default function ShippingOrdersPage() {
 
       // Nếu shipping_id bắt đầu bằng SHIP-, đây là bản ghi tạm thời
       if (shipping.shipping_id.startsWith('SHIP-')) {
+        // Chuyển đổi trạng thái tiếng Việt sang tiếng Anh để lưu vào DB
+        const englishStatus = mapStatusToEnglish(newStatus);
+        console.log('Tạo shipping mới với trạng thái:', newStatus, '-> tiếng Anh:', englishStatus);
+
         // Tạo bản ghi shipping mới
         const { data, error } = await supabase
           .from('shippings')
@@ -271,7 +302,7 @@ export default function ShippingOrdersPage() {
             name_customer: shipping.name_customer,
             phone_customer: shipping.phone_customer,
             shipping_address: shipping.shipping_address || 'Chưa có thông tin',
-            status: newStatus,
+            status: englishStatus,
             created_at: new Date().toISOString()
           })
           .select()
@@ -282,17 +313,33 @@ export default function ShippingOrdersPage() {
         // Trong trường hợp này vẫn cần tải lại danh sách vì ID đã thay đổi
         searchShippings(false); // Không reset về trang 1
       } else {
+        // Chuyển đổi trạng thái tiếng Việt sang tiếng Anh để lưu vào DB
+        const englishStatus = mapStatusToEnglish(newStatus);
+        console.log('Cập nhật trạng thái:', newStatus, '-> tiếng Anh:', englishStatus);
+
         // Cập nhật trạng thái cho bản ghi shipping hiện có
         const { error } = await supabase
           .from('shippings')
-          .update({ status: newStatus })
+          .update({ status: englishStatus })
           .eq('shipping_id', shipping.shipping_id);
 
         if (error) throw error;
 
         // Cập nhật shipping trong danh sách hiện tại thay vì tải lại toàn bộ danh sách
-        const updatedShipping = { ...shipping, status: newStatus };
-        updateShippingInList(updatedShipping, updatedOrderStatus, updatedPaymentMethod);
+        const updatedShipping = {
+          ...shipping,
+          status: newStatus,
+          original_status: mapStatusToEnglish(newStatus) // Lưu trạng thái tiếng Anh
+        };
+
+        // Nếu đang lọc theo trạng thái và trạng thái mới không khớp với bộ lọc, tải lại toàn bộ danh sách
+        if (statusFilter !== 'all' && statusFilter !== newStatus) {
+          console.log('Trạng thái mới không khớp với bộ lọc, tải lại danh sách');
+          searchShippings(false);
+        } else {
+          // Nếu không, chỉ cập nhật trong danh sách hiện tại
+          updateShippingInList(updatedShipping, updatedOrderStatus, updatedPaymentMethod);
+        }
       }
     } catch (error: any) {
       console.error('Lỗi khi cập nhật trạng thái vận chuyển:', error);
@@ -367,7 +414,14 @@ export default function ShippingOrdersPage() {
 
       // Áp dụng bộ lọc theo trạng thái cho bảng shippings
       if (statusFilter !== 'all') {
-        query = query.eq('shippings.status', statusFilter)
+        // Chuyển đổi trạng thái tiếng Việt sang tiếng Anh để lọc
+        const englishStatus = mapStatusToEnglish(statusFilter);
+        console.log('Lọc theo trạng thái:', statusFilter, '-> tiếng Anh:', englishStatus);
+
+        // Sử dụng điều kiện chính xác cho trạng thái
+        if (englishStatus) {
+          query = query.eq('shippings.status', englishStatus);
+        }
       }
 
       // Áp dụng bộ lọc theo ngày (đảm bảo bao gồm cả ngày kết thúc)
@@ -422,8 +476,14 @@ export default function ShippingOrdersPage() {
 
             // Nếu có thông tin shipping từ join
             if (order.shippings) {
+              // Chuyển đổi trạng thái tiếng Anh sang tiếng Việt
+              const vietnameseStatus = mapStatusToVietnamese(order.shippings.status);
+
+              // Thêm shipping vào danh sách với trạng thái tiếng Việt
               processedShippings.push({
                 ...order.shippings,
+                status: vietnameseStatus, // Ghi đè trạng thái bằng phiên bản tiếng Việt
+                original_status: order.shippings.status, // Lưu trạng thái gốc tiếng Anh
                 order_id: order.order_id,
                 order_status: order.status // Lưu trạng thái đơn hàng
               });
@@ -438,7 +498,7 @@ export default function ShippingOrdersPage() {
                 carrier: '',
                 tracking_number: '',
                 shipping_cost: 0,
-                status: 'pending', // Mặc định là đang chờ xử lý
+                status: 'Đang chuẩn bị', // Mặc định là đang chuẩn bị
                 created_at: order.order_date,
                 actual_delivery_date: null,
                 delivery_date: null,
@@ -724,6 +784,10 @@ export default function ShippingOrdersPage() {
     setIsSaving(true)
     setError(null)
 
+    // Chuyển đổi trạng thái tiếng Việt sang tiếng Anh để lưu vào DB
+    const englishStatus = mapStatusToEnglish(editedShipping.status);
+    console.log('Lưu shipping với trạng thái:', editedShipping.status, '-> tiếng Anh:', englishStatus);
+
     // Tạo object chứa các trường cần cập nhật
     const updateData: Partial<Shipping> = {
         name_customer: editedShipping.name_customer,
@@ -733,7 +797,7 @@ export default function ShippingOrdersPage() {
         tracking_number: editedShipping.tracking_number,
         // Đảm bảo giá trị số là number hoặc null
         shipping_cost: editedShipping.shipping_cost === null ? null : Number(editedShipping.shipping_cost),
-        status: editedShipping.status,
+        status: englishStatus, // Sử dụng trạng thái tiếng Anh
          // Xử lý ngày tháng: gửi null nếu không có giá trị
         actual_delivery_date: editedShipping.actual_delivery_date || null,
         delivery_date: editedShipping.delivery_date || null,
@@ -836,10 +900,11 @@ export default function ShippingOrdersPage() {
           .summary-value { font-weight: 600; color: #1f2937; text-align: right; }
           .total-row { font-size: 16px; font-weight: 700; color: #1f2937; border-top: 1px solid #d1d5db; padding-top: 8px; margin-top: 8px; }
           .status-badge { display: inline-block; padding: 3px 8px; border-radius: 9999px; font-size: 12px; font-weight: 600; text-transform: uppercase; line-height: 1.2; vertical-align: middle; }
-          .status-pending { background-color: #fef3c7; color: #92400e; }
-          .status-shipped { background-color: #dbeafe; color: #1e40af; }
-          .status-delivered { background-color: #d1fae5; color: #065f46; }
-          .status-cancelled { background-color: #fee2e2; color: #b91c1c; }
+          .status-yellow { background-color: #fef3c7; color: #92400e; }
+          .status-blue { background-color: #dbeafe; color: #1e40af; }
+          .status-green { background-color: #d1fae5; color: #065f46; }
+          .status-red { background-color: #fee2e2; color: #b91c1c; }
+          .status-orange { background-color: #ffedd5; color: #c2410c; }
           .status-gray { background-color: #f3f4f6; color: #4b5563; } /* Fallback color */
           .cod-notice { background-color: #fefce8; border-left: 4px solid #facc15; padding: 10px; margin-bottom: 20px; font-style: italic; color: #a16207; font-size: 13px; }
           .barcode-section { text-align: center; margin: 20px 0; padding: 15px; border: 1px dashed #ccc; border-radius: 4px;}
@@ -1172,10 +1237,9 @@ export default function ShippingOrdersPage() {
                 className={`block w-full rounded-md border-gray-300 shadow-sm focus:border-${themeColor}-500 focus:ring-${themeColor}-500 sm:text-sm h-10`}
               >
                 <option value="all">Tất cả trạng thái</option>
-                <option value="pending">Chờ xử lý</option>
-                <option value="shipped">Đang vận chuyển</option>
-                <option value="delivered">Đã giao hàng</option>
-                <option value="cancelled">Đã hủy</option>
+                {shippingStatuses.map((status) => (
+                  <option key={status.value} value={status.value}>{status.label}</option>
+                ))}
               </select>
             </div>
           </div>
@@ -1647,10 +1711,9 @@ export default function ShippingOrdersPage() {
                                             <div>
                                                 <label htmlFor="status" className="block text-sm font-medium text-gray-700">Trạng thái VC</label>
                                                 <select name="status" id="status" value={editedShipping.status || ''} onChange={handleInputChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-2 sm:text-sm h-[34px]">
-                                                    <option value="pending">Chờ xử lý</option>
-                                                    <option value="shipped">Đang vận chuyển</option>
-                                                    <option value="delivered">Đã giao hàng</option>
-                                                    <option value="cancelled">Đã hủy</option>
+                                                    {shippingStatuses.map((status) => (
+                                                        <option key={status.value} value={status.value}>{status.label}</option>
+                                                    ))}
                                                 </select>
                                             </div>
                                         </div>

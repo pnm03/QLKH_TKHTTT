@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kiểm thử Kết nối và Cấu hình Hệ thống Quản lý Bán hàng Five Guys (Test với qlbh-pthttt2.vercel.app)</title>
+    <style>
+        body {
+            font-family: "Times New Roman", Times, serif;
+            line-height: 1.8;
+            margin: 30px;
+            font-size: 13pt;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: auto;
+            background-color: #fff;
+            padding: 20px;
+        }
+        h1, h2, h3, h4 {
+            color: #333;
+        }
+        h1 {
+            border-bottom: 2px solid #0056b3;
+            padding-bottom: 10px;
+            text-align: center;
+            font-size: 18pt;
+            font-weight: bold;
+        }
+        h2 {
+            margin-top: 30px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+            font-size: 16pt;
+            color: #0056b3;
+            font-weight: bold;
+        }
+        h3 {
+            font-size: 14pt;
+            margin-top: 25px;
+            color: #007bff;
+            font-weight: bold;
+        }
+        h4 {
+            font-size: 13pt;
+            margin-top: 20px;
+            font-style: italic;
+            color: #17a2b8;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            margin-bottom: 20px;
+            font-size: 12pt;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            background-color: #e9ecef;
+            font-weight: bold;
+            text-align: center;
+        }
+        ul, ol {
+            margin-left: 40px;
+            margin-bottom: 15px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        .note {
+            background-color: #e7f3fe;
+            border-left: 6px solid #2196F3;
+            padding: 12px;
+            margin: 20px 0;
+            font-style: italic;
+        }
+        .test-case {
+            background-color: #fdfdfe;
+            border: 1px solid #e0e0e0;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        .test-case-title {
+            font-weight: bold;
+            color: #28a745; /* Green color */
+            font-size: 13pt;
+            margin-bottom: 10px;
+        }
+        .test-steps {
+            margin-left: 20px;
+        }
+        .expected-result {
+            font-style: italic;
+            color: #555;
+        }
+        .code-block {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: "Courier New", Courier, monospace;
+            white-space: pre-wrap;
+            margin: 15px 0;
+            font-size: 11pt;
+            overflow-x: auto;
+        }
+        .header-info {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 1px dashed #ccc;
+            padding-bottom: 15px;
+        }
+        .header-info p {
+            margin: 5px 0;
+            font-size: 14pt;
+        }
+        .status-pass { color: green; font-weight: bold; }
+        .status-fail { color: red; font-weight: bold; }
+        .important {
+            background-color: #fff3cd;
+            border-left: 6px solid #ffc107;
+            padding: 12px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-info">
+            <p><strong>Quyển 3: Thực hành triển khai hệ thống thông tin Quản lý Bán hàng tại Five Guys</strong></p>
+            <p><strong>Bài 5: Thực hành thiết lập cấu hình phần cứng, cài đặt phần mềm, chuyển đổi dữ liệu và đào tạo người sử dụng</strong></p>
+            <p><em>(Nội dung dưới đây là một phần của "Kiểm thử kết nối và cấu hình hệ thống")</em></p>
+            <p class="note"><strong>Lưu ý:</strong> Các kịch bản kiểm thử dưới đây sẽ sử dụng URL frontend thử nghiệm: <code>https://qlbh-pthttt2.vercel.app/</code>. Các URL backend (Supabase) và thông tin cấu hình cụ thể khác cần được cập nhật theo dự án thực tế.</p>
+        </div>
+
+        <h1>Kiểm thử Kết nối và Cấu hình Hệ thống Thông tin Quản lý Bán hàng Five Guys (Test với <code>https://qlbh-pthttt2.vercel.app/</code>)</h1>
+
+        <h2>I. Mục tiêu Kiểm thử</h2>
+        <ul>
+            <li>Xác minh môi trường hạ tầng (Cloud Vercel + Supabase hoặc Self-hosted) đã được thiết lập đúng theo cấu hình chuẩn (đã xác định trong Phần II của Quyển 3) và cài đặt đầy đủ (theo hướng dẫn Phần III của Quyển 3).</li>
+            <li>Đảm bảo kết nối mạng thông suốt giữa các thành phần: người dùng cuối (máy POS, tablet, máy tính quản lý), frontend (<code>https://qlbh-pthttt2.vercel.app/</code> hoặc Server self-host), backend (Supabase Cloud/Server), và Internet.</li>
+            <li>Kiểm tra các cấu hình quan trọng của Vercel Project, Supabase Project (Cloud/Self-hosted), máy chủ (nếu self-host) và máy trạm (thiết bị điểm bán) hoạt động chính xác.</li>
+            <li>Xác nhận ứng dụng Next.js tại <code>https://qlbh-pthttt2.vercel.app/</code> và các dịch vụ Supabase (Auth, Database, Storage, Realtime nếu có) cơ bản hoạt động, sẵn sàng cho kiểm thử chức năng chi tiết hơn.</li>
+            <li>Phát hiện sớm các lỗi cấu hình, kết nối, cài đặt để khắc phục kịp thời trước các giai đoạn chuyển đổi dữ liệu và đào tạo người dùng.</li>
+        </ul>
+
+        <h2>II. Phạm vi Kiểm thử</h2>
+        <ul>
+            <li><strong>Môi trường Cloud (Vercel + Supabase Cloud) - Phương án chính cho Five Guys:</strong>
+                <ul>
+                    <li>Cấu hình Vercel Project (Environment Variables, Domain <code>qlbh-pthttt2.vercel.app</code> và custom domain nếu có, Git Integration, Build Settings, Edge Network, WAF).</li>
+                    <li>Cấu hình Supabase Project (API Keys, Auth Settings, Custom SMTP, Database Migrations & RLS, Storage Buckets & Policies, Custom Domains cho API nếu có, VPC Peering nếu có).</li>
+                    <li>Kết nối từ mạng doanh nghiệp của Five Guys (Văn phòng chính, các cửa hàng) đến <code>https://qlbh-pthttt2.vercel.app/</code> và Supabase Cloud.</li>
+                </ul>
+            </li>
+            <li><strong>Môi trường Self-hosting (Phương án dự phòng chiến lược):</strong>
+                <ul>
+                    <li>Cấu hình máy chủ Backend (Docker, Supabase containers, Firewall, Backup, .env file).</li>
+                    <li>Cấu hình máy chủ Frontend (Node.js, PM2/Docker, Nginx reverse proxy, SSL, Firewall).</li>
+                    <li>Kết nối mạng giữa các máy chủ, máy trạm và Internet trong môi trường self-host.</li>
+                </ul>
+            </li>
+            <li><strong>Thiết bị tại Điểm Bán (Máy POS, Tablet Order, KDS):</strong>
+                <ul>
+                    <li>Cài đặt HĐH (Windows IoT/Pro, Android, iOS) và phần mềm cần thiết (trình duyệt Chrome/Safari).</li>
+                    <li>Kết nối mạng (LAN/Wi-Fi) đến hệ thống (<code>https://qlbh-pthttt2.vercel.app/</code>).</li>
+                    <li>Kết nối với các thiết bị ngoại vi (máy in, máy quét mã vạch, thiết bị thanh toán).</li>
+                </ul>
+            </li>
+            <li><strong>Kết nối và Cấu hình Chung:</strong>
+                <ul>
+                    <li>Kiểm tra DNS resolution cho <code>qlbh-pthttt2.vercel.app</code> và các custom domain của Five Guys nếu có (ví dụ: `pos.fiveguys.com`, `api.pos.fiveguys.com`).</li>
+                    <li>Kiểm tra kết nối CSDL từ ứng dụng Next.js frontend đến Supabase backend.</li>
+                    <li>Kiểm tra hoạt động Authentication cơ bản (Supabase Auth).</li>
+                    <li>Kiểm tra File Storage (Supabase Storage).</li>
+                    <li>Kiểm tra VPN Site-to-Site (nếu vẫn duy trì và có liên quan).</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h2>III. Kế hoạch và Thực hiện Kiểm thử</h2>
+        <h3>1. Chuẩn bị</h3>
+        <ul>
+            <li><strong>Tài liệu tham khảo:</strong>
+                <ul>
+                    <li>Quyển 3 - Phần I: Khảo sát Thực trạng Hạ tầng CNTT tại Five Guys.</li>
+                    <li>Quyển 3 - Phần II: Xác định Cấu hình Phần cứng Chuẩn và Mạng.</li>
+                    <li>Quyển 3 - Phần III: Thiết lập Máy chủ, Máy trạm và Cài đặt Phần mềm Hệ thống.</li>
+                </ul>
+            </li>
+            <li><strong>Checklist kiểm thử chi tiết:</strong> Dựa trên các test case dưới đây, tùy chỉnh cho phù hợp với tiến độ cấu hình thực tế.</li>
+            <li><strong>Công cụ:</strong>
+                <ul>
+                    <li>Trình duyệt web (Chrome, Firefox, Safari) với Developer Tools.</li>
+                    <li>Command Prompt/Terminal (<code>ping</code>, <code>tracert</code>/<code>traceroute</code>, <code>nslookup</code>/<code>dig</code>, <code>curl</code>, <code>telnet</code>).</li>
+                    <li>Công cụ quản trị CSDL (pgAdmin, DBeaver).</li>
+                    <li>Supabase CLI, Vercel CLI.</li>
+                    <li>Docker CLI (nếu self-host).</li>
+                    <li>Công cụ kiểm tra SSL (ví dụ: SSL Labs online).</li>
+                    <li>Công cụ kiểm tra tốc độ mạng (ví dụ: Speedtest.net).</li>
+                </ul>
+            </li>
+            <li><strong>Tài khoản:</strong>
+                <ul>
+                    <li>Tài khoản quản trị Vercel Organization của Five Guys.</li>
+                    <li>Tài khoản quản trị Supabase Organization/Project của Five Guys.</li>
+                    <li>Tài khoản quản trị server (SSH) nếu self-host.</li>
+                    <li>Tài khoản quản trị UniFi Network Controller (nếu cần kiểm tra cấu hình mạng cửa hàng).</li>
+                    <li>Tài khoản người dùng thử nghiệm trên Hệ thống Quản lý Bán hàng Five Guys.</li>
+                </ul>
+            </li>
+            <li><strong>Thông tin cần thiết:</strong>
+                <ul>
+                    <li>URL triển khai Frontend: <code>https://qlbh-pthttt2.vercel.app/</code> (và custom domain `pos.fiveguys.com` nếu đã cấu hình).</li>
+                    <li>Supabase Project URL & API Keys (anon key, service_role key) cho project liên kết với <code>qlbh-pthttt2.vercel.app</code> (ví dụ: `[project_id].supabase.co`, API endpoint `[YOUR_SUPABASE_API_DOMAIN]` hoặc custom domain `api.pos.fiveguys.com` nếu có).</li>
+                    <li>Địa chỉ IP các máy chủ (nếu self-host).</li>
+                    <li>Thông tin tài khoản SMTP của Five Guys (nếu dùng Custom SMTP).</li>
+                </ul>
+            </li>
+            <li><strong>Người thực hiện (dự kiến):</strong> Đội ngũ triển khai phần mềm, phối hợp với IT của Five Guys.</li>
+        </ul>
+
+        <h3>2. Kịch bản Kiểm thử (Test Cases)</h3>
+        <p class="note">Lựa chọn các test case phù hợp với phương án triển khai chính (Cloud) và phương án dự phòng (Self-host) của Five Guys. Ghi chú rõ môi trường thực hiện test case.</p>
+
+        <h4>3.1. Kiểm thử Mạng và Kết nối Cơ bản</h4>
+        <div class="test-case">
+            <p class="test-case-title">TC_NET_001: Kiểm tra DNS Resolution cho URL ứng dụng Frontend</p>
+            <ul>
+                <li><strong>Mô tả:</strong> Đảm bảo tên miền <code>qlbh-pthttt2.vercel.app</code> (và custom domain `pos.fiveguys.com` nếu có) phân giải đúng địa chỉ IP của Vercel.</li>
+                <li><strong>Các bước (Thực hiện từ máy trạm tại Văn phòng Five Guys và một cửa hàng mẫu):</strong>
+                    <ol class="test-steps">
+                        <li>Mở Command Prompt/Terminal.</li>
+                        <li>Chạy lệnh <code>nslookup qlbh-pthttt2.vercel.app</code>.</li>
+                        <li>Nếu có custom domain: Chạy lệnh <code>nslookup pos.fiveguys.com</code>.</li>
+                    </ol>
+                </li>
+                <li><strong>Kết quả mong đợi:</strong> Lệnh trả về (các) địa chỉ IP của Vercel. Phân giải thành công.</li>
+            </ul>
+        </div>
+        <div class="test-case">
+            <p class="test-case-title">TC_NET_002: Kiểm tra DNS Resolution cho Supabase API Endpoint</p>
+            <ul>
+                <li><strong>Mô tả:</strong> Đảm bảo URL API của Supabase (ví dụ: <code>[project_id].supabase.co</code> hoặc custom domain <code>api.pos.fiveguys.com</code>) phân giải đúng địa chỉ IP.</li>
+                <li><strong>Các bước (Thực hiện từ máy trạm và máy chủ frontend nếu self-host):</strong>
+                    <ol class="test-steps">
+                        <li>Mở Command Prompt/Terminal.</li>
+                        <li>Chạy lệnh <code>nslookup [YOUR_SUPABASE_API_DOMAIN]</code> (thay bằng Supabase domain thực tế của dự án).</li>
+                    </ol>
+                </li>
+                <li><strong>Kết quả mong đợi:</strong> Lệnh trả về địa chỉ IP của Supabase Cloud hoặc IP của máy chủ backend (self-host).</li>
+            </ul>
+        </div>
+        <div class="test-case">
+            <p class="test-case-title">TC_NET_003: Kiểm tra kết nối HTTP/HTTPS đến URL ứng dụng Frontend</p>
+            <ul>
+                <li><strong>Mô tả:</strong> Máy trạm (POS, tablet, PC quản lý) có thể thiết lập kết nối TCP đến <code>https://qlbh-pthttt2.vercel.app/</code>.</li>
+                <li><strong>Các bước (Thực hiện từ các loại máy trạm khác nhau):</strong>
+                    <ol class="test-steps">
+                        <li>Mở trình duyệt web.</li>
+                        <li>Truy cập <code>https://qlbh-pthttt2.vercel.app/</code>.</li>
+                        <li>Kiểm tra chứng chỉ SSL (ổ khóa xanh, thông tin chứng chỉ hợp lệ, cấp cho đúng domain).</li>
+                        <li>(Nâng cao) Dùng <code>curl -v https://qlbh-pthttt2.vercel.app/</code>.</li>
+                    </ol>
+                </li>
+                <li><strong>Kết quả mong đợi:</strong> Trang web ứng dụng tải thành công qua HTTPS. Chứng chỉ SSL hợp lệ, không có cảnh báo bảo mật.</li>
+            </ul>
+        </div>
+        <div class="test-case">
+            <p class="test-case-title">TC_NET_004: Kiểm tra kết nối đến Supabase API Endpoint (Port 443)</p>
+            <ul>
+                <li><strong>Mô tả:</strong> Frontend tại <code>qlbh-pthttt2.vercel.app</code> (Vercel functions) và máy trạm (nếu có direct client-side calls) có thể kết nối đến cổng API của Supabase.</li>
+                <li><strong>Các bước (Thực hiện từ máy trạm có kết nối Internet, và từ server frontend nếu self-host):</strong>
+                    <ol class="test-steps">
+                        <li>Mở Command Prompt/Terminal.</li>
+                        <li>Dùng <code>curl -I https://[YOUR_SUPABASE_API_DOMAIN]</code> (thay bằng Supabase domain thực tế).</li>
+                        <li>Kiểm tra kết nối đến port CSDL (5432/6543) từ backend server (nếu self-host và kết nối trực tiếp): <code>telnet [Supabase_DB_Host_IP_hoặc_Domain] [PORT]</code>.</li>
+                    </ol>
+                </li>
+                <li><strong>Kết quả mong đợi:</strong> Lệnh curl trả về HTTP status code (ví dụ: 200 OK hoặc 401 Unauthorized, miễn là có phản hồi từ server). Kết nối telnet đến port CSDL thành công (nếu kiểm tra).</li>
+            </ul>
+        </div>
+        <div class="test-case">
+            <p class="test-case-title">TC_NET_005: Kiểm tra băng thông Internet tại cửa hàng mẫu</p>
+            <ul>
+                <li><strong>Mô tả:</strong> Đảm bảo băng thông Internet tại cửa hàng (đặc biệt là upload) đáp ứng yêu cầu đồng bộ dữ liệu khi sử dụng <code>https://qlbh-pthttt2.vercel.app/</code>.</li>
+                <li><strong>Các bước (Thực hiện tại một cửa hàng mẫu):</strong>
+                    <ol class="test-steps">
+                        <li>Kết nối vào mạng Wi-Fi/LAN của cửa hàng.</li>
+                        <li>Sử dụng công cụ như Speedtest.net để đo tốc độ Download/Upload.</li>
+                    </ol>
+                </li>
+                <li><strong>Kết quả mong đợi:</strong> Tốc độ đo được phù hợp với gói cước và đáp ứng yêu cầu ước tính.</li>
+            </ul>
+        </div>
+         <div class="test-case">
+            <p class="test-case-title">TC_NET_006: Kiểm tra kết nối VPN Site-to-Site (Nếu vẫn cần thiết)</p>
+            <ul>
+                <li><strong>Mô tả:</strong> Đảm bảo kết nối VPN giữa văn phòng và các cửa hàng (nếu có) vẫn hoạt động.</li>
+                <li><strong>Các bước (Thực hiện bởi IT Five Guys):</strong>
+                    <ol class="test-steps">
+                        <li>Kiểm tra trạng thái VPN tunnel trên UniFi Controller.</li>
+                        <li>Thử ping các tài nguyên nội bộ qua VPN.</li>
+                    </ol>
+                </li>
+                <li><strong>Kết quả mong đợi:</strong> VPN tunnel "Up" và có thể truy cập tài nguyên qua VPN.</li>
+            </ul>
+        </div>
+
+        <h4>3.2. Kiểm thử Cấu hình Môi trường Cloud (Vercel + Supabase Cloud)</h4>
+        <div class="test-case">
+            <p class="test-case-title">TC_CLD_001: Kiểm tra Environment Variables trên Vercel cho <code>qlbh-pthttt2.vercel.app</code></p>
+            <ul>
+                <li><strong>Mô tả:</strong> Các biến môi trường (Supabase URL, Keys, Site URL = <code>https://qlbh-pthttt2.vercel.app/</code>) được cấu hình đúng trên Vercel Project.</li>
+                <li><strong>Các bước:</strong>
+                    <ol class="test-steps">
+                        <li>Đăng nhập vào Vercel Dashboard.</li>
+                        <li>Chọn Project tương ứng với <code>qlbh-pthttt2.vercel.app</code>.</li>
+                        <li>Vào "Settings" -> "Environment Variables".</li>
+                        <li>Đối chiếu giá trị của <code>NEXT_PUBLIC_SUPABASE_URL</code> (trỏ đến Supabase project của bạn), <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code>, <code>SUPABASE_SERVICE_ROLE_KEY</code> (dưới dạng Secret), <code>NEXT_PUBLIC_SITE_URL</code> (nên là <code>https://qlbh-pthttt2.vercel.app/</code> hoặc custom domain chính thức).</li>
+                        <li>Kiểm tra các biến được áp dụng cho đúng môi trường (Production, Preview, Development).</li>
+                    </ol>
+                </li>
+                <li><strong>Kết quả mong đợi:</strong> Tất cả biến môi trường cần thiết tồn tại, có giá trị chính xác, được mã hóa (secrets) và áp dụng đúng phạm vi.</li>
+            </ul>
+        </div>
+        <div class="test-case">
+            <p class="test-case-title">TC_CLD_002: Kiểm tra Cấu hình Authentication Supabase (cho project liên kết với <code>qlbh-pthttt2.vercel.app</code>)</p>
+            <ul>
+                <li><strong>Mô tả:</strong> Các cài đặt xác thực trên Supabase Dashboard phù hợp.</li>
+                <li><strong>Các bước:</strong>
+                    <ol class="test-steps">
+                        <li>Đăng nhập vào Supabase Dashboard (Project liên kết).</li>
+                        <li>Vào "Authentication" -> "Settings": Kiểm tra "Site URL" (nên là <code>https://qlbh-pthttt2.vercel.app/</code>), "Additional Redirect URLs".</li>
+                        <li>Vào "Authentication" -> "Providers": Kiểm tra Email/Password. Nếu có OAuth/SAML, kiểm tra cấu hình.</li>
+                        <li>Vào "Project Settings" -> "Authentication" -> "SMTP settings": Kiểm tra cấu hình Custom SMTP (nếu sử dụng).</li>
+                        <li>Kiểm tra "JWT expiry".</li>
+                        <li>Vào "SQL Editor": Kiểm tra RLS cho các bảng.</li>
+                    </ol>
+                </li>
+                <li><strong>Kết quả mong đợi:</strong> Các URL, provider, SMTP, JWT, RLS khớp yêu cầu. Email xác nhận/reset password phải dùng <code>https://qlbh-pthttt2.vercel.app/</code> hoặc custom domain trong link.</li>
+            </ul>
+        </div>
+        <div class="test-case">
+            <p class="test-case-title">TC_CLD_003: Kiểm tra Database Migrations và Schema Supabase (cho project liên kết)</p>
+            <ul>
+                <li><strong>Mô tả:</strong> Cấu trúc CSDL khớp với mã nguồn.</li>
+                <li><strong>Các bước:</strong>
+                    <ol class="test-steps">
+                        <li>Vào "Table Editor" trên Supabase Dashboard: Kiểm tra sự tồn tại và cấu trúc (cột, kiểu dữ liệu, khóa chính, khóa ngoại, constraints) của các bảng chính (ví dụ: products, orders, customers, stores, users, profiles).</li>
+                        <li>Vào "Database" -> "Migrations": Xem lịch sử migration đã chạy, đảm bảo tất cả migration trong source code đã được áp dụng.</li>
+                        <li>Vào "Database" -> "Functions" và "Triggers": Kiểm tra các function và trigger tùy chỉnh đã tồn tại.</li>
+                        <li>(Nâng cao) Kết nối vào CSDL bằng pgAdmin/DBeaver, kiểm tra indexes, sequences.</li>
+                    </ol>
+                </li>
+                <li><strong>Kết quả mong đợi:</strong> Schema CSDL, functions, triggers, indexes trên cloud khớp với định nghĩa trong mã nguồn/migration files và kế hoạch thiết kế.</li>
+            </ul>
+        </div>
+        <div class="test-case">
+            <p class="test-case-title">TC_CLD_004: Kiểm tra Storage Buckets và Policies Supabase (cho project liên kết)</p>
+            <ul>
+                <li><strong>Mô tả:</strong> Buckets và policies đúng.</li>
+                <li><strong>Các bước:</strong>
+                     <ol class="test-steps">
+                        <li>Vào "Storage" trên Supabase Dashboard.</li>
+                        <li>Kiểm tra sự tồn tại của các bucket cần thiết (<code>avatars</code>, <code>product-images</code>,...).</li>
+                        <li>Click vào từng bucket, vào tab "Policies": Kiểm tra các chính sách SELECT, INSERT, UPDATE, DELETE đã được tạo và đúng logic (ví dụ: ai được phép xem, ai được phép tải lên).</li>
+                    </ol>
+                </li>
+                <li><strong>Kết quả mong đợi:</strong> Buckets tồn tại, policies được cấu hình đúng theo yêu cầu bảo mật và chức năng.</li>
+            </ul>
+        </div>
+        <div class="test-case">
+            <p class="test-case-title">TC_CLD_005: Kiểm tra Custom Domains và SSL</p>
+            <ul>
+                <li><strong>Mô tả:</strong> Kiểm tra domain <code>qlbh-pthttt2.vercel.app</code> có SSL hợp lệ. Nếu Five Guys có custom domain (ví dụ: `pos.fiveguys.com`) trỏ đến Vercel project này, kiểm tra cả custom domain đó. Tương tự cho Supabase API custom domain (nếu có).</li>
+                <li><strong>Các bước:</strong>
+                    <ol class="test-steps">
+                        <li>Trên Vercel Dashboard: Vào "Settings" -> "Domains". Kiểm tra domain <code>qlbh-pthttt2.vercel.app</code> (mặc định) và custom domain `pos.fiveguys.com` (nếu có) đã được thêm, xác thực và trỏ đúng.</li>
+                        <li>Trên Supabase Dashboard: Vào "Project Settings" -> "API" -> "Custom Domains" (nếu có). Kiểm tra custom domain cho API.</li>
+                        <li>Sử dụng trình duyệt truy cập các domain này, kiểm tra SSL.</li>
+                    </ol>
+                </li>
+                <li><strong>Kết quả mong đợi:</strong> Domain <code>qlbh-pthttt2.vercel.app</code> và các custom domain (nếu có) hoạt động, SSL hợp lệ.</li>
+            </ul>
+        </div>
+         <div class="test-case">
+            <p class="test-case-title">TC_CLD_006: Kiểm tra Vercel WAF và Security Headers cho <code>qlbh-pthttt2.vercel.app</code></p>
+            <ul>
+                <li><strong>Mô tả:</strong> Kiểm tra WAF (nếu có) và Security Headers.</li>
+                <li><strong>Các bước:</strong>
+                    <ol class="test-steps">
+                        <li>Kiểm tra cấu hình WAF trên Vercel Dashboard.</li>
+                        <li>Sử dụng Developer Tools (Network tab) hoặc công cụ online để kiểm tra response headers của <code>https://qlbh-pthttt2.vercel.app/</code> có chứa các header bảo mật cần thiết.</li>
+                    </ol>
+                </li>
+                <li><strong>Kết quả mong đợi:</strong> WAF hoạt động. Security headers có mặt và đúng.</li>
+            </ul>
+        </div>
+
+        <h4>3.3. Kiểm thử Môi trường Self-hosting (Nếu áp dụng làm dự phòng)</h4>
+        <p class="note">Các test case này giữ nguyên như phiên bản trước, vì chúng không phụ thuộc vào URL Vercel cụ thể.</p>
+        <div class="test-case">
+            <p class="test-case-title">TC_SLF_001: Kiểm tra Trạng thái Supabase Docker Containers</p>
+            <ul>
+                <li><strong>Mô tả:</strong> Tất cả các container dịch vụ Supabase đang chạy ổn định trên máy chủ backend self-host.</li>
+                <li><strong>Các bước (Thực hiện trên máy chủ backend):</strong>
+                    <ol class="test-steps">
+                        <li>SSH vào máy chủ backend.</li>
+                        <li>Chuyển đến thư mục chứa <code>docker-compose.yml</code> của Supabase.</li>
+                        <li>Chạy lệnh <code>sudo docker-compose ps</code> hoặc <code>sudo docker ps --filter "label=com.supabase.service"</code>.</li>
+                    </ol>
+                </li>
+                <li><strong>Kết quả mong đợi:</strong> Tất cả các container (supabase-db, supabase-kong, supabase-auth, supabase-realtime, supabase-storage,...) hiển thị trạng thái "Up" hoặc "Running".</li>
+            </ul>
+        </div>
+        <div class="test-case">
+            <p class="test-case-title">TC_SLF_002: Kiểm tra Cấu hình <code>.env</code> Supabase Backend (Self-host)</p>
+             <ul>
+                <li><strong>Mô tả:</strong> Các biến môi trường quan trọng trong file <code>.env</code> của Supabase backend được đặt giá trị đúng và an toàn.</li>
+                <li><strong>Các bước (Thực hiện trên máy chủ backend):</strong>
+                    <ol class="test-steps">
+                        <li>SSH vào máy chủ backend.</li>
+                        <li>Chuyển đến thư mục chứa file <code>.env</code> của Supabase.</li>
+                        <li>Xem nội dung file <code>.env</code> (ví dụ: <code>cat .env</code>).</li>
+                        <li>Kiểm tra các giá trị <code>POSTGRES_PASSWORD</code>, <code>JWT_SECRET</code>, <code>ANON_KEY</code>, <code>SERVICE_ROLE_KEY</code> đã được thay đổi so với giá trị mặc định và là các chuỗi phức tạp, ngẫu nhiên.</li>
+                        <li>Kiểm tra <code>SITE_URL</code> (trỏ đến URL frontend self-host), <code>API_EXTERNAL_URL</code> (trỏ đến URL của Kong gateway).</li>
+                        <li>Kiểm tra cấu hình SMTP (nếu dùng custom SMTP).</li>
+                    </ol>
+                </li>
+                <li><strong>Kết quả mong đợi:</strong> Các biến môi trường được cấu hình đúng, các secret key mạnh và không dùng giá trị mặc định. Các URL trỏ đúng.</li>
+            </ul>
+        </div>
+        <div class="test-case">
+            <p class="test-case-title">TC_SLF_003: Kiểm tra Trạng thái Ứng dụng Next.js (PM2/Docker Self-host)</p>
+            <ul>
+                <li><strong>Mô tả:</strong> Tiến trình ứng dụng Next.js đang chạy ổn định trên máy chủ frontend self-host.</li>
+                <li><strong>Các bước (Thực hiện trên máy chủ frontend):</strong>
+                    <ol class="test-steps">
+                        <li>SSH vào máy chủ frontend.</li>
+                        <li>Nếu dùng PM2: Chạy <code>pm2 list</code> hoặc <code>pm2 status fiveguys-pos-app</code> (thay bằng tên thực tế).</li>
+                        <li>Nếu dùng Docker: Chạy <code>sudo docker ps --filter "name=fiveguys-frontend-container"</code>.</li>
+                    </ol>
+                </li>
+                <li><strong>Kết quả mong đợi:</strong> Tiến trình/container ứng dụng hiển thị trạng thái "online" hoặc "running".</li>
+            </ul>
+        </div>
+        <div class="test-case">
+            <p class="test-case-title">TC_SLF_004: Kiểm tra Cấu hình Reverse Proxy (Nginx Self-host)</p>
+            <ul>
+                <li><strong>Mô tả:</strong> Nginx được cấu hình đúng để chuyển tiếp request đến ứng dụng Next.js và xử lý HTTPS (với chứng chỉ SSL hợp lệ).</li>
+                <li><strong>Các bước (Thực hiện trên máy chủ frontend):</strong>
+                    <ol class="test-steps">
+                        <li>Kiểm tra nội dung file cấu hình Nginx cho ứng dụng (ví dụ: <code>/etc/nginx/sites-available/pos.fiveguys.conf</code>). Xác minh <code>server_name</code>, <code>listen</code> (80, 443), <code>proxy_pass</code> (trỏ đúng đến <code>http://localhost:3000</code> hoặc port của Next.js app), cấu hình SSL (<code>ssl_certificate</code>, <code>ssl_certificate_key</code>).</li>
+                        <li>Chạy lệnh <code>sudo nginx -t</code> để kiểm tra cú pháp cấu hình.</li>
+                        <li>Kiểm tra trạng thái dịch vụ Nginx: <code>sudo systemctl status nginx</code>.</li>
+                    </ol>
+                </li>
+                <li><strong>Kết quả mong đợi:</strong> Cấu hình Nginx đúng, cú pháp hợp lệ, dịch vụ đang chạy (active/running). Truy cập qua HTTPS thành công với SSL hợp lệ.</li>
+            </ul>
+        </div>
+        <div class="test-case">
+            <p class="test-case-title">TC_SLF_005: Kiểm tra Sao lưu Tự động CSDL (Self-host)</p>
+            <ul>
+                <li><strong>Mô tả:</strong> Cơ chế sao lưu CSDL PostgreSQL tự động (ví dụ: dùng pg_dump qua cron job) hoạt động đúng.</li>
+                <li><strong>Các bước:</strong>
+                    <ol class="test-steps">
+                        <li>Kiểm tra cấu hình cron job hoặc script sao lưu.</li>
+                        <li>Kiểm tra thư mục lưu trữ bản sao lưu xem có file backup mới được tạo theo lịch không.</li>
+                        <li>(Nâng cao) Thử phục hồi CSDL từ bản sao lưu gần nhất vào một database tạm để kiểm tra tính toàn vẹn.</li>
+                    </ol>
+                </li>
+                <li><strong>Kết quả mong đợi:</strong> Có file backup được tạo đúng lịch. Quá trình phục hồi thử nghiệm thành công.</li>
+            </ul>
+        </div>
+
+        <h4>3.4. Kiểm thử Thiết bị tại Điểm Bán (POS, Tablet)</h4>
+        <div class="test-case">
+            <p class="test-case-title">TC_DEV_001: Kiểm tra Cấu hình "Golden Image" Máy POS</p>
+            <ul>
+                <li><strong>Mô tả:</strong> Máy POS (đã cài từ Golden Image) có HĐH, driver, trình duyệt, Antivirus, Agent quản lý từ xa đúng chuẩn. Trang chủ trình duyệt được đặt là <code>https://qlbh-pthttt2.vercel.app/</code> (hoặc custom domain).</li>
+                <li><strong>Các bước (Thực hiện trên một máy POS mẫu):</strong>
+                    <ol class="test-steps">
+                        <li>Kiểm tra phiên bản HĐH (Windows 10/11 IoT LTSC/Pro).</li>
+                        <li>Kiểm tra các driver thiết bị (touchscreen, card reader, network) đã được cài đặt và hoạt động.</li>
+                        <li>Kiểm tra phiên bản Google Chrome (Enterprise) và các cấu hình (trang chủ mặc định là <code>https://qlbh-pthttt2.vercel.app/</code>, tắt lưu mật khẩu).</li>
+                        <li>Kiểm tra Agent Antivirus (ví dụ: Kaspersky) đang chạy và kết nối server.</li>
+                        <li>Kiểm tra Agent quản lý từ xa (ví dụ: TeamViewer Host) đang chạy.</li>
+                    </ol>
+                </li>
+                <li><strong>Kết quả mong đợi:</strong> Máy POS được cấu hình đúng theo "Golden Image" đã chuẩn bị (Phần III.5, Quyển 3).</li>
+            </ul>
+        </div>
+        <div class="test-case">
+            <p class="test-case-title">TC_DEV_002: Kiểm tra Kết nối Mạng và Truy cập Ứng dụng từ Máy POS/Tablet</p>
+            <ul>
+                <li><strong>Mô tả:</strong> Máy POS/Tablet kết nối thành công vào mạng LAN/Wi-Fi của cửa hàng và truy cập được <code>https://qlbh-pthttt2.vercel.app/</code>.</li>
+                <li><strong>Các bước (Thực hiện trên máy POS/Tablet tại cửa hàng mẫu):</strong>
+                    <ol class="test-steps">
+                        <li>Đảm bảo thiết bị đã kết nối đúng mạng (VLAN POS, Wi-Fi Staff).</li>
+                        <li>Mở trình duyệt, truy cập <code>https://qlbh-pthttt2.vercel.app/</code>.</li>
+                        <li>Thử ping gateway, DNS server, và <code>qlbh-pthttt2.vercel.app</code> từ thiết bị (nếu HĐH cho phép).</li>
+                    </ol>
+                </li>
+                <li><strong>Kết quả mong đợi:</strong> Trang đăng nhập của ứng dụng hiển thị thành công. Kết nối mạng ổn định.</li>
+            </ul>
+        </div>
+        <div class="test-case">
+            <p class="test-case-title">TC_DEV_003: Kiểm tra Hoạt động Thiết bị Ngoại vi</p>
+            <ul>
+                <li><strong>Mô tả:</strong> Máy in hóa đơn, máy quét mã vạch, ngăn kéo đựng tiền, thiết bị thanh toán thẻ kết nối và hoạt động đúng với máy POS (sau khi ứng dụng được cài đặt và có chức năng test).</li>
+                <li><strong>Các bước (Thực hiện trên máy POS có kết nối thiết bị ngoại vi):</strong>
+                    <ol class="test-steps">
+                        <li>(Sau khi có ứng dụng) Thực hiện in thử từ ứng dụng POS.</li>
+                        <li>Quét thử một mã vạch sản phẩm.</li>
+                        <li>Thử mở ngăn kéo đựng tiền qua lệnh từ ứng dụng POS.</li>
+                        <li>Thực hiện một giao dịch thanh toán thẻ thử nghiệm.</li>
+                    </ol>
+                </li>
+                <li><strong>Kết quả mong đợi:</strong> Tất cả thiết bị ngoại vi hoạt động chính xác khi được điều khiển từ ứng dụng POS. (Lưu ý: Một số test này có thể cần đợi đến giai đoạn kiểm thử chức năng ứng dụng).</li>
+            </ul>
+        </div>
+
+        <h4>3.5. Kiểm thử Chức năng Cơ bản của Hệ thống tại <code>https://qlbh-pthttt2.vercel.app/</code></h4>
+        <div class="test-case">
+            <p class="test-case-title">TC_APP_001: Kiểm tra Trang Đăng nhập</p>
+            <ul>
+                <li><strong>Mô tả:</strong> Truy cập <code>https://qlbh-pthttt2.vercel.app/</code> thành công.</li>
+                <li><strong>Các bước (Thực hiện từ máy trạm/POS):</strong>
+                    <ol class="test-steps">
+                        <li>Mở trình duyệt, truy cập <code>https://qlbh-pthttt2.vercel.app/</code>.</li>
+                    </ol>
+                </li>
+                <li><strong>Kết quả mong đợi:</strong> Trang đăng nhập hiển thị đúng giao diện, không có lỗi console trình duyệt.</li>
+            </ul>
+        </div>
+        <div class="test-case">
+            <p class="test-case-title">TC_APP_002: Kiểm tra Đăng ký Tài khoản Mới (Nếu có)</p>
+            <ul>
+                <li><strong>Mô tả:</strong> Tạo tài khoản mới thành công, email xác nhận (nếu có) chứa link đúng.</li>
+                <li><strong>Các bước (Thực hiện từ máy trạm):</strong>
+                    <ol class="test-steps">
+                        <li>Truy cập chức năng tạo/đăng ký tài khoản trên <code>https://qlbh-pthttt2.vercel.app/</code>.</li>
+                        <li>Điền thông tin hợp lệ.</li>
+                        <li>Nhấn nút Tạo/Đăng ký.</li>
+                        <li>Kiểm tra hộp thư email.</li>
+                    </ol>
+                </li>
+                <li><strong>Kết quả mong đợi:</strong> Đăng ký/tạo tài khoản thành công. Email xác nhận (nếu có) chứa link trỏ về <code>https://qlbh-pthttt2.vercel.app/</code> (hoặc custom domain). Tài khoản mới được tạo trong Supabase Auth Users và bảng `profiles`.</li>
+            </ul>
+        </div>
+        <div class="test-case">
+            <p class="test-case-title">TC_APP_003: Kiểm tra Đăng nhập với Tài khoản Hợp lệ</p>
+            <ul>
+                <li><strong>Mô tả:</strong> Đăng nhập thành công vào <code>https://qlbh-pthttt2.vercel.app/</code>.</li>
+                <li><strong>Các bước (Thực hiện từ máy POS/trạm quản lý):</strong>
+                    <ol class="test-steps">
+                        <li>Truy cập <code>https://qlbh-pthttt2.vercel.app/</code>.</li>
+                        <li>Nhập email và mật khẩu hợp lệ.</li>
+                        <li>Nhấn nút Đăng nhập.</li>
+                    </ol>
+                </li>
+                <li><strong>Kết quả mong đợi:</strong> Đăng nhập thành công, chuyển hướng đến trang dashboard/giao diện bán hàng.</li>
+            </ul>
+        </div>
+         <div class="test-case">
+            <p class="test-case-title">TC_APP_004: Kiểm tra Kết nối CSDL (Đọc dữ liệu Menu/Sản phẩm)</p>
+            <ul>
+                <li><strong>Mô tả:</strong> Sau khi đăng nhập vào <code>https://qlbh-pthttt2.vercel.app/</code>, ứng dụng hiển thị dữ liệu từ Supabase.</li>
+                <li><strong>Các bước (Thực hiện từ máy POS/trạm quản lý):</strong>
+                    <ol class="test-steps">
+                        <li>Đăng nhập vào <code>https://qlbh-pthttt2.vercel.app/</code>.</li>
+                        <li>Truy cập màn hình chọn món/quản lý sản phẩm.</li>
+                    </ol>
+                </li>
+                <li><strong>Kết quả mong đợi:</strong> Dữ liệu tải và hiển thị chính xác. Tốc độ chấp nhận được.</li>
+            </ul>
+        </div>
+        <div class="test-case">
+            <p class="test-case-title">TC_APP_005: Kiểm tra Tải lên File (Storage)</p>
+            <ul>
+                <li><strong>Mô tả:</strong> Tải file lên Supabase Storage thành công từ <code>https://qlbh-pthttt2.vercel.app/</code>.</li>
+                <li><strong>Các bước (Thực hiện từ máy trạm quản lý):</strong>
+                    <ol class="test-steps">
+                        <li>Truy cập chức năng quản lý có tải file trên <code>https://qlbh-pthttt2.vercel.app/</code>.</li>
+                        <li>Chọn file hợp lệ và tải lên.</li>
+                        <li>Kiểm tra file hiển thị đúng.</li>
+                        <li>Kiểm tra backend Supabase Storage.</li>
+                    </ol>
+                </li>
+                <li><strong>Kết quả mong đợi:</strong> Tải file thành công, file được lưu trữ.</li>
+            </ul>
+        </div>
+        <div class="test-case">
+            <p class="test-case-title">TC_APP_006: Kiểm tra Chức năng Gửi Email (Xác nhận đăng ký, Quên mật khẩu)</p>
+            <ul>
+                <li><strong>Mô tả:</strong> Hệ thống gửi email thành công từ <code>https://qlbh-pthttt2.vercel.app/</code>.</li>
+                <li><strong>Các bước (Thực hiện từ máy trạm):</strong>
+                    <ol class="test-steps">
+                        <li>Thực hiện chức năng đăng ký hoặc quên mật khẩu trên <code>https://qlbh-pthttt2.vercel.app/</code>.</li>
+                        <li>Kiểm tra hộp thư.</li>
+                    </ol>
+                </li>
+                <li><strong>Kết quả mong đợi:</strong> Nhận email, nội dung và link đúng (trỏ về <code>https://qlbh-pthttt2.vercel.app/</code> hoặc custom domain).</li>
+            </ul>
+        </div>
+
+        <h2>IV. Ghi nhận và Xử lý Kết quả</h2>
+        <ul>
+            <li><strong>Ghi nhận Test Case:</strong> Sử dụng một bảng hoặc công cụ quản lý test case (ví dụ: Google Sheets, Jira, TestRail) để ghi nhận kết quả chi tiết cho từng Test Case. Các thông tin cần ghi nhận bao gồm:
+                <ul>
+                    <li>ID Test Case</li>
+                    <li>Mô tả Test Case</li>
+                    <li>Các bước thực hiện</li>
+                    <li>Kết quả mong đợi</li>
+                    <li>Kết quả thực tế (ghi rõ các sai khác nếu có)</li>
+                    <li>Trạng thái (Pass/Fail)</li>
+                    <li>Người kiểm thử</li>
+                    <li>Ngày kiểm thử</li>
+                    <li>Môi trường kiểm thử (ví dụ: Trình duyệt Chrome trên Windows 10, Máy POS Model X)</li>
+                    <li>Ghi chú (ví dụ: link đến screenshot lỗi, log file)</li>
+                </ul>
+            </li>
+            <li><strong>Báo cáo Lỗi (Bug Reporting):</strong> Nếu một test case bị "Fail", cần tạo một báo cáo lỗi chi tiết. Thông tin trong báo cáo lỗi bao gồm:
+                <ul>
+                    <li>ID Lỗi (duy nhất)</li>
+                    <li>Tiêu đề lỗi (mô tả ngắn gọn vấn đề)</li>
+                    <li>Mô tả chi tiết lỗi (bao gồm các bước để tái hiện lỗi - Steps to Reproduce)</li>
+                    <li>Kết quả thực tế quan sát được</li>
+                    <li>Kết quả mong đợi</li>
+                    <li>Ảnh chụp màn hình hoặc video minh họa lỗi</li>
+                    <li>Thông tin môi trường (HĐH, trình duyệt, phiên bản phần mềm, thiết bị)</li>
+                    <li>Mức độ nghiêm trọng của lỗi (Severity: Critical, High, Medium, Low)</li>
+                    <li>Mức độ ưu tiên sửa lỗi (Priority: Urgent, High, Medium, Low)</li>
+                    <li>Người báo cáo lỗi</li>
+                    <li>Ngày báo cáo</li>
+                </ul>
+            </li>
+            <li><strong>Phân loại và Ưu tiên Lỗi:</strong>
+                <ul>
+                    <li><strong>Severity (Mức độ nghiêm trọng):</strong> Đánh giá ảnh hưởng của lỗi đến hệ thống.
+                        <ul>
+                            <li><em>Critical:</em> Lỗi làm hệ thống không hoạt động, mất dữ liệu, không thể thực hiện chức năng chính.</li>
+                            <li><em>High:</em> Lỗi làm chức năng quan trọng không hoạt động đúng, không có cách giải quyết tạm thời dễ dàng.</li>
+                            <li><em>Medium:</em> Lỗi làm chức năng hoạt động không đúng nhưng có cách giải quyết tạm thời, hoặc lỗi nhỏ ở chức năng không quan trọng.</li>
+                            <li><em>Low:</em> Lỗi nhỏ về giao diện, chính tả, không ảnh hưởng nhiều đến trải nghiệm.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Priority (Mức độ ưu tiên):</strong> Xác định thứ tự sửa lỗi.
+                        <ul>
+                            <li><em>Urgent:</em> Cần sửa ngay lập tức.</li>
+                            <li><em>High:</em> Cần sửa sớm, trước khi release.</li>
+                            <li><em>Medium:</em> Có thể sửa sau nếu không đủ thời gian.</li>
+                            <li><em>Low:</em> Sửa khi có thời gian.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+            <li><strong>Theo dõi và Giao việc Khắc phục Lỗi:</strong>
+                <ul>
+                    <li>Sử dụng công cụ quản lý lỗi để theo dõi trạng thái của từng lỗi (Open, Assigned, In Progress, Resolved, Closed, Reopened).</li>
+                    <li>Giao việc sửa lỗi cho các thành viên hoặc đội ngũ phát triển chịu trách nhiệm.</li>
+                </ul>
+            </li>
+            <li><strong>Kiểm thử lại (Retesting):</strong> Sau khi đội ngũ phát triển thông báo đã sửa lỗi, người kiểm thử cần thực hiện lại các test case bị "Fail" trước đó để xác nhận lỗi đã được khắc phục hoàn toàn.</li>
+            <li><strong>Kiểm thử Hồi quy (Regression Testing):</strong> Sau khi sửa lỗi hoặc thêm chức năng mới, cần thực hiện kiểm thử hồi quy. Điều này bao gồm việc chạy lại các test case đã "Pass" trước đó (đặc biệt là các test case liên quan đến khu vực bị thay đổi) để đảm bảo rằng việc sửa lỗi không gây ra lỗi mới ở các phần khác của hệ thống.</li>
+        </ul>
+
+        <h2>V. Báo cáo Kết quả Kiểm thử</h2>
+        <p>Sau khi hoàn tất quá trình kiểm thử kết nối và cấu hình (bao gồm cả việc kiểm thử lại các lỗi đã sửa), cần lập Báo cáo Kết quả Kiểm thử. Báo cáo này là một phần quan trọng của "Biên bản nghiệm thu cấu hình phần cứng, sơ đồ mạng, và báo cáo kiểm tra cài đặt" theo yêu cầu của Bài 5.</p>
+        <p>Nội dung báo cáo nên bao gồm:</p>
+        <ol>
+            <li><strong>Thông tin chung:</strong>
+                <ul>
+                    <li>Tên dự án: Triển khai Hệ thống Thông tin Quản lý Bán hàng cho Five Guys</li>
+                    <li>Giai đoạn kiểm thử: Kiểm thử Kết nối & Cấu hình Hệ thống (Test với <code>https://qlbh-pthttt2.vercel.app/</code>)</li>
+                    <li>Thời gian thực hiện: [Ngày bắt đầu] - [Ngày kết thúc]</li>
+                    <li>Người thực hiện/Nhóm thực hiện: [Tên người/nhóm]</li>
+                    <li>Phiên bản phần mềm/hệ thống được kiểm thử (nếu có)</li>
+                </ul>
+            </li>
+            <li><strong>Tóm tắt Phạm vi Kiểm thử:</strong>
+                <ul>
+                    <li>Liệt kê các hạng mục chính đã được kiểm thử, ví dụ:
+                        <ul>
+                            <li>Kết nối mạng và DNS resolution cho <code>https://qlbh-pthttt2.vercel.app/</code> và các dịch vụ backend.</li>
+                            <li>Cấu hình Vercel Project (Environment Variables, Domains, Security).</li>
+                            <li>Cấu hình Supabase Project (API, Auth, Database, Storage, SMTP).</li>
+                            <li>Cấu hình môi trường Self-hosting (nếu được kiểm thử như phương án dự phòng).</li>
+                            <li>Cấu hình và kết nối thiết bị tại điểm bán (Máy POS, Tablet).</li>
+                            <li>Chức năng cơ bản của ứng dụng trên <code>https://qlbh-pthttt2.vercel.app/</code> (Đăng nhập, Đăng ký, Đọc dữ liệu, Tải file, Gửi email).</li>
+                        </ul>
+                    </li>
+                    <li>Nêu rõ các hạng mục không thuộc phạm vi kiểm thử lần này (nếu có).</li>
+                </ul>
+            </li>
+            <li><strong>Phương pháp và Công cụ sử dụng:</strong>
+                <ul>
+                    <li>Mô tả ngắn gọn phương pháp kiểm thử (ví dụ: kiểm thử hộp đen, dựa trên checklist).</li>
+                    <li>Liệt kê các công cụ đã sử dụng (Trình duyệt, Developer Tools, <code>nslookup</code>, <code>curl</code>, pgAdmin, Supabase CLI, Vercel CLI, etc.).</li>
+                </ul>
+            </li>
+            <li><strong>Bảng Tổng hợp Kết quả Kiểm thử:</strong>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Hạng mục Kiểm thử</th>
+                            <th>Tổng số Test Case Thực hiện</th>
+                            <th>Số Test Case Pass</th>
+                            <th>Số Test Case Fail</th>
+                            <th>Tỷ lệ Pass (%)</th>
+                            <th>Ghi chú</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Mạng và Kết nối Cơ bản</td>
+                            <td>[Số lượng]</td>
+                            <td>[Số lượng]</td>
+                            <td>[Số lượng]</td>
+                            <td>[Tính toán]</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Môi trường Cloud (Vercel + Supabase)</td>
+                            <td>[Số lượng]</td>
+                            <td>[Số lượng]</td>
+                            <td>[Số lượng]</td>
+                            <td>[Tính toán]</td>
+                            <td></td>
+                        </tr>
+                         <tr>
+                            <td>Môi trường Self-hosting (Nếu test)</td>
+                            <td>[Số lượng]</td>
+                            <td>[Số lượng]</td>
+                            <td>[Số lượng]</td>
+                            <td>[Tính toán]</td>
+                            <td></td>
+                        </tr>
+                         <tr>
+                            <td>Thiết bị tại Điểm Bán</td>
+                            <td>[Số lượng]</td>
+                            <td>[Số lượng]</td>
+                            <td>[Số lượng]</td>
+                            <td>[Tính toán]</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Chức năng Ứng dụng Cơ bản (trên <code>https://qlbh-pthttt2.vercel.app/</code>)</td>
+                            <td>[Số lượng]</td>
+                            <td>[Số lượng]</td>
+                            <td>[Số lượng]</td>
+                            <td>[Tính toán]</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tổng cộng</strong></td>
+                            <td><strong>[Tổng]</strong></td>
+                            <td><strong>[Tổng]</strong></td>
+                            <td><strong>[Tổng]</strong></td>
+                            <td><strong>[Tính toán]</strong></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </li>
+            <li><strong>Danh sách Chi tiết các Lỗi:</strong>
+                <ul>
+                    <li><strong>Các lỗi còn tồn tại (Open Bugs):</strong>
+                        <ul>
+                            <li>ID Lỗi, Tiêu đề, Mức độ nghiêm trọng, Mức độ ưu tiên, Người được giao, Kế hoạch khắc phục dự kiến.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Các lỗi đã được khắc phục và kiểm thử lại thành công (Closed Bugs):</strong>
+                        <ul>
+                            <li>ID Lỗi, Tiêu đề, Ngày khắc phục. (Có thể tham chiếu đến hệ thống quản lý lỗi).</li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+            <li><strong>Đánh giá Chung về Mức độ Sẵn sàng của Hệ thống:</strong>
+                <ul>
+                    <li>Dựa trên số lượng và mức độ nghiêm trọng của các lỗi còn tồn tại, đưa ra nhận định về việc hệ thống (cấu hình kết nối, hạ tầng cơ bản) đã sẵn sàng cho các giai đoạn tiếp theo của dự án (như chuyển đổi dữ liệu, đào tạo người dùng) hay chưa.</li>
+                    <li>Nêu bật các điểm mạnh, các cấu hình đã hoạt động tốt.</li>
+                    <li>Chỉ ra các khu vực còn yếu hoặc cần cải thiện thêm.</li>
+                </ul>
+            </li>
+            <li><strong>Kiến nghị và Đề xuất:</strong>
+                <ul>
+                    <li>Các hành động cần thực hiện ngay để giải quyết các lỗi nghiêm trọng (nếu có).</li>
+                    <li>Các rủi ro tiềm ẩn liên quan đến kết nối, cấu hình cần được theo dõi và quản lý.</li>
+                    <li>Đề xuất cho các hoạt động kiểm thử tiếp theo (ví dụ: kiểm thử chức năng chi tiết, kiểm thử hiệu năng, kiểm thử bảo mật sau khi hệ thống hoàn thiện hơn).</li>
+                    <li>Bất kỳ khuyến nghị nào khác để cải thiện chất lượng và độ ổn định của hệ thống.</li>
+                </ul>
+            </li>
+            <li><strong>Phụ lục (Nếu có):</strong>
+                <ul>
+                    <li>Checklist kiểm thử chi tiết.</li>
+                    <li>Log file quan trọng.</li>
+                    <li>Ảnh chụp màn hình minh họa.</li>
+                </ul>
+            </li>
+        </ol>
+        <p class="important">Việc kiểm thử kỹ lưỡng và ghi nhận đầy đủ ở giai đoạn này là cực kỳ quan trọng để đảm bảo chất lượng và giảm thiểu rủi ro, chi phí khắc phục lỗi ở các giai đoạn sau của dự án triển khai cho Five Guys.</p>
+    </div>
+</body>
+</html>

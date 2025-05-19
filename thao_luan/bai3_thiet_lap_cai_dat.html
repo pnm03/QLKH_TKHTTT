@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 3: Thiết lập Máy chủ, Máy trạm và Cài đặt Phần mềm Hệ thống (Chi tiết)</title>
+    <style>
+        body {
+            font-family: "Times New Roman", Times, serif;
+            line-height: 1.8;
+            margin: 30px;
+            font-size: 13pt;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: auto;
+            background-color: #fff;
+            padding: 20px;
+        }
+        h1, h2, h3, h4 {
+            color: #333;
+        }
+        h1 {
+            border-bottom: 2px solid #0056b3;
+            padding-bottom: 10px;
+            text-align: center;
+            font-size: 18pt;
+            font-weight: bold;
+        }
+        h2 {
+            margin-top: 30px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+            font-size: 16pt;
+            color: #0056b3;
+            font-weight: bold;
+        }
+        h3 {
+            font-size: 14pt;
+            margin-top: 25px;
+            color: #007bff;
+            font-weight: bold;
+        }
+        h4 {
+            font-size: 13pt;
+            margin-top: 20px;
+            font-style: italic;
+            color: #17a2b8;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            margin-bottom: 20px;
+            font-size: 12pt;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            background-color: #e9ecef;
+            font-weight: bold;
+            text-align: center;
+        }
+        ul, ol {
+            margin-left: 40px;
+            margin-bottom: 15px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        .note {
+            background-color: #e7f3fe;
+            border-left: 6px solid #2196F3;
+            padding: 12px;
+            margin: 20px 0;
+            font-style: italic;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border-left: 6px solid #ffc107;
+            padding: 12px;
+            margin: 20px 0;
+        }
+        .important {
+            background-color: #f8d7da;
+            border-left: 6px solid #dc3545;
+            padding: 12px;
+            margin: 20px 0;
+        }
+        .checklist {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .checklist li::before {
+            content: "☐ ";
+            margin-right: 5px;
+            font-weight: bold;
+        }
+        .checklist li.completed::before {
+            content: "☑ ";
+            color: green;
+        }
+        .code-block {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px; /* Tăng padding */
+            border-radius: 4px;
+            font-family: "Courier New", Courier, monospace;
+            white-space: pre-wrap;
+            margin: 15px 0;
+            font-size: 11pt; /* Cỡ chữ nhỏ hơn cho code */
+            overflow-x: auto; /* Thêm thanh cuộn ngang nếu code quá dài */
+        }
+        .header-info {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header-info p {
+            margin: 5px 0;
+            font-size: 14pt;
+        }
+        .config-option {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        .config-option h4 {
+            margin-top: 0;
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-info">
+            <p><strong>Quyển 3: Thực hành triển khai hệ thống thông tin ABC tại doanh nghiệp</strong></p>
+            <p><strong>Bài 5: Thực hành thiết lập cấu hình phần cứng, cài đặt phần mềm, chuyển đổi dữ liệu và đào tạo người sử dụng</strong></p>
+        </div>
+
+        <h1>Bài 3: Thiết lập Máy chủ, Máy trạm và Cài đặt Phần mềm Hệ thống (Chi tiết)</h1>
+
+        <h2>I. Mục tiêu</h2>
+        <ul>
+            <li>Thực hiện cài đặt, cấu hình hạ tầng phần cứng và phần mềm hệ thống theo cấu hình chuẩn đã xác định (Bài 2).</li>
+            <li>Triển khai các thành phần của Hệ thống Thông tin ABC (Next.js Frontend, Supabase Backend) theo phương án đã chọn (Cloud hoặc Self-hosting).</li>
+            <li>Đảm bảo môi trường kỹ thuật sẵn sàng cho việc kiểm thử hệ thống, chuyển đổi dữ liệu và đào tạo người dùng.</li>
+        </ul>
+
+        <h2>II. Chuẩn bị (Checklist)</h2>
+        <ul class="checklist">
+            <li><strong class="completed">☑ Đã có cấu hình chuẩn:</strong> Tài liệu Bài 2 đã được phê duyệt.</li>
+            <li><strong class="completed">☑ Đã có thiết bị/dịch vụ:</strong> Phần cứng đã mua sắm hoặc tài khoản Cloud (Vercel, Supabase) đã đăng ký.</li>
+            <li><strong class="completed">☑ Đã có bộ cài đặt & license:</strong> HĐH, Driver, HQTCSDL (nếu self-host), Node.js, Docker (nếu self-host), mã nguồn ứng dụng ABC, license phần mềm cần thiết.</li>
+            <li><strong class="completed">☑ Đã có kế hoạch IP & tài khoản:</strong> IP tĩnh cho server (nếu self-host), tài khoản quản trị, tài khoản dịch vụ.</li>
+            <li><strong class="completed">☑ Đã có thông tin cấu hình:</strong> Supabase Project URL & Keys (anon, service_role), Site URL, cấu hình SMTP (nếu dùng custom SMTP).</li>
+            <li><strong class="completed">☑ Môi trường vật lý sẵn sàng:</strong> Phòng máy chủ, vị trí máy trạm, hệ thống mạng đã đi dây.</li>
+        </ul>
+
+        <h2>III. Thiết lập và Cài đặt theo Phương án Triển khai</h2>
+
+        <div class="config-option">
+            <h4>Phương án 1: Triển khai Hoàn toàn trên Cloud (Vercel + Supabase Cloud)</h4>
+            <p><strong>Trọng tâm:</strong> Cấu hình dịch vụ Cloud và chuẩn bị môi trường phát triển/triển khai.</p>
+
+            <h4>1. Cấu hình Supabase Cloud Project</h4>
+            <ol>
+                <li><strong>Tạo Project:</strong> Truy cập <a href="https://supabase.com/" target="_blank">supabase.com</a>, đăng nhập và tạo một Project mới. Chọn Region gần với người dùng cuối nhất (ví dụ: Singapore). Chọn gói cước (nên bắt đầu với Pro cho production).</li>
+                <li><strong>Lấy API Keys và URL:</strong>
+                    <ul>
+                        <li>Vào "Project Settings" -> "API".</li>
+                        <li>Lưu lại cẩn thận: <strong>Project URL</strong>, <strong>anon key (public)</strong>, và <strong>service_role key (secret)</strong>.</li>
+                    </ul>
+                </li>
+                <li><strong>Cấu hình Authentication:</strong>
+                    <ul>
+                        <li>Vào "Authentication" -> "Providers": Kích hoạt các nhà cung cấp cần thiết (Email, Google, Facebook,...).</li>
+                        <li>Vào "Authentication" -> "Settings":
+                            <ul>
+                                <li>Đặt <strong>Site URL</strong> thành URL triển khai dự kiến của ứng dụng Next.js (ví dụ: <code>https://abc.yourcompany.com</code>).</li>
+                                <li>Thêm <strong>Additional Redirect URLs</strong> nếu cần (ví dụ: <code>https://abc.yourcompany.com/auth/callback</code>).</li>
+                                <li>Tắt "Enable email confirmation" nếu muốn trong giai đoạn phát triển, nhưng <strong>BẬT LẠI</strong> khi lên production.</li>
+                            </ul>
+                        </li>
+                        <li>Vào "Authentication" -> "Templates": Tùy chỉnh nội dung email (xác nhận, mời, đặt lại mật khẩu) cho phù hợp với thương hiệu công ty.</li>
+                    </ul>
+                </li>
+                <li><strong>Cấu hình Custom SMTP (Khuyến nghị):</strong>
+                    <ul>
+                        <li>Vào "Project Settings" -> "Authentication" -> "SMTP settings".</li>
+                        <li>Điền thông tin SMTP Host, Port, Username, Password của nhà cung cấp dịch vụ email (SendGrid, Mailgun, AWS SES,...).</li>
+                        <li>Đặt Sender Email (ví dụ: <code>noreply@yourcompany.com</code>) và đảm bảo tên miền đã được xác thực với nhà cung cấp SMTP.</li>
+                    </ul>
+                </li>
+                <li><strong>Chạy Database Migrations:</strong>
+                    <ul>
+                        <li>Cài đặt Supabase CLI: <code>npm install supabase --save-dev</code> (hoặc global).</li>
+                        <li>Login: <code>npx supabase login</code>.</li>
+                        <li>Link project: <code>npx supabase link --project-ref [your-project-ref]</code> (lấy project-ref từ URL dashboard).</li>
+                        <li>Áp dụng các migration trong thư mục <code>supabase/migrations</code> của dự án: <code>npx supabase db push</code>.</li>
+                        <li>(Hoặc) Chạy các file SQL tạo bảng, function, policy trực tiếp trong SQL Editor trên Supabase Dashboard. Đảm bảo chạy file <code>supabase-email-config.sql</code> để cấu hình allowlist domain email nếu cần.</li>
+                    </ul>
+                </li>
+                <li><strong>Cấu hình Storage Buckets:</strong>
+                    <ul>
+                        <li>Vào "Storage" -> "Buckets".</li>
+                        <li>Tạo các bucket cần thiết (ví dụ: <code>avatars</code>, <code>product-images</code>).</li>
+                        <li>Thiết lập chính sách truy cập (Policies) cho từng bucket (ví dụ: cho phép public read cho ảnh sản phẩm, yêu cầu xác thực để tải lên avatar).</li>
+                    </ul>
+                </li>
+            </ol>
+
+            <h4>2. Cấu hình Vercel Project</h4>
+            <ol>
+                <li><strong>Kết nối Git Repository:</strong> Truy cập <a href="https://vercel.com/" target="_blank">vercel.com</a>, đăng nhập, chọn "Add New..." -> "Project", kết nối với repository chứa mã nguồn Next.js của bạn (GitHub, GitLab, Bitbucket).</li>
+                <li><strong>Cấu hình Project:</strong> Vercel thường tự động nhận diện Next.js. Kiểm tra lại Build Command (<code>npm run build</code>), Output Directory (<code>.next</code>).</li>
+                <li><strong>Cấu hình Environment Variables:</strong>
+                    <ul>
+                        <li>Vào "Settings" -> "Environment Variables".</li>
+                        <li>Thêm các biến môi trường cần thiết từ file <code>.env.local</code> của bạn:
+                            <ul>
+                                <li><code>NEXT_PUBLIC_SUPABASE_URL</code> (Value: Project URL từ Supabase)</li>
+                                <li><code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> (Value: Anon key từ Supabase)</li>
+                                <li><code>SUPABASE_SERVICE_ROLE_KEY</code> (Value: Service Role Key từ Supabase - <strong>QUAN TRỌNG:</strong> Đánh dấu là Secret)</li>
+                                <li><code>NEXT_PUBLIC_SITE_URL</code> (Value: URL triển khai chính thức)</li>
+                                <li>(Các API keys hoặc biến môi trường khác nếu có)</li>
+                            </ul>
+                        </li>
+                        <li>Chọn môi trường áp dụng (Production, Preview, Development).</li>
+                    </ul>
+                </li>
+                <li><strong>Triển khai (Deploy):</strong> Vercel sẽ tự động build và deploy khi bạn push code lên nhánh chính (ví dụ: main/master) hoặc tạo Pull Request (cho Preview Deployments). Bạn cũng có thể kích hoạt deploy thủ công.</li>
+                <li><strong>Cấu hình Custom Domain:</strong> Vào "Settings" -> "Domains", thêm tên miền của bạn và làm theo hướng dẫn để cấu hình DNS records (A record, CNAME record).</li>
+            </ol>
+        </div>
+
+        <div class="config-option">
+            <h4>Phương án 2: Triển khai Tự quản lý (Self-hosting)</h4>
+            <p><strong>Trọng tâm:</strong> Cài đặt và cấu hình chi tiết trên các máy chủ đã chuẩn bị.</p>
+
+            <h4>1. Thiết lập Máy chủ Backend (Chạy Supabase Components)</h4>
+            <p class="note">Khuyến nghị sử dụng Linux (Ubuntu Server LTS) và Docker/Docker Compose theo hướng dẫn chính thức của Supabase.</p>
+            <ol>
+                <li><strong>Cài đặt Hệ điều hành & Cấu hình Cơ bản:</strong>
+                    <ul>
+                        <li>Thực hiện các bước 1-4 trong Mục III của file này (Lắp đặt phần cứng, Cài HĐH Linux, Cài Driver & Cập nhật, Cấu hình IP tĩnh).</li>
+                    </ul>
+                </li>
+                <li><strong>Cài đặt Docker & Docker Compose:</strong>
+                    <div class="code-block">
+# Ví dụ cho Ubuntu
+sudo apt update
+sudo apt install -y apt-transport-https ca-certificates curl software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt update
+sudo apt install -y docker-ce docker-ce-cli containerd.io
+sudo systemctl start docker
+sudo systemctl enable docker
+
+# Cài Docker Compose (kiểm tra phiên bản mới nhất trên trang chủ Docker)
+DOCKER_COMPOSE_VERSION=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+sudo curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+docker-compose --version
+                    </div>
+                </li>
+                <li><strong>Chuẩn bị Mã nguồn Supabase Self-hosting:</strong>
+                    <div class="code-block">
+git clone --depth 1 https://github.com/supabase/supabase
+cd supabase/docker
+cp .env.example .env
+# Mở file .env và chỉnh sửa các thông số quan trọng
+# Đặc biệt là các giá trị POSTGRES_PASSWORD, JWT_SECRET, ANON_KEY, SERVICE_ROLE_KEY
+# Nên tạo các giá trị secret mạnh mẽ, ngẫu nhiên
+# Ví dụ tạo secret: openssl rand -base64 32
+nano .env
+                    </div>
+                </li>
+                <li><strong>Cấu hình Volumes và Network (Nếu cần):</strong> Đảm bảo Docker có quyền ghi vào các thư mục được ánh xạ làm volume cho PostgreSQL data, Storage,...</li>
+                <li><strong>Khởi chạy Supabase Stack:</strong>
+                    <div class="code-block">
+docker-compose pull # Tải các image mới nhất (tùy chọn)
+docker-compose up -d # Khởi chạy các container ở chế độ detached
+                    </div>
+                </li>
+                <li><strong>Kiểm tra Trạng thái Containers:</strong>
+                    <div class="code-block">
+docker-compose ps
+# Hoặc
+docker ps
+                    </div>
+                    <p>Đảm bảo tất cả các container (db, kong, gotrue, realtime, storage,...) đều đang ở trạng thái "Up".</p>
+                </li>
+                <li><strong>Cấu hình Firewall Máy chủ Backend:</strong> Mở các port cần thiết mà Kong gateway (mặc định 8000) và các dịch vụ khác sử dụng. Tham khảo file <code>docker-compose.yml</code>.</li>
+                <li><strong>Lấy API Keys và URL:</strong> Các giá trị <code>ANON_KEY</code>, <code>SERVICE_ROLE_KEY</code> được định nghĩa trong file <code>.env</code>. URL sẽ là địa chỉ IP hoặc tên miền của máy chủ backend này, kèm theo port của Kong (ví dụ: <code>http://[server_ip]:8000</code>).</li>
+                <li><strong>Chạy Database Migrations:</strong>
+                    <ul>
+                        <li>Kết nối vào container PostgreSQL: <code>docker-compose exec db psql -U postgres</code></li>
+                        <li>Sao chép nội dung các file SQL migration và chạy chúng.</li>
+                        <li>Chạy nội dung file <code>supabase-email-config.sql</code> nếu cần.</li>
+                    </ul>
+                </li>
+                <li><strong>Cấu hình Sao lưu (Backup):</strong> <strong class="warning">Rất quan trọng!</strong> Thiết lập cron job hoặc script để thực hiện sao lưu PostgreSQL database (dùng <code>pg_dump</code>) và dữ liệu trong Storage volume định kỳ và lưu trữ ở nơi an toàn.</li>
+            </ol>
+
+            <h4>2. Thiết lập Máy chủ Frontend (Chạy Next.js App)</h4>
+            <ol>
+                <li><strong>Cài đặt Hệ điều hành & Cấu hình Cơ bản:</strong>
+                    <ul>
+                        <li>Thực hiện các bước 1-4 trong Mục III của file này (Lắp đặt, Cài HĐH Linux/Windows, Driver & Cập nhật, Cấu hình IP tĩnh).</li>
+                    </ul>
+                </li>
+                <li><strong>Cài đặt Node.js và npm/yarn:</strong>
+                    <div class="code-block">
+# Ví dụ cho Ubuntu (sử dụng NodeSource)
+curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+sudo apt-get install -y nodejs
+node -v
+npm -v
+# Cài yarn (tùy chọn)
+# sudo npm install --global yarn
+# yarn --version
+                    </div>
+                </li>
+                <li><strong>Sao chép Mã nguồn Ứng dụng ABC:</strong>
+                    <div class="code-block">
+# Ví dụ dùng Git
+git clone [your-repository-url] /var/www/abc-app
+cd /var/www/abc-app
+                    </div>
+                </li>
+                <li><strong>Cài đặt Dependencies:</strong>
+                    <div class="code-block">
+npm install
+# hoặc
+# yarn install
+                    </div>
+                </li>
+                 <li><strong>Tạo file <code>.env.local</code>:</strong>
+                    <div class="code-block">
+cp .env.example .env.local
+nano .env.local
+# Điền các giá trị biến môi trường
+# NEXT_PUBLIC_SUPABASE_URL=http://[IP_máy_chủ_backend]:8000
+# NEXT_PUBLIC_SUPABASE_ANON_KEY=[Giá trị anon key từ file .env của backend]
+# SUPABASE_SERVICE_ROLE_KEY=[Giá trị service role key từ file .env của backend]
+# NEXT_PUBLIC_SITE_URL=http://[Tên miền hoặc IP của máy chủ frontend]
+# ... các biến khác
+                    </div>
+                 </li>
+                <li><strong>Build Ứng dụng Next.js:</strong>
+                    <div class="code-block">
+npm run build
+# hoặc
+# yarn build
+                    </div>
+                </li>
+                <li><strong>Cài đặt Trình quản lý Tiến trình (PM2):</strong>
+                    <div class="code-block">
+sudo npm install pm2 -g
+pm2 startup # Tạo script khởi động cùng hệ thống
+# Chạy ứng dụng Next.js với PM2
+pm2 start npm --name "abc-app" -- start
+pm2 save # Lưu lại danh sách process
+pm2 list # Kiểm tra trạng thái
+                    </div>
+                    <p>(Script <code>start</code> trong <code>package.json</code> thường là <code>next start</code>)</p>
+                </li>
+                <li><strong>Cài đặt và Cấu hình Reverse Proxy (Nginx):</strong>
+                    <div class="code-block">
+sudo apt update
+sudo apt install -y nginx
+sudo nano /etc/nginx/sites-available/abc-app.conf
+                    </div>
+                    <p>Nội dung file <code>abc-app.conf</code> (ví dụ):</p>
+                    <div class="code-block">
+server {
+    listen 80;
+    server_name your-domain.com www.your-domain.com; # Thay bằng tên miền hoặc IP
+
+    location / {
+        proxy_pass http://localhost:3000; # Port mặc định của Next.js
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    # Cấu hình cache cho static assets (tùy chọn)
+    location ~* \.(?:css|js|jpg|jpeg|gif|png|ico|svg|woff|woff2|ttf|eot)$ {
+        proxy_pass http://localhost:3000;
+        proxy_cache_bypass $http_upgrade;
+        expires 1y;
+        add_header Cache-Control "public";
+    }
+}
+                    </div>
+                    <div class="code-block">
+sudo ln -s /etc/nginx/sites-available/abc-app.conf /etc/nginx/sites-enabled/
+sudo nginx -t # Kiểm tra cấu hình
+sudo systemctl restart nginx
+                    </div>
+                </li>
+                <li><strong>Cấu hình Firewall Máy chủ Frontend:</strong> Mở port 80 (HTTP) và 443 (HTTPS nếu có).</li>
+                <li><strong>Cấu hình SSL/TLS (HTTPS) với Let's Encrypt (Khuyến nghị):</strong>
+                    <div class="code-block">
+sudo apt install certbot python3-certbot-nginx
+sudo certbot --nginx -d your-domain.com -d www.your-domain.com # Thay bằng tên miền
+# Tự động gia hạn: certbot renew --dry-run (kiểm tra)
+                    </div>
+                </li>
+            </ol>
+        </div>
+
+        <div class="config-option">
+            <h4>Phương án 3: Triển khai Lai ghép (Hybrid)</h4>
+            <p>Thực hiện kết hợp các bước của Phương án 1 và Phương án 2 tùy thuộc vào thành phần nào được đặt trên Cloud và thành phần nào Self-host.</p>
+            <p class="warning"><strong>Lưu ý quan trọng:</strong> Cần đảm bảo kết nối mạng ổn định và an toàn giữa các thành phần trên Cloud và Self-host. Cấu hình firewall cẩn thận để cho phép traffic cần thiết giữa chúng.</p>
+        </div>
+
+        <h2>V. Thiết lập Máy trạm</h2>
+        <p>Quy trình thiết lập máy trạm tương đối giống nhau cho các phương án triển khai server.</p>
+        <ol>
+            <li><strong>Cài đặt Hệ điều hành (Windows 10/11 Pro):</strong> Cài đặt sạch, đặt tên máy, join domain (nếu có).</li>
+            <li><strong>Cài đặt Driver & Cập nhật HĐH:</strong> Đảm bảo driver đầy đủ và Windows Update mới nhất.</li>
+            <li><strong>Cấu hình Mạng:</strong> Thường nhận IP động từ DHCP. Kiểm tra kết nối.</li>
+            <li><strong>Cài đặt Phần mềm Cơ bản:</strong>
+                <ul>
+                    <li>Trình duyệt web (Chrome, Edge - phiên bản mới nhất).</li>
+                    <li>Microsoft Office / Google Workspace tools.</li>
+                    <li>Phần mềm đọc PDF.</li>
+                    <li>Bộ gõ tiếng Việt.</li>
+                    <li>Phần mềm diệt virus (quản lý tập trung nếu có).</li>
+                    <li>Các phần mềm phụ trợ khác nếu ứng dụng ABC yêu cầu (hiếm khi cần cho ứng dụng web hiện đại).</li>
+                </ul>
+            </li>
+            <li><strong>Kiểm tra Truy cập Hệ thống ABC:</strong> Mở trình duyệt, truy cập vào URL của hệ thống ABC (URL Vercel hoặc URL self-host đã cấu hình). Đảm bảo trang web tải thành công.</li>
+            <li><strong>Thiết lập Máy in, Scanner (nếu cần).</strong></li>
+        </ol>
+
+        <h2>VI. Ghi chú Quan trọng</h2>
+        <ul>
+            <li><strong>Tài liệu hóa:</strong> Ghi chép lại mọi bước cấu hình, thông số, tài khoản, mật khẩu. Sử dụng trình quản lý mật khẩu an toàn.</li>
+            <li><strong>Kiểm tra chéo:</strong> Nên có người khác kiểm tra lại các bước cấu hình quan trọng.</li>
+            <li><strong>Phiên bản:</strong> Luôn ghi rõ phiên bản của HĐH, Node.js, Docker, HQTCSDL,... đã cài đặt.</li>
+            <li><strong>Bảo mật:</strong> Áp dụng các nguyên tắc bảo mật ngay từ đầu (mật khẩu mạnh, firewall, cập nhật,...).</li>
+        </ul>
+
+        <p class="important">Sau khi hoàn thành các bước trên, hệ thống đã sẵn sàng về mặt kỹ thuật cho "Bài 4: Kiểm thử Kết nối và Cấu hình Hệ thống".</p>
+
+    </div>
+</body>
+</html>

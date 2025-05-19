@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Chi tiết Ca kiểm thử và Kết quả - Quản lý Đơn hàng</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.4; /* Adjusted for better Word compatibility */
+            margin: 20px;
+            color: #000; /* Basic black for Word */
+        }
+        h1, h2 {
+            color: #000; /* Basic black */
+            border-bottom: 1px solid #000; /* Simple border */
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+        h1 {
+            text-align: center;
+            font-size: 18pt; /* Common Word font size */
+        }
+        h2 {
+            font-size: 14pt; /* Common Word font size */
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            border: 1px solid #000; /* Ensure table borders are visible */
+        }
+        th, td {
+            border: 1px solid #000; /* Standard black border for all cells */
+            padding: 8px; /* Standard padding */
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            background-color: #f0f0f0; /* Light grey, common for headers */
+            font-weight: bold;
+        }
+        tr.group-header td {
+            background-color: #d9d9d9; /* Slightly darker grey for group headers */
+            font-weight: bold;
+            padding: 10px 8px;
+        }
+        .note {
+            font-style: italic;
+            color: #333;
+            margin-bottom: 15px;
+            padding: 8px;
+            background-color: #f9f9f9;
+            border-left: 3px solid #555;
+        }
+    </style>
+</head>
+<body>
+    <h1>Chi tiết Ca kiểm thử và Kết quả - Quản lý Đơn hàng</h1>
+
+    <h2>CA KIỂM THỬ VÀ KẾT QUẢ</h2>
+    <p class="note">Dự án: Hệ thống Quản lý Bán hàng</p>
+    <p class="note">Chức năng: Quản lý Đơn hàng (Tạo đơn hàng, Tìm kiếm đơn hàng)</p>
+    <p class="note">Hướng dẫn: Điền kết luận sau khi thực hiện mỗi ca kiểm thử con.</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Test Case ID</th>
+                <th>Tên ca kiểm thử</th>
+                <th>Các bước kiểm thử</th>
+                <th>Dữ liệu kiểm thử</th>
+                <th>Kết quả mong đợi</th>
+                <th>Kết luận</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Group: Quản lý sản phẩm trong hóa đơn -->
+            <tr class="group-header"><td>CO_001 - CO_004: Quản lý sản phẩm trong hóa đơn (Thêm, Số lượng, Giảm giá, Xóa)</td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr>
+                <td>CO_001.1</td>
+                <td>Thêm sản phẩm từ kết quả tìm kiếm</td>
+                <td>Nhập từ khóa tìm kiếm sản phẩm. -> Click vào một sản phẩm trong danh sách kết quả.</td>
+                <td>Từ khóa: "Áo", Sản phẩm: "Áo Thun Nam Trắng" (có tồn kho > 0)</td>
+                <td>Sản phẩm "Áo Thun Nam Trắng" được thêm vào hóa đơn hiện tại với số lượng = 1, giảm giá = 0 và thành tiền = đơn giá. Tổng tiền hóa đơn được cập nhật.</td>
+                <td>Đạt</td>
+            </tr>
+            <tr>
+                <td>CO_002.2</td>
+                <td>Giảm số lượng sản phẩm thành công (min 1)</td>
+                <td>Thêm sản phẩm vào hóa đơn với số lượng > 1. -> Nhập số lượng mới nhỏ hơn số lượng hiện tại nhưng lớn hơn hoặc bằng 1.</td>
+                <td>Sản phẩm: "Giày Sneaker Đen", Số lượng hiện tại: 5, Số lượng mới: 2.</td>
+                <td>Số lượng sản phẩm cập nhật thành 2. Thành tiền của sản phẩm và tổng tiền hóa đơn được cập nhật.</td>
+                <td>Đạt</td>
+            </tr>
+            <tr>
+                <td>CO_003.1</td>
+                <td>Thử thay đổi giảm giá sản phẩm</td>
+                <td>Thêm sản phẩm vào hóa đơn. -> Thử nhập giá trị vào ô "Giảm giá".</td>
+                <td>Bất kỳ sản phẩm nào.</td>
+                <td>Ô "Giảm giá" bị vô hiệu hóa (disabled). Không thể nhập giá trị vào ô này.</td>
+                <td>Đạt</td>
+            </tr>
+            <!-- Group: Quản lý nhiều hóa đơn -->
+            <tr class="group-header"><td>CO_005: Quản lý nhiều hóa đơn (Tabs)</td><td></td><td></td><td></td><td></td><td></td></tr>
+             <tr>
+                <td>CO_005.1</td>
+                <td>Tạo hóa đơn mới</td>
+                <td>Click vào nút "+".</td>
+                <td>N/A</td>
+                <td>Một tab hóa đơn mới với tên "Hóa đơn X" (X là số tiếp theo) được tạo. Tab mới được chọn làm hóa đơn hiện tại. Danh sách sản phẩm trống.</td>
+                <td>Đạt</td>
+            </tr>
+            <tr>
+                <td>CO_005.4</td>
+                <td>Thử xóa hóa đơn cuối cùng</td>
+                <td>Đảm bảo chỉ còn 1 hóa đơn. -> Click vào biểu tượng "X" trên tab hóa đơn đó.</td>
+                <td>Chỉ còn 1 hóa đơn "Hóa đơn 1".</td>
+                <td>Một thông báo (alert) hiện ra với nội dung "Không thể xóa hóa đơn cuối cùng". Hóa đơn không bị xóa.</td>
+                <td>Đạt</td>
+            </tr>
+            <!-- Group: Thêm và cập nhật ghi chú đơn hàng -->
+            <tr class="group-header"><td>CO_006: Thêm và cập nhật ghi chú đơn hàng</td><td></td><td></td><td></td><td></td><td></td></tr>
+             <tr>
+                <td>CO_006.1</td>
+                <td>Thêm ghi chú vào hóa đơn</td>
+                <td>Nhập văn bản vào ô "Ghi chú đơn hàng".</td>
+                <td>Văn bản ghi chú: "Gói cẩn thận, giao gấp"</td>
+                <td>Văn bản được nhập vào ô ghi chú. Ghi chú được lưu trong state của hóa đơn hiện tại.</td>
+                <td>Đạt</td>
+            </tr>
+            <!-- Group: Quản lý khách hàng trong đơn hàng -->
+            <tr class="group-header"><td>CO_007 - CO_008: Quản lý khách hàng trong đơn hàng (Tìm, Chọn, Xóa)</td><td></td><td></td><td></td><td></td><td></td></tr>
+             <tr>
+                <td>CO_007.1</td>
+                <td>Tìm kiếm và chọn khách hàng theo tên</td>
+                <td>Nhập từ khóa tìm kiếm khách hàng. -> Chọn một khách hàng từ danh sách kết quả.</td>
+                <td>Từ khóa: "Nguyễn", Chọn khách hàng "Nguyễn Văn A".</td>
+                <td>Thông tin của khách hàng "Nguyễn Văn A" (tên, SĐT, email, địa chỉ) hiển thị trong phần thông tin khách hàng. Khách hàng này được gán cho hóa đơn hiện tại.</td>
+                <td>Đạt</td>
+            </tr>
+            <tr>
+                <td>CO_007.4</td>
+                <td>Tìm kiếm không có kết quả</td>
+                <td>Nhập từ khóa tìm kiếm không tồn tại.</td>
+                <td>Từ khóa: "Khách Hàng Không Tồn Tại 123"</td>
+                <td>Danh sách kết quả tìm kiếm khách hàng trống.</td>
+                <td>Đạt</td>
+            </tr>
+            <tr>
+                <td>CO_008.1</td>
+                <td>Xóa khách hàng đã chọn</td>
+                <td>Chọn một khách hàng cho hóa đơn hiện tại. -> Click vào biểu tượng "X" bên cạnh thông tin khách hàng.</td>
+                <td>Khách hàng A đã được chọn.</td>
+                <td>Thông tin khách hàng bị xóa khỏi phần thông tin khách hàng. Hóa đơn hiện tại không còn gán khách hàng nào (customer = null).</td>
+                <td>Đạt</td>
+            </tr>
+            <!-- Group: Thêm khách hàng mới (Modal) -->
+            <tr class="group-header"><td>CO_009: Thêm khách hàng mới (Modal)</td><td></td><td></td><td></td><td></td><td></td></tr>
+             <tr>
+                <td>CO_009.1</td>
+                <td>Mở modal thêm khách hàng mới</td>
+                <td>Click vào biểu tượng "+" bên cạnh ô tìm kiếm khách hàng.</td>
+                <td>N/A</td>
+                <td>Modal "Thêm khách hàng mới" hiển thị. Các trường nhập trống.</td>
+                <td>Đạt</td>
+            </tr>
+            <tr>
+                <td>CO_009.4</td>
+                <td>Thêm khách hàng mới - Thiếu số điện thoại</td>
+                <td>Mở modal thêm khách hàng mới. -> Để trống trường "Số điện thoại". -> Điền các trường khác hợp lệ. -> Click nút "Thêm khách hàng".</td>
+                <td>Tên: "Nguyễn Văn Test 3", Email: "testnew3@example.com"</td>
+                <td>Modal không đóng. Thông báo lỗi "Số điện thoại không được để trống" hiển thị dưới trường "Số điện thoại".</td>
+                <td>Đạt</td>
+            </tr>
+            <tr>
+                <td>CO_009.7</td>
+                <td>Thêm khách hàng mới - Email không hợp lệ</td>
+                <td>Mở modal thêm khách hàng mới. -> Điền email không đúng định dạng. -> Điền các trường khác hợp lệ. -> Click nút "Thêm khách hàng".</td>
+                <td>Tên: "Nguyễn Văn Test 6", SĐT: "0987654326", Email: "invalid-email"</td>
+                <td>Modal không đóng. Thông báo lỗi "Email không hợp lệ" hiển thị dưới trường "Email".</td>
+                <td>Đạt</td>
+            </tr>
+            <tr>
+                <td>CO_009.10</td>
+                <td>Hủy thêm khách hàng mới (Modal)</td>
+                <td>Mở modal thêm khách hàng mới. -> Click nút "Hủy".</td>
+                <td>N/A</td>
+                <td>Modal đóng lại. Không có khách hàng mới nào được thêm hoặc gán cho hóa đơn.</td>
+                <td>Đạt</td>
+            </tr>
+            <!-- Group: Luồng Bán hàng nhanh -->
+            <tr class="group-header"><td>CO_010 - CO_011: Luồng Bán hàng nhanh (Happy path, Edge cases)</td><td></td><td></td><td></td><td></td><td></td></tr>
+             <tr>
+                <td>CO_010.1</td>
+                <td>Mở popup Bán hàng nhanh</td>
+                <td>Thêm ít nhất 1 sản phẩm vào hóa đơn. -> Click nút "Bán hàng nhanh".</td>
+                <td>Hóa đơn có sản phẩm.</td>
+                <td>Popup "Thanh toán nhanh" hiển thị. Hiển thị danh sách hóa đơn, tổng tiền cần trả. Trường "Khách thanh toán" mặc định bằng tổng tiền.</td>
+                <td>Đạt</td>
+            </tr>
+            <tr>
+                <td>CO_010.4</td>
+                <td>Nhập số tiền khách trả lớn hơn tổng tiền</td>
+                <td>Mở popup Bán hàng nhanh. -> Nhập số tiền khách trả lớn hơn giá trị "Khách cần trả".</td>
+                <td>Tổng tiền cần trả: 500,000 VND, Nhập "600000" vào ô "Khách thanh toán".</td>
+                <td>Phần "Tiền thừa trả khách" hiển thị 100,000 VND.</td>
+                <td>Đạt</td>
+            </tr>
+            <tr>
+                <td>CO_010.7</td>
+                <td>Xác nhận thanh toán thành công</td>
+                <td>Mở popup Xác nhận thanh toán. -> Click nút "Xác nhận thanh toán".</td>
+                <td>Dữ liệu hợp lệ (đã kiểm tra CO_010.5).</td>
+                <td>Popup "Xác nhận thanh toán" đóng. Hiển thị thông báo thành công. Popup "In hóa đơn" hiển thị. Hóa đơn hiện tại được reset (sản phẩm trống, khách hàng trống).</td>
+                <td>Đạt</td>
+            </tr>
+            <tr>
+                <td>CO_011.2</td>
+                <td>Bán hàng nhanh - Tồn kho không đủ</td>
+                <td>Thêm sản phẩm A có tồn kho 10 vào Hóa đơn 1 với SL 8. -> Thêm sản phẩm A có tồn kho 10 vào Hóa đơn 2 với SL 4. -> Chuyển về Hóa đơn 1. -> Click nút "Bán hàng nhanh".</td>
+                <td>SP A (Tồn kho 10): Hóa đơn 1 (SL 8), Hóa đơn 2 (SL 4). Tổng cần 12.</td>
+                <td>Thông báo (alert) hiển thị cảnh báo không đủ tồn kho cho SP A. Popup không mở.</td>
+                <td>Đạt</td>
+            </tr>
+            <!-- Group: Luồng Tạo đơn gửi đi -->
+            <tr class="group-header"><td>CO_012 - CO_013: Luồng Tạo đơn gửi đi (Happy path, Edge cases)</td><td></td><td></td><td></td><td></td><td></td></tr>
+             <tr>
+                <td>CO_012.1</td>
+                <td>Mở popup Tạo đơn gửi đi</td>
+                <td>Thêm ít nhất 1 sản phẩm vào hóa đơn. -> Click nút "Tạo đơn gửi đi".</td>
+                <td>Hóa đơn có sản phẩm, chưa chọn khách hàng.</td>
+                <td>Popup "Tạo đơn gửi đi" hiển thị. Thông tin người nhận trống.</td>
+                <td>Đạt</td>
+            </tr>
+            <tr>
+                <td>CO_012.4</td>
+                <td>Tạo đơn gửi đi - Thanh toán khi nhận (COD)</td>
+                <td>Mở popup Tạo đơn gửi đi. -> Điền đủ thông tin người nhận và gói hàng. -> KHÔNG chọn phương thức thanh toán nào. -> Tích chọn "Thu hộ tiền (COD)". -> Click nút "Gửi đơn hàng".</td>
+                <td>Người nhận: Đủ info. Gói hàng: Đủ info. PTTT: None. COD: TRUE. Trả trước: 0.</td>
+                <td>Không hiển thị popup xác nhận thanh toán (hoặc hiển thị xác nhận COD). Đơn hàng được tạo với trạng thái "Chưa thanh toán", thông tin vận chuyển được lưu với COD.</td>
+                <td>Đạt</td>
+            </tr>
+            <tr>
+                <td>CO_012.7</td>
+                <td>Xác nhận Gửi đơn hàng thành công</td>
+                <td>Thực hiện các bước để hiển thị popup Xác nhận thanh toán cho đơn gửi đi (ví dụ: CO_012.3). -> Click nút "Xác nhận thanh toán".</td>
+                <td>Dữ liệu hợp lệ cho đơn gửi đi (đã kiểm tra CO_012.3).</td>
+                <td>Popup Xác nhận đóng. Thông báo thành công hiển thị. Popup "In hóa đơn" hiển thị. Hóa đơn hiện tại được reset. Order, OrderDetails, Shipping được tạo trong DB.</td>
+                <td>Đạt</td>
+            </tr>
+            <tr>
+                <td>CO_013.4</td>
+                <td>Tạo đơn gửi đi - Không chọn PTTT và không COD</td>
+                <td>Mở popup Tạo đơn gửi đi. -> Điền đủ thông tin người nhận và gói hàng. -> KHÔNG chọn phương thức thanh toán nào. -> KHÔNG tích chọn "Thu hộ tiền (COD)". -> Click nút "Gửi đơn hàng".</td>
+                <td>Người nhận: Đủ info. Gói hàng: Đủ info. PTTT: None. COD: FALSE. Trả trước: < Tổng.</td>
+                <td>Thông báo (alert) hiển thị "Vui lòng chọn phương thức thanh toán hoặc tích chọn thu hộ tiền (COD)". Popup Xác nhận không mở.</td>
+                <td>Đạt</td>
+            </tr>
+             <tr>
+                <td>CO_013.6</td>
+                <td>Tạo đơn gửi đi - Trả trước toàn bộ, không COD, có PTTT</td>
+                <td>Mở popup Tạo đơn gửi đi. -> Điền đủ thông tin. -> Nhập số tiền trả trước >= tổng tiền. -> Chọn 1 PTTT. -> KHÔNG tích chọn COD.  -> Click "Gửi đơn hàng".</td>
+                <td>Người nhận: Đủ info. Gói hàng: Đủ info. PTTT: Tiền mặt. COD: FALSE. Trả trước: 500,000 (Tổng 500,000).</td>
+                <td>Popup Xác nhận thanh toán hiển thị. Tổng tiền hiển thị là 500,000. Khách trả trước 500,000. Số tiền còn lại 0. Xác nhận xong, Order status là 'Đã thanh toán', shipping cod = false.</td>
+                <td>Đạt</td>
+            </tr>
+            <!-- Group: Kiểm tra tính toán tổng tiền -->
+            <tr class="group-header"><td>CO_014: Kiểm tra tính toán tổng tiền</td><td></td><td></td><td></td><td></td><td></td></tr>
+             <tr>
+                <td>CO_014.1</td>
+                <td>Tính tổng tiền khi thêm sản phẩm</td>
+                <td>Thêm 1 sản phẩm A (Đơn giá 100k). -> Thêm 1 sản phẩm B (Đơn giá 200k).</td>
+                <td>SP A: Đơn giá 100k, SL 1, Giảm giá 0. SP B: Đơn giá 200k, SL 1, Giảm giá 0.</td>
+                <td>Tổng tiền hàng = 300k, Giảm giá = 0, Khách cần trả = 300k.</td>
+                <td>Đạt</td>
+            </tr>
+             <!-- Group: Kiểm tra UI/UX cơ bản (Tạo đơn hàng) -->
+            <tr class="group-header"><td>CO_015: Kiểm tra UI/UX cơ bản (Tạo đơn hàng)</td><td></td><td></td><td></td><td></td><td></td></tr>
+             <tr>
+                <td>CO_015.1</td>
+                <td>Hiển thị giao diện cơ bản</td>
+                <td>Mở trang "Tạo đơn hàng".</td>
+                <td>N/A</td>
+                <td>Giao diện trang hiển thị đầy đủ các phần: ô tìm kiếm sản phẩm, các tab hóa đơn, danh sách sản phẩm trống ban đầu, thông tin khách hàng, ghi chú, tổng tiền và nút hành động.</td>
+                <td>Đạt</td>
+            </tr>
+            <tr>
+                <td>CO_015.4</td>
+                <td>Hiển thị thông báo thành công</td>
+                <td>Hoàn thành thành công một hành động (ví dụ: thêm khách hàng, thanh toán).</td>
+                <td>Thành công.</td>
+                <td>Thông báo thành công (toast) hiển thị ở góc trên bên phải màn hình, sau đó tự động biến mất.</td>
+                <td>Đạt</td>
+            </tr>
+
+            <!-- Group: Tìm kiếm và Lọc đơn hàng -->
+            <tr class="group-header"><td>SO_001 - SO_004: Tìm kiếm và Lọc đơn hàng (Theo từ khóa, trạng thái, ngày, kết hợp)</td><td></td><td></td><td></td><td></td><td></td></tr>
+             <tr>
+                <td>SO_001.1</td>
+                <td>Tìm kiếm đơn hàng theo mã đơn hàng chính xác</td>
+                <td>Nhập mã đơn hàng đầy đủ vào ô tìm kiếm. -> Nhấn Enter hoặc click nút tìm kiếm.</td>
+                <td>Mã đơn hàng: "ORD-20231027-ABCDE"</td>
+                <td>Kết quả hiển thị duy nhất đơn hàng có mã "ORD-20231027-ABCDE". Tổng số đơn hàng hiển thị là 1.</td>
+                <td>Đạt</td>
+            </tr>
+            <tr>
+                <td>SO_001.4</td>
+                <td>Tìm kiếm đơn hàng theo tên khách hàng (từ shippings)</td>
+                <td>Nhập tên khách hàng vào ô tìm kiếm. -> Nhấn Enter hoặc click nút tìm kiếm.</td>
+                <td>Tên khách hàng: "Trần Thị B" (tên người nhận trong đơn ship, không có trong customers)</td>
+                <td>Kết quả hiển thị tất cả đơn hàng ship có tên người nhận "Trần Thị B".</td>
+                <td>Đạt</td>
+            </tr>
+            <tr>
+                <td>SO_001.7</td>
+                <td>Xóa từ khóa tìm kiếm (quay về trạng thái ban đầu)</td>
+                <td>Nhập từ khóa có kết quả. -> Xóa toàn bộ nội dung trong ô tìm kiếm. -> Nhấn Enter hoặc click nút tìm kiếm (hoặc đợi debounce).</td>
+                <td>Từ khóa ban đầu: "Áo"</td>
+                <td>Danh sách đơn hàng hiển thị lại dữ liệu ban đầu (tất cả hoặc theo bộ lọc khác).</td>
+                <td>Đạt</td>
+            </tr>
+            <tr>
+                <td>SO_002.3</td>
+                <td>Lọc theo trạng thái "Tất cả trạng thái"</td>
+                <td>Chọn "Tất cả trạng thái" từ dropdown trạng thái. -> Nhấn Enter hoặc click nút tìm kiếm (hoặc đợi useEffect).</td>
+                <td>Trạng thái: "all"</td>
+                <td>Danh sách đơn hàng hiển thị tất cả các đơn hàng bất kể trạng thái.</td>
+                <td>Đạt</td>
+            </tr>
+            <tr>
+                <td>SO_003.3</td>
+                <td>Lọc theo khoảng ngày</td>
+                <td>Chọn ngày bắt đầu và ngày kết thúc.</td>
+                <td>Từ ngày: 2023-10-15, Đến ngày: 2023-10-20</td>
+                <td>Danh sách đơn hàng chỉ hiển thị các đơn hàng có ngày đặt trong khoảng từ 2023-10-15 đến 2023-10-20.</td>
+                <td>Đạt</td>
+            </tr>
+            <tr>
+                <td>SO_004.2</td>
+                <td>Kết hợp tìm kiếm từ khóa và lọc khoảng ngày</td>
+                <td>Nhập từ khóa. -> Chọn khoảng ngày. -> Nhấn Enter hoặc click nút tìm kiếm.</td>
+                <td>Từ khóa: "Nguyễn", Từ ngày: 2023-10-01, Đến ngày: 2023-10-31</td>
+                <td>Danh sách đơn hàng chỉ hiển thị các đơn hàng có tên khách hàng chứa "Nguyễn" VÀ có ngày đặt trong tháng 10/2023.</td>
+                <td>Đạt</td>
+            </tr>
+            <!-- Group: Xem chi tiết đơn hàng -->
+            <tr class="group-header"><td>SO_005 - SO_007: Xem chi tiết đơn hàng (Modal, Shipping, Không KH)</td><td></td><td></td><td></td><td></td><td></td></tr>
+             <tr>
+                <td>SO_005.1</td>
+                <td>Mở modal xem chi tiết đơn hàng</td>
+                <td>Click vào một dòng trong danh sách đơn hàng.</td>
+                <td>Một đơn hàng bất kỳ trong danh sách.</td>
+                <td>Modal "Chi tiết đơn hàng" hiển thị. Hiển thị thông tin chung của đơn hàng.</td>
+                <td>Đạt</td>
+            </tr>
+            <tr>
+                <td>SO_005.4</td>
+                <td>Đóng modal xem chi tiết đơn hàng (click ngoài)</td>
+                <td>Mở modal xem chi tiết đơn hàng. -> Click ra ngoài vùng modal (trên lớp overlay mờ).</td>
+                <td>N/A</td>
+                <td>Modal đóng lại. Quay về danh sách đơn hàng.</td>
+                <td>Đạt</td>
+            </tr>
+            <tr>
+                <td>SO_007.1</td>
+                <td>Xem chi tiết đơn hàng không có khách hàng (Vãng lai)</td>
+                <td>Mở modal xem chi tiết một đơn hàng có thuộc tính `customer_id` là null.</td>
+                <td>Đơn hàng có `customer_id = null`.</td>
+                <td>Phần thông tin khách hàng hiển thị "Khách hàng: Khách vãng lai". Các thông tin chi tiết khác (SĐT, Email, Địa chỉ từ bảng customers) không hiển thị.</td>
+                <td>Đạt</td>
+            </tr>
+             <!-- Group: Quản lý hiển thị danh sách -->
+            <tr class="group-header"><td>SO_008 - SO_009: Quản lý hiển thị danh sách (Phân trang, Số dòng)</td><td></td><td></td><td></td><td></td><td></td></tr>
+             <tr>
+                <td>SO_008.1</td>
+                <td>Chuyển sang trang kế tiếp</td>
+                <td>Đảm bảo có đủ đơn hàng để có nhiều hơn 1 trang. -> Click nút "Trang sau" hoặc số trang kế tiếp (ví dụ: từ 1 sang 2).</td>
+                <td>Có 20 đơn hàng, hiển thị 10 dòng/trang. Đang ở trang 1. Click nút "Trang sau".</td>
+                <td>Danh sách đơn hàng hiển thị các đơn hàng từ dòng 11 đến 20. Số trang hiện tại cập nhật thành 2.</td>
+                <td>Đạt</td>
+            </tr>
+             <tr>
+                <td>SO_009.1</td>
+                <td>Thay đổi số dòng hiển thị</td>
+                <td>Chọn một giá trị khác từ dropdown "Hiển thị".</td>
+                <td>Đang hiển thị 10 dòng. Chọn "20 dòng".</td>
+                <td>Số lượng dòng hiển thị trong bảng thay đổi thành 20. Số trang hiển thị (pagination) được cập nhật lại. Nếu đang ở trang > 1, có thể quay về trang 1.</td>
+                <td>Đạt</td>
+            </tr>
+             <!-- Group: Xuất đơn hàng ra PDF -->
+            <tr class="group-header"><td>SO_010: Xuất đơn hàng ra PDF</td><td></td><td></td><td></td><td></td><td></td></tr>
+             <tr>
+                <td>SO_010.1</td>
+                <td>Xuất đơn hàng ra PDF thành công</td>
+                <td>Click vào biểu tượng "Xuất PDF" trên một dòng đơn hàng bất kỳ.</td>
+                <td>Một đơn hàng có sản phẩm và thông tin khách hàng/shipping.</td>
+                <td>Hiển thị toast "Đang xuất...". Sau đó hiển thị toast "Đã xuất thành công!". File PDF được tải về máy tính với tên <code>Hoa_Don_[orderId].pdf</code>. Nội dung PDF khớp với thông tin đơn hàng (Header, KH/Shipping, Chi tiết SP, Tổng tiền, Chữ ký).</td>
+                <td>Đạt</td>
+            </tr>
+             <!-- Group: Xử lý trạng thái trống/dữ liệu mẫu -->
+            <tr class="group-header"><td>SO_011: Xử lý trạng thái trống/dữ liệu mẫu</td><td></td><td></td><td></td><td></td><td></td></tr>
+             <tr>
+                <td>SO_011.1</td>
+                <td>Hiển thị nút "Tạo dữ liệu mẫu"</td>
+                <td>Đảm bảo không có đơn hàng nào trong cơ sở dữ liệu hoặc kết quả tìm kiếm trống.</td>
+                <td>DB trống đơn hàng.</td>
+                <td>Bảng danh sách đơn hàng trống. Hiển thị dòng "Không tìm thấy đơn hàng nào" và nút "Tạo dữ liệu mẫu".</td>
+                <td>Đạt</td>
+            </tr>
+             <!-- Group: Kiểm tra UI/UX cơ bản (Tìm kiếm đơn hàng) -->
+            <tr class="group-header"><td>SO_012: Kiểm tra UI/UX cơ bản (Tìm kiếm đơn hàng)</td><td></td><td></td><td></td><td></td><td></td></tr>
+             <tr>
+                <td>SO_012.1</td>
+                <td>Hiển thị giao diện cơ bản</td>
+                <td>Mở trang "Tìm kiếm đơn hàng".</td>
+                <td>N/A</td>
+                <td>Giao diện hiển thị đầy đủ các phần: bộ lọc (tìm kiếm, trạng thái, ngày), bảng danh sách đơn hàng, và phân trang (nếu có đơn hàng).</td>
+                <td>Đạt</td>
+            </tr>
+            <tr>
+                <td>SO_012.4</td>
+                <td>Kiểm tra hiển thị trạng thái vận chuyển</td>
+                <td>Tìm kiếm các đơn hàng có và không có vận chuyển.</td>
+                <td>Đơn hàng có `is_shipping = true` và `is_shipping = false`.</td>
+                <td>Cột "Vận chuyển" hiển thị icon xe tải và chữ "Có" cho đơn hàng ship, icon xe tải và chữ "Không" cho đơn hàng không ship.</td>
+                <td>Đạt</td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>

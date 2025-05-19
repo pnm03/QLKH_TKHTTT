@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sơ đồ Mạng Doanh nghiệp Đề xuất (POS System Focus)</title>
+    <!-- Include Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            font-family: "Times New Roman", Times, serif;
+            line-height: 1.8;
+            margin: 30px;
+            font-size: 13pt;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px; /* Adjust width if needed */
+            margin: auto;
+            background-color: #fff;
+            padding: 40px;
+        }
+        h1, h2, h3 {
+            color: #000;
+        }
+        h1 {
+            border-bottom: 2px solid #0056b3;
+            padding-bottom: 10px;
+            text-align: center;
+            font-size: 18pt;
+            font-weight: bold;
+        }
+        h2 {
+            margin-top: 30px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+            font-size: 16pt;
+            color: #0056b3;
+            font-weight: bold;
+        }
+        h3 {
+            font-size: 14pt;
+            margin-top: 25px;
+            color: #007bff;
+            font-weight: bold;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 20px;
+            margin-bottom: 15px;
+        }
+        li {
+            margin-bottom: 8px;
+            position: relative;
+            padding-left: 25px;
+        }
+        li::before {
+            content: "-";
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+        .note {
+            background-color: #e7f3fe;
+            border-left: 6px solid #2196F3;
+            padding: 12px;
+            margin: 20px 0;
+            font-style: italic;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border-left: 6px solid #ffc107;
+            padding: 12px;
+            margin: 20px 0;
+        }
+        .mermaid-code-block {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: "Courier New", Courier, monospace;
+            white-space: pre; /* Keep code formatting */
+            margin: 25px 0;
+            font-size: 9pt; /* Smaller font for complex code */
+            overflow-x: auto; /* Add horizontal scroll for long code */
+        }
+        .legend dt {
+            font-weight: bold;
+            margin-top: 15px;
+        }
+        .legend dd {
+            margin-left: 30px;
+            margin-bottom: 8px;
+        }
+        .ip-example {
+            font-family: "Courier New", Courier, monospace;
+            background-color: #f0f0f0;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 12pt;
+        }
+        .device-config {
+            margin-left: 20px;
+            margin-bottom: 15px;
+            border-left: 3px solid #007bff;
+            padding-left: 15px;
+        }
+        .device-config strong {
+            color: #0056b3;
+        }
+        .header-info {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header-info p {
+            margin: 5px 0;
+            font-size: 14pt;
+        }
+        /* Font Awesome icons styling within Mermaid */
+        .mermaid .fas {
+            margin-right: 5px; /* Add some space after the icon */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-info">
+            <p><strong>Quyển 3: Thực hành triển khai hệ thống thông tin ABC tại doanh nghiệp</strong></p>
+            <p><strong>Bài 5: Thực hành thiết lập cấu hình phần cứng, cài đặt phần mềm, chuyển đổi dữ liệu và đào tạo người sử dụng</strong></p>
+        </div>
+
+        <h1>Sơ đồ Mạng Doanh nghiệp Đề xuất (Chi tiết - Tập trung POS)</h1>
+
+        <h2>I. Tổng quan Kiến trúc</h2>
+        <p>Sơ đồ mạng này mô tả một kiến trúc mạng doanh nghiệp toàn diện, bao gồm các khu vực chức năng chính như mạng Campus (mạng nội bộ văn phòng), Data Center, Vùng DMZ và Biên mạng, kết nối WAN/SD-WAN, các Dịch vụ Lõi và thành phần Bảo mật & Giám sát. Kiến trúc này được thiết kế để đảm bảo hiệu năng, độ tin cậy, khả năng mở rộng và bảo mật cao, đặc biệt tập trung vào việc vận hành Hệ thống Quản lý Bán hàng (POS) và các hệ thống liên quan.</p>
+
+        <h2>II. Mô hình Mạng Tổng thể (Mã Mermaid)</h2>
+        <p>Dưới đây là mã nguồn Mermaid mô tả kiến trúc mạng đề xuất, bao gồm các biểu tượng Font Awesome. Sao chép mã này và sử dụng công cụ hỗ trợ Mermaid để xem sơ đồ trực quan.</p>
+        <div class="mermaid-code-block">---
+config:
+  layout: dagre
+  theme: mc
+---
+flowchart LR
+  %% 1. Campus Network (Access → Distribution → Core)
+  subgraph Campus["<i class='fas fa-network-wired'></i> Campus Network"]
+    direction TB
+    subgraph Access["<i class='fas fa-plug'></i> Access Layer (L2 PoE, 802.1X, VLANs theo BP)"]
+      A1["<i class='fas fa-ethernet'></i> Switch L2 PoE Chung"]
+      AP["<i class='fas fa-wifi'></i> Wi-Fi AP Chung"]
+      SalesSW["<i class='fas fa-cash-register'></i> Switch BP. Bán hàng (VLAN_POS_Terminals, VLAN_Sales_Office)"]
+      POSTerminals["<i class='fas fa-desktop'></i> POS Terminals & Peripherals"]
+      CS_SW["<i class='fas fa-headset'></i> Switch BP. CSKH"]
+      WarehouseSW["<i class='fas fa-warehouse'></i> Switch BP. Kho (VLAN_Inventory_Management)"]
+      KitchenSW["<i class='fas fa-utensils'></i> Switch BP. Bếp"]
+      LogisticsSW["<i class='fas fa-truck'></i> Switch BP. Vận chuyển"]
+      OrderSW["<i class='fas fa-file-invoice'></i> Switch BP. Đơn hàng (VLAN_Order_Processing)"]
+
+      A1 --> AP
+      POSTerminals --> SalesSW
+      SalesSW --> D1
+      CS_SW --> D1
+      WarehouseSW --> D1
+      KitchenSW --> D1
+      LogisticsSW --> D1
+      OrderSW --> D1
+      A1 --> D1
+    end
+    subgraph Dist["<i class='fas fa-layer-group'></i> Distribution Layer (L3, MLAG/VRF, Inter-VLAN Routing)"]
+      D1["<i class='fas fa-route'></i> Switch L3 / MLAG, ACLs/QoS"]
+      %% Connections from Access Layer switches are defined above
+    end
+    subgraph Core["<i class='fas fa-server'></i> Core Layer (40/100G Backbone)"]
+      C1["<i class='fas fa-network-wired'></i> Core Router/Switch"]
+      D1 --> C1
+    end
+  end
+
+  %% 2. Data Center Fabric (Spine-Leaf)
+  subgraph DC["<i class='fas fa-database'></i> Data Center Fabric"]
+    direction TB
+    subgraph Spine["<i class='fas fa-project-diagram'></i> Spine Switches"]
+      S1["<i class='fas fa-random'></i> Spine-1"]
+      S2["<i class='fas fa-random'></i> Spine-2"]
+    end
+    subgraph Leaf["<i class='fas fa-leaf'></i> Leaf Switches"]
+      L1_POS_DB["<i class='fas fa-database'></i> Leaf-1 (POS DB Server, VLAN_POS_DB)"]
+      L_Storage["<i class='fas fa-hdd'></i> Storage Network (SAN/NAS for POS DB)"]
+      L2_POS_App["<i class='fas fa-server'></i> Leaf-2 (POS App Servers, VLAN_POS_App_Servers)"]
+      L3["<i class='fas fa-server'></i> Leaf-3 (Other Apps/Services)"]
+    end
+    S1 --- L1_POS_DB; S1 --- L_Storage; S1 --- L2_POS_App; S1 --- L3
+    S2 --- L1_POS_DB; S2 --- L_Storage; S2 --- L2_POS_App; S2 --- L3
+    L1_POS_DB --- L_Storage
+  end
+
+  %% 3. Perimeter & DMZ
+  subgraph DMZ["<i class='fas fa-shield-alt'></i> Perimeter & DMZ"]
+    Internet["<i class='fas fa-cloud'></i> Internet"] --> FW1
+    FW1["<i class='fas fa-fire-alt'></i> External Firewall"]
+    WAF["<i class='fas fa-shield-virus'></i> Web Application Firewall"]
+    FW2["<i class='fas fa-fire'></i> Internal Firewall"]
+    Web_POS_Portal["<i class='fas fa-globe'></i> Web Servers (POS Mgmt Portal/API)"]
+    App["<i class='fas fa-cogs'></i> App Servers (Other MIS)"]
+    VPN["<i class='fas fa-user-secret'></i> Remote Access VPN"]
+
+    FW1 --> WAF
+    WAF --> Web_POS_Portal
+    FW1 --> App; FW1 --> VPN
+    Web_POS_Portal --> FW2
+    App --> FW2; VPN --> FW2
+    FW2 --> C1
+    FW2 --> L2_POS_App
+    %% Cho phép traffic từ internal FW đến POS App Server
+  end
+
+  %% 4. Enterprise WAN & SD-WAN
+  subgraph WAN["<i class='fas fa-satellite-dish'></i> Enterprise WAN (SD-WAN)"]
+    Hub["<i class='fas fa-building'></i> SD-WAN Hub @ HQ (Connects to Core & DC)"]
+    MPLS["<i class='fas fa-route'></i> MPLS Core"]
+    BB["<i class='fas fa-wifi'></i> Broadband Primary"]
+    LTE["<i class='fas fa-broadcast-tower'></i> LTE/5G Backup"]
+    BE["<i class='fas fa-map-marker-alt'></i> Branch Edge NGFW (Connects Branch POS to HQ)"]
+
+    Hub --- MPLS; Hub --- BB; Hub --- LTE
+    BE --- MPLS; BE --- BB; BE --- LTE
+    BE --> C1
+    %% Hoặc kết nối an toàn trực tiếp vào DC qua FW
+  end
+
+  %% 5. Core Services
+  subgraph Services["<i class='fas fa-concierge-bell'></i> Core Services"]
+    DNS["<i class='fas fa-network-wired'></i> Anycast DNS Cluster"]
+    DHCP["<i class='fas fa-random'></i> Distributed DHCP Cluster (Serves VLAN_POS_Terminals etc.)"]
+    NTP["<i class='fas fa-clock'></i> NTP Server (Time Sync for POS)"]
+    GSLB["<i class='fas fa-globe-americas'></i> Global Server Load Balancer (For multi-site POS Portal)"]
+    ADC["<i class='fas fa-balance-scale-right'></i> Local ADCs (For POS App Servers)"]
+    NSX["<i class='fas fa-object-group'></i> Micro-segmentation (Enforces POS VLAN policies)"]
+
+    DNS --> DHCP; DNS --> GSLB; DNS --> NTP
+    GSLB --> ADC
+    ADC --> L2_POS_App
+    DHCP --> D1
+    %% DHCP requests from Access Layer via Distribution
+    NTP --> D1
+    %% NTP for devices in Campus
+    NTP --> L2_POS_App; NTP --> L1_POS_DB
+    %% NTP for Servers
+    NSX -.-> L2_POS_App; NSX -.-> L1_POS_DB; NSX -.-> SalesSW
+  end
+
+  %% 6. Security & Monitoring
+  subgraph Sec["<i class='fas fa-user-shield'></i> Security & Monitoring"]
+    SIEM["<i class='fas fa-search'></i> SIEM & NDR (Collects POS Logs)"]
+    IPS["<i class='fas fa-shield-virus'></i> IDS/IPS Sensors (Monitors POS traffic)"]
+    PKI["<i class='fas fa-key'></i> PKI & RADIUS/MFA (For POS Admin Access, 802.1X)"]
+    QoS["<i class='fas fa-traffic-light'></i> QoS Policies (Prioritize POS Traffic)"]
+    ZTP["<i class='fas fa-magic'></i> Zero-Touch Provisioning"]
+    VMS["<i class='fas fa-bug'></i> Vulnerability Management System"]
+
+    SIEM --- IPS; SIEM --- FW1; SIEM --- FW2
+    PKI --> A1; PKI --> SalesSW
+    QoS --> D1
+    ZTP --> D1
+    SIEM --- DNS
+    VMS --> L1_POS_DB; VMS --> L2_POS_App; VMS --> POSTerminals
+  end
+
+  %% Styles
+  classDef subgraphStyle fill:#f9f9f9,stroke:#ccc,stroke-width:1px,rx:6,ry:6
+  class Campus,DC,DMZ,WAN,Services,Sec subgraphStyle
+
+  %% Highlight POS deployment nodes
+  classDef pos_highlight fill:#fff8e1,stroke:#ff6f00,stroke-width:3px;
+  class POSTerminals,SalesSW,WarehouseSW,OrderSW,L1_POS_DB,L_Storage,L2_POS_App,Web_POS_Portal,ADC,BE pos_highlight
+
+  class App mis
+  %% Giữ lại highlight cho MIS cũ nếu vẫn liên quan
+  class L1 mis
+  class Web mis
+        </div>
+        <p class="note"><strong>Cách sử dụng mã Mermaid:</strong> Sao chép toàn bộ nội dung trong khối code trên (bắt đầu từ <code>flowchart LR</code>) và dán vào một trình biên dịch Mermaid online (ví dụ: <a href="https://mermaid.live/" target="_blank">https://mermaid.live/</a>) hoặc các ứng dụng hỗ trợ như Obsidian, Typora để xem sơ đồ trực quan.</p>
+
+        <h2>III. Mô tả Chi tiết các Khu vực Chức năng</h2>
+
+        <h3>1. Mạng Campus (<i class='fas fa-network-wired'></i> Campus Network)</h3>
+        <ul>
+            <li><strong>Mục đích:</strong> Cung cấp kết nối mạng cho người dùng cuối và các thiết bị tại văn phòng/cửa hàng.</li>
+            <li><strong>Kiến trúc 3 lớp (Access - Distribution - Core):</strong>
+                <ul>
+                    <li><strong>Access Layer (<i class='fas fa-plug'></i>):</strong> Gồm các Switch Layer 2 PoE (<i class='fas fa-ethernet'></i>) cho từng bộ phận (Bán hàng <i class='fas fa-cash-register'></i>, CSKH <i class='fas fa-headset'></i>, Kho <i class='fas fa-warehouse'></i>, Bếp <i class='fas fa-utensils'></i>, Vận chuyển <i class='fas fa-truck'></i>, Đơn hàng <i class='fas fa-file-invoice'></i>) và các switch chung. Hỗ trợ 802.1X và phân chia VLAN theo bộ phận (VLAN_POS_Terminals, VLAN_Sales_Office, VLAN_Inventory_Management, VLAN_Order_Processing,...). Kết nối trực tiếp đến POS Terminals (<i class='fas fa-desktop'></i>), máy trạm, máy in, và AP Wi-Fi (<i class='fas fa-wifi'></i>).</li>
+                    <li><strong>Distribution Layer (<i class='fas fa-layer-group'></i>):</strong> Gồm các Switch Layer 3 (<i class='fas fa-route'></i>) thực hiện định tuyến giữa các VLAN, áp dụng ACLs/QoS. Có thể dùng MLAG/VRF để tăng khả năng chịu lỗi. Tập hợp kết nối từ các Access Switch.</li>
+                    <li><strong>Core Layer (<i class='fas fa-server'></i>):</strong> Lớp lõi tốc độ cao (<i class='fas fa-network-wired'></i>), kết nối Distribution Layer với Data Center, Perimeter và WAN.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>2. Data Center Fabric (<i class='fas fa-database'></i>)</h3>
+        <ul>
+            <li><strong>Mục đích:</strong> Hạ tầng mạng hiệu năng cao cho máy chủ.</li>
+            <li><strong>Kiến trúc Spine-Leaf:</strong>
+                <ul>
+                    <li><strong>Spine Switches (<i class='fas fa-project-diagram'></i>):</strong> Lớp lõi DC (<i class='fas fa-random'></i>).</li>
+                    <li><strong>Leaf Switches (<i class='fas fa-leaf'></i>):</strong> Kết nối Spine và các thiết bị DC. Bao gồm Leaf cho POS DB Server (<i class='fas fa-database'></i> L1_POS_DB), POS App Server (<i class='fas fa-server'></i> L2_POS_App), Storage Network (<i class='fas fa-hdd'></i> L_Storage), và các dịch vụ khác (<i class='fas fa-server'></i> L3).</li>
+                </ul>
+            </li>
+            <li><strong>Storage Network (<i class='fas fa-hdd'></i>):</strong> Mạng lưu trữ riêng (SAN/NAS) cho CSDL POS, kết nối vào Leaf Switches.</li>
+        </ul>
+
+         <h3>3. Vùng Biên và DMZ (<i class='fas fa-shield-alt'></i> Perimeter & DMZ)</h3>
+        <ul>
+            <li><strong>Mục đích:</strong> Bảo vệ mạng nội bộ và cung cấp vùng an toàn cho dịch vụ công cộng.</li>
+            <li><strong>Thành phần:</strong>
+                <ul>
+                    <li><strong>Internet (<i class='fas fa-cloud'></i>)</strong></li>
+                    <li><strong>External Firewall (<i class='fas fa-fire-alt'></i>):</strong> Lọc traffic từ Internet.</li>
+                    <li><strong>Web Application Firewall (WAF <i class='fas fa-shield-virus'></i>):</strong> Bảo vệ các ứng dụng web (POS Portal/API).</li>
+                    <li><strong>Internal Firewall (<i class='fas fa-fire'></i>):</strong> Kiểm soát traffic giữa DMZ và mạng nội bộ/DC.</li>
+                    <li><strong>Web Servers (<i class='fas fa-globe'></i> Web_POS_Portal):</strong> Chạy POS Management Portal/API trong DMZ, sau WAF.</li>
+                    <li><strong>App Servers (<i class='fas fa-cogs'></i> App):</strong> Các máy chủ ứng dụng khác (MIS).</li>
+                    <li><strong>Remote Access VPN (<i class='fas fa-user-secret'></i>):</strong> Cho phép truy cập từ xa an toàn.</li>
+                </ul>
+            </li>
+            <li><strong>Kết nối:</strong> Internal Firewall kết nối đến Core Network (C1) và Data Center (L2_POS_App).</li>
+        </ul>
+
+        <h3>4. Mạng WAN Doanh nghiệp (<i class='fas fa-satellite-dish'></i> Enterprise WAN & SD-WAN)</h3>
+        <ul>
+            <li><strong>Mục đích:</strong> Kết nối HQ và chi nhánh.</li>
+            <li><strong>Công nghệ SD-WAN:</strong>
+                <ul>
+                    <li><strong>SD-WAN Hub @ HQ (<i class='fas fa-building'></i>):</strong> Trung tâm điều khiển tại HQ, kết nối Core và DC.</li>
+                    <li><strong>Branch Edge NGFW (<i class='fas fa-map-marker-alt'></i>):</strong> Thiết bị SD-WAN/Firewall tại chi nhánh, kết nối POS tại chi nhánh về HQ.</li>
+                    <li><strong>Đường truyền (<i class='fas fa-route'></i> MPLS, <i class='fas fa-wifi'></i> BB, <i class='fas fa-broadcast-tower'></i> LTE/5G):</strong> Sử dụng đa dạng đường truyền.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>5. Dịch vụ Lõi (<i class='fas fa-concierge-bell'></i> Core Services)</h3>
+        <ul>
+            <li><strong>Mục đích:</strong> Cung cấp các dịch vụ mạng nền tảng.</li>
+            <li><strong>Thành phần:</strong>
+                <ul>
+                    <li><strong>DNS Cluster (<i class='fas fa-network-wired'></i>):</strong> Phân giải tên miền (Anycast).</li>
+                    <li><strong>DHCP Cluster (<i class='fas fa-random'></i>):</strong> Cấp phát IP (phục vụ VLAN_POS_Terminals,...). Kết nối đến Distribution Layer.</li>
+                    <li><strong>NTP Server (<i class='fas fa-clock'></i>):</strong> Đồng bộ thời gian cho POS và các server khác.</li>
+                    <li><strong>GSLB (<i class='fas fa-globe-americas'></i>):</strong> Cân bằng tải toàn cầu (nếu có nhiều site POS Portal).</li>
+                    <li><strong>ADCs (<i class='fas fa-balance-scale-right'></i>):</strong> Cân bằng tải cục bộ cho POS App Servers. Kết nối vào DC Leaf.</li>
+                    <li><strong>Micro-segmentation (NSX <i class='fas fa-object-group'></i>):</strong> (Nâng cao) Phân đoạn mạng chi tiết trong DC và Campus, thực thi chính sách cho POS VLAN.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>6. Bảo mật và Giám sát (<i class='fas fa-user-shield'></i> Security & Monitoring)</h3>
+        <ul>
+            <li><strong>Mục đích:</strong> Đảm bảo an toàn và giám sát hệ thống.</li>
+            <li><strong>Thành phần:</strong>
+                <ul>
+                    <li><strong>SIEM & NDR (<i class='fas fa-search'></i>):</strong> Thu thập log (bao gồm POS logs), phân tích và phát hiện bất thường mạng. Kết nối đến DNS, IPS, Firewalls.</li>
+                    <li><strong>IDS/IPS Sensors (<i class='fas fa-shield-virus'></i>):</strong> Giám sát traffic POS và các luồng quan trọng khác.</li>
+                    <li><strong>PKI & RADIUS/MFA (<i class='fas fa-key'></i>):</strong> Xác thực truy cập quản trị POS, xác thực 802.1X cho mạng Campus. Kết nối đến Access Layer.</li>
+                    <li><strong>QoS Policies (<i class='fas fa-traffic-light'></i>):</strong> Ưu tiên traffic POS tại Distribution Layer.</li>
+                    <li><strong>ZTP (<i class='fas fa-magic'></i>):</strong> (Tùy chọn) Tự động cấu hình thiết bị mạng mới.</li>
+                    <li><strong>Vulnerability Management System (VMS <i class='fas fa-bug'></i>):</strong> Quét lỗ hổng định kỳ trên server và POS terminals.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h2>IV. Phân đoạn Mạng và Địa chỉ IP (Ví dụ)</h2>
+        <p>Việc quy hoạch địa chỉ IP và VLAN cần được thực hiện chi tiết dựa trên kiến trúc này. Cần bổ sung các VLAN mới được xác định trong sơ đồ:</p>
+        <ul>
+            <li>VLAN_POS_Terminals</li>
+            <li>VLAN_Sales_Office</li>
+            <li>VLAN_Inventory_Management</li>
+            <li>VLAN_Order_Processing</li>
+            <li>VLAN_CSKH</li>
+            <li>VLAN_Kitchen</li>
+            <li>VLAN_Logistics</li>
+            <li>VLAN_POS_DB (trong DC)</li>
+            <li>VLAN_POS_App_Servers (trong DC)</li>
+            <li>VLAN_DMZ_Web</li>
+            <li>VLAN_DMZ_App</li>
+            <li>VLAN_VPN_Users</li>
+            <li>Các VLAN cho từng chi nhánh (nếu có)</li>
+        </ul>
+        <p class="warning">Cần lập bảng quy hoạch IP chi tiết cho tất cả các VLAN này, bao gồm Dải IP, Subnet Mask, Gateway, và DHCP Scope (nếu có).</p>
+
+        <h2>V. Luồng Dữ liệu và Bảo mật</h2>
+        <p>Luồng dữ liệu chính liên quan đến POS:</p>
+        <ul>
+            <li><strong>Giao dịch POS:</strong> POS Terminal (VLAN_POS_Terminals) -> SalesSW -> Dist SW -> Core SW -> Internal FW -> ADC -> Leaf SW (L2_POS_App) -> POS App Server -> Leaf SW (L1_POS_DB) -> POS DB Server.</li>
+            <li><strong>Truy cập Portal Quản lý POS từ Internet:</strong> Internet -> External FW -> WAF -> Web_POS_Portal (DMZ) -> Internal FW -> ADC -> Leaf SW (L2_POS_App) -> POS App Server.</li>
+            <li><strong>Kết nối từ POS Chi nhánh về HQ:</strong> Branch POS -> Branch Edge -> (WAN/SD-WAN) -> SD-WAN Hub -> Core SW -> Internal FW -> ... (tương tự luồng nội bộ).</li>
+            <li><strong>Bảo mật:</strong> ACLs/Firewall rules kiểm soát chặt chẽ truy cập giữa các VLAN (đặc biệt là VLAN POS), DMZ và mạng nội bộ. WAF bảo vệ web portal. IDS/IPS giám sát traffic. Xác thực 802.1X và MFA tăng cường bảo mật truy cập. Micro-segmentation (NSX) cung cấp lớp bảo vệ sâu hơn. VMS quét lỗ hổng. SIEM/NDR giám sát log và hành vi.</li>
+        </ul>
+
+        <h2>VI. Khuyến nghị Công cụ Vẽ Sơ đồ</h2>
+        <p>Sử dụng các công cụ như Microsoft Visio, draw.io, Lucidchart để vẽ sơ đồ chi tiết dựa trên mã Mermaid và mô tả ở trên.</p>
+
+    </div>
+    <!-- Script for Mermaid -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>mermaid.initialize({startOnLoad:true});</script>
+</body>
+</html>

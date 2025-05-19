@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ca kiểm thử và kết quả</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        .section-title {
+            margin-top: 30px;
+            margin-bottom: 15px;
+            color: #3498db;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+        }
+        .pass {
+            color: green;
+            font-weight: bold;
+        }
+        .fail {
+            color: red;
+            font-weight: bold;
+        }
+        ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Ca kiểm thử và kết quả</h1>
+    
+    <h2 class="section-title">1. Chức năng "Tạo đơn hàng" (Trong Bán hàng)</h2>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Test Case ID</th>
+                <th>Tên ca kiểm thử</th>
+                <th>Các bước kiểm thử</th>
+                <th>Dữ liệu kiểm thử</th>
+                <th>Kết quả mong đợi</th>
+                <th>Kết quả thực tế</th>
+                <th>Kết luận</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>TC-CO-01</td>
+                <td>Kiểm tra giao diện chức năng "Tạo đơn hàng"</td>
+                <td>
+                    <ol>
+                        <li>Đăng nhập vào hệ thống</li>
+                        <li>Truy cập vào menu "Bán hàng"</li>
+                        <li>Chọn "Tạo đơn hàng"</li>
+                    </ol>
+                </td>
+                <td>Tài khoản đăng nhập hợp lệ</td>
+                <td>
+                    <ul>
+                        <li>Hiển thị giao diện tạo đơn hàng</li>
+                        <li>Có ô tìm kiếm sản phẩm</li>
+                        <li>Có ô tìm kiếm khách hàng</li>
+                        <li>Có bảng hiển thị sản phẩm đã chọn</li>
+                        <li>Có nút "Tạo đơn gửi đi" và "Bán hàng nhanh"</li>
+                    </ul>
+                </td>
+                <td>
+                    <ul>
+                        <li>Giao diện tạo đơn hàng hiển thị đầy đủ</li>
+                        <li>Ô tìm kiếm sản phẩm hiển thị với placeholder "Tìm hàng hóa"</li>
+                        <li>Ô tìm kiếm khách hàng hiển thị</li>
+                        <li>Bảng hiển thị sản phẩm đã chọn trống</li>
+                        <li>Nút "Tạo đơn gửi đi" và "Bán hàng nhanh" hiển thị nhưng bị vô hiệu hóa (disabled)</li>
+                    </ul>
+                </td>
+                <td class="pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC-CO-02</td>
+                <td>Kiểm tra chức năng tìm kiếm sản phẩm</td>
+                <td>
+                    <ol>
+                        <li>Truy cập vào chức năng "Tạo đơn hàng"</li>
+                        <li>Nhập từ khóa tìm kiếm vào ô tìm kiếm sản phẩm</li>
+                    </ol>
+                </td>
+                <td>Từ khóa tìm kiếm: "Áo"</td>
+                <td>
+                    <ul>
+                        <li>Hiển thị danh sách sản phẩm có tên chứa từ khóa "Áo"</li>
+                        <li>Mỗi sản phẩm hiển thị tên, giá, số lượng tồn kho</li>
+                        <li>Có nút thêm sản phẩm vào đơn hàng</li>
+                    </ul>
+                </td>
+                <td>
+                    <ul>
+                        <li>Hiển thị danh sách các sản phẩm có tên chứa "Áo"</li>
+                        <li>Mỗi sản phẩm hiển thị đầy đủ thông tin tên, giá, số lượng tồn kho</li>
+                        <li>Mỗi sản phẩm có nút "+" để thêm vào đơn hàng</li>
+                    </ul>
+                </td>
+                <td class="pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC-CO-03</td>
+                <td>Kiểm tra chức năng thêm sản phẩm vào đơn hàng</td>
+                <td>
+                    <ol>
+                        <li>Tìm kiếm sản phẩm</li>
+                        <li>Nhấn nút "+" để thêm sản phẩm vào đơn hàng</li>
+                    </ol>
+                </td>
+                <td>Sản phẩm: "Áo thun nam"</td>
+                <td>
+                    <ul>
+                        <li>Sản phẩm được thêm vào bảng sản phẩm đã chọn</li>
+                        <li>Số lượng mặc định là 1</li>
+                        <li>Tổng tiền được cập nhật</li>
+                        <li>Nút "Tạo đơn gửi đi" và "Bán hàng nhanh" được kích hoạt</li>
+                    </ul>
+                </td>
+                <td>
+                    <ul>
+                        <li>Sản phẩm "Áo thun nam" được thêm vào bảng sản phẩm đã chọn</li>
+                        <li>Số lượng mặc định là 1</li>
+                        <li>Tổng tiền được cập nhật chính xác</li>
+                        <li>Nút "Tạo đơn gửi đi" và "Bán hàng nhanh" được kích hoạt</li>
+                    </ul>
+                </td>
+                <td class="pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC-CO-04</td>
+                <td>Kiểm tra chức năng thay đổi số lượng sản phẩm trong đơn hàng</td>
+                <td>
+                    <ol>
+                        <li>Thêm sản phẩm vào đơn hàng</li>
+                        <li>Thay đổi số lượng sản phẩm bằng cách nhập số hoặc sử dụng nút +/-</li>
+                    </ol>
+                </td>
+                <td>Thay đổi số lượng từ 1 thành 3</td>
+                <td>
+                    <ul>
+                        <li>Số lượng sản phẩm được cập nhật thành 3</li>
+                        <li>Tổng tiền của sản phẩm được cập nhật (đơn giá × số lượng)</li>
+                        <li>Tổng tiền đơn hàng được cập nhật</li>
+                    </ul>
+                </td>
+                <td>
+                    <ul>
+                        <li>Số lượng sản phẩm được cập nhật thành 3</li>
+                        <li>Tổng tiền của sản phẩm được cập nhật chính xác</li>
+                        <li>Tổng tiền đơn hàng được cập nhật chính xác</li>
+                    </ul>
+                </td>
+                <td class="pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC-CO-05</td>
+                <td>Kiểm tra chức năng xóa sản phẩm khỏi đơn hàng</td>
+                <td>
+                    <ol>
+                        <li>Thêm sản phẩm vào đơn hàng</li>
+                        <li>Nhấn nút xóa (biểu tượng thùng rác) bên cạnh sản phẩm</li>
+                    </ol>
+                </td>
+                <td>Sản phẩm đã thêm vào đơn hàng</td>
+                <td>
+                    <ul>
+                        <li>Sản phẩm bị xóa khỏi bảng sản phẩm đã chọn</li>
+                        <li>Tổng tiền đơn hàng được cập nhật</li>
+                        <li>Nếu không còn sản phẩm nào, nút "Tạo đơn gửi đi" và "Bán hàng nhanh" bị vô hiệu hóa</li>
+                    </ul>
+                </td>
+                <td>
+                    <ul>
+                        <li>Sản phẩm bị xóa khỏi bảng sản phẩm đã chọn</li>
+                        <li>Tổng tiền đơn hàng được cập nhật chính xác</li>
+                        <li>Khi không còn sản phẩm nào, nút "Tạo đơn gửi đi" và "Bán hàng nhanh" bị vô hiệu hóa</li>
+                    </ul>
+                </td>
+                <td class="pass">Đạt</td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>

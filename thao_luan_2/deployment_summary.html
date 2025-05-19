@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tóm tắt Triển khai Dự án</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1, h2, h3, h4 {
+            color: #333;
+        }
+        h1 {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        h2 {
+            margin-top: 30px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+        h3 {
+            margin-top: 20px;
+        }
+        h4 {
+            margin-top: 15px;
+            font-size: 1.1em;
+        }
+        ul {
+            list-style-type: square;
+            margin-left: 20px;
+        }
+        code {
+            background-color: #eee;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: "Courier New", Courier, monospace;
+        }
+        .note {
+            background-color: #e7f3fe;
+            border-left: 6px solid #2196F3;
+            padding: 10px;
+            margin-top: 15px;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border-left: 6px solid #ffc107;
+            padding: 10px;
+            margin-top: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .var-name {
+            font-weight: bold;
+            font-family: "Courier New", Courier, monospace;
+        }
+        .var-purpose {
+            margin-top: 5px;
+            font-style: italic;
+        }
+        .var-details li {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Tóm tắt Hướng dẫn Triển khai Phần mềm</h1>
+
+        <p>Dựa trên tài liệu <code>README-DEPLOY.md</code> và <code>DEPLOYMENT.md</code>, đây là tổng quan về quy trình triển khai, các yêu cầu chuẩn bị và những lưu ý quan trọng khi triển khai ứng dụng Next.js này với Supabase lên nền tảng Vercel.</p>
+
+        <h2>Nền tảng và Công nghệ Chính</h2>
+        <ul>
+            <li><strong>Nền tảng Triển khai:</strong> Vercel</li>
+            <li><strong>Backend/Cơ sở dữ liệu:</strong> Supabase</li>
+            <li><strong>Framework Frontend:</strong> Next.js</li>
+        </ul>
+
+        <h2>Các Phương pháp Triển khai lên Vercel</h2>
+        <ol>
+            <li>
+                <h3>Qua Vercel Dashboard (Giao diện người dùng)</h3>
+                <p>Kết nối kho GitHub của bạn với Vercel, cấu hình dự án (framework, lệnh build, biến môi trường) và nhấn triển khai.</p>
+            </li>
+            <li>
+                <h3>Qua GitHub Actions</h3>
+                <p>Tạo dự án trên Vercel, lấy Vercel Token, Org ID, Project ID và thêm chúng làm secrets trong GitHub repository. Sau đó, chạy workflow "Deploy to Vercel".</p>
+            </li>
+            <li>
+                <h3>Qua Vercel CLI (Giao diện dòng lệnh)</h3>
+                <p>Cài đặt Vercel CLI (<code>npm install -g vercel</code>), đăng nhập (<code>vercel login</code>), và chạy lệnh <code>vercel</code> để triển khai.</p>
+            </li>
+        </ol>
+
+        <h2>Chuẩn bị Trước Khi Triển khai</h2>
+        <ul>
+            <li><strong>Tài khoản Vercel:</strong> Cần có tài khoản Vercel (có thể đăng ký bằng GitHub).</li>
+            <li><strong>Kho lưu trữ GitHub:</strong> Mã nguồn của dự án phải được lưu trữ trên GitHub.</li>
+            <li><strong>Dự án Supabase:</strong> Cần có một dự án Supabase đang hoạt động.</li>
+            <li>
+                <h3>Biến Môi trường (Environment Variables) Chi Tiết</h3>
+                <p>Đây là các biến môi trường quan trọng cần được cấu hình chính xác trên Vercel:</p>
+
+                <h4>1. <span class="var-name">NEXT_PUBLIC_SUPABASE_URL</span></h4>
+                <ul class="var-details">
+                    <li><strong>Giải thích:</strong> Đây là URL công khai của dự án Supabase của bạn. Nó trỏ đến điểm cuối API của Supabase mà ứng dụng Next.js sẽ sử dụng để giao tiếp với backend (ví dụ: truy vấn cơ sở dữ liệu, xác thực người dùng).</li>
+                    <li><strong>Quan trọng:</strong> Tiền tố <code>NEXT_PUBLIC_</code> trong Next.js có nghĩa là biến này sẽ được nhúng vào mã JavaScript phía máy khách (client-side). Điều này cần thiết để thư viện Supabase JS có thể truy cập API từ trình duyệt của người dùng.</li>
+                    <li><strong>Lấy ở đâu:</strong> Trang tổng quan (dashboard) dự án Supabase của bạn, thường trong phần "Project Settings" &rarr; "API".</li>
+                </ul>
+
+                <h4>2. <span class="var-name">NEXT_PUBLIC_SUPABASE_ANON_KEY</span></h4>
+                <ul class="var-details">
+                    <li><strong>Giải thích:</strong> "Anon" là viết tắt của "anonymous" (ẩn danh). Đây là một khóa API công khai, an toàn để sử dụng trong mã phía máy khách. Nó cho phép ứng dụng thực hiện các yêu cầu đến Supabase với quyền hạn của người dùng ẩn danh hoặc người dùng đã đăng nhập (sau khi xác thực). Khóa này KHÔNG cấp quyền truy cập đầy đủ mà tuân theo các quy tắc Row Level Security (RLS) bạn đã thiết lập.</li>
+                    <li><strong>Quan trọng:</strong> Tiền tố <code>NEXT_PUBLIC_</code> làm cho nó có sẵn ở phía máy khách.</li>
+                    <li><strong>Lấy ở đâu:</strong> Trang tổng quan dự án Supabase, phần "Project Settings" &rarr; "API", bên cạnh <code>SUPABASE_URL</code>.</li>
+                </ul>
+
+                <h4>3. <span class="var-name">SUPABASE_SERVICE_ROLE_KEY</span></h4>
+                <ul class="var-details">
+                    <li><strong>Giải thích:</strong> Đây là một khóa bí mật (secret key) và rất mạnh mẽ. Nó bỏ qua tất cả các quy tắc Row Level Security (RLS) và cấp quyền truy cập đầy đủ vào cơ sở dữ liệu và API Supabase.</li>
+                    <li><strong>Quan trọng:</strong>
+                        <div class="warning"><strong>TUYỆT ĐỐI KHÔNG BAO GIỜ</strong> để lộ khóa này ở phía máy khách hoặc trong mã JavaScript công khai. Nó chỉ nên được sử dụng ở phía máy chủ (server-side), ví dụ trong API routes của Next.js. Nếu bị lộ, toàn bộ cơ sở dữ liệu có thể bị xâm phạm.</div>
+                    </li>
+                    <li><strong>Mục đích sử dụng:</strong> Cho các tác vụ quản trị, hoạt động backend cần quyền truy cập không hạn chế, hoặc khi thực hiện các thao tác mà RLS không phù hợp.</li>
+                    <li><strong>Lấy ở đâu:</strong> Trang tổng quan dự án Supabase, phần "Project Settings" &rarr; "API". Hãy cẩn thận khi sao chép và lưu trữ.</li>
+                </ul>
+
+                <h4>4. <span class="var-name">NEXT_PUBLIC_SITE_URL</span></h4>
+                <ul class="var-details">
+                    <li><strong>Giải thích:</strong> URL chính thức, công khai mà ứng dụng của bạn sẽ được truy cập sau khi triển khai (ví dụ: <code>https://your-app-name.vercel.app</code> hoặc tên miền tùy chỉnh).</li>
+                    <li><strong>Mục đích sử dụng:</strong>
+                        <ul>
+                            <li>Supabase sử dụng URL này để chuyển hướng người dùng sau các hành động xác thực (xác nhận email, đặt lại mật khẩu).</li>
+                            <li>Sử dụng trong ứng dụng để tạo URL tuyệt đối (sitemap, liên kết chia sẻ).</li>
+                        </ul>
+                    </li>
+                    <li><strong>Quan trọng:</strong> Đảm bảo URL này được cấu hình chính xác trong biến môi trường Vercel và trong "Site URL" của Supabase (Authentication &rarr; URL Configuration).</li>
+                    <li><strong>Lấy ở đâu:</strong> Vercel cung cấp sau lần triển khai đầu tiên. Nếu dùng tên miền tùy chỉnh, đó sẽ là tên miền của bạn.</li>
+                </ul>
+
+                <h4>5. <span class="var-name">NEXT_DISABLE_ESLINT</span></h4>
+                <ul class="var-details">
+                    <li><strong>Giải thích:</strong> Đặt giá trị là <code>1</code> (hoặc <code>true</code>) để vô hiệu hóa ESLint trong quá trình build trên Vercel.</li>
+                    <li><strong>Mục đích sử dụng:</strong> Đôi khi, quy tắc ESLint gây lỗi build trên Vercel. Đây có thể là giải pháp tạm thời, nhưng nên giải quyết vấn đề ESLint để đảm bảo chất lượng mã.</li>
+                     <li><strong>Giá trị đề xuất:</strong> <code>1</code></li>
+                </ul>
+
+                <h4>6. <span class="var-name">DISABLE_ESLINT_PLUGIN</span></h4>
+                <ul class="var-details">
+                    <li><strong>Giải thích:</strong> Tương tự <code>NEXT_DISABLE_ESLINT</code>, dùng để vô hiệu hóa các khía cạnh của ESLint, có thể là một plugin cụ thể của Vercel.</li>
+                    <li><strong>Mục đích sử dụng:</strong> Giúp tránh lỗi build liên quan đến ESLint trên Vercel.</li>
+                    <li><strong>Giá trị đề xuất:</strong> <code>true</code></li>
+                </ul>
+            </li>
+        </ul>
+
+        <h2>Cấu hình Sau Triển khai (Quan trọng cho Supabase)</h2>
+        <ul>
+            <li>Trong <strong>Supabase Dashboard</strong>:
+                <ul>
+                    <li>Đi đến <strong>Authentication &gt; URL Configuration</strong>: Thêm URL ứng dụng đã triển khai của bạn (chính là giá trị của <code>NEXT_PUBLIC_SITE_URL</code>) vào danh sách "Site URLs".</li>
+                    <li>Đi đến <strong>API &gt; Settings &gt; CORS</strong> (theo <code>README-DEPLOY.md</code>): Thêm URL ứng dụng đã triển khai của bạn vào "Allowed Origins".</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h2>Lưu ý Quan trọng và Cấu hình Vercel</h2>
+        <ul>
+            <li><strong>Framework Preset trên Vercel:</strong> Phải là <code>Next.js</code>.</li>
+            <li><strong>Cấu hình Build trên Vercel:</strong>
+                <ul>
+                    <li>Root Directory: <code>./</code></li>
+                    <li>Build Command: <code>npm run build</code></li>
+                    <li>Output Directory: <code>.next</code></li>
+                    <li>Install Command: <code>npm install</code></li>
+                </ul>
+            </li>
+            <li><strong>Production Branch:</strong> Thường là <code>main</code>.</li>
+            <li><strong>Cập nhật <code>NEXT_PUBLIC_SITE_URL</code>:</strong> Sau khi Vercel cung cấp URL cho ứng dụng, hãy cập nhật biến môi trường này trong cài đặt Vercel và có thể cần triển khai lại.</li>
+        </ul>
+
+        <h2>Xử lý Sự cố</h2>
+        <p>Cả hai tài liệu (<code>README-DEPLOY.md</code> và <code>DEPLOYMENT.md</code>) đều có phần hướng dẫn xử lý sự cố. Các điểm chính cần kiểm tra:</p>
+        <ul>
+            <li><strong>Lỗi kết nối Supabase:</strong> Kiểm tra kỹ các biến môi trường (URL, Keys) và cấu hình "Site URLs" / "Allowed Origins" trong Supabase.</li>
+            <li><strong>Lỗi Build:</strong> Xem log build trên Vercel Dashboard.</li>
+            <li><strong>Lỗi Runtime:</strong> Kiểm tra console của trình duyệt và log function trên Vercel Dashboard.</li>
+        </ul>
+
+        <div class="note">
+            <p><strong>Ghi chú:</strong> Đây là tóm tắt dựa trên các tệp tài liệu được cung cấp. Luôn tham khảo tài liệu gốc (<code>README-DEPLOY.md</code>, <code>DEPLOYMENT.md</code>) và tài liệu chính thức của Vercel, Next.js, Supabase để có thông tin chi tiết và cập nhật nhất.</p>
+        </div>
+    </div>
+</body>
+</html> 

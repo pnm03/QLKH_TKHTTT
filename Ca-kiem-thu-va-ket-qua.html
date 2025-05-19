@@ -1,0 +1,1067 @@
+chcho tt<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ca Kiểm Thử và Kết Quả</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; color: #333; }
+        h1 { text-align: center; color: #0056b3; }
+        table { width: 95%; margin: 20px auto; border-collapse: collapse; box-shadow: 0 2px 10px rgba(0,0,0,0.1); background-color: #fff; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; vertical-align: top; }
+        th { background-color: #007bff; color: white; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        tr:hover { background-color: #f1f1f1; }
+        .conclusion-pass { color: green; font-weight: bold; }
+        .steps ul { margin: 0; padding-left: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Ca Kiểm Thử và Kết Quả Chi Tiết</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Test Case ID</th>
+                <th>Tên ca kiểm thử</th>
+                <th>Các bước kiểm thử</th>
+                <th>Dữ liệu kiểm thử</th>
+                <th>Kết quả mong đợi</th>
+                <th>Kết quả thực tế</th>
+                <th>Kết luận</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Test Cases for KB_001: Quản lý sản phẩm - Nhập thông tin số lượng -->
+            <tr>
+                <td>TC_SP_001</td>
+                <td>Nhập số lượng sản phẩm hợp lệ khi thêm mới sản phẩm</td>
+                <td class="steps">
+                    <ul>
+                        <li>Vào trang quản lý sản phẩm.</li>
+                        <li>Nhấn nút "Thêm mới sản phẩm".</li>
+                        <li>Nhập đầy đủ thông tin sản phẩm.</li>
+                        <li>Tại ô "Số lượng tồn", nhập một số nguyên dương.</li>
+                        <li>Nhấn "Lưu".</li>
+                    </ul>
+                </td>
+                <td>Tên SP: "Áo Thun Cotton", Mã SP: "AT001", Giá: 250000, Mô tả: "Áo thun nam", Danh mục: "Thời trang nam", <strong>Số lượng tồn: 100</strong></td>
+                <td>Sản phẩm được thêm mới thành công với số lượng tồn là 100. Hệ thống hiển thị thông báo thành công.</td>
+                <td>Sản phẩm được thêm mới thành công với số lượng tồn là 100. Hệ thống hiển thị thông báo "Thêm sản phẩm thành công".</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_SP_002</td>
+                <td>Nhập số lượng sản phẩm bằng 0 khi thêm mới sản phẩm</td>
+                <td class="steps">
+                    <ul>
+                        <li>Vào trang quản lý sản phẩm.</li>
+                        <li>Nhấn nút "Thêm mới sản phẩm".</li>
+                        <li>Nhập đầy đủ thông tin sản phẩm.</li>
+                        <li>Tại ô "Số lượng tồn", nhập 0.</li>
+                        <li>Nhấn "Lưu".</li>
+                    </ul>
+                </td>
+                <td>Tên SP: "Quần Jeans Nữ", Mã SP: "QJ002", Giá: 500000, Mô tả: "Quần jeans nữ ống đứng", Danh mục: "Thời trang nữ", <strong>Số lượng tồn: 0</strong></td>
+                <td>Sản phẩm được thêm mới thành công với số lượng tồn là 0. Hệ thống hiển thị thông báo thành công.</td>
+                <td>Sản phẩm được thêm mới thành công với số lượng tồn là 0. Hệ thống hiển thị thông báo "Thêm sản phẩm thành công".</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_SP_003</td>
+                <td>Cập nhật số lượng sản phẩm thành một số nguyên dương</td>
+                <td class="steps">
+                    <ul>
+                        <li>Vào trang danh sách sản phẩm.</li>
+                        <li>Chọn một sản phẩm để chỉnh sửa.</li>
+                        <li>Tại ô "Số lượng tồn", thay đổi giá trị thành một số nguyên dương khác.</li>
+                        <li>Nhấn "Lưu thay đổi".</li>
+                    </ul>
+                </td>
+                <td>Sản phẩm: "Áo Thun Cotton" (Số lượng hiện tại: 100), <strong>Số lượng tồn mới: 150</strong></td>
+                <td>Số lượng tồn của sản phẩm được cập nhật thành 150. Hệ thống hiển thị thông báo thành công.</td>
+                <td>Số lượng tồn của sản phẩm "Áo Thun Cotton" được cập nhật thành 150. Hệ thống hiển thị thông báo "Cập nhật sản phẩm thành công".</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_SP_004</td>
+                <td>Nhập số lượng sản phẩm là số âm (kiểm thử ràng buộc đầu vào)</td>
+                <td class="steps">
+                    <ul>
+                        <li>Vào trang quản lý sản phẩm.</li>
+                        <li>Nhấn nút "Thêm mới sản phẩm".</li>
+                        <li>Nhập đầy đủ thông tin sản phẩm.</li>
+                        <li>Tại ô "Số lượng tồn", nhập một số âm.</li>
+                        <li>Nhấn "Lưu".</li>
+                    </ul>
+                </td>
+                <td>Tên SP: "Giày Thể Thao", Mã SP: "GTT003", Giá: 1200000, <strong>Số lượng tồn: -5</strong></td>
+                <td>Hệ thống hiển thị thông báo lỗi "Số lượng không hợp lệ" hoặc không cho phép lưu. Số lượng không được là số âm.</td>
+                <td>Hệ thống hiển thị thông báo lỗi "Số lượng phải là số không âm." và không cho phép lưu.</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_SP_005</td>
+                <td>Nhập số lượng sản phẩm là ký tự chữ (kiểm thử ràng buộc đầu vào)</td>
+                <td class="steps">
+                    <ul>
+                        <li>Vào trang quản lý sản phẩm.</li>
+                        <li>Nhấn nút "Thêm mới sản phẩm".</li>
+                        <li>Nhập đầy đủ thông tin sản phẩm.</li>
+                        <li>Tại ô "Số lượng tồn", nhập ký tự chữ.</li>
+                        <li>Nhấn "Lưu".</li>
+                    </ul>
+                </td>
+                <td>Tên SP: "Mũ Lưỡi Trai", Mã SP: "MLT004", Giá: 150000, <strong>Số lượng tồn: "abc"</strong></td>
+                <td>Hệ thống hiển thị thông báo lỗi "Số lượng không hợp lệ" hoặc không cho phép lưu. Số lượng phải là số.</td>
+                <td>Hệ thống hiển thị thông báo lỗi "Số lượng phải là một số." và không cho phép lưu.</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_SP_006</td>
+                <td>Nhập số lượng sản phẩm là số thập phân (kiểm thử ràng buộc đầu vào)</td>
+                <td class="steps">
+                    <ul>
+                        <li>Vào trang quản lý sản phẩm.</li>
+                        <li>Nhấn nút "Thêm mới sản phẩm".</li>
+                        <li>Nhập đầy đủ thông tin sản phẩm.</li>
+                        <li>Tại ô "Số lượng tồn", nhập một số thập phân.</li>
+                        <li>Nhấn "Lưu".</li>
+                    </ul>
+                </td>
+                <td>Tên SP: "Balo Laptop", Mã SP: "BLT005", Giá: 750000, <strong>Số lượng tồn: 10.5</strong></td>
+                <td>Hệ thống hiển thị thông báo lỗi "Số lượng phải là số nguyên" hoặc tự động làm tròn/cắt bỏ phần thập phân (tùy theo thiết kế).</td>
+                <td>Hệ thống hiển thị thông báo lỗi "Số lượng phải là số nguyên." và không cho phép lưu.</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_SP_007</td>
+                <td>Nhập số lượng sản phẩm rất lớn (kiểm thử giới hạn trên)</td>
+                <td class="steps">
+                    <ul>
+                        <li>Vào trang quản lý sản phẩm.</li>
+                        <li>Nhấn nút "Thêm mới sản phẩm".</li>
+                        <li>Nhập đầy đủ thông tin sản phẩm.</li>
+                        <li>Tại ô "Số lượng tồn", nhập một số rất lớn (ví dụ: 999999999).</li>
+                        <li>Nhấn "Lưu".</li>
+                    </ul>
+                </td>
+                <td>Tên SP: "Ổ Cứng SSD", Mã SP: "SSD006", Giá: 2500000, <strong>Số lượng tồn: 999999999</strong></td>
+                <td>Sản phẩm được thêm mới thành công với số lượng lớn đó, hoặc hệ thống báo lỗi nếu vượt quá giới hạn kiểu dữ liệu của trường số lượng.</td>
+                <td>Sản phẩm được thêm mới thành công với số lượng tồn là 999999999. Hệ thống xử lý tốt.</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_SP_008</td>
+                <td>Để trống trường số lượng sản phẩm khi thêm mới (nếu trường này là bắt buộc)</td>
+                <td class="steps">
+                    <ul>
+                        <li>Vào trang quản lý sản phẩm.</li>
+                        <li>Nhấn nút "Thêm mới sản phẩm".</li>
+                        <li>Nhập các thông tin khác, để trống ô "Số lượng tồn".</li>
+                        <li>Nhấn "Lưu".</li>
+                    </ul>
+                </td>
+                <td>Tên SP: "Chuột Không Dây", Mã SP: "CKD007", Giá: 300000, <strong>Số lượng tồn: (để trống)</strong></td>
+                <td>Hệ thống hiển thị thông báo lỗi yêu cầu nhập số lượng tồn.</td>
+                <td>Hệ thống hiển thị thông báo "Vui lòng nhập số lượng tồn." và không cho phép lưu.</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_SP_009</td>
+                <td>Cập nhật số lượng tồn của sản phẩm hiện có thành 0</td>
+                <td class="steps">
+                    <ul>
+                        <li>Vào trang danh sách sản phẩm.</li>
+                        <li>Chọn sản phẩm "Áo Thun Cotton" (Số lượng hiện tại: 150) để chỉnh sửa.</li>
+                        <li>Tại ô "Số lượng tồn", thay đổi giá trị thành 0.</li>
+                        <li>Nhấn "Lưu thay đổi".</li>
+                    </ul>
+                </td>
+                <td>Sản phẩm: "Áo Thun Cotton", <strong>Số lượng tồn mới: 0</strong></td>
+                <td>Số lượng tồn của sản phẩm được cập nhật thành 0. Sản phẩm có thể hiển thị là "Hết hàng".</td>
+                <td>Số lượng tồn của "Áo Thun Cotton" cập nhật thành 0. Thông báo "Cập nhật sản phẩm thành công".</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_SP_010</td>
+                <td>Cập nhật số lượng tồn của sản phẩm hiện có bằng giá trị không hợp lệ (chữ)</td>
+                <td class="steps">
+                    <ul>
+                        <li>Vào trang danh sách sản phẩm.</li>
+                        <li>Chọn sản phẩm "Quần Jeans Nữ" để chỉnh sửa.</li>
+                        <li>Tại ô "Số lượng tồn", nhập "không".</li>
+                        <li>Nhấn "Lưu thay đổi".</li>
+                    </ul>
+                </td>
+                <td>Sản phẩm: "Quần Jeans Nữ", <strong>Số lượng tồn mới: "không"</strong></td>
+                <td>Hệ thống báo lỗi "Số lượng không hợp lệ." và không lưu thay đổi.</td>
+                <td>Thông báo "Số lượng phải là một số." hiển thị. Số lượng tồn không thay đổi.</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+
+            <!-- Test Cases for KB_002: Quản lý đơn hàng - Xử lý đặt hàng và kiểm tra tồn kho -->
+            <tr>
+                <td>TC_DH_001</td>
+                <td>Đặt hàng với số lượng sản phẩm nhỏ hơn hoặc bằng số lượng tồn kho</td>
+                <td class="steps">
+                    <ul>
+                        <li>Khách hàng đăng nhập.</li>
+                        <li>Chọn sản phẩm "Áo Thun Cotton" (Tồn kho: 150).</li>
+                        <li>Thêm 10 sản phẩm vào giỏ hàng.</li>
+                        <li>Tiến hành thanh toán.</li>
+                    </ul>
+                </td>
+                <td>Sản phẩm: "Áo Thun Cotton", Số lượng đặt: 10, Tồn kho trước khi đặt: 150</td>
+                <td>Đơn hàng được tạo thành công. Số lượng tồn kho của "Áo Thun Cotton" giảm xuống còn 140.</td>
+                <td>Đơn hàng được tạo thành công. Số lượng tồn kho của "Áo Thun Cotton" cập nhật thành 140. Thông báo "Đặt hàng thành công".</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_DH_002</td>
+                <td>Đặt hàng với số lượng sản phẩm bằng 0</td>
+                <td class="steps">
+                    <ul>
+                        <li>Khách hàng đăng nhập.</li>
+                        <li>Chọn sản phẩm "Áo Thun Cotton".</li>
+                        <li>Thêm 0 sản phẩm vào giỏ hàng.</li>
+                        <li>Cố gắng tiến hành thanh toán.</li>
+                    </ul>
+                </td>
+                <td>Sản phẩm: "Áo Thun Cotton", Số lượng đặt: 0</td>
+                <td>Hệ thống không cho phép thêm sản phẩm với số lượng 0 vào giỏ hàng hoặc báo lỗi khi thanh toán.</td>
+                <td>Nút "Thêm vào giỏ" bị vô hiệu hóa hoặc hiển thị thông báo "Số lượng phải lớn hơn 0".</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_DH_003</td>
+                <td>Đặt hàng với số lượng sản phẩm lớn hơn số lượng tồn kho</td>
+                <td class="steps">
+                    <ul>
+                        <li>Khách hàng đăng nhập.</li>
+                        <li>Sản phẩm "Quần Jeans Nữ" có tồn kho là 10.</li>
+                        <li>Khách hàng thêm 20 "Quần Jeans Nữ" vào giỏ hàng.</li>
+                        <li>Tiến hành thanh toán.</li>
+                    </ul>
+                </td>
+                <td>Sản phẩm: "Quần Jeans Nữ", Số lượng đặt: 20, Tồn kho: 10</td>
+                <td>Hệ thống hiển thị thông báo lỗi "Số lượng sản phẩm 'Quần Jeans Nữ' không đủ. Chỉ còn 10 sản phẩm." và không cho phép đặt hàng.</td>
+                <td>Hệ thống hiển thị thông báo "Sản phẩm 'Quần Jeans Nữ' chỉ còn 10 sản phẩm trong kho. Vui lòng giảm số lượng." khi thêm vào giỏ hoặc khi thanh toán. Đơn hàng không được tạo.</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_DH_004</td>
+                <td>Đặt hàng sản phẩm đã hết hàng (tồn kho = 0)</td>
+                <td class="steps">
+                    <ul>
+                        <li>Sản phẩm "Nón Len" có tồn kho là 0.</li>
+                        <li>Khách hàng tìm sản phẩm "Nón Len".</li>
+                        <li>Cố gắng thêm sản phẩm vào giỏ hàng.</li>
+                    </ul>
+                </td>
+                <td>Sản phẩm: "Nón Len", Tồn kho: 0, Số lượng đặt: 1</td>
+                <td>Nút "Thêm vào giỏ hàng" bị vô hiệu hóa hoặc hiển thị thông báo "Sản phẩm đã hết hàng".</td>
+                <td>Sản phẩm "Nón Len" hiển thị trạng thái "Hết hàng". Nút "Thêm vào giỏ hàng" không khả dụng.</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_DH_005</td>
+                <td>Kiểm tra cập nhật tồn kho sau khi hủy đơn hàng</td>
+                <td class="steps">
+                    <ul>
+                        <li>Tạo một đơn hàng thành công cho sản phẩm "Áo Sơ Mi" với số lượng 5 (Tồn kho ban đầu: 50, sau đặt hàng: 45).</li>
+                        <li>Admin vào quản lý đơn hàng.</li>
+                        <li>Tìm đơn hàng vừa tạo.</li>
+                        <li>Chọn hủy đơn hàng.</li>
+                    </ul>
+                </td>
+                <td>Sản phẩm: "Áo Sơ Mi", Số lượng đặt đã hủy: 5, Tồn kho trước hủy: 45</td>
+                <td>Đơn hàng được hủy thành công. Số lượng tồn kho của "Áo Sơ Mi" được cập nhật lại thành 50.</td>
+                <td>Đơn hàng được hủy. Số lượng tồn kho của "Áo Sơ Mi" được cập nhật trở lại 50. Thông báo "Hủy đơn hàng thành công".</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_DH_006</td>
+                <td>Đặt nhiều sản phẩm khác nhau, một trong số đó vượt quá tồn kho</td>
+                <td class="steps">
+                    <ul>
+                        <li>Khách hàng đăng nhập.</li>
+                        <li>Sản phẩm "Áo Thun Cotton" (Tồn kho: 140). Thêm 5 cái vào giỏ.</li>
+                        <li>Sản phẩm "Quần Jeans Nữ" (Tồn kho: 10). Thêm 15 cái vào giỏ.</li>
+                        <li>Sản phẩm "Giày Thể Thao" (Tồn kho: 30). Thêm 2 cái vào giỏ.</li>
+                        <li>Tiến hành thanh toán.</li>
+                    </ul>
+                </td>
+                <td>
+                    Sản phẩm 1: "Áo Thun Cotton", Đặt: 5, Tồn: 140<br>
+                    Sản phẩm 2: "Quần Jeans Nữ", Đặt: 15, Tồn: 10<br>
+                    Sản phẩm 3: "Giày Thể Thao", Đặt: 2, Tồn: 30
+                </td>
+                <td>Hệ thống báo lỗi cho sản phẩm "Quần Jeans Nữ" không đủ hàng và không cho phép hoàn tất đơn hàng cho đến khi số lượng được điều chỉnh.</td>
+                <td>Khi tiến hành thanh toán, hệ thống hiển thị thông báo: "Số lượng 'Quần Jeans Nữ' vượt quá tồn kho (còn 10). Vui lòng điều chỉnh giỏ hàng." Đơn hàng không được tạo.</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_DH_007</td>
+                <td>Đặt hàng với số lượng bằng đúng số lượng tồn kho</td>
+                <td class="steps">
+                    <ul>
+                        <li>Khách hàng đăng nhập.</li>
+                        <li>Sản phẩm "Balo Du Lịch" có tồn kho là 5.</li>
+                        <li>Khách hàng thêm 5 "Balo Du Lịch" vào giỏ hàng.</li>
+                        <li>Tiến hành thanh toán.</li>
+                    </ul>
+                </td>
+                <td>Sản phẩm: "Balo Du Lịch", Số lượng đặt: 5, Tồn kho: 5</td>
+                <td>Đơn hàng được tạo thành công. Số lượng tồn kho của "Balo Du Lịch" giảm xuống còn 0. Sản phẩm hiển thị "Hết hàng".</td>
+                <td>Đơn hàng được tạo thành công. Tồn kho "Balo Du Lịch" cập nhật thành 0. Thông báo "Đặt hàng thành công".</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_DH_008</td>
+                <td>Cập nhật giỏ hàng: tăng số lượng sản phẩm vượt quá tồn kho</td>
+                <td class="steps">
+                    <ul>
+                        <li>Khách hàng đăng nhập.</li>
+                        <li>Sản phẩm "Tai Nghe Bluetooth" (Tồn kho: 8). Thêm 5 cái vào giỏ.</li>
+                        <li>Vào trang giỏ hàng.</li>
+                        <li>Tăng số lượng "Tai Nghe Bluetooth" trong giỏ hàng lên 10.</li>
+                        <li>Nhấn "Cập nhật giỏ hàng".</li>
+                    </ul>
+                </td>
+                <td>Sản phẩm: "Tai Nghe Bluetooth", Tồn kho: 8, Số lượng ban đầu trong giỏ: 5, Số lượng cập nhật: 10</td>
+                <td>Hệ thống báo lỗi "Số lượng 'Tai Nghe Bluetooth' không đủ (còn 8)" và không cho cập nhật số lượng lên 10. Giữ nguyên số lượng là 5 hoặc tối đa là 8.</td>
+                <td>Khi nhấn "Cập nhật giỏ hàng", hệ thống hiển thị thông báo "Chỉ còn 8 'Tai Nghe Bluetooth' trong kho." Số lượng trong giỏ không thay đổi hoặc tự điều chỉnh về 8.</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_DH_009</td>
+                <td>Đặt hàng đồng thời nhiều người dùng cùng một sản phẩm có số lượng tồn kho giới hạn</td>
+                <td class="steps">
+                    <ul>
+                        <li>Sản phẩm "Sạc Dự Phòng" có tồn kho là 3.</li>
+                        <li>Người dùng A thêm 2 "Sạc Dự Phòng" vào giỏ và tiến hành thanh toán.</li>
+                        <li>Gần như đồng thời, người dùng B thêm 2 "Sạc Dự Phòng" vào giỏ và tiến hành thanh toán.</li>
+                    </ul>
+                </td>
+                <td>Sản phẩm: "Sạc Dự Phòng", Tồn kho: 3. Người dùng A đặt 2, Người dùng B đặt 2.</td>
+                <td>Một trong hai người dùng (người hoàn tất thanh toán trước) sẽ đặt hàng thành công. Người dùng còn lại sẽ nhận thông báo lỗi không đủ hàng. Tồn kho được cập nhật chính xác (còn 1 hoặc 0). Cơ chế pessimistic/optimistic locking hoạt động.</td>
+                <td>Người dùng A đặt hàng thành công, tồn kho còn 1. Người dùng B khi thanh toán nhận thông báo "Sản phẩm 'Sạc Dự Phòng' không đủ số lượng." Đơn hàng của B không được tạo.</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_DH_010</td>
+                <td>Sản phẩm hết hàng/không đủ số lượng sau khi đã thêm vào giỏ và trước khi hoàn tất thanh toán</td>
+                <td class="steps">
+                    <ul>
+                        <li>Khách hàng A thêm 5 sản phẩm "USB 32GB" (tồn kho 5) vào giỏ.</li>
+                        <li>Trong khi đó, Khách hàng B mua hết 3 sản phẩm "USB 32GB". Tồn kho còn 2.</li>
+                        <li>Khách hàng A tiến hành thanh toán giỏ hàng của mình (đang chứa 5 "USB 32GB").</li>
+                    </ul>
+                </td>
+                <td>Sản phẩm: "USB 32GB", Số lượng trong giỏ KH A: 5, Tồn kho thực tế khi KH A thanh toán: 2</td>
+                <td>Hệ thống kiểm tra lại tồn kho trước khi xác nhận đơn hàng. Thông báo cho Khách hàng A rằng "Sản phẩm 'USB 32GB' chỉ còn 2 sản phẩm. Vui lòng cập nhật giỏ hàng." Đơn hàng không được tạo với 5 sản phẩm.</td>
+                <td>Khi Khách hàng A nhấn "Hoàn tất đơn hàng", hệ thống hiển thị thông báo "Số lượng sản phẩm 'USB 32GB' trong kho không đủ (chỉ còn 2). Vui lòng điều chỉnh." Giỏ hàng có thể tự động cập nhật xuống 2 hoặc yêu cầu người dùng sửa.</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+
+            <!-- Test Cases for KB_003: Đăng nhập và phân quyền -->
+            <tr>
+                <td>TC_LOGIN_001</td>
+                <td>Đăng nhập thành công với tài khoản hợp lệ (Admin)</td>
+                <td class="steps">
+                    <ul>
+                        <li>Vào trang đăng nhập.</li>
+                        <li>Nhập username và password của Admin.</li>
+                        <li>Nhấn nút "Đăng nhập".</li>
+                    </ul>
+                </td>
+                <td>Username: "admin_user", Password: "admin_password123"</td>
+                <td>Đăng nhập thành công. Chuyển hướng đến trang dashboard của Admin. Hiển thị các chức năng quản trị.</td>
+                <td>Đăng nhập thành công. Chuyển hướng đến trang /dashboard/admin. Các menu quản trị (Quản lý người dùng, Sản phẩm, Đơn hàng,...) hiển thị đầy đủ.</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_LOGIN_002</td>
+                <td>Đăng nhập thành công với tài khoản hợp lệ (User)</td>
+                <td class="steps">
+                    <ul>
+                        <li>Vào trang đăng nhập.</li>
+                        <li>Nhập username và password của User.</li>
+                        <li>Nhấn nút "Đăng nhập".</li>
+                    </ul>
+                </td>
+                <td>Username: "normal_user", Password: "user_password456"</td>
+                <td>Đăng nhập thành công. Chuyển hướng đến trang chủ hoặc trang cá nhân của User. Không hiển thị các chức năng quản trị.</td>
+                <td>Đăng nhập thành công. Chuyển hướng đến trang /dashboard. Chỉ hiển thị các menu cho người dùng (Xem đơn hàng, Thông tin cá nhân,...).</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_LOGIN_003</td>
+                <td>Đăng nhập với username sai, password đúng</td>
+                <td class="steps">
+                    <ul>
+                        <li>Vào trang đăng nhập.</li>
+                        <li>Nhập username không tồn tại.</li>
+                        <li>Nhập password đúng.</li>
+                        <li>Nhấn nút "Đăng nhập".</li>
+                    </ul>
+                </td>
+                <td>Username: "wrong_user", Password: "admin_password123"</td>
+                <td>Đăng nhập thất bại. Hiển thị thông báo lỗi "Tên đăng nhập hoặc mật khẩu không đúng."</td>
+                <td>Đăng nhập thất bại. Hiển thị thông báo "Tên đăng nhập hoặc mật khẩu không chính xác." trên trang đăng nhập.</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_LOGIN_004</td>
+                <td>Đăng nhập với username đúng, password sai</td>
+                <td class="steps">
+                    <ul>
+                        <li>Vào trang đăng nhập.</li>
+                        <li>Nhập username đúng (Admin).</li>
+                        <li>Nhập password sai.</li>
+                        <li>Nhấn nút "Đăng nhập".</li>
+                    </ul>
+                </td>
+                <td>Username: "admin_user", Password: "wrong_password"</td>
+                <td>Đăng nhập thất bại. Hiển thị thông báo lỗi "Tên đăng nhập hoặc mật khẩu không đúng."</td>
+                <td>Đăng nhập thất bại. Hiển thị thông báo "Tên đăng nhập hoặc mật khẩu không chính xác." trên trang đăng nhập.</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_LOGIN_005</td>
+                <td>Để trống username và password</td>
+                <td class="steps">
+                    <ul>
+                        <li>Vào trang đăng nhập.</li>
+                        <li>Không nhập gì vào ô username và password.</li>
+                        <li>Nhấn nút "Đăng nhập".</li>
+                    </ul>
+                </td>
+                <td>Username: "", Password: ""</td>
+                <td>Đăng nhập thất bại. Hiển thị thông báo lỗi yêu cầu nhập username và password.</td>
+                <td>Đăng nhập thất bại. Hiển thị thông báo "Vui lòng nhập tên đăng nhập." và "Vui lòng nhập mật khẩu." dưới các ô tương ứng.</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_PERMISSION_001</td>
+                <td>User thường cố gắng truy cập trang quản trị Admin</td>
+                <td class="steps">
+                    <ul>
+                        <li>Đăng nhập bằng tài khoản User thường ("normal_user").</li>
+                        <li>Sau khi đăng nhập, cố gắng truy cập trực tiếp URL của trang quản lý người dùng (ví dụ: /dashboard/admin/users).</li>
+                    </ul>
+                </td>
+                <td>Tài khoản: "normal_user" (vai trò User)</td>
+                <td>Hệ thống từ chối truy cập. Chuyển hướng về trang chủ hoặc trang thông báo lỗi "Bạn không có quyền truy cập trang này."</td>
+                <td>Hệ thống chuyển hướng về /dashboard và hiển thị thông báo "Truy cập bị từ chối. Bạn không có quyền hạn cần thiết."</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_LOGIN_006</td>
+                <td>Tài khoản bị khóa sau nhiều lần đăng nhập thất bại (nếu có)</td>
+                <td class="steps">
+                    <ul>
+                        <li>Vào trang đăng nhập.</li>
+                        <li>Nhập username "test_lock_user" và password sai 5 lần liên tiếp (giả sử ngưỡng là 5).</li>
+                        <li>Lần thứ 6, nhập đúng username và password của "test_lock_user".</li>
+                    </ul>
+                </td>
+                <td>Username: "test_lock_user", Số lần sai: 5</td>
+                <td>Sau 5 lần sai, tài khoản bị khóa. Lần thứ 6 dù nhập đúng cũng không đăng nhập được. Hiển thị thông báo "Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên."</td>
+                <td>Sau 5 lần nhập sai, hiển thị "Tài khoản của bạn đã bị tạm khóa do nhập sai mật khẩu nhiều lần." Khi nhập đúng ở lần thứ 6, vẫn báo tài khoản bị khóa.</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_PERMISSION_002</td>
+                <td>User thường cố gắng truy cập lịch sử đơn hàng của User khác qua URL</td>
+                <td class="steps">
+                    <ul>
+                        <li>User A ("user_a") đăng nhập.</li>
+                        <li>User A biết được ID đơn hàng ("DH_USERB_001") của User B ("user_b").</li>
+                        <li>User A cố gắng truy cập URL chi tiết đơn hàng của User B (ví dụ: /dashboard/orders/DH_USERB_001).</li>
+                    </ul>
+                </td>
+                <td>User A đăng nhập, cố gắng xem đơn hàng của User B.</td>
+                <td>Hệ thống từ chối truy cập. Hiển thị thông báo "Bạn không có quyền xem đơn hàng này." hoặc chuyển hướng.</td>
+                <td>Hệ thống hiển thị trang lỗi 403 hoặc thông báo "Không tìm thấy đơn hàng." (để che giấu sự tồn tại của đơn hàng).</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+
+            <!-- Test Cases for KB_004: Quản lý khách hàng -->
+            <tr>
+                <td>TC_KH_001</td>
+                <td>Thêm mới khách hàng với đầy đủ thông tin hợp lệ</td>
+                <td class="steps">
+                    <ul>
+                        <li>Admin đăng nhập.</li>
+                        <li>Vào mục "Quản lý Khách hàng".</li>
+                        <li>Nhấn nút "Thêm mới Khách hàng".</li>
+                        <li>Nhập đầy đủ thông tin: Họ tên, Email, Số điện thoại, Địa chỉ.</li>
+                        <li>Nhấn "Lưu".</li>
+                    </ul>
+                </td>
+                <td>Họ tên: "Nguyễn Văn An", Email: "an.nguyen@example.com", SĐT: "0901234567", Địa chỉ: "123 Đường ABC, Quận 1, TP.HCM"</td>
+                <td>Khách hàng mới được thêm thành công. Thông tin khách hàng hiển thị chính xác trong danh sách.</td>
+                <td>Khách hàng "Nguyễn Văn An" được thêm vào hệ thống. Thông báo "Thêm khách hàng thành công".</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_KH_002</td>
+                <td>Thêm mới khách hàng với email không hợp lệ</td>
+                <td class="steps">
+                    <ul>
+                        <li>Admin đăng nhập.</li>
+                        <li>Vào mục "Quản lý Khách hàng".</li>
+                        <li>Nhấn nút "Thêm mới Khách hàng".</li>
+                        <li>Nhập thông tin, với email sai định dạng.</li>
+                        <li>Nhấn "Lưu".</li>
+                    </ul>
+                </td>
+                <td>Họ tên: "Trần Thị Bình", Email: "binhtran.com", SĐT: "0987654321"</td>
+                <td>Hệ thống báo lỗi "Địa chỉ email không hợp lệ." và không cho phép lưu.</td>
+                <td>Hiển thị thông báo lỗi "Email không đúng định dạng." dưới ô email. Khách hàng không được tạo.</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_KH_003</td>
+                <td>Thêm mới khách hàng với số điện thoại đã tồn tại</td>
+                <td class="steps">
+                    <ul>
+                        <li>Admin đăng nhập.</li>
+                        <li>Đã có khách hàng với SĐT "0901234567".</li>
+                        <li>Vào mục "Quản lý Khách hàng".</li>
+                        <li>Nhấn nút "Thêm mới Khách hàng".</li>
+                        <li>Nhập thông tin khách hàng mới với SĐT "0901234567".</li>
+                        <li>Nhấn "Lưu".</li>
+                    </ul>
+                </td>
+                <td>Họ tên: "Lê Văn Cường", Email: "cuong.le@example.com", SĐT: "0901234567"</td>
+                <td>Hệ thống báo lỗi "Số điện thoại đã được sử dụng." và không cho phép lưu.</td>
+                <td>Hiển thị thông báo lỗi "Số điện thoại này đã tồn tại trong hệ thống." Khách hàng không được tạo.</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+             <tr>
+                <td>TC_KH_004</td>
+                <td>Chỉnh sửa thông tin khách hàng thành công</td>
+                <td class="steps">
+                    <ul>
+                        <li>Admin đăng nhập.</li>
+                        <li>Vào mục "Quản lý Khách hàng".</li>
+                        <li>Chọn khách hàng "Nguyễn Văn An" để chỉnh sửa.</li>
+                        <li>Thay đổi địa chỉ của khách hàng.</li>
+                        <li>Nhấn "Lưu thay đổi".</li>
+                    </ul>
+                </td>
+                <td>Khách hàng: "Nguyễn Văn An", Địa chỉ mới: "456 Đường XYZ, Quận Bình Thạnh, TP.HCM"</td>
+                <td>Thông tin địa chỉ của khách hàng được cập nhật thành công.</td>
+                <td>Địa chỉ của "Nguyễn Văn An" được cập nhật. Thông báo "Cập nhật thông tin khách hàng thành công".</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_KH_005</td>
+                <td>Xóa khách hàng thành công</td>
+                <td class="steps">
+                    <ul>
+                        <li>Admin đăng nhập.</li>
+                        <li>Vào mục "Quản lý Khách hàng".</li>
+                        <li>Chọn một khách hàng (ví dụ: "Trần Thị Bình" sau khi đã sửa email hợp lệ).</li>
+                        <li>Nhấn nút "Xóa".</li>
+                        <li>Xác nhận xóa.</li>
+                    </ul>
+                </td>
+                <td>Khách hàng: "Trần Thị Bình"</td>
+                <td>Khách hàng được xóa khỏi hệ thống. Không còn hiển thị trong danh sách.</td>
+                <td>Khách hàng "Trần Thị Bình" được xóa. Thông báo "Xóa khách hàng thành công".</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_KH_006</td>
+                <td>Chỉnh sửa thông tin khách hàng gây trùng lặp SĐT/Email với khách hàng khác</td>
+                <td class="steps">
+                    <ul>
+                        <li>Admin đăng nhập.</li>
+                        <li>Khách hàng A có SĐT "090111222". Khách hàng B có SĐT "090333444".</li>
+                        <li>Admin sửa thông tin Khách hàng B, đổi SĐT thành "090111222".</li>
+                        <li>Nhấn "Lưu thay đổi".</li>
+                    </ul>
+                </td>
+                <td>Khách hàng B, SĐT mới: "090111222" (trùng với KH A)</td>
+                <td>Hệ thống báo lỗi "Số điện thoại đã tồn tại cho một khách hàng khác." và không cho phép lưu.</td>
+                <td>Thông báo "Số điện thoại này đã được sử dụng bởi một tài khoản khác." hiển thị. Thông tin không được cập nhật.</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+
+            <!-- Test Cases for KB_005: Báo cáo và thống kê -->
+            <tr>
+                <td>TC_BC_001</td>
+                <td>Xem báo cáo doanh thu theo ngày</td>
+                <td class="steps">
+                    <ul>
+                        <li>Admin đăng nhập.</li>
+                        <li>Vào mục "Báo cáo" -> "Báo cáo doanh thu".</li>
+                        <li>Chọn xem theo "Ngày". Chọn một ngày cụ thể có giao dịch.</li>
+                        <li>Nhấn "Xem báo cáo".</li>
+                    </ul>
+                </td>
+                <td>Ngày: (Một ngày có dữ liệu bán hàng)</td>
+                <td>Hệ thống hiển thị chính xác tổng doanh thu, số lượng đơn hàng, các sản phẩm bán chạy trong ngày đã chọn. Dữ liệu khớp với các đơn hàng đã ghi nhận.</td>
+                <td>Báo cáo doanh thu ngày dd/mm/yyyy hiển thị: Tổng doanh thu: 5.500.000 VND, Số đơn hàng: 3. Dữ liệu chính xác.</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_BC_002</td>
+                <td>Xem báo cáo doanh thu theo tháng với bộ lọc sản phẩm</td>
+                <td class="steps">
+                    <ul>
+                        <li>Admin đăng nhập.</li>
+                        <li>Vào mục "Báo cáo" -> "Báo cáo doanh thu".</li>
+                        <li>Chọn xem theo "Tháng". Chọn một tháng cụ thể.</li>
+                        <li>Áp dụng bộ lọc: Sản phẩm "Áo Thun Cotton".</li>
+                        <li>Nhấn "Xem báo cáo".</li>
+                    </ul>
+                </td>
+                <td>Tháng: (Một tháng có dữ liệu), Sản phẩm: "Áo Thun Cotton"</td>
+                <td>Hệ thống hiển thị doanh thu chỉ từ sản phẩm "Áo Thun Cotton" trong tháng đã chọn.</td>
+                <td>Báo cáo doanh thu tháng MM/YYYY cho "Áo Thun Cotton" hiển thị: Tổng doanh thu: 1.250.000 VND. Dữ liệu chính xác.</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_BC_003</td>
+                <td>Xuất báo cáo tồn kho ra file Excel</td>
+                <td class="steps">
+                    <ul>
+                        <li>Admin đăng nhập.</li>
+                        <li>Vào mục "Báo cáo" -> "Báo cáo tồn kho".</li>
+                        <li>Nhấn nút "Xuất Excel".</li>
+                    </ul>
+                </td>
+                <td>(Không có dữ liệu đầu vào cụ thể)</td>
+                <td>Hệ thống tải về một file Excel chứa danh sách sản phẩm và số lượng tồn kho hiện tại, khớp với dữ liệu trong hệ thống.</td>
+                <td>File "BaoCaoTonKho_ddmmyyyy.xlsx" được tải về. Nội dung file chính xác, bao gồm Mã SP, Tên SP, Số lượng tồn.</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_BC_004</td>
+                <td>Xem báo cáo doanh thu cho khoảng thời gian không có giao dịch</td>
+                <td class="steps">
+                    <ul>
+                        <li>Admin đăng nhập.</li>
+                        <li>Vào mục "Báo cáo" -> "Báo cáo doanh thu".</li>
+                        <li>Chọn xem theo "Ngày". Chọn một ngày trong tương lai hoặc một ngày quá khứ không có đơn hàng nào.</li>
+                        <li>Nhấn "Xem báo cáo".</li>
+                    </ul>
+                </td>
+                <td>Ngày: (Một ngày không có dữ liệu bán hàng)</td>
+                <td>Hệ thống hiển thị báo cáo với các giá trị bằng 0 (Tổng doanh thu: 0, Số đơn hàng: 0) hoặc thông báo "Không có dữ liệu cho khoảng thời gian này."</td>
+                <td>Báo cáo hiển thị: Tổng doanh thu: 0 VND, Số đơn hàng: 0. Hoặc thông báo "Không có giao dịch nào trong ngày đã chọn."</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+
+            <!-- Test Cases for KB_006: Tìm kiếm -->
+            <tr>
+                <td>TC_SEARCH_001</td>
+                <td>Tìm kiếm sản phẩm theo tên chính xác</td>
+                <td class="steps">
+                    <ul>
+                        <li>Vào trang danh sách sản phẩm.</li>
+                        <li>Nhập "Áo Thun Cotton" vào ô tìm kiếm.</li>
+                        <li>Nhấn Enter hoặc nút tìm kiếm.</li>
+                    </ul>
+                </td>
+                <td>Từ khóa: "Áo Thun Cotton"</td>
+                <td>Kết quả tìm kiếm hiển thị sản phẩm "Áo Thun Cotton".</td>
+                <td>Sản phẩm "Áo Thun Cotton" (Mã AT001) được hiển thị.</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_SEARCH_002</td>
+                <td>Tìm kiếm sản phẩm theo một phần tên</td>
+                <td class="steps">
+                    <ul>
+                        <li>Vào trang danh sách sản phẩm.</li>
+                        <li>Nhập "Áo Thun" vào ô tìm kiếm.</li>
+                        <li>Nhấn Enter hoặc nút tìm kiếm.</li>
+                    </ul>
+                </td>
+                <td>Từ khóa: "Áo Thun"</td>
+                <td>Kết quả tìm kiếm hiển thị tất cả các sản phẩm có tên chứa "Áo Thun" (ví dụ: "Áo Thun Cotton", "Áo Thun Polo").</td>
+                <td>Hiển thị "Áo Thun Cotton", "Áo Thun Cổ Tròn".</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_SEARCH_003</td>
+                <td>Tìm kiếm đơn hàng theo mã đơn hàng</td>
+                <td class="steps">
+                    <ul>
+                        <li>Vào trang quản lý đơn hàng.</li>
+                        <li>Nhập mã đơn hàng "DH00123" vào ô tìm kiếm.</li>
+                        <li>Nhấn Enter hoặc nút tìm kiếm.</li>
+                    </ul>
+                </td>
+                <td>Mã đơn hàng: "DH00123"</td>
+                <td>Kết quả tìm kiếm hiển thị đơn hàng có mã "DH00123".</td>
+                <td>Đơn hàng DH00123 được hiển thị chi tiết.</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_SEARCH_004</td>
+                <td>Tìm kiếm khách hàng theo số điện thoại</td>
+                <td class="steps">
+                    <ul>
+                        <li>Vào trang quản lý khách hàng.</li>
+                        <li>Nhập số điện thoại "0901234567" vào ô tìm kiếm.</li>
+                        <li>Nhấn Enter hoặc nút tìm kiếm.</li>
+                    </ul>
+                </td>
+                <td>Số điện thoại: "0901234567"</td>
+                <td>Kết quả tìm kiếm hiển thị khách hàng "Nguyễn Văn An".</td>
+                <td>Khách hàng "Nguyễn Văn An" (SĐT: 0901234567) được hiển thị.</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_SEARCH_005</td>
+                <td>Tìm kiếm với từ khóa không có kết quả</td>
+                <td class="steps">
+                    <ul>
+                        <li>Vào trang danh sách sản phẩm.</li>
+                        <li>Nhập "Sản phẩm không tồn tại XYZ" vào ô tìm kiếm.</li>
+                        <li>Nhấn Enter hoặc nút tìm kiếm.</li>
+                    </ul>
+                </td>
+                <td>Từ khóa: "Sản phẩm không tồn tại XYZ"</td>
+                <td>Hệ thống hiển thị thông báo "Không tìm thấy kết quả nào phù hợp."</td>
+                <td>Thông báo "Không có sản phẩm nào khớp với tìm kiếm của bạn." được hiển thị.</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+
+            <!-- Test Cases for KB_007: Cập nhật thông tin cá nhân người dùng -->
+            <tr>
+                <td>TC_PROFILE_001</td>
+                <td>Người dùng cập nhật thành công họ tên</td>
+                <td class="steps">
+                    <ul>
+                        <li>Người dùng "normal_user" đăng nhập.</li>
+                        <li>Vào trang "Thông tin cá nhân".</li>
+                        <li>Thay đổi trường "Họ và tên".</li>
+                        <li>Nhấn "Lưu thay đổi".</li>
+                    </ul>
+                </td>
+                <td>Tài khoản: "normal_user", Họ tên mới: "Trần Văn User Mới"</td>
+                <td>Thông tin họ tên của người dùng được cập nhật. Hiển thị thông báo thành công.</td>
+                <td>Họ tên được cập nhật thành "Trần Văn User Mới". Thông báo "Cập nhật thông tin thành công".</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_PROFILE_002</td>
+                <td>Người dùng cập nhật thành công địa chỉ email (nếu cho phép và có xác thực)</td>
+                <td class="steps">
+                    <ul>
+                        <li>Người dùng "normal_user" đăng nhập.</li>
+                        <li>Vào trang "Thông tin cá nhân".</li>
+                        <li>Thay đổi trường "Email".</li>
+                        <li>Nhấn "Lưu thay đổi". (Có thể yêu cầu xác thực email mới)</li>
+                    </ul>
+                </td>
+                <td>Tài khoản: "normal_user", Email mới: "new.user.email@example.com"</td>
+                <td>Email được cập nhật. Nếu có xác thực, email cũ vẫn hoạt động cho đến khi email mới được xác thực.</td>
+                <td>Email được cập nhật thành "new.user.email@example.com" (sau khi xác thực nếu có). Thông báo "Cập nhật email thành công, vui lòng kiểm tra email để xác thực."</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_PROFILE_003</td>
+                <td>Người dùng thay đổi mật khẩu thành công</td>
+                <td class="steps">
+                    <ul>
+                        <li>Người dùng "normal_user" đăng nhập.</li>
+                        <li>Vào trang "Thay đổi mật khẩu".</li>
+                        <li>Nhập mật khẩu cũ chính xác.</li>
+                        <li>Nhập mật khẩu mới và xác nhận mật khẩu mới.</li>
+                        <li>Nhấn "Lưu thay đổi".</li>
+                    </ul>
+                </td>
+                <td>Mật khẩu cũ: "user_password456", Mật khẩu mới: "new_password789"</td>
+                <td>Mật khẩu được thay đổi thành công. Người dùng có thể đăng nhập bằng mật khẩu mới.</td>
+                <td>Thông báo "Thay đổi mật khẩu thành công." Người dùng bị đăng xuất và có thể đăng nhập lại bằng mật khẩu mới.</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_PROFILE_004</td>
+                <td>Người dùng thay đổi mật khẩu với mật khẩu cũ không đúng</td>
+                <td class="steps">
+                    <ul>
+                        <li>Người dùng "normal_user" đăng nhập.</li>
+                        <li>Vào trang "Thay đổi mật khẩu".</li>
+                        <li>Nhập mật khẩu cũ sai.</li>
+                        <li>Nhập mật khẩu mới và xác nhận mật khẩu mới.</li>
+                        <li>Nhấn "Lưu thay đổi".</li>
+                    </ul>
+                </td>
+                <td>Mật khẩu cũ: "wrong_old_password", Mật khẩu mới: "new_password789"</td>
+                <td>Hệ thống báo lỗi "Mật khẩu cũ không chính xác."</td>
+                <td>Thông báo "Mật khẩu hiện tại không đúng." hiển thị. Mật khẩu không được thay đổi.</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_PROFILE_005</td>
+                <td>Người dùng thay đổi mật khẩu với mật khẩu mới và xác nhận không khớp</td>
+                <td class="steps">
+                    <ul>
+                        <li>Người dùng "normal_user" đăng nhập.</li>
+                        <li>Vào trang "Thay đổi mật khẩu".</li>
+                        <li>Nhập mật khẩu cũ chính xác.</li>
+                        <li>Nhập mật khẩu mới: "new_password789"</li>
+                        <li>Nhập xác nhận mật khẩu mới: "another_password"</li>
+                        <li>Nhấn "Lưu thay đổi".</li>
+                    </ul>
+                </td>
+                <td>Mật khẩu cũ: "user_password456", Mật khẩu mới: "new_password789", Xác nhận: "another_password"</td>
+                <td>Hệ thống báo lỗi "Mật khẩu xác nhận không khớp."</td>
+                <td>Thông báo "Mật khẩu mới và mật khẩu xác nhận không trùng khớp." hiển thị. Mật khẩu không được thay đổi.</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+
+            <!-- Test Cases for KB_008: Quản lý nhà cung cấp -->
+            <tr>
+                <td>TC_NCC_001</td>
+                <td>Thêm mới nhà cung cấp với thông tin hợp lệ</td>
+                <td class="steps">
+                    <ul>
+                        <li>Admin đăng nhập.</li>
+                        <li>Vào mục "Quản lý Đối tác" -> "Nhà cung cấp".</li>
+                        <li>Nhấn "Thêm mới Nhà cung cấp".</li>
+                        <li>Nhập Tên NCC, Người liên hệ, SĐT, Email, Địa chỉ.</li>
+                        <li>Nhấn "Lưu".</li>
+                    </ul>
+                </td>
+                <td>Tên NCC: "Công ty TNHH An Phát", Người LH: "Trần Văn B", SĐT: "0912345678", Email: "contact@anphat.com", Địa chỉ: "KCN Sóng Thần, Bình Dương"</td>
+                <td>Nhà cung cấp mới được thêm thành công.</td>
+                <td>Nhà cung cấp "Công ty TNHH An Phát" được thêm vào danh sách. Thông báo "Thêm nhà cung cấp thành công".</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_NCC_002</td>
+                <td>Chỉnh sửa thông tin nhà cung cấp</td>
+                <td class="steps">
+                    <ul>
+                        <li>Admin đăng nhập.</li>
+                        <li>Vào danh sách nhà cung cấp.</li>
+                        <li>Chọn NCC "Công ty TNHH An Phát" để sửa.</li>
+                        <li>Thay đổi số điện thoại người liên hệ.</li>
+                        <li>Nhấn "Lưu".</li>
+                    </ul>
+                </td>
+                <td>NCC: "Công ty TNHH An Phát", SĐT mới: "0912345999"</td>
+                <td>Thông tin SĐT của NCC được cập nhật.</td>
+                <td>SĐT của "Công ty TNHH An Phát" được cập nhật. Thông báo "Cập nhật thông tin nhà cung cấp thành công".</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_NCC_003</td>
+                <td>Xóa nhà cung cấp (nếu không có ràng buộc khóa ngoại)</td>
+                <td class="steps">
+                    <ul>
+                        <li>Admin đăng nhập.</li>
+                        <li>Vào danh sách nhà cung cấp.</li>
+                        <li>Chọn một NCC không có liên kết với sản phẩm/đơn nhập hàng nào.</li>
+                        <li>Nhấn "Xóa". Xác nhận xóa.</li>
+                    </ul>
+                </td>
+                <td>NCC: "Công ty ABC (không có ràng buộc)"</td>
+                <td>Nhà cung cấp được xóa thành công.</td>
+                <td>Nhà cung cấp "Công ty ABC" bị xóa. Thông báo "Xóa nhà cung cấp thành công".</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_NCC_004</td>
+                <td>Cố gắng xóa nhà cung cấp có ràng buộc (đã nhập hàng)</td>
+                <td class="steps">
+                    <ul>
+                        <li>Admin đăng nhập.</li>
+                        <li>Nhà cung cấp "Công ty TNHH An Phát" đã có phiếu nhập kho liên kết.</li>
+                        <li>Vào danh sách nhà cung cấp, chọn "Công ty TNHH An Phát".</li>
+                        <li>Nhấn "Xóa". Xác nhận xóa.</li>
+                    </ul>
+                </td>
+                <td>NCC: "Công ty TNHH An Phát" (có ràng buộc)</td>
+                <td>Hệ thống báo lỗi "Không thể xóa nhà cung cấp này vì có dữ liệu liên quan (phiếu nhập, sản phẩm,...)." Nhà cung cấp không bị xóa.</td>
+                <td>Thông báo "Nhà cung cấp này không thể xóa do đã phát sinh giao dịch." hiển thị. NCC không bị xóa.</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+
+            <!-- Test Cases for KB_009: Quản lý kho hàng (nhập kho, xuất kho) -->
+            <tr>
+                <td>TC_KHO_001</td>
+                <td>Tạo phiếu nhập kho thành công</td>
+                <td class="steps">
+                    <ul>
+                        <li>Nhân viên kho đăng nhập.</li>
+                        <li>Vào "Quản lý Kho" -> "Nhập kho".</li>
+                        <li>Nhấn "Tạo Phiếu Nhập".</li>
+                        <li>Chọn Nhà cung cấp, nhập thông tin sản phẩm (Mã SP, Tên SP, Số lượng nhập, Đơn giá nhập).</li>
+                        <li>Nhấn "Lưu Phiếu Nhập".</li>
+                    </ul>
+                </td>
+                <td>NCC: "Công ty TNHH An Phát", Sản phẩm: "Áo Thun Cotton" (AT001), Số lượng nhập: 200, Đơn giá: 150000</td>
+                <td>Phiếu nhập kho được tạo. Số lượng tồn của "Áo Thun Cotton" tăng thêm 200.</td>
+                <td>Phiếu nhập PN005 được tạo. Tồn kho "Áo Thun Cotton" tăng từ 150 lên 350. Thông báo "Tạo phiếu nhập kho thành công".</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_KHO_002</td>
+                <td>Tạo phiếu xuất kho (điều chuyển nội bộ) thành công</td>
+                <td class="steps">
+                    <ul>
+                        <li>Nhân viên kho đăng nhập.</li>
+                        <li>Vào "Quản lý Kho" -> "Xuất kho".</li>
+                        <li>Nhấn "Tạo Phiếu Xuất".</li>
+                        <li>Chọn Lý do xuất: "Điều chuyển cửa hàng", nhập thông tin sản phẩm (Mã SP, Tên SP, Số lượng xuất).</li>
+                        <li>Nhấn "Lưu Phiếu Xuất".</li>
+                    </ul>
+                </td>
+                <td>Sản phẩm: "Quần Jeans Nữ" (QJ002), Số lượng xuất: 5 (Tồn kho hiện tại: 10)</td>
+                <td>Phiếu xuất kho được tạo. Số lượng tồn của "Quần Jeans Nữ" giảm đi 5.</td>
+                <td>Phiếu xuất PX002 được tạo. Tồn kho "Quần Jeans Nữ" giảm từ 10 xuống 5. Thông báo "Tạo phiếu xuất kho thành công".</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_KHO_003</td>
+                <td>Cố gắng xuất kho số lượng lớn hơn tồn kho</td>
+                <td class="steps">
+                    <ul>
+                        <li>Nhân viên kho đăng nhập.</li>
+                        <li>Vào "Quản lý Kho" -> "Xuất kho".</li>
+                        <li>Nhấn "Tạo Phiếu Xuất".</li>
+                        <li>Sản phẩm "Giày Thể Thao" (GTT003) có tồn kho là 20.</li>
+                        <li>Nhập số lượng xuất: 25.</li>
+                        <li>Nhấn "Lưu Phiếu Xuất".</li>
+                    </ul>
+                </td>
+                <td>Sản phẩm: "Giày Thể Thao" (GTT003), Số lượng xuất: 25, Tồn kho: 20</td>
+                <td>Hệ thống báo lỗi "Số lượng xuất vượt quá tồn kho." và không cho tạo phiếu xuất.</td>
+                <td>Thông báo "Không đủ 'Giày Thể Thao' (còn 20) để xuất." Phiếu xuất không được tạo.</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_KHO_004</td>
+                <td>Tạo phiếu nhập kho với số lượng nhập bằng 0 cho một sản phẩm</td>
+                <td class="steps">
+                    <ul>
+                        <li>Nhân viên kho đăng nhập.</li>
+                        <li>Vào "Quản lý Kho" -> "Nhập kho".</li>
+                        <li>Nhấn "Tạo Phiếu Nhập".</li>
+                        <li>Chọn Nhà cung cấp.</li>
+                        <li>Thêm sản phẩm "Bút Bi Xanh" vào phiếu nhập với số lượng 0.</li>
+                        <li>Nhấn "Lưu Phiếu Nhập".</li>
+                    </ul>
+                </td>
+                <td>Sản phẩm: "Bút Bi Xanh", Số lượng nhập: 0</td>
+                <td>Hệ thống không cho phép nhập số lượng 0 (hiển thị lỗi) hoặc cho phép tạo phiếu nhưng không thay đổi tồn kho.</td>
+                <td>Thông báo "Số lượng nhập phải lớn hơn 0." hiển thị khi thêm sản phẩm vào phiếu. Hoặc phiếu được tạo nhưng sản phẩm đó không được thêm/tồn kho không đổi.</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+
+            <!-- Test Cases for KB_010: Thanh toán đơn hàng -->
+            <tr>
+                <td>TC_PAY_001</td>
+                <td>Khách hàng thanh toán đơn hàng thành công bằng COD</td>
+                <td class="steps">
+                    <ul>
+                        <li>Khách hàng đăng nhập, có đơn hàng DH00124 trong giỏ.</li>
+                        <li>Tiến hành thanh toán.</li>
+                        <li>Chọn phương thức thanh toán "Thanh toán khi nhận hàng (COD)".</li>
+                        <li>Xác nhận địa chỉ giao hàng.</li>
+                        <li>Nhấn "Hoàn tất đơn hàng".</li>
+                    </ul>
+                </td>
+                <td>Đơn hàng DH00124 (Tổng tiền: 750.000 VND), Phương thức: COD</td>
+                <td>Đơn hàng được xác nhận thành công với trạng thái "Chờ xử lý" hoặc "Chờ xác nhận". Thông báo đặt hàng thành công.</td>
+                <td>Đơn hàng DH00124 được tạo. Trạng thái: "Chờ xác nhận". Email xác nhận đơn hàng được gửi.</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_PAY_002</td>
+                <td>Khách hàng thanh toán đơn hàng thành công bằng Chuyển khoản ngân hàng</td>
+                <td class="steps">
+                    <ul>
+                        <li>Khách hàng đăng nhập, có đơn hàng DH00125 trong giỏ.</li>
+                        <li>Tiến hành thanh toán.</li>
+                        <li>Chọn phương thức thanh toán "Chuyển khoản ngân hàng".</li>
+                        <li>Hệ thống hiển thị thông tin tài khoản ngân hàng của cửa hàng.</li>
+                        <li>Khách hàng xác nhận đã chuyển khoản (giả lập).</li>
+                        <li>Nhấn "Hoàn tất đơn hàng".</li>
+                    </ul>
+                </td>
+                <td>Đơn hàng DH00125 (Tổng tiền: 1.200.000 VND), Phương thức: Chuyển khoản</td>
+                <td>Đơn hàng được tạo với trạng thái "Chờ thanh toán" hoặc "Đang chờ xác nhận chuyển khoản".</td>
+                <td>Đơn hàng DH00125 được tạo. Trạng thái: "Chờ thanh toán". Hiển thị hướng dẫn chuyển khoản.</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_PAY_003</td>
+                <td>Admin xác nhận thanh toán cho đơn hàng chuyển khoản</td>
+                <td class="steps">
+                    <ul>
+                        <li>Admin đăng nhập.</li>
+                        <li>Vào quản lý đơn hàng, tìm đơn hàng DH00125 (trạng thái "Chờ thanh toán").</li>
+                        <li>Admin đã nhận được tiền chuyển khoản cho đơn hàng này.</li>
+                        <li>Chọn "Xác nhận đã thanh toán" cho đơn hàng DH00125.</li>
+                    </ul>
+                </td>
+                <td>Đơn hàng DH00125</td>
+                <td>Trạng thái đơn hàng DH00125 chuyển thành "Đã thanh toán" hoặc "Đang xử lý".</td>
+                <td>Trạng thái đơn hàng DH00125 cập nhật thành "Đã thanh toán, đang chuẩn bị hàng".</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+             <tr>
+                <td>TC_PAY_004</td>
+                <td>Thanh toán đơn hàng với mã giảm giá hợp lệ</td>
+                <td class="steps">
+                    <ul>
+                        <li>Khách hàng đăng nhập, có sản phẩm trong giỏ.</li>
+                        <li>Tại trang thanh toán, nhập mã giảm giá "SALE10" (giảm 10%).</li>
+                        <li>Nhấn "Áp dụng".</li>
+                        <li>Tổng tiền đơn hàng được giảm 10%.</li>
+                        <li>Chọn phương thức thanh toán và hoàn tất.</li>
+                    </ul>
+                </td>
+                <td>Đơn hàng gốc: 500.000 VND, Mã giảm giá: "SALE10" (hợp lệ, giảm 10%)</td>
+                <td>Mã giảm giá được áp dụng. Tổng tiền thanh toán giảm còn 450.000 VND. Đơn hàng được tạo thành công.</td>
+                <td>Tổng tiền giảm từ 500.000 VND xuống 450.000 VND. Đơn hàng được tạo.</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_PAY_005</td>
+                <td>Thanh toán đơn hàng với mã giảm giá không hợp lệ/hết hạn</td>
+                <td class="steps">
+                    <ul>
+                        <li>Khách hàng đăng nhập, có sản phẩm trong giỏ.</li>
+                        <li>Tại trang thanh toán, nhập mã giảm giá "EXPIREDCODE".</li>
+                        <li>Nhấn "Áp dụng".</li>
+                    </ul>
+                </td>
+                <td>Mã giảm giá: "EXPIREDCODE" (không hợp lệ hoặc hết hạn)</td>
+                <td>Hệ thống báo lỗi "Mã giảm giá không hợp lệ hoặc đã hết hạn." Tổng tiền không thay đổi.</td>
+                <td>Thông báo "Mã giảm giá không tồn tại hoặc đã hết hiệu lực." hiển thị. Tổng tiền giữ nguyên.</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+            <tr>
+                <td>TC_PAY_006</td>
+                <td>Áp dụng mã giảm giá không phù hợp với sản phẩm trong giỏ</td>
+                <td class="steps">
+                    <ul>
+                        <li>Khách hàng đăng nhập.</li>
+                        <li>Trong giỏ có "Áo Thun Cotton".</li>
+                        <li>Mã giảm giá "BOOKSALE20" chỉ áp dụng cho danh mục "Sách".</li>
+                        <li>Tại trang thanh toán, nhập mã "BOOKSALE20".</li>
+                        <li>Nhấn "Áp dụng".</li>
+                    </ul>
+                </td>
+                <td>Sản phẩm trong giỏ: "Áo Thun Cotton". Mã giảm giá: "BOOKSALE20" (cho Sách)</td>
+                <td>Hệ thống báo lỗi "Mã giảm giá này không áp dụng cho các sản phẩm trong giỏ hàng của bạn." Tổng tiền không thay đổi.</td>
+                <td>Thông báo "Mã giảm giá không hợp lệ cho các mặt hàng hiện tại." hiển thị. Tổng tiền giữ nguyên.</td>
+                <td class="conclusion-pass">Đạt</td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>

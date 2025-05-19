@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 1: Khảo sát Thực trạng Hạ tầng CNTT tại Doanh nghiệp (Chi tiết)</title>
+    <style>
+        body {
+            font-family: "Times New Roman", Times, serif;
+            line-height: 1.8;
+            margin: 30px;
+            font-size: 13pt;
+        }
+        .container {
+            width: 100%;
+            max-width: 900px; /* Tăng chiều rộng để có không gian hơn */
+            margin: auto;
+            background-color: #fff;
+            padding: 25px;
+        }
+        h1, h2, h3, h4 {
+            color: #333;
+        }
+        h1 {
+            border-bottom: 2px solid #0056b3;
+            padding-bottom: 10px;
+            text-align: center;
+            font-size: 18pt;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+        h2 {
+            margin-top: 30px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 8px;
+            font-size: 16pt;
+            color: #0056b3;
+            font-weight: bold;
+        }
+        h3 {
+            font-size: 14pt;
+            margin-top: 25px;
+            color: #007bff;
+            font-weight: bold;
+        }
+        h4 {
+            font-size: 13pt;
+            margin-top: 20px;
+            font-style: italic;
+            color: #17a2b8;
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            margin-bottom: 20px;
+            font-size: 12pt;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 10px; /* Tăng padding */
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            background-color: #e9ecef;
+            font-weight: bold;
+            text-align: center;
+        }
+        ul, ol {
+            margin-left: 40px;
+            margin-bottom: 15px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        .section-title {
+            font-weight: bold;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        .note {
+            background-color: #e7f3fe;
+            border-left: 6px solid #2196F3;
+            padding: 12px;
+            margin: 20px 0;
+            font-style: italic;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border-left: 6px solid #ffc107;
+            padding: 12px;
+            margin: 20px 0;
+        }
+        .header-info {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header-info p {
+            margin: 5px 0;
+            font-size: 14pt;
+        }
+        .input-field {
+            border-bottom: 1px dotted #000;
+            min-width: 250px; /* Tăng chiều rộng */
+            display: inline-block;
+        }
+        .question {
+            margin-bottom: 12px; /* Tăng khoảng cách */
+        }
+        .question strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+        textarea {
+            width: 98%;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            min-height: 60px; /* Đảm bảo đủ không gian ghi chú */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-info">
+            <p><strong>Quyển 3: Thực hành triển khai hệ thống thông tin ABC tại doanh nghiệp</strong></p>
+            <p><strong>Bài 5: Thực hành thiết lập cấu hình phần cứng, cài đặt phần mềm, chuyển đổi dữ liệu và đào tạo người sử dụng</strong></p>
+        </div>
+
+        <h1>Bài 1: Khảo sát Thực trạng Hạ tầng Công nghệ Thông tin (CNTT) tại Doanh nghiệp (Chi tiết)</h1>
+        <p class="note"><strong>Đối tượng áp dụng ví dụ:</strong> Chuỗi nhà hàng/cửa hàng bán lẻ "Five Guys" (hoặc tương tự). <br>
+        <strong>Hệ thống mục tiêu:</strong> Hệ thống Thông tin ABC (Nền tảng Next.js & Supabase).</p>
+
+        <h2>I. Thông tin Chung về Doanh nghiệp</h2>
+        <div class="section">
+            <p class="question"><strong>Tên đầy đủ của Doanh nghiệp:</strong> <span class="input-field">Công ty TNHH XYZ (Kinh doanh chuỗi Five Guys Việt Nam)</span></p>
+            <p class="question"><strong>Địa chỉ trụ sở chính:</strong> <span class="input-field"></span></p>
+            <p class="question"><strong>Số lượng chi nhánh/cửa hàng sẽ triển khai HTTT ABC:</strong> <span class="input-field"></span> (Ghi rõ địa chỉ từng nơi nếu cần)</p>
+            <p class="question"><strong>Lĩnh vực hoạt động chính:</strong> <span class="input-field">Dịch vụ ăn uống (F&B), bán lẻ thực phẩm</span></p>
+            <p class="question"><strong>Mô hình hoạt động:</strong> (VD: Nhà hàng phục vụ tại chỗ, bán mang đi, giao hàng, bán online...)</p>
+            <p class="question"><strong>Quy mô mỗi cửa hàng (trung bình):</strong> (VD: Số bàn, số nhân viên/ca, lượng khách/ngày)</p>
+            <p class="question"><strong>Tổng số nhân viên dự kiến sử dụng Hệ thống Thông tin ABC (bao gồm quản lý, thu ngân, phục vụ, bếp, kho,...):</strong> <span class="input-field"></span></p>
+            <p class="question"><strong>Người liên hệ chính về CNTT:</strong> Tên: <span class="input-field"></span> Chức vụ: <span class="input-field"></span> SĐT: <span class="input-field"></span> Email: <span class="input-field"></span></p>
+            <p class="question"><strong>Người liên hệ chính về Vận hành/Nghiệp vụ:</strong> Tên: <span class="input-field"></span> Chức vụ: <span class="input-field"></span> SĐT: <span class="input-field"></span> Email: <span class="input-field"></span></p>
+        </div>
+
+        <h2>II. Mục tiêu Khảo sát</h2>
+        <p>Mục tiêu của quá trình khảo sát thực trạng hạ tầng CNTT là:</p>
+        <ul>
+            <li>Hiểu rõ hiện trạng hệ thống phần cứng, phần mềm, mạng, hệ thống POS hiện tại, chính sách bảo mật và các tài nguyên CNTT khác đang được sử dụng tại trụ sở chính và các cửa hàng.</li>
+            <li>Đánh giá mức độ đáp ứng của hạ tầng hiện tại so với yêu cầu kỹ thuật, vận hành, và khả năng mở rộng của Hệ thống Thông tin ABC.</li>
+            <li>Xác định các điểm mạnh, điểm yếu, rủi ro tiềm ẩn (VD: thiết bị lỗi thời, băng thông mạng không đủ, thiếu dự phòng) và cơ hội cải thiện, nâng cấp hạ tầng CNTT.</li>
+            <li>Thu thập thông tin chi tiết làm cơ sở cho việc:
+                <ul>
+                    <li>Lập kế hoạch thiết kế kiến trúc hệ thống (cloud, on-premise, hybrid).</li>
+                    <li>Lựa chọn, mua sắm thiết bị phần cứng, phần mềm cần thiết.</li>
+                    <li>Lên kế hoạch triển khai, cài đặt hệ thống ABC tại các điểm.</li>
+                    <li>Xây dựng kế hoạch chuyển đổi dữ liệu từ hệ thống cũ (nếu có).</li>
+                    <li>Đảm bảo hệ thống ABC vận hành hiệu quả, ổn định, an toàn và đáp ứng nhu cầu nghiệp vụ đặc thù của ngành F&B/bán lẻ.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h2>III. Đối tượng và Phạm vi Khảo sát</h2>
+        <ul>
+            <li><strong>Đối tượng khảo sát:</strong>
+                <ul>
+                    <li>Ban lãnh đạo (về chiến lược phát triển, định hướng và ngân sách CNTT).</li>
+                    <li>Trưởng các phòng ban liên quan (Kinh doanh, Marketing, Kế toán, Kho vận, Nhân sự, Vận hành cửa hàng).</li>
+                    <li>Nhân viên phòng CNTT hoặc người phụ trách CNTT (về chi tiết kỹ thuật hạ tầng).</li>
+                    <li>Quản lý cửa hàng, trưởng ca.</li>
+                    <li>Nhân viên trực tiếp sử dụng hệ thống (thu ngân, phục vụ, nhân viên bếp nếu có tương tác hệ thống).</li>
+                    <li>Xem xét các tài liệu kỹ thuật, sơ đồ hệ thống, hợp đồng dịch vụ CNTT, báo cáo vận hành hiện có.</li>
+                </ul>
+            </li>
+            <li><strong>Phạm vi khảo sát:</strong>
+                <ul>
+                    <li>Toàn bộ các địa điểm (trụ sở, chi nhánh, cửa hàng) sẽ triển khai Hệ thống Thông tin ABC.</li>
+                    <li>Hạ tầng máy chủ (vật lý, ảo hóa, cloud hiện có).
+                        <ul><li>Nếu doanh nghiệp chưa có hoặc muốn dùng cloud cho HTTT ABC: Khảo sát về nhà cung cấp cloud ưu tiên (AWS, Azure, Google Cloud, Vercel, Supabase Cloud, ...), kinh nghiệm sử dụng cloud.</li></ul>
+                    </li>
+                    <li>Hạ tầng máy trạm (PC, laptop, máy tính bảng cho quản lý/nhân viên).</li>
+                    <li><strong>Hệ thống Point of Sale (POS) hiện tại:</strong> Phần cứng POS, phần mềm POS, thiết bị ngoại vi POS (máy in bill, máy quét mã vạch, ngăn kéo tiền, thiết bị thanh toán thẻ).</li>
+                    <li><strong>Thiết bị chuyên dụng khác tại điểm bán:</strong> Kitchen Display Systems (KDS), thiết bị order cầm tay, bảng menu điện tử.</li>
+                    <li>Hạ tầng mạng LAN, WAN, Internet, Wi-Fi (tại trụ sở và các cửa hàng).
+                        <ul><li>Đặc biệt chú trọng băng thông và độ ổn định của đường truyền Internet tại các cửa hàng.</li></ul>
+                    </li>
+                    <li>Phần mềm hệ thống (HĐH, CSDL hiện tại), phần mềm ứng dụng đang sử dụng (kế toán, kho, nhân sự,...).</li>
+                    <li>Chính sách an toàn thông tin, sao lưu dữ liệu, quy trình vận hành và hỗ trợ CNTT.
+                        <ul><li>Quy định về PCI DSS nếu có xử lý thẻ thanh toán.</li></ul>
+                    </li>
+                    <li>Nguồn nhân lực CNTT của doanh nghiệp (nội bộ và thuê ngoài).</li>
+                    <li>Yêu cầu tích hợp với các hệ thống khác (VD: phần mềm kế toán, hệ thống loyalty, ứng dụng đặt hàng online, các đối tác giao vận).</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h2>IV. Nội dung Khảo sát Chi tiết</h2>
+        <p>Sử dụng các bảng hỏi và checklist dưới đây để thu thập thông tin. Khuyến khích ghi chú chi tiết, chụp ảnh hiện trạng, và thu thập sơ đồ mạng (nếu có).</p>
+
+        <h3>1. Khảo sát Hạ tầng Phần cứng</h3>
+        <h4>1.1. Máy chủ (Servers) - Hiện có và Định hướng cho HTTT ABC</h4>
+        <p class="note">Lưu ý: Hệ thống ABC dựa trên Next.js và Supabase rất phù hợp triển khai trên cloud (Vercel/Netlify cho Next.js, Supabase Cloud cho backend). Khảo sát này nhằm đánh giá tài nguyên hiện có, khả năng tự host (nếu DN muốn) và nhu cầu tích hợp.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Hạng mục</th>
+                    <th>Thông tin cần thu thập/Câu hỏi gợi ý</th>
+                    <th>Hiện trạng & Ghi chú (cho từng máy chủ nếu có nhiều)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Máy chủ hiện có (Vật lý/Ảo)</td>
+                    <td>Số lượng? Hãng sản xuất, model, năm mua? Mục đích sử dụng hiện tại (CSDL, ứng dụng X, file server...)?</td>
+                    <td><textarea rows="3"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Cấu hình chi tiết máy chủ hiện có</td>
+                    <td>CPU, RAM, Ổ cứng (Loại, dung lượng, RAID), Card mạng.</td>
+                    <td><textarea rows="4"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Hệ điều hành máy chủ hiện có</td>
+                    <td>Tên HĐH, phiên bản, bản quyền.</td>
+                    <td><textarea rows="2"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Ảo hóa (Nếu có)</td>
+                    <td>Nền tảng (VMware, Hyper-V, Proxmox), phiên bản.</td>
+                    <td><textarea rows="2"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Môi trường phòng máy chủ (Nếu có)</td>
+                    <td>Điều hòa, UPS, PCCC, kiểm soát ra vào.</td>
+                    <td><textarea rows="3"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Định hướng cho HTTT ABC</td>
+                    <td>Doanh nghiệp muốn tự host (một phần/toàn bộ) HTTT ABC hay ưu tiên giải pháp cloud? Có kinh nghiệm/tài khoản với nhà cung cấp cloud nào chưa (AWS, Azure, Google Cloud, Vercel, Supabase...)? Ngân sách dự kiến cho hosting?</td>
+                    <td><textarea rows="4"></textarea></td>
+                </tr>
+                 <tr>
+                    <td>Yêu cầu về Node.js (cho Next.js backend nếu self-host)</td>
+                    <td>Phiên bản Node.js mong muốn/tương thích? Yêu cầu về môi trường runtime?</td>
+                    <td><textarea rows="2"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Yêu cầu về CSDL PostgreSQL (nếu self-host Supabase)</td>
+                    <td>Phiên bản PostgreSQL mong muốn/tương thích? Yêu cầu về hiệu năng, dung lượng lưu trữ, backup cho CSDL?</td>
+                    <td><textarea rows="3"></textarea></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h4>1.2. Máy trạm (Workstations/Client PCs, Tablets) - Tại Văn phòng và Cửa hàng</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>Hạng mục</th>
+                    <th>Thông tin cần thu thập/Câu hỏi gợi ý</th>
+                    <th>Hiện trạng & Ghi chú (Phân loại theo VP/Cửa hàng nếu khác biệt)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Số lượng & Phân bổ</td>
+                    <td>Tổng số máy tính để bàn? Laptop? Máy tính bảng (cho quản lý, order)? Phân bổ theo phòng ban/cửa hàng?</td>
+                    <td><textarea rows="3"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Cấu hình phổ biến/tối thiểu</td>
+                    <td>CPU, RAM, Loại ổ cứng (HDD/SSD), Dung lượng, Kích thước màn hình, Độ phân giải.</td>
+                    <td><textarea rows="4"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Hệ điều hành</td>
+                    <td>Windows (phiên bản), macOS, Linux, Android, iOS? Bản quyền? Chính sách cập nhật?</td>
+                    <td><textarea rows="3"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Trình duyệt web</td>
+                    <td>Trình duyệt chính (Chrome, Firefox, Edge, Safari)? Phiên bản? Chính sách cập nhật? (Quan trọng cho web-app Next.js)</td>
+                    <td><textarea rows="3"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Phần mềm văn phòng & khác</td>
+                    <td>MS Office, Google Workspace, phần mềm diệt virus,...</td>
+                    <td><textarea rows="2"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Tuổi đời trung bình</td>
+                    <td>Đa số máy trạm đã sử dụng bao lâu? Kế hoạch thay thế?</td>
+                    <td><textarea rows="2"></textarea></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h4>1.3. Thiết bị Ngoại vi và Chuyên dụng tại Điểm Bán (POS) và Văn phòng</h4>
+        <p class="warning">Đây là phần rất quan trọng cho doanh nghiệp bán lẻ/F&B. Cần khảo sát kỹ tại từng cửa hàng.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Hạng mục</th>
+                    <th>Thông tin cần thu thập/Câu hỏi gợi ý (Cho từng loại thiết bị)</th>
+                    <th>Hiện trạng & Ghi chú (Số lượng, Model, Hãng SX, Kết nối, Tình trạng)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="3"><strong>1.3.1. Thiết bị tại Quầy Thu ngân (POS - Point of Sale)</strong></td>
+                </tr>
+                <tr>
+                    <td>Máy POS tính tiền</td>
+                    <td>Loại (All-in-one, PC + màn hình cảm ứng)? Model, Hãng SX? Cấu hình (CPU, RAM, OS)? Kích thước màn hình? Cổng kết nối?</td>
+                    <td><textarea rows="4"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Máy in hóa đơn (Bill Printer)</td>
+                    <td>Loại (in nhiệt, in kim)? Khổ giấy (K57, K80)? Model, Hãng SX? Kết nối (USB, LAN, Serial, Bluetooth)? Tốc độ in? Tự động cắt giấy?</td>
+                    <td><textarea rows="3"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Ngăn kéo đựng tiền (Cash Drawer)</td>
+                    <td>Model, Hãng SX? Kết nối với máy in bill hay máy POS (RJ11/RJ12)? Kích thước?</td>
+                    <td><textarea rows="2"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Máy quét mã vạch (Barcode Scanner)</td>
+                    <td>Loại (1D, 2D/QR code, cầm tay, để bàn, không dây)? Model, Hãng SX? Kết nối (USB, Bluetooth)?</td>
+                    <td><textarea rows="3"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Thiết bị thanh toán thẻ (Card Payment Terminal - EFTPOS/mPOS)</td>
+                    <td>Model, Hãng SX (Verifone, Ingenico, PAX, mPOS device...)? Kết nối (Standalone, tích hợp POS qua LAN/USB/Serial)? Nhà cung cấp dịch vụ thanh toán (Ngân hàng, VNPay, Momo...)? Có tuân thủ PCI DSS không?</td>
+                    <td><textarea rows="4"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Màn hình hiển thị cho khách (Customer Display)</td>
+                    <td>Loại (LCD, VFD)? Kích thước? Kết nối? Thông tin hiển thị?</td>
+                    <td><textarea rows="2"></textarea></td>
+                </tr>
+                <tr>
+                    <td colspan="3"><strong>1.3.2. Thiết bị Hỗ trợ Vận hành Khác tại Cửa hàng</strong></td>
+                </tr>
+                <tr>
+                    <td>Máy tính bảng/Thiết bị Order Cầm tay</td>
+                    <td>Số lượng? Model, Hãng SX (iPad, Samsung Tab,...)? HĐH? Kích thước? Kết nối Wi-Fi? Mục đích sử dụng (order, kiểm kho)?</td>
+                    <td><textarea rows="3"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Hệ thống Hiển thị Nhà bếp (Kitchen Display System - KDS)</td>
+                    <td>Có sử dụng không? Số lượng màn hình? Model, kích thước? Phần mềm KDS (nếu có)? Kết nối mạng?</td>
+                    <td><textarea rows="3"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Máy chấm công</td>
+                    <td>Loại (vân tay, thẻ từ, khuôn mặt)? Model? Kết nối mạng? Phần mềm quản lý? Có nhu cầu tích hợp dữ liệu chấm công với HTTT ABC không?</td>
+                    <td><textarea rows="3"></textarea></td>
+                </tr>
+                 <tr>
+                    <td>Thiết bị kiểm kê kho cầm tay (Handheld Inventory Scanners)</td>
+                    <td>Có sử dụng không? Loại, model, HĐH (nếu là smart device)? Kết nối (Wi-Fi, Bluetooth)?</td>
+                    <td><textarea rows="2"></textarea></td>
+                </tr>
+                <tr>
+                    <td colspan="3"><strong>1.3.3. Thiết bị Ngoại vi Văn phòng Chung</strong></td>
+                </tr>
+                <tr>
+                    <td>Máy in văn phòng</td>
+                    <td>Số lượng, loại (laser, phun, đa năng), model, cách kết nối (USB, mạng LAN), có chia sẻ không? Driver?</td>
+                    <td><textarea rows="3"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Máy quét (Scanner)</td>
+                    <td>Số lượng, loại, model, cách kết nối.</td>
+                    <td><textarea rows="2"></textarea></td>
+                </tr>
+                 <tr>
+                    <td>Các thiết bị khác</td>
+                    <td>Camera giám sát (có liên quan đến an ninh giao dịch không?), thiết bị lưu trữ NAS, điện thoại IP,...</td>
+                    <td><textarea rows="3"></textarea></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>2. Khảo sát Hạ tầng Mạng (Tại Trụ sở và từng Cửa hàng)</h3>
+        <p class="warning">Độ ổn định và băng thông mạng tại cửa hàng rất quan trọng cho hệ thống POS hiện đại.</p>
+        <h4>2.1. Mạng LAN (Local Area Network)</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>Hạng mục</th>
+                    <th>Thông tin cần thu thập/Câu hỏi gợi ý</th>
+                    <th>Hiện trạng & Ghi chú (Riêng cho VP và từng loại cửa hàng nếu cấu trúc khác nhau)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Sơ đồ mạng</td>
+                    <td>Có sơ đồ mạng logic/vật lý không? (Xin bản sao). Mô tả kiến trúc mạng (star, mesh, etc.).</td>
+                    <td><textarea rows="3"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Thiết bị chuyển mạch (Switch)</td>
+                    <td>Số lượng, hãng, model, loại (Managed/Unmanaged), tốc độ cổng, số cổng, PoE? Vị trí? Tuổi đời?</td>
+                    <td><textarea rows="4"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Thiết bị định tuyến (Router)</td>
+                    <td>Hãng, model, khả năng chịu tải, có làm DHCP server không? Tuổi đời?</td>
+                    <td><textarea rows="3"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Tường lửa (Firewall)</td>
+                    <td>Loại (phần cứng/phần mềm)? Model? Chính sách cơ bản? Có cập nhật firmware/signature không?</td>
+                    <td><textarea rows="4"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Hệ thống cáp mạng</td>
+                    <td>Loại cáp (Cat5e, Cat6)? Tình trạng? Patch panel, outlet có đánh dấu?</td>
+                    <td><textarea rows="3"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Địa chỉ IP & VLAN</td>
+                    <td>Dải IP LAN? Cách cấp phát (DHCP/Tĩnh)? Có VLAN không (VD: VLAN riêng cho POS, Wi-Fi khách, Wi-Fi nội bộ, Camera)?</td>
+                    <td><textarea rows="4"></textarea></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h4>2.2. Mạng Không dây (Wi-Fi)</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>Hạng mục</th>
+                    <th>Thông tin cần thu thập/Câu hỏi gợi ý</th>
+                    <th>Hiện trạng & Ghi chú (Riêng cho VP và từng loại cửa hàng)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Thiết bị Access Point (AP)</td>
+                    <td>Số lượng, hãng, model, chuẩn (802.11n/ac/ax), vị trí, vùng phủ.</td>
+                    <td><textarea rows="3"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Cấu hình SSID</td>
+                    <td>SSID cho nhân viên? SSID cho khách (Guest Wi-Fi)? Có giới hạn băng thông/thời gian cho khách không?</td>
+                    <td><textarea rows="3"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Bảo mật Wi-Fi</td>
+                    <td>Phương thức (WPA2/WPA3-PSK/Enterprise)? Mật khẩu? Có Radius server?</td>
+                    <td><textarea rows="3"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Quản lý AP</td>
+                    <td>Độc lập hay qua controller (hardware/software/cloud)?</td>
+                    <td><textarea rows="2"></textarea></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h4>2.3. Kết nối Internet và Mạng WAN (Đặc biệt quan trọng cho các cửa hàng)</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>Hạng mục</th>
+                    <th>Thông tin cần thu thập/Câu hỏi gợi ý</th>
+                    <th>Hiện trạng & Ghi chú (Riêng cho VP và từng loại cửa hàng)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Nhà cung cấp (ISP)</td>
+                    <td>Tên ISP (VNPT, FPT, Viettel,...)?</td>
+                    <td><textarea rows="2"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Đường truyền Internet</td>
+                    <td>Số lượng đường truyền/cửa hàng? Loại (FTTH, Leased Line)? Tốc độ Download/Upload thực tế? Gói cước? Có SLA không?</td>
+                    <td><textarea rows="4"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Dự phòng Internet (Failover)</td>
+                    <td>Có đường truyền dự phòng không (VD: 1 FTTH + 1 USB 4G/5G)? Thiết bị/cơ chế failover?</td>
+                    <td><textarea rows="3"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Kết nối giữa các địa điểm (WAN/VPN)</td>
+                    <td>Các cửa hàng có kết nối VPN về trụ sở không? Loại VPN (IPSec, SSL VPN)? Thiết bị/phần mềm? Mục đích (truy cập tài nguyên nội bộ, đồng bộ dữ liệu...)?</td>
+                    <td><textarea rows="3"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Tên miền & DNS</td>
+                    <td>Doanh nghiệp có sở hữu tên miền nào không? Ai quản lý DNS? Có sử dụng dịch vụ DNS hosting nào không?</td>
+                    <td><textarea rows="2"></textarea></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>3. Khảo sát Phần mềm và Dữ liệu</h3>
+        <h4>3.1. Phần mềm Hệ thống (Đã có thông tin ở mục Phần cứng, ở đây tổng hợp lại và chi tiết hơn)</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>Hạng mục</th>
+                    <th>Thông tin cần thu thập/Câu hỏi gợi ý</th>
+                    <th>Hiện trạng & Ghi chú</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Hệ điều hành (Server & Client)</td>
+                    <td>Tập trung vào phiên bản cụ thể, tình trạng bản quyền, chính sách cập nhật tự động/thủ công.</td>
+                    <td><textarea rows="3"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Hệ quản trị CSDL hiện tại (cho các ứng dụng nghiệp vụ)</td>
+                    <td>SQL Server, MySQL, PostgreSQL, Oracle, Access, SQLite (cho POS offline),... Phiên bản? Bản quyền? Ai quản trị? Nơi lưu trữ (local server, cloud)?</td>
+                    <td><textarea rows="3"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Web server hiện tại (nếu có)</td>
+                    <td>Apache, Nginx, IIS? Phiên bản? Hosting ở đâu?</td>
+                    <td><textarea rows="2"></textarea></td>
+                </tr>
+                 <tr>
+                    <td>Node.js runtime (nếu đã dùng)</td>
+                    <td>Phiên bản Node.js đang được sử dụng cho các ứng dụng khác (nếu có)? Kinh nghiệm quản lý môi trường Node.js?</td>
+                    <td><textarea rows="2"></textarea></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h4>3.2. Phần mềm Ứng dụng Nghiệp vụ Hiện có</h4>
+        <p class="note">Cần xác định rõ các hệ thống đang chạy và khả năng/nhu cầu tích hợp hoặc thay thế.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Hạng mục</th>
+                    <th>Thông tin cần thu thập/Câu hỏi gợi ý</th>
+                    <th>Hiện trạng & Ghi chú (Tên PM, Nhà CC, Phiên bản, Nền tảng, Số người dùng, Mức độ hài lòng)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Phần mềm Quản lý Bán hàng (POS) hiện tại</td>
+                    <td>Tên phần mềm, nhà cung cấp, phiên bản. Online/Offline/Hybrid? Các chức năng chính đang sử dụng. Database backend là gì? Điểm mạnh/yếu? Lý do muốn thay thế/nâng cấp?</td>
+                    <td><textarea rows="5"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Phần mềm Kế toán</td>
+                    <td>MISA, FAST, Bravo, SAP B1, Excel,...? Có cần tích hợp dữ liệu bán hàng từ HTTT ABC vào không? Hình thức tích hợp mong muốn (API, export/import file)?</td>
+                    <td><textarea rows="4"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Phần mềm Quản lý Kho</td>
+                    <td>Tên phần mềm? Có tích hợp với POS hiện tại không? Các nghiệp vụ kho chính? Có cần tích hợp với HTTT ABC không?</td>
+                    <td><textarea rows="3"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Phần mềm Quản lý Khách hàng Thân thiết (Loyalty/CRM)</td>
+                    <td>Tên phần mềm? Các chương trình loyalty đang chạy? Có cần tích hợp với HTTT ABC không?</td>
+                    <td><textarea rows="3"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Hệ thống Đặt hàng Online / App</td>
+                    <td>Có sử dụng nền tảng nào không (ShopeeFood, GrabFood, Baemin, website/app riêng)? Có nhu cầu tích hợp đơn hàng vào HTTT ABC không?</td>
+                    <td><textarea rows="3"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Phần mềm Nhân sự - Chấm công - Tính lương</td>
+                    <td>Có nhu cầu lấy dữ liệu ca làm việc, doanh số nhân viên từ HTTT ABC để tính lương/thưởng không?</td>
+                    <td><textarea rows="2"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Phần mềm diệt virus</td>
+                    <td>Loại cho máy chủ và máy trạm? Quản lý tập trung? Tình trạng cập nhật?</td>
+                    <td><textarea rows="2"></textarea></td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <h4>3.3. Dữ liệu Hiện tại và Yêu cầu Chuyển đổi (Migration)</h4>
+        <p class="warning">Rất quan trọng để lập kế hoạch chuyển đổi dữ liệu sang Hệ thống Thông tin ABC.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Hạng mục</th>
+                    <th>Thông tin cần thu thập/Câu hỏi gợi ý</th>
+                    <th>Chi tiết & Ghi chú</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Nguồn dữ liệu chính</td>
+                    <td>Dữ liệu nào cần chuyển đổi (Sản phẩm/Menu, Danh mục, Khách hàng, Nhà cung cấp, Tồn kho ban đầu, Lịch sử giao dịch)? Đang được lưu trữ ở đâu (CSDL của POS cũ, Excel, Access,...)?</td>
+                    <td><textarea rows="4"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Định dạng và cấu trúc dữ liệu</td>
+                    <td>Định dạng file (CSV, Excel, SQL dump, JSON, XML)? Cấu trúc bảng/trường dữ liệu? Có tài liệu mô tả CSDL cũ không?</td>
+                    <td><textarea rows="3"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Khối lượng dữ liệu</td>
+                    <td>Số lượng bản ghi ước tính cho mỗi loại dữ liệu (VD: ~500 mã sản phẩm, ~10.000 khách hàng, ~1.000.000 giao dịch bán hàng)? Dung lượng (MB/GB)?</td>
+                    <td><textarea rows="3"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Chất lượng dữ liệu</td>
+                    <td>Mức độ đầy đủ, chính xác, nhất quán của dữ liệu hiện tại? Có dữ liệu rác, trùng lặp, thiếu thông tin không? Ai chịu trách nhiệm làm sạch dữ liệu trước khi chuyển đổi?</td>
+                    <td><textarea rows="4"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Lịch sử dữ liệu cần chuyển</td>
+                    <td>Cần chuyển đổi toàn bộ lịch sử giao dịch hay chỉ trong một khoảng thời gian nhất định (VD: 1-2 năm gần nhất)?</td>
+                    <td><textarea rows="2"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Yêu cầu về "cắt dữ liệu" (Data Cutover)</td>
+                    <td>Thời điểm nào phù hợp để "chốt" dữ liệu cũ và bắt đầu sử dụng hệ thống mới? Có yêu cầu về thời gian downtime tối thiểu không?</td>
+                    <td><textarea rows="3"></textarea></td>
+                </tr>
+            </tbody>
+        </table>
+
+
+        <h3>4. Khảo sát về An toàn Thông tin và Sao lưu Dữ liệu</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Hạng mục</th>
+                    <th>Thông tin cần thu thập/Câu hỏi gợi ý</th>
+                    <th>Hiện trạng & Ghi chú</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Chính sách mật khẩu</td>
+                    <td>Quy định độ phức tạp, thời gian thay đổi, cấm sử dụng lại mật khẩu cũ?</td>
+                    <td><textarea rows="2"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Quản lý tài khoản người dùng</td>
+                    <td>Quy trình tạo/sửa/xóa tài khoản? Phân quyền truy cập (Role-Based Access Control)? Có Active Directory/LDAP không? Ai quản lý?</td>
+                    <td><textarea rows="3"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Sao lưu dữ liệu (Backup)</td>
+                    <td>Đang sao lưu những gì (CSDL POS, file server, cấu hình hệ thống)? Tần suất (hàng ngày/tuần/tháng)? Phương pháp (Full, Incremental, Differential)? Nơi lưu (local, cloud, offsite tape)? Phần mềm backup? Ai chịu trách nhiệm?</td>
+                    <td><textarea rows="5"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Kiểm tra phục hồi (Restore Test)</td>
+                    <td>Có thực hiện kiểm tra phục hồi dữ liệu định kỳ không? Tần suất? Kết quả lần gần nhất?</td>
+                    <td><textarea rows="2"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Bảo mật cho giao dịch thanh toán</td>
+                    <td>Các biện pháp bảo vệ dữ liệu thẻ thanh toán? Có tuân thủ PCI DSS không? Nếu dùng dịch vụ thanh toán bên thứ ba, họ có tuân thủ không?</td>
+                    <td><textarea rows="3"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Phòng chống virus/malware</td>
+                    <td>(Đã đề cập ở phần mềm) Chính sách quét, xử lý khi phát hiện?</td>
+                    <td><textarea rows="2"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Kiểm soát truy cập vật lý</td>
+                    <td>Bảo vệ phòng máy chủ (nếu có)? An ninh cho thiết bị POS tại cửa hàng (khóa, camera)?</td>
+                    <td><textarea rows="2"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Nhật ký hệ thống (System Logs)</td>
+                    <td>Có thu thập và lưu trữ log từ máy chủ, thiết bị mạng, ứng dụng không? Thời gian lưu trữ? Có công cụ phân tích log không?</td>
+                    <td><textarea rows="3"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Đào tạo An toàn thông tin</td>
+                    <td>Nhân viên có được đào tạo về ATTT (phishing, malware, bảo vệ dữ liệu) không?</td>
+                    <td><textarea rows="2"></textarea></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>5. Khảo sát về Nhân sự CNTT và Quy trình Vận hành, Hỗ trợ</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Hạng mục</th>
+                    <th>Thông tin cần thu thập/Câu hỏi gợi ý</th>
+                    <th>Hiện trạng & Ghi chú</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Đội ngũ CNTT nội bộ</td>
+                    <td>Số lượng? Chức danh? Chuyên môn (HW, SW, Network, Security, Database, Cloud Admin)? Kinh nghiệm với Next.js, Supabase, PostgreSQL, Docker, Cloud platforms?</td>
+                    <td><textarea rows="4"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Thuê ngoài dịch vụ CNTT (Managed Services)</td>
+                    <td>Có đang thuê ngoài dịch vụ nào không (quản trị server, mạng, hỗ trợ POS, sửa chữa phần cứng)? Nhà cung cấp? Phạm vi? SLA?</td>
+                    <td><textarea rows="3"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Quy trình hỗ trợ người dùng (Helpdesk/Support)</td>
+                    <td>Khi có sự cố (VD: POS không hoạt động, không in được bill), nhân viên cửa hàng liên hệ ai? Kênh liên hệ (điện thoại, email, chat)? Thời gian phản hồi/xử lý? Có công cụ ticketing không?</td>
+                    <td><textarea rows="4"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Tài liệu hệ thống hiện có</td>
+                    <td>Sơ đồ mạng, tài liệu cấu hình thiết bị, hướng dẫn sử dụng phần mềm hiện tại, quy trình vận hành,...</td>
+                    <td><textarea rows="2"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Ngân sách CNTT</td>
+                    <td>Ngân sách hàng năm cho đầu tư, nâng cấp, bảo trì CNTT (phần cứng, phần mềm, dịch vụ, nhân sự)? Ngân sách dự kiến cho dự án HTTT ABC?</td>
+                    <td><textarea rows="3"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Kỳ vọng về Hệ thống ABC</td>
+                    <td>Những vấn đề chính mà HTTT ABC cần giải quyết? Những tính năng quan trọng nhất kỳ vọng từ hệ thống mới?</td>
+                    <td><textarea rows="3"></textarea></td>
+                </tr>
+                 <tr>
+                    <td>Khả năng đào tạo và tiếp nhận hệ thống mới</td>
+                    <td>Trình độ tin học trung bình của nhân viên (quản lý, thu ngân,...)? Thời gian dự kiến có thể dành cho đào tạo? Hình thức đào tạo mong muốn (trực tiếp, online, tài liệu)?</td>
+                    <td><textarea rows="3"></textarea></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>V. Phương pháp Khảo sát</h2>
+        <ul>
+            <li><strong>Phỏng vấn trực tiếp:</strong> Trao đổi với các đối tượng khảo sát đã xác định. Chuẩn bị câu hỏi theo checklist này, ghi âm (nếu được phép) và ghi chép cẩn thận.</li>
+            <li><strong>Bảng câu hỏi (Questionnaires):</strong> Có thể điều chỉnh checklist này thành dạng bảng hỏi để gửi cho các bộ phận/cửa hàng tự điền trước một số thông tin cơ bản.</li>
+            <li><strong>Quan sát thực tế (Site Survey):</strong>
+                <ul>
+                    <li>Thăm trực tiếp một vài cửa hàng đại diện (và trụ sở) để quan sát cách vận hành, kiểm tra phòng máy chủ (nếu có), vị trí đặt thiết bị mạng, máy POS, cách nhân viên tương tác với hệ thống hiện tại.</li>
+                    <li>Chụp ảnh các thiết bị, sơ đồ bố trí (nếu cần và được phép).</li>
+                </ul>
+            </li>
+            <li><strong>Nghiên cứu tài liệu:</strong> Xem xét các tài liệu kỹ thuật, hợp đồng dịch vụ, sơ đồ mạng, báo cáo vận hành, quy trình nghiệp vụ hiện có.</li>
+            <li><strong>Sử dụng công cụ phần mềm (nếu được phép và có sự phối hợp của IT doanh nghiệp):</strong>
+                <ul>
+                    <li>Công cụ kiểm kê phần cứng/phần mềm tự động: Spiceworks Inventory, Lansweeper, PDQ Inventory.</li>
+                    <li>Công cụ quét mạng: Nmap, Advanced IP Scanner, Wi-Fi Analyzer.</li>
+                    <li>Công cụ kiểm tra tốc độ mạng & Internet: Speedtest.net, iPerf.</li>
+                    <li>Truy cập (read-only nếu có thể) vào các hệ thống quản trị thiết bị mạng, server để xem cấu hình.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h2>VI. Tổng hợp, Phân tích và Lập Báo cáo Khảo sát</h2>
+        <ol>
+            <li><strong>Tổng hợp thông tin:</strong> Tập hợp tất cả dữ liệu thu thập được (từ phỏng vấn, bảng hỏi, quan sát, tài liệu) vào một nơi lưu trữ chung, có hệ thống (VD: sử dụng spreadsheet, CSDL nhỏ, hoặc các công cụ quản lý dự án).</li>
+            <li><strong>Xác minh thông tin:</strong> Đối chiếu thông tin từ các nguồn khác nhau để đảm bảo tính chính xác.</li>
+            <li><strong>Phân tích hiện trạng:</strong>
+                <ul>
+                    <li><strong>Điểm mạnh (Strengths):</strong> Những yếu tố hạ tầng hiện tại tốt, có thể tận dụng cho HTTT ABC (VD: mạng LAN mới, máy chủ còn tốt, nhân sự IT có kinh nghiệm).</li>
+                    <li><strong>Điểm yếu (Weaknesses):</strong> Những hạn chế, thiếu sót của hạ tầng hiện tại so với yêu cầu của HTTT ABC (VD: đường truyền Internet tại cửa hàng chậm, máy POS quá cũ, không có quy trình backup).</li>
+                    <li><strong>Cơ hội (Opportunities):</strong> Các yếu tố có thể cải thiện để tối ưu hóa việc triển khai và vận hành HTTT ABC (VD: nâng cấp lên cloud, chuẩn hóa thiết bị POS).</li>
+                    <li><strong>Thách thức/Rủi ro (Threats/Risks):</strong> Các yếu tố có thể gây khó khăn, cản trở dự án (VD: ngân sách hạn chế, nhân viên ngại thay đổi, dữ liệu cũ quá phức tạp để chuyển đổi, vấn đề bảo mật).</li>
+                </ul>
+            </li>
+            <li><strong>Đánh giá mức độ sẵn sàng:</strong> Đánh giá tổng thể xem hạ tầng hiện tại đã sẵn sàng cho việc triển khai HTTT ABC ở mức độ nào. Xác định các "khoảng trống" (gaps) cần được giải quyết.</li>
+            <li><strong>Lập Báo cáo Khảo sát Thực trạng Hạ tầng CNTT:</strong>
+                <ul>
+                    <li>Tóm tắt mục tiêu và phạm vi khảo sát.</li>
+                    <li>Trình bày chi tiết các kết quả khảo sát theo từng hạng mục. Sử dụng bảng biểu, sơ đồ để trực quan hóa.</li>
+                    <li>Phân tích SWOT (Strengths, Weaknesses, Opportunities, Threats) liên quan đến hạ tầng CNTT.</li>
+                    <li>Đưa ra các nhận định, đánh giá về mức độ đáp ứng của hạ tầng.</li>
+                    <li><strong>Đề xuất sơ bộ các hạng mục cần đầu tư/nâng cấp/thay đổi:</strong> Phần cứng, phần mềm, mạng, quy trình, nhân sự để đáp ứng yêu cầu triển khai và vận hành hiệu quả Hệ thống Thông tin ABC. Nêu rõ ưu tiên.</li>
+                    <li>Phụ lục (nếu có): Sơ đồ mạng, danh sách thiết bị chi tiết, hình ảnh hiện trạng,...</li>
+                </ul>
+            </li>
+        </ol>
+        <p class="note">Báo cáo khảo sát này sẽ là đầu vào cực kỳ quan trọng cho các bước tiếp theo trong "Bài 5", bao gồm:
+            <ul>
+                <li>Xác định cấu hình phần cứng chuẩn và mạng.</li>
+                <li>Lập kế hoạch cài đặt phần mềm hệ thống và ứng dụng.</li>
+                <li>Xây dựng kế hoạch chuyển đổi dữ liệu.</li>
+                <li>Lên kế hoạch đào tạo người sử dụng.</li>
+            </ul>
+        </p>
+
+        <hr style="margin-top: 40px; margin-bottom: 20px;">
+        <p style="text-align: center; font-style: italic;">Kết thúc tài liệu hướng dẫn khảo sát thực trạng hạ tầng CNTT.</p>
+
+    </div>
+</body>
+</html>

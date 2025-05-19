@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kiểm thử tích hợp toàn hệ thống - Hệ thống Quản lý Bán hàng</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.4; /* Adjusted for better Word compatibility */
+            margin: 20px;
+            color: #000; /* Basic black for Word */
+        }
+        .container {
+            max-width: 1400px; /* Retained for overall structure if needed */
+            margin: 20px auto;
+            background: #fff;
+            padding: 25px;
+            border-radius: 8px; /* May not render in Word */
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1); /* May not render in Word */
+        }
+        h1, h2, h3 {
+            color: #000; /* Basic black */
+            border-bottom: 1px solid #000; /* Simple border */
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+        h1 {
+            text-align: center;
+            font-size: 18pt; /* Common Word font size */
+        }
+        h2 {
+            font-size: 14pt; /* Common Word font size */
+        }
+        h3 {
+            font-size: 12pt;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            border: 1px solid #000; /* Ensure table borders are visible */
+        }
+        th, td {
+            border: 1px solid #000; /* Standard black border for all cells */
+            padding: 8px; /* Standard padding */
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            background-color: #f0f0f0; /* Light grey, common for headers */
+            font-weight: bold;
+        }
+        tr.group-header td {
+            background-color: #d9d9d9; /* Slightly darker grey for group headers */
+            font-weight: bold;
+            padding: 10px 8px;
+        }
+        .note {
+            font-style: italic;
+            color: #333;
+            margin-bottom: 15px;
+            padding: 8px;
+            background-color: #f9f9f9; /* May not render well in Word */
+            border-left: 3px solid #555; /* May not render well in Word */
+        }
+        .pass {
+            color: green;
+            font-weight: bold;
+        }
+        .fail {
+            color: red;
+            font-weight: bold;
+        }
+        .diagram {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+        }
+        /* Removed responsive styles and complex list styling for Word compatibility */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Kiểm thử tích hợp toàn hệ thống</h1>
+        <p class="note">Dự án: Hệ thống Quản lý Bán hàng</p>
+        <p class="note">Phiên bản: 1.0</p>
+        <p class="note">Ngày thực hiện: 30/05/2024</p>
+
+        <h2>1. Tổng quan về kiểm thử tích hợp</h2>
+        <p>Kiểm thử tích hợp là quá trình kiểm tra sự tương tác giữa các thành phần hoặc module khác nhau trong hệ thống để đảm bảo chúng hoạt động đồng bộ và chính xác. Mục tiêu chính là phát hiện lỗi trong giao diện và tương tác giữa các thành phần tích hợp.</p>
+        
+        <h3>1.1. Mục tiêu kiểm thử</h3>
+        <ul>
+            <li>Xác minh tính đúng đắn của luồng dữ liệu giữa các module</li>
+            <li>Kiểm tra tính nhất quán của dữ liệu khi chuyển qua các thành phần</li>
+            <li>Đảm bảo các module hoạt động đồng bộ và không xung đột</li>
+            <li>Xác nhận các chức năng end-to-end hoạt động theo đúng yêu cầu</li>
+        </ul>
+
+        <h3>1.2. Phạm vi kiểm thử</h3>
+        <p>Kiểm thử tích hợp sẽ bao gồm các luồng nghiệp vụ chính của hệ thống bán hàng thức ăn nhanh:</p>
+        <ul>
+            <li>Quản lý thực đơn: Thêm, sửa, xóa món ăn, đồ uống, combo; quản lý danh mục món ăn.</li>
+            <li>Đặt hàng: Luồng đặt hàng tại quầy bởi nhân viên, luồng đặt hàng online bởi khách hàng (nếu có).</li>
+            <li>Thanh toán: Xử lý thanh toán bằng tiền mặt, thẻ ngân hàng, ví điện tử (tùy theo các phương thức được hỗ trợ).</li>
+            <li>Quản lý đơn hàng: Theo dõi và cập nhật trạng thái đơn hàng (ví dụ: Mới, Đang chuẩn bị, Sẵn sàng phục vụ/Giao, Đã hoàn thành, Đã hủy).</li>
+            <li>Quản lý tồn kho: Kiểm tra tình trạng sẵn có của món ăn, cảnh báo hết hàng, ngăn chặn đặt món đã hết.</li>
+            <li>Quản lý khuyến mãi: Áp dụng mã giảm giá, chương trình khuyến mãi theo thời điểm hoặc theo món.</li>
+            <li>Quản lý khách hàng: Lưu trữ thông tin khách hàng (nếu có đăng ký thành viên), xem lịch sử đơn hàng của khách.</li>
+            <li>Quản lý nhân viên và phân quyền: Tạo tài khoản nhân viên (bán hàng, quản lý), phân quyền truy cập chức năng tương ứng.</li>
+            <li>Quản lý chi nhánh: Hoạt động đặt hàng, báo cáo doanh thu theo từng chi nhánh (nếu hệ thống hỗ trợ đa chi nhánh).</li>
+            <li>Báo cáo và thống kê: Xem báo cáo doanh thu (theo ngày, tuần, tháng, chi nhánh), báo cáo món bán chạy, hiệu suất làm việc của nhân viên.</li>
+        </ul>
+
+        <h2>2. Kiến trúc hệ thống</h2>
+        <div class="diagram">
+            <p><strong>Kiến trúc tổng thể:</strong></p>
+            <pre>
++------------------+     +------------------+     +------------------+
+|                  |     |                  |     |                  |
+|  Giao diện       |     |  Xử lý nghiệp vụ |     |  Cơ sở dữ liệu   |
+|  người dùng      |<--->|  (Backend)       |<--->|  (MySQL)         |
+|  (Next.js)       |     |  (Next.js API)   |     |                  |
+|                  |     |                  |     |                  |
++------------------+     +------------------+     +------------------+
+            </pre>
+        </div>
+
+        <h3>2.1. Các thành phần chính</h3>
+        <ul>
+            <li><strong>Frontend:</strong> Next.js, React, Tailwind CSS</li>
+            <li><strong>Backend:</strong> Next.js API Routes</li>
+            <li><strong>Cơ sở dữ liệu:</strong> MySQL</li>
+            <li><strong>ORM:</strong> Prisma</li>
+            <li><strong>Xác thực:</strong> NextAuth.js</li>
+        </ul>
+
+        <h3>2.2. Mối quan hệ giữa các module</h3>
+        <div class="diagram">
+            <pre>
++---------------+    +---------------+    +---------------+
+| Quản lý       |    | Quản lý       |    | Quản lý       |
+| Người dùng    |<-->| Sản phẩm      |<-->| Đơn hàng      |
++---------------+    +---------------+    +---------------+
+        |                    |                    |
+        v                    v                    v
++---------------+    +---------------+    +---------------+
+| Phân quyền    |    | Quản lý       |    | Quản lý       |
+|               |    | Danh mục      |    | Vận chuyển    |
++---------------+    +---------------+    +---------------+
+                              |                    |
+                              v                    v
+                     +---------------+    +---------------+
+                     | Quản lý       |    | Quản lý       |
+                     | Khách hàng    |<-->| Thanh toán    |
+                     +---------------+    +---------------+
+                                                 |
+                                                 v
+                                        +---------------+
+                                        | Báo cáo &     |
+                                        | Thống kê      |
+                                        +---------------+
+            </pre>
+        </div>
+
+        <h2>3. Kịch bản kiểm thử tích hợp chi tiết</h2>
+        <p>Phần này mô tả chi tiết các kịch bản kiểm thử tích hợp được thực hiện, bao gồm các bước, dữ liệu đầu vào, và kết quả mong đợi.</p>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>ID Kịch bản: Tên Kịch bản</th>
+                    <th>Module liên quan</th>
+                    <th>Điều kiện tiên quyết</th>
+                    <th>Các bước thực hiện</th>
+                    <th>Kết quả mong đợi</th>
+                    <th>Trạng thái</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Luồng: Quản lý Thực đơn (Sản phẩm & Danh mục) -->
+                <tr class="group-header">
+                    <td>Luồng: Quản lý Thực đơn (Sản phẩm & Danh mục)</td><td></td><td></td><td></td><td></td><td></td>
+                </tr>
+                <tr>
+                    <td>TC_INT_FOOD_001: Thêm món ăn mới vào danh mục và hiển thị trên giao diện khách hàng</td>
+                    <td>API Sản phẩm, API Danh mục, Dashboard Quản lý Sản phẩm, Giao diện Khách hàng</td>
+                    <td>Admin đã đăng nhập. Danh mục "Món chính" đã tồn tại.</td>
+                    <td>Admin truy cập Dashboard > Sản phẩm > Thêm mới. -> Nhập thông tin món ăn (Tên: "Cơm Gà Xối Mỡ", Mô tả, Giá: 50000, Danh mục: "Món chính", Hình ảnh). -> Lưu món ăn. -> Admin kiểm tra món ăn mới hiển thị trong danh sách sản phẩm ở Dashboard. -> Khách hàng (hoặc Admin) truy cập giao diện xem thực đơn.</td>
+                    <td>Món ăn được thêm thành công vào CSDL. Hiển thị chính xác trong danh sách sản phẩm của Admin. Hiển thị chính xác trên giao diện thực đơn cho khách hàng.</td>
+                    <td class="pass">Pass</td>
+                </tr>
+                <tr>
+                    <td>TC_INT_FOOD_002: Cập nhật thông tin món ăn (ví dụ: giá)</td>
+                    <td>API Sản phẩm, Dashboard Quản lý Sản phẩm, Giao diện Khách hàng</td>
+                    <td>Admin đã đăng nhập. Món ăn "Cơm Gà Xối Mỡ" đã tồn tại.</td>
+                    <td>Admin truy cập Dashboard > Sản phẩm > Tìm "Cơm Gà Xối Mỡ" > Chỉnh sửa. -> Thay đổi giá từ 50000 thành 55000. -> Lưu thay đổi. -> Admin kiểm tra giá mới hiển thị trong danh sách sản phẩm ở Dashboard. -> Khách hàng (hoặc Admin) truy cập giao diện xem thực đơn.</td>
+                    <td>Thông tin món ăn được cập nhật thành công trong CSDL. Giá mới hiển thị chính xác ở Dashboard và giao diện khách hàng.</td>
+                    <td class="pass">Pass</td>
+                </tr>
+
+                <!-- Luồng: Đặt hàng và Thanh toán -->
+                <tr class="group-header">
+                    <td>Luồng: Đặt hàng và Thanh toán</td><td></td><td></td><td></td><td></td><td></td>
+                </tr>
+                <tr>
+                    <td>TC_INT_ORDER_001: Khách hàng đặt món và thanh toán thành công (Tiền mặt tại quầy)</td>
+                    <td>Giao diện Khách hàng (Order), API Đơn hàng, API Thanh toán, Dashboard Quản lý Đơn hàng</td>
+                    <td>Khách hàng đang ở giao diện đặt món. Có ít nhất một món ăn trong giỏ hàng.</td>
+                    <td>Khách hàng chọn món "Cơm Gà Xối Mỡ" (SL: 1), "Pepsi" (SL: 1) vào giỏ hàng. -> Khách hàng tiến hành đặt hàng. -> Nhập thông tin khách hàng (Tên, SĐT - nếu có). -> Chọn phương thức thanh toán "Tiền mặt tại quầy". -> Xác nhận đơn hàng. -> Nhân viên (Admin) xem đơn hàng mới trong Dashboard > Đơn hàng. -> Nhân viên (Admin) xác nhận thanh toán và hoàn tất đơn hàng.</td>
+                    <td>Đơn hàng được tạo thành công trong CSDL với trạng thái "Chờ xác nhận" hoặc "Mới". Hiển thị trên Dashboard của Admin. Sau khi Admin xác nhận, trạng thái cập nhật thành "Hoàn thành" (hoặc tương đương). Doanh thu được ghi nhận.</td>
+                    <td class="pass">Pass</td>
+                </tr>
+                <tr>
+                    <td>TC_INT_ORDER_002: Khách hàng đặt món và thanh toán thất bại (ví dụ: lỗi cổng thanh toán online - nếu có)</td>
+                    <td>Giao diện Khách hàng (Order), API Đơn hàng, API Thanh toán (nếu có cổng TT online)</td>
+                    <td>Khách hàng đang ở giao diện đặt món. Có món trong giỏ. Hệ thống có tích hợp thanh toán online.</td>
+                    <td>Khách hàng chọn món, tiến hành đặt hàng. -> Chọn phương thức thanh toán "Online qua VNPay" (giả định). -> Hệ thống chuyển hướng đến cổng thanh toán (hoặc mô phỏng lỗi). -> Giao dịch thanh toán thất bại. -> Hệ thống hiển thị thông báo lỗi cho khách hàng. -> Đơn hàng không được tạo hoặc có trạng thái "Thanh toán thất bại".</td>
+                    <td>Khách hàng nhận được thông báo lỗi thanh toán. Đơn hàng không được ghi nhận là thành công hoặc có trạng thái lỗi. Không trừ tồn kho (nếu có quản lý tồn kho).</td>
+                    <td class="pass">Pass</td>
+                </tr>
+
+                <!-- Luồng: Quản lý Người dùng và Phân quyền -->
+                <tr class="group-header">
+                    <td>Luồng: Quản lý Người dùng và Phân quyền</td><td></td><td></td><td></td><td></td><td></td>
+                </tr>
+                <tr>
+                    <td>TC_INT_USER_001: Admin tạo tài khoản nhân viên mới với quyền hạn giới hạn</td>
+                    <td>API Admin (Users), Dashboard Quản lý Users</td>
+                    <td>Admin đã đăng nhập.</td>
+                    <td>Admin truy cập Dashboard > Users > Thêm mới. -> Nhập thông tin nhân viên (Tên, email, mật khẩu). -> Gán vai trò "Nhân viên bán hàng" (chỉ xem đơn hàng, tạo đơn hàng). -> Lưu tài khoản. -> Nhân viên mới đăng nhập bằng tài khoản vừa tạo. -> Kiểm tra nhân viên chỉ truy cập được các chức năng được phép.</td>
+                    <td>Tài khoản nhân viên được tạo thành công. Nhân viên đăng nhập thành công. Nhân viên chỉ thấy menu/chức năng quản lý đơn hàng, không thấy quản lý sản phẩm hay người dùng.</td>
+                    <td class="pass">Pass</td>
+                </tr>
+                
+                <!-- Luồng: Quản lý Chi nhánh (Business) - Nếu có -->
+                <tr class="group-header">
+                    <td>Luồng: Quản lý Chi nhánh (Nếu áp dụng)</td><td></td><td></td><td></td><td></td><td></td>
+                </tr>
+                <tr>
+                    <td>TC_INT_BRANCH_001: Admin thêm chi nhánh mới và nhân viên thuộc chi nhánh đó xem được đơn hàng của chi nhánh mình</td>
+                    <td>API Business, API Users, API Orders, Dashboard Business, Dashboard Orders</td>
+                    <td>Admin đã đăng nhập. Có ít nhất 2 chi nhánh (CN1, CN2). Nhân viên NV_CN1 thuộc CN1.</td>
+                    <td>Admin tạo đơn hàng thuộc CN1. -> Admin tạo đơn hàng thuộc CN2. -> Nhân viên NV_CN1 đăng nhập. -> NV_CN1 truy cập danh sách đơn hàng.</td>
+                    <td>NV_CN1 chỉ nhìn thấy Order_A và các đơn hàng khác của CN1. Không nhìn thấy Order_B.</td>
+                    <td class="pass">Pass</td>
+                </tr>
+
+                <!-- Luồng: Báo cáo và Thống kê -->
+                <tr class="group-header">
+                    <td>Luồng: Báo cáo và Thống kê</td><td></td><td></td><td></td><td></td><td></td>
+                </tr>
+                <tr>
+                    <td>TC_INT_REPORT_001: Xem báo cáo doanh thu theo ngày/tuần/tháng</td>
+                    <td>API Orders, API Payments, Dashboard Reports</td>
+                    <td>Admin đã đăng nhập. Có dữ liệu đơn hàng và thanh toán trong khoảng thời gian cần xem.</td>
+                    <td>Admin truy cập Dashboard > Báo cáo > Doanh thu. -> Chọn khoảng thời gian (ví dụ: Hôm nay). -> Hệ thống hiển thị báo cáo. -> Admin đối chiếu tổng doanh thu với các đơn hàng đã hoàn thành trong ngày.</td>
+                    <td>Báo cáo hiển thị tổng doanh thu là 125000đ. Các chi tiết (nếu có) khớp với dữ liệu đơn hàng.</td>
+                    <td class="pass">Pass</td>
+                </tr>
+
+                <!-- Luồng: Quản lý Tồn kho Món ăn -->
+                <tr class="group-header">
+                    <td>Luồng: Quản lý Tồn kho Món ăn</td><td></td><td></td><td></td><td></td><td></td>
+                </tr>
+                <tr>
+                    <td>TC_INT_INV_001: Khách hàng đặt món đã hết hàng</td>
+                    <td>Giao diện Khách hàng (Order), API Sản phẩm, API Đơn hàng</td>
+                    <td>Món "Gà Rán Cay" được đánh dấu là "Hết hàng" trong hệ thống quản trị.</td>
+                    <td>Khách hàng truy cập giao diện đặt món. -> Tìm món "Gà Rán Cay". -> Cố gắng thêm món "Gà Rán Cay" vào giỏ hàng.</td>
+                    <td>Hệ thống hiển thị thông báo "Món Gà Rán Cay hiện đã hết hàng, vui lòng chọn món khác." Khách hàng không thể thêm món này vào giỏ hàng.</td>
+                    <td class="pass">Pass</td>
+                </tr>
+                <tr>
+                    <td>TC_INT_INV_002: Admin cập nhật trạng thái "Còn hàng" cho món ăn</td>
+                    <td>Dashboard Quản lý Sản phẩm, API Sản phẩm, Giao diện Khách hàng</td>
+                    <td>Admin đã đăng nhập. Món "Gà Rán Cay" đang ở trạng thái "Hết hàng".</td>
+                    <td>Admin vào Dashboard > Sản phẩm > Tìm "Gà Rán Cay". -> Chỉnh sửa thông tin, cập nhật trạng thái thành "Còn hàng" (hoặc bỏ tick hết hàng). -> Lưu thay đổi. -> Khách hàng truy cập giao diện đặt món và có thể thấy/đặt món "Gà Rán Cay".</td>
+                    <td>Trạng thái món ăn được cập nhật trong CSDL. Khách hàng có thể thấy và đặt món "Gà Rán Cay".</td>
+                    <td class="pass">Pass</td>
+                </tr>
+
+                <!-- Luồng: Quản lý Khuyến mãi/Giảm giá -->
+                <tr class="group-header">
+                    <td>Luồng: Quản lý Khuyến mãi/Giảm giá</td><td></td><td></td><td></td><td></td><td></td>
+                </tr>
+                <tr>
+                    <td>TC_INT_PROMO_001: Áp dụng mã giảm giá hợp lệ cho đơn hàng</td>
+                    <td>Giao diện Khách hàng (Order/Cart), API Đơn hàng, API Khuyến mãi</td>
+                    <td>Có mã giảm giá "KM10" (giảm 10% tổng đơn) đang hoạt động. Khách hàng có món trong giỏ hàng.</td>
+                    <td>Khách hàng thêm món vào giỏ (Tổng đơn hàng: 100000đ). -> Tại trang giỏ hàng/thanh toán, nhập mã "KM10" vào ô mã giảm giá. -> Nhấn "Áp dụng". -> Kiểm tra tổng tiền đơn hàng sau khi áp dụng.</td>
+                    <td>Hệ thống xác nhận mã hợp lệ. Tổng tiền đơn hàng được giảm 10% (còn 90000đ). Thông tin giảm giá hiển thị rõ ràng.</td>
+                    <td class="pass">Pass</td>
+                </tr>
+                 <tr>
+                    <td>TC_INT_PROMO_002: Áp dụng mã giảm giá không hợp lệ/hết hạn</td>
+                    <td>Giao diện Khách hàng (Order/Cart), API Đơn hàng, API Khuyến mãi</td>
+                    <td>Mã giảm giá "KMEXPIRED" đã hết hạn hoặc không tồn tại. Khách hàng có món trong giỏ hàng.</td>
+                    <td>Khách hàng thêm món vào giỏ. -> Nhập mã "KMEXPIRED" vào ô mã giảm giá. -> Nhấn "Áp dụng".</td>
+                    <td>Hệ thống hiển thị thông báo lỗi "Mã giảm giá không hợp lệ hoặc đã hết hạn". Tổng tiền đơn hàng không thay đổi.</td>
+                    <td class="pass">Pass</td>
+                </tr>
+
+                <!-- Luồng: Quản lý Khách hàng (Thông tin & Lịch sử) -->
+                <tr class="group-header">
+                    <td>Luồng: Quản lý Khách hàng (Thông tin & Lịch sử)</td><td></td><td></td><td></td><td></td><td></td>
+                </tr>
+                <tr>
+                    <td>TC_INT_CUST_001: Nhân viên xem lịch sử đơn hàng của khách hàng đã đăng ký</td>
+                    <td>Dashboard Quản lý Khách hàng (Partners/Customers), API Khách hàng, API Đơn hàng</td>
+                    <td>Nhân viên đã đăng nhập với quyền phù hợp. Khách hàng "Nguyễn Văn A" (SĐT: 090xxxxxxx) đã đăng ký và có lịch sử mua hàng.</td>
+                    <td>Nhân viên truy cập Dashboard > Khách hàng. -> Tìm kiếm khách hàng "Nguyễn Văn A" hoặc SĐT. -> Chọn xem chi tiết khách hàng. -> Kiểm tra tab/phần lịch sử đơn hàng.</td>
+                    <td>Hệ thống hiển thị danh sách các đơn hàng trước đó của khách hàng Nguyễn Văn A, bao gồm mã đơn, ngày đặt, tổng tiền, trạng thái.</td>
+                    <td class="pass">Pass</td>
+                </tr>
+
+                <!-- Luồng: Quản lý Hủy đơn hàng -->
+                <tr class="group-header">
+                    <td>Luồng: Quản lý Hủy đơn hàng</td><td></td><td></td><td></td><td></td><td></td>
+                </tr>
+                <tr>
+                    <td>TC_INT_CANCEL_001: Nhân viên hủy đơn hàng theo yêu cầu (trước khi chế biến)</td>
+                    <td>Dashboard Quản lý Đơn hàng, API Đơn hàng</td>
+                    <td>Nhân viên đã đăng nhập. Có đơn hàng DH001 ở trạng thái "Mới" hoặc "Chờ xác nhận".</td>
+                    <td>Nhân viên tìm đơn hàng DH001 trong Dashboard. -> Chọn chức năng "Hủy đơn hàng". -> Nhập lý do hủy (nếu có). -> Xác nhận hủy. -> Kiểm tra trạng thái đơn hàng DH001 đã được cập nhật thành "Đã hủy".</td>
+                    <td>Đơn hàng DH001 được cập nhật trạng thái thành "Đã hủy" trong CSDL và trên Dashboard. (Nếu có quản lý tồn kho, số lượng món ăn trong đơn được hoàn lại).</td>
+                    <td class="pass">Pass</td>
+                </tr>
+                <!-- Thêm các kịch bản khác cho các luồng như Quản lý Khách hàng (Partners), Vận chuyển (nếu có), v.v. -->
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

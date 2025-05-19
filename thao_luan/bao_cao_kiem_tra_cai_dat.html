@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo cáo Kiểm tra Cài đặt Hệ thống ABC</title>
+    <style>
+        body {
+            font-family: "Times New Roman", Times, serif;
+            line-height: 1.8;
+            margin: 30px;
+            font-size: 13pt;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: auto;
+            background-color: #fff;
+            padding: 40px;
+        }
+        h1, h2, h3, h4 {
+            text-align: center;
+            color: #000;
+        }
+        h1 {
+            font-size: 16pt;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        h2 {
+            font-size: 14pt;
+            font-weight: bold;
+            margin-bottom: 25px;
+        }
+        h3 {
+            font-size: 13pt;
+            font-weight: bold;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            text-align: left;
+            color: #0056b3;
+        }
+        h4 {
+            font-size: 13pt;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            text-align: left;
+            font-style: italic;
+            color: #007bff;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            margin-bottom: 20px;
+            font-size: 11pt;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 6px;
+            text-align: left;
+            vertical-align: middle;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            text-align: center;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 20px;
+            margin-bottom: 15px;
+        }
+        li {
+            margin-bottom: 8px;
+            position: relative;
+            padding-left: 25px;
+        }
+        li::before {
+            content: "-";
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .section-title {
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 13pt;
+        }
+        .signature-section {
+            margin-top: 60px;
+            /* Chuyển sang bố cục cột cho chữ ký */
+            column-count: 2;
+            column-gap: 40px;
+            text-align: center;
+        }
+        .signature {
+            display: inline-block; /* Để tránh bị ngắt cột giữa chừng */
+            width: 100%; /* Chiếm toàn bộ chiều rộng cột */
+            margin-bottom: 40px; /* Khoảng cách giữa các chữ ký nếu nhiều hơn 2 */
+            page-break-inside: avoid; /* Tránh ngắt trang giữa chữ ký */
+        }
+        .signature p {
+            margin-bottom: 5px;
+        }
+        .signature .role {
+            font-weight: bold;
+            font-size: 13pt;
+        }
+         .signature .signature-area {
+             height: 80px;
+             border-bottom: 1px dotted #000;
+             margin-bottom: 10px;
+        }
+        .signature .name {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .header-company {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .header-company p {
+            margin: 0;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .document-title-group {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .info-line {
+            margin-bottom: 10px;
+        }
+        .info-line strong {
+            min-width: 180px;
+            display: inline-block;
+        }
+        .summary-table td, .summary-table th {
+            text-align: center;
+        }
+        .summary-table td:first-child, .summary-table th:first-child {
+             text-align: left;
+             padding-left: 10px;
+        }
+        .status-pass { color: green; font-weight: bold; }
+        .status-fail { color: red; font-weight: bold; }
+        .placeholder { font-style: italic; color: #777; }
+        .issue-description { font-size: 11pt; } /* Cỡ chữ nhỏ hơn cho mô tả lỗi */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-company">
+            <p>CÔNG TY TNHH [TÊN CÔNG TY KHÁCH HÀNG]</p>
+            <p>-------</p>
+        </div>
+
+        <div class="document-title-group">
+            <h1>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</h1>
+            <h2>Độc lập - Tự do - Hạnh phúc</h2>
+            <p>--------------------</p>
+             <p style="text-align: right; margin-top: 10px;"><em>[Địa danh], ngày ...... tháng ...... năm ......</em></p>
+        </div>
+
+        <h2>BÁO CÁO KIỂM TRA CÀI ĐẶT HỆ THỐNG</h2>
+        <p style="text-align: center; font-weight: bold;">Hệ thống: Hệ thống Thông tin ABC</p>
+        <p style="text-align: center;">Số: ...... /BCKT-ABC/......</p>
+
+        <div class="section">
+            <p class="info-line"><strong>1. Tên dự án/gói thầu:</strong> Triển khai Hệ thống Thông tin ABC</p>
+            <p class="info-line"><strong>2. Hạng mục kiểm tra:</strong> Kiểm tra Cài đặt Phần cứng, Phần mềm Hệ thống, Ứng dụng ABC và Kết nối Mạng</p>
+            <p class="info-line"><strong>3. Đơn vị thực hiện kiểm tra:</strong> [Tên Đơn vị Triển khai/Bộ phận Kiểm thử]</p>
+            <p class="info-line"><strong>4. Người thực hiện kiểm tra:</strong> <span class="placeholder">[Họ tên người kiểm tra 1], [Họ tên người kiểm tra 2], ...</span></p>
+            <p class="info-line"><strong>5. Thời gian kiểm tra:</strong> Từ ngày ....../....../...... đến ngày ....../....../......</p>
+            <p class="info-line"><strong>6. Ngày lập báo cáo:</strong> ....../....../......</p>
+            <p class="info-line"><strong>7. Tài liệu tham chiếu:</strong>
+                <ul>
+                    <li>Bài 2: Xác định Cấu hình Phần cứng Chuẩn và Mạng (Phiên bản <span class="placeholder">[Số phiên bản]</span>)</li>
+                    <li>Bài 3: Thiết lập Máy chủ, Máy trạm và Cài đặt Phần mềm Hệ thống (Phiên bản <span class="placeholder">[Số phiên bản]</span>)</li>
+                    <li>Bài 4: Kế hoạch và Kịch bản Kiểm thử Kết nối và Cấu hình Hệ thống (Phiên bản <span class="placeholder">[Số phiên bản]</span>)</li>
+                </ul>
+            </p>
+        </div>
+
+        <h3>I. MỤC ĐÍCH BÁO CÁO</h3>
+        <p>Báo cáo này tổng hợp kết quả của quá trình kiểm tra chi tiết việc cài đặt và cấu hình hạ tầng kỹ thuật cho Hệ thống Thông tin ABC. Mục đích nhằm:</p>
+        <ul>
+            <li>Xác nhận mức độ hoàn thành và tính chính xác của công tác cài đặt so với tài liệu thiết kế và cấu hình chuẩn đã phê duyệt.</li>
+            <li>Liệt kê và phân loại các vấn đề, lỗi kỹ thuật còn tồn tại sau giai đoạn cài đặt.</li>
+            <li>Đánh giá mức độ sẵn sàng của môi trường hệ thống cho các giai đoạn tiếp theo như chuyển đổi dữ liệu, kiểm thử nghiệm thu người dùng (UAT) và đào tạo.</li>
+            <li>Cung cấp thông tin cho các bên liên quan để đưa ra quyết định nghiệm thu giai đoạn cài đặt.</li>
+        </ul>
+
+        <h3>II. PHẠM VI KIỂM TRA ĐÃ THỰC HIỆN</h3>
+        <p>Quá trình kiểm tra đã bao phủ các hạng mục chính sau (chi tiết trong Kế hoạch Kiểm thử - Bài 4):</p>
+        <ul>
+            <li>Kiểm tra kết nối mạng vật lý và logic (LAN, WAN, Internet, DNS, Gateway).</li>
+            <li>Kiểm tra cấu hình và hoạt động của thiết bị mạng (Router, Firewall, Switch, AP).</li>
+            <li>Kiểm tra cài đặt và cấu hình máy chủ (HĐH, Driver, IP, Firewall, Dịch vụ nền tảng như Docker, Node.js - nếu self-host).</li>
+            <li>Kiểm tra cài đặt và cấu hình HQTCSDL (PostgreSQL trên Supabase Cloud hoặc self-host).</li>
+            <li>Kiểm tra cài đặt và cấu hình các thành phần Supabase (Auth, Storage, Realtime - trên Cloud hoặc self-host).</li>
+            <li>Kiểm tra triển khai và cấu hình ứng dụng Frontend Next.js (trên Vercel hoặc self-host với Nginx/PM2).</li>
+            <li>Kiểm tra cài đặt và cấu hình máy trạm người dùng (HĐH, trình duyệt, kết nối mạng).</li>
+            <li>Kiểm tra các chức năng kết nối cơ bản của hệ thống ABC (truy cập, đăng nhập, đọc dữ liệu, tải file).</li>
+        </ul>
+
+        <h3>III. TÓM TẮT KẾT QUẢ KIỂM TRA</h3>
+        <table class="summary-table">
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>Hạng mục Kiểm tra</th>
+                    <th>Tổng số TC</th>
+                    <th>Số TC Đạt</th>
+                    <th>Số TC Không Đạt</th>
+                    <th>Tỷ lệ Đạt (%)</th>
+                    <th>Ghi chú Tóm tắt</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>Mạng & Kết nối Cơ bản</td>
+                    <td><span class="placeholder">[Số]</span></td>
+                    <td><span class="placeholder">[Số]</span></td>
+                    <td><span class="placeholder">[Số]</span></td>
+                    <td><span class="placeholder">[Tỷ lệ]</span>%</td>
+                    <td><span class="placeholder">[Ví dụ: Kết nối ổn định, DNS hoạt động tốt]</span></td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Cấu hình Môi trường Cloud (Vercel/Supabase)</td>
+                    <td><span class="placeholder">[Số]</span></td>
+                    <td><span class="placeholder">[Số]</span></td>
+                    <td><span class="placeholder">[Số]</span></td>
+                    <td><span class="placeholder">[Tỷ lệ]</span>%</td>
+                    <td><span class="placeholder">[Áp dụng nếu dùng Cloud]</span></td>
+                </tr>
+                 <tr>
+                    <td>3</td>
+                    <td>Cấu hình Môi trường Self-hosting (Server Backend)</td>
+                    <td><span class="placeholder">[Số]</span></td>
+                    <td><span class="placeholder">[Số]</span></td>
+                    <td><span class="placeholder">[Số]</span></td>
+                    <td><span class="placeholder">[Tỷ lệ]</span>%</td>
+                    <td><span class="placeholder">[Áp dụng nếu Self-host]</span></td>
+                </tr>
+                 <tr>
+                    <td>4</td>
+                    <td>Cấu hình Môi trường Self-hosting (Server Frontend)</td>
+                    <td><span class="placeholder">[Số]</span></td>
+                    <td><span class="placeholder">[Số]</span></td>
+                    <td><span class="placeholder">[Số]</span></td>
+                    <td><span class="placeholder">[Tỷ lệ]</span>%</td>
+                    <td><span class="placeholder">[Áp dụng nếu Self-host]</span></td>
+                </tr>
+                <tr>
+                    <td>5</td>
+                    <td>Cấu hình Máy trạm</td>
+                    <td><span class="placeholder">[Số]</span></td>
+                    <td><span class="placeholder">[Số]</span></td>
+                    <td><span class="placeholder">[Số]</span></td>
+                    <td><span class="placeholder">[Tỷ lệ]</span>%</td>
+                    <td><span class="placeholder">[Kiểm tra đại diện]</span></td>
+                </tr>
+                <tr>
+                    <td>6</td>
+                    <td>Chức năng Cơ bản Hệ thống ABC</td>
+                    <td><span class="placeholder">[Số]</span></td>
+                    <td><span class="placeholder">[Số]</span></td>
+                    <td><span class="placeholder">[Số]</span></td>
+                    <td><span class="placeholder">[Tỷ lệ]</span>%</td>
+                    <td><span class="placeholder">[Ví dụ: Đăng nhập, đọc dữ liệu OK]</span></td>
+                </tr>
+                <tr>
+                    <td colspan="2"><strong>TỔNG CỘNG</strong></td>
+                    <td><strong><span class="placeholder">[Tổng]</span></strong></td>
+                    <td><strong><span class="placeholder">[Tổng Đạt]</span></strong></td>
+                    <td><strong><span class="placeholder">[Tổng Không Đạt]</span></strong></td>
+                    <td><strong><span class="placeholder">[Tỷ lệ Tổng]</span>%</strong></td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>IV. CHI TIẾT CÁC VẤN ĐỀ CÒN TỒN TẠI (LỖI KHÔNG ĐẠT - FAIL)</h3>
+        <p>Danh sách các vấn đề/lỗi được phát hiện và chưa được khắc phục hoàn toàn tại thời điểm lập báo cáo:</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>Mã Lỗi / TC ID</th>
+                    <th>Mô tả Vấn đề/Lỗi</th>
+                    <th>Ảnh hưởng</th>
+                    <th>Mức độ Ưu tiên</th>
+                    <th>Người/Bộ phận Khắc phục</th>
+                    <th>Thời hạn Dự kiến</th>
+                    <th>Trạng thái</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td><span class="placeholder">TC_NET_004_FAIL</span></td>
+                    <td class="issue-description"><span class="placeholder">Máy chủ Frontend (self-host) không phân giải được tên miền Supabase Backend qua DNS nội bộ, phải dùng IP.</span></td>
+                    <td><span class="placeholder">Kết nối Backend</span></td>
+                    <td class="status-fail">High</td>
+                    <td><span class="placeholder">Đội Mạng</span></td>
+                    <td><span class="placeholder">dd/mm/yyyy</span></td>
+                    <td>Open</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td><span class="placeholder">TC_CLD_002_FAIL</span></td>
+                    <td class="issue-description"><span class="placeholder">Cấu hình Custom SMTP trên Supabase Cloud chưa xác thực thành công với SendGrid (lỗi authentication).</span></td>
+                    <td><span class="placeholder">Gửi Email Xác thực</span></td>
+                    <td class="status-fail">High</td>
+                    <td><span class="placeholder">Đội Triển khai</span></td>
+                    <td><span class="placeholder">dd/mm/yyyy</span></td>
+                    <td>In Progress</td>
+                </tr>
+                 <tr>
+                    <td>3</td>
+                    <td><span class="placeholder">TC_SLF_005_FAIL</span></td>
+                    <td class="issue-description"><span class="placeholder">Script sao lưu CSDL PostgreSQL trên máy chủ Backend (self-host) chạy lỗi quyền ghi vào thư mục backup.</span></td>
+                    <td><span class="placeholder">Sao lưu Dữ liệu</span></td>
+                    <td class="status-fail">Critical</td>
+                    <td><span class="placeholder">Đội Hệ thống</span></td>
+                    <td><span class="placeholder">dd/mm/yyyy</span></td>
+                    <td>Open</td>
+                </tr>
+                 <tr>
+                    <td>4</td>
+                    <td><span class="placeholder">TC_APP_005_FAIL</span></td>
+                    <td class="issue-description"><span class="placeholder">Chức năng tải lên avatar người dùng báo lỗi "Policy not found" (kiểm tra Supabase Storage Policies).</span></td>
+                    <td><span class="placeholder">Chức năng Người dùng</span></td>
+                    <td class="status-fail">Medium</td>
+                    <td><span class="placeholder">Đội Triển khai</span></td>
+                    <td><span class="placeholder">dd/mm/yyyy</span></td>
+                    <td>Open</td>
+                </tr>
+                <!-- Thêm các lỗi khác nếu có -->
+                 <tr>
+                    <td>...</td>
+                    <td>...</td>
+                    <td>...</td>
+                    <td>...</td>
+                    <td>...</td>
+                    <td>...</td>
+                    <td>...</td>
+                    <td>...</td>
+                </tr>
+            </tbody>
+        </table>
+        <p><em>(Chi tiết về từng lỗi, bao gồm các bước tái hiện, log, ảnh chụp màn hình được đính kèm trong Phụ lục [Số Phụ lục])</em></p>
+
+        <h3>V. ĐÁNH GIÁ CHUNG VÀ KẾT LUẬN</h3>
+        <h4>1. Đánh giá chung:</h4>
+        <ul>
+            <li>Công tác cài đặt và cấu hình hạ tầng phần cứng, phần mềm hệ thống và ứng dụng ABC về cơ bản đã hoàn thành theo kế hoạch và thiết kế.</li>
+            <li>Hệ thống mạng nội bộ và kết nối Internet hoạt động ổn định.</li>
+            <li>Máy chủ và máy trạm (đại diện) đáp ứng cấu hình yêu cầu.</li>
+            <li>Ứng dụng ABC có thể truy cập và thực hiện các chức năng kết nối cơ bản.</li>
+            <li>Tuy nhiên, còn tồn tại <span class="placeholder">[Số lượng]</span> vấn đề/lỗi cần được khắc phục (chi tiết tại Mục IV), trong đó có <span class="placeholder">[Số lượng]</span> lỗi mức độ Critical/High ảnh hưởng trực tiếp đến tính năng hoặc độ ổn định/an toàn của hệ thống.</li>
+        </ul>
+        <h4>2. Kết luận:</h4>
+        <ul>
+            <li>Hệ thống <strong><span class="placeholder">[Chưa Sẵn sàng / Sẵn sàng có điều kiện]</span></strong> cho giai đoạn tiếp theo.</li>
+            <li>Đề nghị Đơn vị Triển khai tập trung khắc phục các lỗi còn tồn tại, đặc biệt là các lỗi mức độ Critical và High, theo đúng thời hạn đã cam kết.</li>
+            <li>Việc nghiệm thu chính thức giai đoạn cài đặt sẽ được thực hiện sau khi các lỗi nghiêm trọng đã được khắc phục và kiểm tra lại thành công.</li>
+        </ul>
+        <h4>3. Kiến nghị:</h4>
+        <ul>
+            <li><span class="placeholder">[Kiến nghị 1, ví dụ: Thực hiện kiểm tra lại toàn bộ các lỗi sau khi được khắc phục]</span></li>
+            <li><span class="placeholder">[Kiến nghị 2, ví dụ: Bổ sung tài liệu hướng dẫn xử lý sự cố cho các lỗi thường gặp]</span></li>
+            <li><span class="placeholder">[Kiến nghị 3, ví dụ: Tăng cường giám sát hiệu năng máy chủ CSDL trong giai đoạn đầu vận hành]</span></li>
+        </ul>
+
+        <div class="signature-section">
+            <div class="signature">
+                <p class="role">NGƯỜI LẬP BÁO CÁO</p>
+                <p>(Chức vụ: <span class="placeholder">[Chức vụ]</span>)</p>
+                <div class="signature-area"></div>
+                <p class="name"><span class="placeholder">[Họ và tên]</span></p>
+            </div>
+            <div class="signature">
+                <p class="role">TRƯỞNG BỘ PHẬN/QUẢN LÝ DỰ ÁN<br/>(Phía Đơn vị Triển khai)</p>
+                 <p>(Chức vụ: <span class="placeholder">[Chức vụ]</span>)</p>
+                <div class="signature-area"></div>
+                <p class="name"><span class="placeholder">[Họ và tên]</span></p>
+            </div>
+        </div>
+         <div class="signature-section" style="margin-top: 30px;">
+             <div class="signature">
+                <p class="role">ĐẠI DIỆN ĐƠN VỊ SỬ DỤNG<br/>(Xác nhận đã nhận báo cáo)</p>
+                 <p>(Chức vụ: <span class="placeholder">[Chức vụ]</span>)</p>
+                <div class="signature-area"></div>
+                <p class="name"><span class="placeholder">[Họ và tên]</span></p>
+            </div>
+            <div class="signature" style="visibility: hidden;"> <!-- Placeholder for alignment -->
+            </div>
+        </div>
+    </div>
+</body>
+</html>

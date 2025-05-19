@@ -15,12 +15,15 @@ interface ProductFormData {
   color: string
   size: string
   price: number
+  cost_price: number
   stock_quantity: number
   image: File | null
   category_id: number | null
   showCategoryDropdown?: boolean
   showColorPicker?: boolean
   showSizeDropdown?: boolean
+  formattedPrice?: string
+  formattedCostPrice?: string
 }
 
 interface Category {
@@ -46,9 +49,12 @@ export default function AddProductPage() {
     color: '',
     size: '',
     price: 0,
+    cost_price: 0,
     stock_quantity: 0,
     image: null,
-    category_id: null
+    category_id: null,
+    formattedPrice: '0',
+    formattedCostPrice: '0'
   })
 
   const [loading, setLoading] = useState(false)
@@ -176,17 +182,40 @@ export default function AddProductPage() {
     }
   }, [mounted, themeContext.currentTheme])
 
+  // Thêm hàm định dạng số với dấu phân cách
+  const formatNumber = (value: number) => {
+    return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  }
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
 
     // Xử lý riêng cho các trường số
-    if (name === 'price' || name === 'stock_quantity') {
+    if (name === 'price' || name === 'stock_quantity' || name === 'cost_price') {
+      // Loại bỏ dấu phân cách nếu có
+      const cleanValue = value.replace(/\./g, '')
       // Chỉ cho phép nhập số
-      const numericValue = value.replace(/[^0-9]/g, '')
-      setFormData(prev => ({
-        ...prev,
-        [name]: numericValue ? parseInt(numericValue) : 0
-      }))
+      const numericValue = cleanValue.replace(/[^0-9]/g, '')
+      const numberValue = numericValue ? parseInt(numericValue) : 0
+      
+      if (name === 'price') {
+        setFormData(prev => ({
+          ...prev,
+          price: numberValue,
+          formattedPrice: formatNumber(numberValue)
+        }))
+      } else if (name === 'cost_price') {
+        setFormData(prev => ({
+          ...prev,
+          cost_price: numberValue,
+          formattedCostPrice: formatNumber(numberValue)
+        }))
+      } else {
+        setFormData(prev => ({
+          ...prev,
+          [name]: numberValue
+        }))
+      }
     } else {
       setFormData(prev => ({
         ...prev,
@@ -262,6 +291,7 @@ export default function AddProductPage() {
             color: formData.color,
             size: formData.size,
             price: formData.price,
+            cost_price: formData.cost_price,
             stock_quantity: formData.stock_quantity,
             image: imageUrl,
             category_id: formData.category_id
@@ -280,9 +310,12 @@ export default function AddProductPage() {
         color: '',
         size: '',
         price: 0,
+        cost_price: 0,
         stock_quantity: 0,
         image: null,
-        category_id: null
+        category_id: null,
+        formattedPrice: '0',
+        formattedCostPrice: '0'
       })
 
       // Xóa ảnh xem trước
@@ -488,12 +521,12 @@ export default function AddProductPage() {
               </div>
             </div>
 
-            {/* Hàng 3: Giá, Tồn kho, Danh mục */}
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-              {/* Giá */}
+            {/* Hàng 3: Giá nhập và Giá bán (thay đổi thành 2 cột) */}
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              {/* Giá nhập */}
               <div>
-                <label htmlFor="price" className="block text-sm font-medium text-gray-700">
-                  Giá
+                <label htmlFor="cost_price" className="block text-sm font-medium text-gray-700">
+                  Giá nhập
                 </label>
                 <div className="mt-1 relative rounded-md shadow-sm">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -501,10 +534,10 @@ export default function AddProductPage() {
                   </div>
                   <input
                     type="text"
-                    name="price"
-                    id="price"
+                    name="cost_price"
+                    id="cost_price"
                     required
-                    value={formData.price}
+                    value={formData.formattedCostPrice}
                     onChange={handleInputChange}
                     className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-7 pr-12 sm:text-sm border border-gray-200 rounded-md h-10"
                     placeholder="0"
@@ -515,6 +548,42 @@ export default function AddProductPage() {
                 </div>
               </div>
 
+              {/* Giá bán */}
+              <div>
+                <label htmlFor="price" className="block text-sm font-medium text-gray-700">
+                  Giá bán
+                </label>
+                <div className="mt-1 relative rounded-md shadow-sm">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <span className="text-gray-500 sm:text-sm">₫</span>
+                  </div>
+                  <input
+                    type="text"
+                    name="price"
+                    id="price"
+                    required
+                    value={formData.formattedPrice}
+                    onChange={handleInputChange}
+                    className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-7 pr-12 sm:text-sm border border-gray-200 rounded-md h-10"
+                    placeholder="0"
+                  />
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    <span className="text-gray-500 sm:text-sm">VND</span>
+                  </div>
+                </div>
+                {formData.cost_price > formData.price && formData.price > 0 && (
+                  <div className="mt-1 text-yellow-600 text-sm flex items-center">
+                    <svg className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    Cảnh báo: Giá nhập đang cao hơn giá bán, hãy nâng giá để phù hợp
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Hàng 4: Số lượng và Danh mục sản phẩm (mới) */}
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               {/* Số lượng */}
               <div>
                 <label htmlFor="stock_quantity" className="block text-sm font-medium text-gray-700">
@@ -633,7 +702,7 @@ export default function AddProductPage() {
               </div>
             </div>
 
-            {/* Hàng 4: Màu sắc và Kích cỡ */}
+            {/* Hàng 5: Màu sắc và Kích cỡ */}
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               {/* Màu sắc */}
               <div>

@@ -379,7 +379,8 @@ export default function CreateOrderPage() {
 
   // Cập nhật số lượng sản phẩm
   const updateQuantity = (index: number, newQuantity: number) => {
-    if (newQuantity < 1) return
+    // Luôn cho phép giá trị 0 tạm thời trong quá trình nhập liệu
+    // if (newQuantity < 1) return
 
     const updatedInvoices = [...invoices]
     const currentInvoice = updatedInvoices[activeInvoiceIndex]
@@ -396,9 +397,10 @@ export default function CreateOrderPage() {
       setQuantityErrors(updatedErrors)
     }
 
-    // Đã loại bỏ việc cập nhật tồn kho thủ công vì sử dụng trigger trong cơ sở dữ liệu
-
+    // Cập nhật số lượng mới
     currentInvoice.products[index].quantity = newQuantity
+
+    // Tính lại thành tiền
     currentInvoice.products[index].total =
       currentInvoice.products[index].price * newQuantity -
       currentInvoice.products[index].discount
@@ -412,6 +414,32 @@ export default function CreateOrderPage() {
     currentInvoice.amountToPay = subtotal - discount
 
     setInvoices(updatedInvoices)
+  }
+
+  // Xử lý khi người dùng nhấn ra khỏi ô số lượng
+  const handleQuantityBlur = (index: number) => {
+    const updatedInvoices = [...invoices]
+    const currentInvoice = updatedInvoices[activeInvoiceIndex]
+    
+    // Nếu giá trị là 0 hoặc không hợp lệ, đặt lại là 1
+    if (!currentInvoice.products[index].quantity || currentInvoice.products[index].quantity < 1) {
+      currentInvoice.products[index].quantity = 1
+      
+      // Cập nhật lại thành tiền
+      currentInvoice.products[index].total =
+        currentInvoice.products[index].price * 1 -
+        currentInvoice.products[index].discount
+      
+      // Tính lại tổng tiền
+      const subtotal = currentInvoice.products.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+      const discount = currentInvoice.products.reduce((sum, item) => sum + item.discount, 0)
+
+      currentInvoice.totalAmount = subtotal
+      currentInvoice.totalDiscount = discount
+      currentInvoice.amountToPay = subtotal - discount
+      
+      setInvoices(updatedInvoices)
+    }
   }
 
   // Cập nhật giảm giá
@@ -1933,10 +1961,11 @@ export default function CreateOrderPage() {
                               <span className="mr-2">Số lượng:</span>
                               <input
                                 type="number"
-                                value={item.quantity || 0}
+                                value={item.quantity || ''}
                                 onChange={(e) => updateQuantity(index, parseInt(e.target.value) || 0)}
+                                onBlur={() => handleQuantityBlur(index)}
                                 className={`w-16 p-1 text-center border ${quantityErrors[index] ? 'border-red-500 bg-red-50' : 'border-gray-300'} rounded`}
-                                min="1"
+                                min="0"
                                 max={item.stock_quantity || 999}
                               />
                             </div>

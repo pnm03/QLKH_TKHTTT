@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biên bản Nghiệm thu & Đề xuất Nâng cấp Phần cứng - Hệ thống QLBH Five Guys</title>
+    <style>
+        /* Giữ nguyên CSS từ phiên bản trước */
+        body { font-family: "Times New Roman", Times, serif; line-height: 1.8; margin: 30px; font-size: 13pt; }
+        .container { width: 100%; max-width: 900px; /* Tăng độ rộng */ margin: auto; background-color: #fff; padding: 40px; }
+        h1, h2, h3 { text-align: center; color: #000; }
+        h1 { font-size: 16pt; font-weight: bold; margin-bottom: 10px; }
+        h2 { font-size: 14pt; font-weight: bold; margin-bottom: 25px; }
+        h3 { font-size: 13pt; font-weight: bold; margin-top: 25px; margin-bottom: 15px; text-align: left; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; margin-bottom: 20px; font-size: 10pt; /* Giảm nhỏ chữ bảng */ }
+        th, td { border: 1px solid #000; padding: 5px; /* Giảm padding */ text-align: left; vertical-align: top; /* Đổi thành top */ }
+        th { background-color: #f2f2f2; font-weight: bold; text-align: center; vertical-align: middle; }
+        ul { list-style-type: none; padding-left: 20px; margin-bottom: 15px; }
+        li { margin-bottom: 8px; position: relative; padding-left: 25px; }
+        li::before { content: "-"; position: absolute; left: 0; font-weight: bold; }
+        .section { margin-bottom: 30px; }
+        .section-title { font-weight: bold; margin-bottom: 15px; font-size: 13pt; }
+        .signature-section { margin-top: 60px; display: flex; justify-content: space-around; text-align: center; }
+        .signature { width: 45%; break-inside: avoid; }
+        .signature p { margin-bottom: 5px; }
+        .signature .role { font-weight: bold; font-size: 13pt; }
+        .signature .signature-area { height: 80px; border-bottom: 1px dotted #000; margin-bottom: 10px; }
+        .signature .name { font-weight: bold; margin-top: 10px; }
+        .header-company { text-align: center; margin-bottom: 15px; }
+        .header-company p { margin: 0; font-weight: bold; text-transform: uppercase; }
+        .document-title-group { text-align: center; margin-bottom: 30px; }
+        .info-line { margin-bottom: 10px; }
+        .info-line strong { min-width: 180px; display: inline-block; }
+        .placeholder { font-style: italic; color: #777; }
+        .status-pass { color: green; font-weight: bold; }
+        .status-fail { color: red; font-weight: bold; }
+        .highlight { background-color: #fff3cd; } /* Highlight chênh lệch */
+        .number-cell { text-align: right; padding-right: 10px;} /* Căn phải số */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-company">
+            <p>FIVE GUYS ENTERPRISES, LLC</p>
+            <p>-------</p>
+        </div>
+
+        <div class="document-title-group">
+            <h1>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</h1>
+            <h2>Độc lập - Tự do - Hạnh phúc</h2>
+            <p>--------------------</p>
+            <p style="text-align: right; margin-top: 10px;"><em>Lorton, VA, ngày ...... tháng ...... năm ......</em></p>
+        </div>
+
+        <!-- Tiêu đề được điều chỉnh để phản ánh nội dung kép -->
+        <h2>BIÊN BẢN NGHIỆM THU LẮP ĐẶT & BÁO CÁO ĐỀ XUẤT NÂNG CẤP PHẦN CỨNG</h2>
+        <p style="text-align: center; font-weight: bold;">Hệ thống: Hệ thống Thông tin Quản lý Bán hàng Five Guys</p>
+        <p style="text-align: center;">Số: ...... /BBNT-DXNC-FG-HW/......</p>
+
+        <div class="section">
+            <p class="info-line"><strong>1. Tên dự án/gói thầu:</strong> Triển khai Hệ thống Thông tin Quản lý Bán hàng cho Five Guys</p>
+            <!-- Hạng mục được mở rộng -->
+            <p class="info-line"><strong>2. Hạng mục:</strong> Nghiệm thu lắp đặt phần cứng đã thực hiện & Phân tích, đề xuất mua sắm/nâng cấp phần cứng tại điểm bán.</p>
+            <p class="info-line"><strong>3. Địa điểm:</strong> Trụ sở Five Guys (Lorton, VA) và Cửa hàng mẫu <span class="placeholder">[Địa chỉ cửa hàng mẫu]</span>.</p>
+            <p class="info-line"><strong>4. Thời gian bắt đầu:</strong> ...... giờ ...... phút, ngày ...... tháng ...... năm ......</p>
+            <p class="info-line"><strong>5. Thời gian kết thúc:</strong> ...... giờ ...... phút, ngày ...... tháng ...... năm ......</p>
+        </div>
+
+        <div class="section">
+            <p class="section-title">I. THÀNH PHẦN THAM GIA</p>
+             <!-- Giữ nguyên thành phần tham gia -->
+             <p><strong>1. Đại diện Đơn vị Sử dụng (Five Guys Enterprises, LLC):</strong></p>
+            <ul>
+                <li>Ông/Bà: <span class="placeholder">[Tên Jeffery Strube hoặc người đại diện Operations]</span> - Chức vụ: <span class="placeholder">Multi-Unit Area Manager (Operations)</span></li>
+                <li>Ông/Bà: <span class="placeholder">[Tên Zerrick Pearson hoặc người đại diện IT]</span> - Chức vụ: <span class="placeholder">CIO / Đại diện IT</span></li>
+                <li>Ông/Bà: <span class="placeholder">[Tên Quản lý cửa hàng mẫu]</span> - Chức vụ: <span class="placeholder">Quản lý Cửa hàng</span></li>
+            </ul>
+            <p><strong>2. Đại diện Đơn vị Triển khai (Công ty [Tên Công ty Triển khai của bạn]):</strong></p>
+            <ul>
+                <li>Ông/Bà: <span class="placeholder">[Họ và tên]</span> - Chức vụ: <span class="placeholder">[Quản lý Dự án]</span></li>
+                <li>Ông/Bà: <span class="placeholder">[Họ và tên]</span> - Chức vụ: <span class="placeholder">[Chuyên viên Phân tích Nghiệp vụ / Kỹ thuật]</span></li>
+                 <li>Ông/Bà: <span class="placeholder">[Họ và tên]</span> - Chức vụ: <span class="placeholder">[Chuyên viên Kỹ thuật Phần cứng]</span></li>
+            </ul>
+            <p><strong>3. (Nếu có) Đại diện Đơn vị Cung cấp Phần cứng:</strong></p>
+             <ul>
+                <li>Ông/Bà: <span class="placeholder">[Họ và tên]</span> - Chức vụ: <span class="placeholder">[Chức vụ]</span></li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <p class="section-title">II. CĂN CỨ THỰC HIỆN</p>
+             <!-- Giữ nguyên căn cứ, bổ sung Phần I -->
+            <ul>
+                <li>Hợp đồng số: ...... /HĐKT/...... ký ngày ....../....../...... giữa Five Guys Enterprises, LLC và Công ty [Tên Công ty Triển khai].</li>
+                 <li>Quyển 3 - Phần I: Khảo sát Thực trạng Hạ tầng CNTT tại Five Guys (Phiên bản <span class="placeholder">[Số phiên bản]</span>) ngày ....../....../.......</li>
+                <li>Quyển 3 - Phần II: Xác định Cấu hình Phần cứng Chuẩn và Mạng (Phiên bản <span class="placeholder">[Số phiên bản]</span>) ngày ....../....../.......</li>
+                <li>Danh mục thiết bị phần cứng dự kiến trang bị (nếu có).</li>
+                <li>Báo giá tham khảo từ các nhà cung cấp (nếu có).</li>
+                <li>Các tiêu chuẩn kỹ thuật liên quan.</li>
+            </ul>
+        </div>
+
+         <!-- Phần III được cấu trúc lại thành So sánh và Đề xuất -->
+        <div class="section">
+            <p class="section-title">III. SO SÁNH HIỆN TRẠNG, YÊU CẦU VÀ ĐỀ XUẤT MUA SẮM/NÂNG CẤP PHẦN CỨNG</p>
+            <p>Dựa trên kết quả khảo sát hiện trạng (Phần I) và cấu hình chuẩn yêu cầu cho hệ thống mới (Phần II), chúng tôi thực hiện so sánh và đề xuất phương án trang bị phần cứng tại các điểm bán như sau:</p>
+            <p><em>Ghi chú: Số lượng được tính toán dựa trên <span class="placeholder">1508</span> cửa hàng tại Mỹ. Số lượng hiện có cần được Five Guys xác nhận lại qua kiểm kê tài sản chi tiết. Đơn giá và thành tiền là ước tính tham khảo tại thời điểm lập báo cáo.</em></p>
+
+            <h3>1. Máy POS (Point of Sale Terminal)</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th rowspan="2">Hạng mục</th>
+                        <th rowspan="2">Cấu hình Hiện có (Khảo sát)</th>
+                        <th rowspan="2">Cấu hình Yêu cầu (Thiết kế)</th>
+                        <th colspan="2">Số lượng Ước tính</th>
+                        <th rowspan="2">Chênh lệch (Cần Mua/Nâng cấp)</th>
+                        <th rowspan="2">Đơn giá Ước tính (USD)</th>
+                        <th rowspan="2">Thành tiền Ước tính (USD)</th>
+                    </tr>
+                    <tr>
+                        <th>Hiện có (Toàn bộ)</th>
+                        <th>Yêu cầu (Toàn bộ)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Model</td>
+                        <td>PAR EverServ 7700 / Lightspeed POS</td>
+                        <td>PAR EverServ 7700 hoặc tương đương (HP Engage, Dell OptiPlex+Elo, Posiflex)</td>
+                        <td class="number-cell"><span class="placeholder">~3500? (Cần kiểm kê)</span></td>
+                        <td class="number-cell"><span class="placeholder">~3770 (2.5 máy/CH)</span></td>
+                        <td class="highlight number-cell"><span class="placeholder">~270+ & Nâng cấp/Thay thế các máy cũ</span></td>
+                        <td class="number-cell"><span class="placeholder">~1,800</span></td>
+                        <td class="number-cell placeholder">[Tính toán]</td>
+                    </tr>
+                    <tr>
+                        <td>CPU</td>
+                        <td>Không rõ chi tiết / Đa dạng</td>
+                        <td>Intel Core i5 (Thế hệ 10+)</td>
+                        <td colspan="2" style="text-align:center;">N/A</td>
+                        <td class="highlight">Cần đảm bảo CPU đạt yêu cầu</td>
+                         <td colspan="2" style="text-align:center;">(Tính trong giá máy mới)</td>
+                    </tr>
+                    <tr>
+                        <td>RAM</td>
+                        <td>Không rõ chi tiết / Đa dạng</td>
+                        <td>8GB - 16GB DDR4</td>
+                         <td colspan="2" style="text-align:center;">N/A</td>
+                        <td class="highlight">Cần đảm bảo RAM đạt yêu cầu</td>
+                        <td colspan="2" style="text-align:center;">(Tính trong giá máy mới)</td>
+                    </tr>
+                     <tr>
+                        <td>Ổ cứng</td>
+                        <td>Không rõ chi tiết / Đa dạng</td>
+                        <td>256GB - 512GB NVMe SSD</td>
+                         <td colspan="2" style="text-align:center;">N/A</td>
+                        <td class="highlight">Cần đảm bảo Ổ cứng đạt yêu cầu</td>
+                        <td colspan="2" style="text-align:center;">(Tính trong giá máy mới)</td>
+                    </tr>
+                     <tr>
+                        <td>HĐH</td>
+                        <td>Windows Embedded / Khác</td>
+                        <td>Windows 10/11 IoT Enterprise LTSC / Pro</td>
+                         <td colspan="2" style="text-align:center;">N/A</td>
+                        <td class="highlight">Cần cài đặt/nâng cấp HĐH</td>
+                         <td class="number-cell"><span class="placeholder">~150 (license)</span></td>
+                         <td class="number-cell placeholder">[Tính toán]</td>
+                    </tr>
+                    <tr>
+                        <td colspan="6" style="text-align: right; font-weight: bold;">Tổng chi phí ước tính cho Máy POS:</td>
+                        <td colspan="2" class="number-cell placeholder">[Tổng tiền POS]</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>2. Tablet Đặt hàng Lưu động</h3>
+             <table>
+                <thead>
+                    <tr>
+                        <th rowspan="2">Hạng mục</th>
+                        <th rowspan="2">Cấu hình Hiện có (Khảo sát)</th>
+                        <th rowspan="2">Cấu hình Yêu cầu (Thiết kế)</th>
+                        <th colspan="2">Số lượng Ước tính</th>
+                        <th rowspan="2">Chênh lệch (Cần Mua/Nâng cấp)</th>
+                        <th rowspan="2">Đơn giá Ước tính (USD)</th>
+                        <th rowspan="2">Thành tiền Ước tính (USD)</th>
+                    </tr>
+                    <tr>
+                        <th>Hiện có (Toàn bộ)</th>
+                        <th>Yêu cầu (Toàn bộ)</th>
+                    </tr>
+                </thead>
+                 <tbody>
+                    <tr>
+                        <td>Model</td>
+                        <td>PAR Mobile Tablet 10s / iPad / Android</td>
+                        <td>PAR Mobile Tablet 10s / Apple iPad / Samsung Galaxy Tab S series</td>
+                        <td class="number-cell"><span class="placeholder">~2000? (Cần kiểm kê)</span></td>
+                        <td class="number-cell"><span class="placeholder">~2262 (1.5 cái/CH)</span></td>
+                        <td class="highlight number-cell"><span class="placeholder">~262+ & Nâng cấp/Thay thế</span></td>
+                        <td class="number-cell"><span class="placeholder">~600</span></td>
+                         <td class="number-cell placeholder">[Tính toán]</td>
+                    </tr>
+                    <tr>
+                        <td>HĐH</td>
+                        <td>Android / iOS đa dạng</td>
+                        <td>Android 11+ / iOS 15+</td>
+                         <td colspan="2" style="text-align:center;">N/A</td>
+                         <td class="highlight">Cần đảm bảo HĐH tương thích</td>
+                         <td colspan="2" style="text-align:center;">(Tính trong giá máy mới)</td>
+                    </tr>
+                     <tr>
+                        <td>RAM / Bộ nhớ</td>
+                        <td>Không rõ chi tiết / Đa dạng</td>
+                        <td>4GB+ / 64GB+</td>
+                         <td colspan="2" style="text-align:center;">N/A</td>
+                         <td class="highlight">Cần đảm bảo cấu hình</td>
+                         <td colspan="2" style="text-align:center;">(Tính trong giá máy mới)</td>
+                    </tr>
+                    <tr>
+                        <td>Vỏ bảo vệ</td>
+                        <td>Có thể thiếu/cũ</td>
+                        <td>Vỏ bảo vệ bền chắc</td>
+                        <td colspan="2" style="text-align:center;">N/A</td>
+                         <td class="highlight number-cell"><span class="placeholder">~2262</span></td>
+                         <td class="number-cell"><span class="placeholder">~50</span></td>
+                         <td class="number-cell placeholder">[Tính toán]</td>
+                    </tr>
+                     <tr>
+                        <td colspan="6" style="text-align: right; font-weight: bold;">Tổng chi phí ước tính cho Tablet:</td>
+                        <td colspan="2" class="number-cell placeholder">[Tổng tiền Tablet]</td>
+                    </tr>
+                </tbody>
+            </table>
+
+             <h3>3. Hệ thống Hiển thị Nhà bếp (KDS)</h3>
+             <table>
+                 <thead>
+                    <tr>
+                        <th rowspan="2">Hạng mục</th>
+                        <th rowspan="2">Cấu hình Hiện có (Khảo sát)</th>
+                        <th rowspan="2">Cấu hình Yêu cầu (Thiết kế)</th>
+                        <th colspan="2">Số lượng Ước tính</th>
+                        <th rowspan="2">Chênh lệch (Cần Mua/Nâng cấp)</th>
+                        <th rowspan="2">Đơn giá Ước tính (USD)</th>
+                        <th rowspan="2">Thành tiền Ước tính (USD)</th>
+                    </tr>
+                    <tr>
+                        <th>Hiện có (Toàn bộ)</th>
+                        <th>Yêu cầu (Toàn bộ)</th>
+                    </tr>
+                </thead>
+                  <tbody>
+                    <tr>
+                        <td>Loại thiết bị</td>
+                        <td>LCD 19-24 inch + Bộ xử lý tích hợp</td>
+                        <td>Màn hình cảm ứng chuyên dụng (Bematech, Elo, QSR) hoặc Mini PC (Win/Linux) + Màn hình thường</td>
+                        <td class="number-cell"><span class="placeholder">~2000? (Cần kiểm kê)</span></td>
+                         <td class="number-cell"><span class="placeholder">~2262 (1.5 bộ/CH)</span></td>
+                        <td class="highlight number-cell"><span class="placeholder">~262+ & Nâng cấp/Thay thế</span></td>
+                        <td class="number-cell"><span class="placeholder">~1,200 (màn chuyên dụng) / ~700 (MiniPC+Màn)</span></td>
+                         <td class="number-cell placeholder">[Tính toán]</td>
+                    </tr>
+                     <tr>
+                        <td>Kết nối mạng</td>
+                        <td>LAN/Wi-Fi</td>
+                        <td>Gigabit Ethernet (ưu tiên) hoặc Wi-Fi ổn định</td>
+                         <td colspan="2" style="text-align:center;">N/A</td>
+                         <td class="highlight">Đảm bảo kết nối ổn định</td>
+                         <td colspan="2" style="text-align:center;">(Chi phí hạ tầng mạng)</td>
+                    </tr>
+                     <tr>
+                        <td colspan="6" style="text-align: right; font-weight: bold;">Tổng chi phí ước tính cho KDS:</td>
+                        <td colspan="2" class="number-cell placeholder">[Tổng tiền KDS]</td>
+                    </tr>
+                </tbody>
+             </table>
+
+             <h3>4. Thiết bị Ngoại vi</h3>
+            <table>
+                 <thead>
+                    <tr>
+                        <th rowspan="2">Loại Thiết bị</th>
+                        <th rowspan="2">Hiện có (Khảo sát)</th>
+                        <th rowspan="2">Yêu cầu (Thiết kế)</th>
+                        <th colspan="2">Số lượng Ước tính</th>
+                        <th rowspan="2">Chênh lệch (Cần Mua/Nâng cấp)</th>
+                        <th rowspan="2">Đơn giá Ước tính (USD)</th>
+                        <th rowspan="2">Thành tiền Ước tính (USD)</th>
+                    </tr>
+                     <tr>
+                        <th>Hiện có (Toàn bộ)</th>
+                        <th>Yêu cầu (Toàn bộ)</th>
+                    </tr>
+                </thead>
+                 <tbody>
+                    <tr>
+                        <td>Máy in hóa đơn</td>
+                        <td>Epson TM-T88 hoặc tương đương</td>
+                        <td>Epson TM-T88VI/VII, Star TSP100III (Kết nối LAN/USB)</td>
+                        <td class="number-cell"><span class="placeholder">~3500?</span></td>
+                         <td class="number-cell"><span class="placeholder">~3770 (2.5 cái/CH)</span></td>
+                        <td class="highlight number-cell"><span class="placeholder">~270+ & Thay thế máy cũ</span></td>
+                        <td class="number-cell"><span class="placeholder">~300</span></td>
+                        <td class="number-cell placeholder">[Tính toán]</td>
+                    </tr>
+                    <tr>
+                        <td>Máy quét mã vạch</td>
+                        <td>Honeywell/Symbol 1D/2D USB</td>
+                        <td>Honeywell Xenon XP, Zebra DS2208/DS8178 (Quét 1D/2D, USB/BT)</td>
+                        <td class="number-cell"><span class="placeholder">~3500?</span></td>
+                         <td class="number-cell"><span class="placeholder">~3770 (2.5 cái/CH)</span></td>
+                        <td class="highlight number-cell"><span class="placeholder">~270+ & Thay thế máy cũ</span></td>
+                        <td class="number-cell"><span class="placeholder">~250</span></td>
+                        <td class="number-cell placeholder">[Tính toán]</td>
+                    </tr>
+                     <tr>
+                        <td>Thiết bị thanh toán thẻ</td>
+                        <td>Verifone/Ingenico (tích hợp POS qua LAN)</td>
+                        <td>Verifone P400/V400m, Ingenico Lane/Move, PAX A920 (Tích hợp LAN/USB/BT, EMV, Contactless)</td>
+                        <td class="number-cell"><span class="placeholder">~3500?</span></td>
+                         <td class="number-cell"><span class="placeholder">~3770 (2.5 cái/CH)</span></td>
+                         <td class="highlight">Cần đảm bảo tương thích và tuân thủ PCI PTS mới nhất</td>
+                        <td class="number-cell"><span class="placeholder">~400</span></td>
+                        <td class="number-cell placeholder">[Tính toán]</td>
+                    </tr>
+                     <tr>
+                         <!-- Thêm các thiết bị ngoại vi khác nếu cần -->
+                     </tr>
+                     <tr>
+                        <td colspan="6" style="text-align: right; font-weight: bold;">Tổng chi phí ước tính cho Thiết bị Ngoại vi:</td>
+                        <td colspan="2" class="number-cell placeholder">[Tổng tiền Ngoại vi]</td>
+                    </tr>
+                      <tr>
+                        <td colspan="6" style="text-align: right; font-weight: bold; background-color: #e9ecef;">TỔNG CHI PHÍ PHẦN CỨNG ĐIỂM BÁN ƯỚC TÍNH:</td>
+                        <td colspan="2" class="number-cell placeholder" style="font-weight: bold; background-color: #e9ecef;">[TỔNG TẤT CẢ]</td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
+
+        <!-- Phần IV này sẽ nghiệm thu những gì ĐÃ được lắp đặt theo kế hoạch mua sắm (nếu có) -->
+        <div class="section">
+            <p class="section-title">IV. KẾT QUẢ NGHIỆM THU LẮP ĐẶT (Đợt 1 - Thiết bị mẫu)</p>
+            <p>Dựa trên đề xuất tại Mục III, các bên đã tiến hành lắp đặt và kiểm tra cấu hình cho các thiết bị mẫu tại cửa hàng <span class="placeholder">[Địa chỉ cửa hàng mẫu]</span> với kết quả như sau:</p>
+             <table>
+                <thead>
+                    <tr><th>STT</th><th>Loại Thiết bị</th><th>Model/Asset Tag</th><th>Kết quả Lắp đặt</th><th>Kết quả Cấu hình Ban đầu</th><th>Ghi chú</th></tr>
+                </thead>
+                 <tbody>
+                    <tr><td>1</td><td>Máy POS</td><td><span class="placeholder">[PAR EverServ 7700 / Asset Tag]</span></td><td class="status-pass">Đạt</td><td class="status-pass">Đạt (Nhận diện HW OK)</td><td>Sẵn sàng cài HĐH</td></tr>
+                    <tr><td>2</td><td>Tablet Order</td><td><span class="placeholder">[PAR Mobile Tablet 10s / Asset Tag]</span></td><td class="status-pass">Đạt</td><td class="status-pass">Đạt (Khởi động OK, kết nối Wifi OK)</td><td>Sẵn sàng cài App</td></tr>
+                    <tr><td>3</td><td>KDS</td><td><span class="placeholder">[Bematech / Asset Tag]</span></td><td class="status-pass">Đạt</td><td class="status-pass">Đạt (Hiển thị OK, kết nối LAN OK)</td><td>Sẵn sàng cài App</td></tr>
+                    <tr><td>4</td><td>Máy in hóa đơn</td><td><span class="placeholder">[Epson TM-T88VII]</span></td><td class="status-pass">Đạt</td><td class="status-pass">Đạt (Kết nối LAN OK)</td><td></td></tr>
+                    <tr><td>5</td><td>Máy quét mã vạch</td><td><span class="placeholder">[Honeywell Xenon XP 1950g]</span></td><td class="status-pass">Đạt</td><td class="status-pass">Đạt (Kết nối USB OK)</td><td></td></tr>
+                     <tr><td>6</td><td>Thiết bị TT Thẻ</td><td><span class="placeholder">[Verifone P400]</span></td><td class="status-pass">Đạt</td><td class="status-pass">Đạt (Kết nối LAN OK)</td><td></td></tr>
+                     <!-- Thêm các thiết bị khác nếu có -->
+                 </tbody>
+             </table>
+             <p>Kết luận nghiệm thu lắp đặt đợt 1: Các thiết bị phần cứng mẫu đã được lắp đặt đúng chủng loại, vị trí và cấu hình vật lý ban đầu đạt yêu cầu, sẵn sàng cho việc cài đặt phần mềm hệ thống và ứng dụng.</p>
+        </div>
+
+        <div class="section">
+            <p class="section-title">V. KẾ HOẠCH TIẾP THEO</p>
+            <ul>
+                <li>Five Guys xác nhận lại số lượng và tình trạng phần cứng hiện có tại tất cả các cửa hàng.</li>
+                <li>Đơn vị triển khai hoàn thiện Kế hoạch Mua sắm/Nâng cấp chi tiết dựa trên số liệu kiểm kê và báo giá chính thức.</li>
+                <li>Trình Kế hoạch Mua sắm/Nâng cấp để Five Guys phê duyệt ngân sách.</li>
+                <li>Tiến hành mua sắm và triển khai lắp đặt phần cứng đồng loạt theo kế hoạch được duyệt.</li>
+                <li>Song song, tiến hành cài đặt phần mềm hệ thống và ứng dụng lên các thiết bị mẫu đã nghiệm thu tại Mục IV.</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <p class="section-title">VI. KẾT LUẬN CHUNG</p>
+            <p>Các bên tham gia thống nhất với nội dung phân tích, so sánh hiện trạng, yêu cầu và đề xuất mua sắm/nâng cấp phần cứng tại Mục III.</p>
+             <p>Đồng thời, các bên nghiệm thu việc lắp đặt và cấu hình vật lý ban đầu cho các thiết bị phần cứng mẫu tại cửa hàng <span class="placeholder">[Địa chỉ cửa hàng mẫu]</span> như đã nêu tại Mục IV.</p>
+            <p>Các bước tiếp theo sẽ được thực hiện theo kế hoạch tại Mục V.</p>
+            <p>Biên bản này được lập thành <span class="placeholder">[Số lượng]</span> bản có giá trị pháp lý như nhau, mỗi bên giữ <span class="placeholder">[Số lượng]</span> bản.</p>
+        </div>
+
+        <div class="signature-section">
+            <div class="signature">
+                <p class="role">ĐẠI DIỆN ĐƠN VỊ SỬ DỤNG<br/>(FIVE GUYS)</p>
+                <p>(Chức vụ: <span class="placeholder">[Chức vụ người ký]</span>)</p>
+                <div class="signature-area"></div>
+                <p class="name"><span class="placeholder">[Họ và tên người ký]</span></p>
+            </div>
+            <div class="signature">
+                <p class="role">ĐẠI DIỆN ĐƠN VỊ TRIỂN KHAI</p>
+                 <p>(Chức vụ: <span class="placeholder">[Chức vụ người ký]</span>)</p>
+                <div class="signature-area"></div>
+                <p class="name"><span class="placeholder">[Họ và tên người ký]</span></p>
+            </div>
+        </div>
+         <div class="signature-section" style="margin-top: 30px;">
+             <div class="signature">
+                <p class="role">(NẾU CÓ) ĐẠI DIỆN NHÀ CUNG CẤP HW</p>
+                 <p>(Chức vụ: <span class="placeholder">[Chức vụ người ký]</span>)</p>
+                <div class="signature-area"></div>
+                <p class="name"><span class="placeholder">[Họ và tên người ký]</span></p>
+            </div>
+            <div class="signature" style="visibility: hidden;"> <!-- Placeholder for alignment -->
+            </div>
+        </div>
+    </div>
+</body>
+</html>

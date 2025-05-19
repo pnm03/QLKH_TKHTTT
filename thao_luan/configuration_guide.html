@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hướng dẫn Cấu hình Hệ thống Quản lý Bán hàng</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1, h2, h3 {
+            color: #333;
+        }
+        h1 {
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        h2 {
+            margin-top: 30px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+        code {
+            background-color: #eee;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: "Courier New", Courier, monospace;
+        }
+        .note {
+            background-color: #e7f3fe;
+            border-left: 6px solid #2196F3;
+            padding: 10px;
+            margin: 15px 0;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border-left: 6px solid #ffc107;
+            padding: 10px;
+            margin: 15px 0;
+        }
+        ul {
+            list-style-type: disc;
+            margin-left: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Hướng dẫn Cấu hình Hệ thống Quản lý Bán hàng</h1>
+
+        <h2>1. Giới thiệu</h2>
+        <p>Tài liệu này cung cấp hướng dẫn chi tiết về cách cấu hình Hệ thống Quản lý Bán hàng để triển khai cho một công ty/khách hàng mới. Việc cấu hình đúng đắn là rất quan trọng để đảm bảo hệ thống hoạt động ổn định, an toàn và phù hợp với nhuicios của từng khách hàng.</p>
+        <p>Mục tiêu của tài liệu này là giúp người quản trị hệ thống hoặc nhân viên kỹ thuật có thể tự thực hiện các bước cấu hình cần thiết.</p>
+
+        <h2>2. Điều kiện tiên quyết</h2>
+        <p>Trước khi bắt đầu cấu hình, hãy đảm bảo bạn đã chuẩn bị sẵn các thông tin và tài nguyên sau:</p>
+        <ul>
+            <li>Quyền truy cập vào mã nguồn của dự án.</li>
+            <li>Quyền truy cập vào môi trường triển khai (server, hosting).</li>
+            <li>Thông tin tài khoản Supabase (nếu chưa có, cần tạo mới một project Supabase cho khách hàng).</li>
+            <li>Các API key cần thiết cho các dịch vụ bên thứ ba (nếu có, ví dụ: cổng thanh toán, dịch vụ email marketing,...).</li>
+            <li>Kiến thức cơ bản về dòng lệnh (command line) và quản lý file.</li>
+        </ul>
+
+        <h2>3. Các bước cấu hình chi tiết</h2>
+        <p>Hệ thống chủ yếu được cấu hình thông qua các biến môi trường. Các biến này thường được lưu trữ trong một file có tên là <code>.env.local</code> tại thư mục gốc của dự án.</p>
+
+        <h3>3.1. Tạo và Cấu hình file <code>.env.local</code></h3>
+        <p>File <code>.env.local</code> chứa các thông tin nhạy cảm và cấu hình riêng cho từng môi trường triển khai. File này <strong>không nên</strong> được đưa vào Git repository.</p>
+        <ol>
+            <li>
+                <strong>Tạo file:</strong> Tại thư mục gốc của dự án, tạo một file mới có tên là <code>.env.local</code>.
+                <p class="note">Nếu có file <code>.env.example</code> hoặc tương tự, bạn có thể sao chép nội dung từ file đó sang <code>.env.local</code> rồi chỉnh sửa các giá trị.</p>
+            </li>
+            <li>
+                <strong>Cấu hình các biến môi trường Supabase:</strong>
+                <p>Đây là các biến quan trọng nhất để kết nối ứng dụng với cơ sở dữ liệu và dịch vụ backend của Supabase.</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Biến môi trường</th>
+                            <th>Mô tả</th>
+                            <th>Cách lấy giá trị</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>NEXT_PUBLIC_SUPABASE_URL</code></td>
+                            <td>URL của project Supabase.</td>
+                            <td>Trong trang quản lý project Supabase của bạn, vào mục "Project Settings" -> "API". Sao chép giá trị "Project URL".</td>
+                        </tr>
+                        <tr>
+                            <td><code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code></td>
+                            <td>Khóa công khai (anon key) của project Supabase. Khóa này an toàn để sử dụng ở phía client.</td>
+                            <td>Trong trang quản lý project Supabase, vào mục "Project Settings" -> "API". Sao chép giá trị "Project API Keys" -> "anon" (public).</td>
+                        </tr>
+                        <tr>
+                            <td><code>SUPABASE_SERVICE_ROLE_KEY</code></td>
+                            <td>Khóa vai trò dịch vụ (service role key) của project Supabase. Khóa này có quyền truy cập cao nhất và <strong>chỉ nên sử dụng ở phía server</strong>, không bao giờ lộ ra phía client.</td>
+                            <td>Trong trang quản lý project Supabase, vào mục "Project Settings" -> "API". Sao chép giá trị "Project API Keys" -> "service_role" (secret). <strong class="warning">CẢNH BÁO: Giữ khóa này tuyệt đối bí mật.</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p>Ví dụ nội dung file <code>.env.local</code>:</p>
+                <pre><code>NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+
+# Đường dẫn trang web của bạn (RẤT QUAN TRỌNG cho xác thực email và các liên kết trong email)
+NEXT_PUBLIC_SITE_URL=https://your-deployment-url.com
+
+# Thêm các biến môi trường khác nếu có
+# VÍ DỤ: API keys cho cổng thanh toán, dịch vụ gửi email marketing (không phải SMTP cho Supabase Auth)
+# PAYMENT_GATEWAY_API_KEY=your-payment-api-key
+# MAILER_LITE_API_KEY=your-mailerlite-api-key
+                </code></pre>
+                <p class="note">Biến <code>NEXT_PUBLIC_SITE_URL</code> rất quan trọng. Nó được Supabase sử dụng để tạo các liên kết xác thực (ví dụ: xác nhận email, đặt lại mật khẩu) gửi đến người dùng. Hãy đảm bảo giá trị này là URL chính thức mà ứng dụng của bạn sẽ được triển khai.</p>
+            </li>
+            <li>
+                <strong>Cấu hình các biến môi trường cho dịch vụ bên thứ ba khác (nếu có):</strong>
+                <p>Tùy thuộc vào các tính năng cụ thể của hệ thống, bạn có thể cần cấu hình thêm các biến môi trường khác, ví dụ:</p>
+                <ul>
+                    <li>API keys cho cổng thanh toán (VNPAY, Momo,...).</li>
+                    <li>API keys cho dịch vụ gửi email (SendGrid, Mailgun,...).</li>
+                    <li>Cấu hình cho các dịch vụ bên thứ ba khác.</li>
+                </ul>
+                <p>Hãy tham khảo tài liệu kỹ thuật của dự án (nếu có) hoặc mã nguồn để xác định các biến môi trường cần thiết khác.</p>
+            </li>
+        </ol>
+
+        <h3>3.2. Cấu hình trong Supabase Dashboard</h3>
+        <p>Một số cấu hình quan trọng khác được thực hiện trực tiếp trên trang quản lý (dashboard) của Supabase:</p>
+        <ul>
+            <li>
+                <strong>Authentication (Xác thực):</strong>
+                <ul>
+                    <li><strong>Providers:</strong> Kích hoạt và cấu hình các nhà cung cấp xác thực như Email/Password, Google, Facebook, GitHub, v.v. (Trong Supabase Dashboard: "Authentication" -> "Providers").</li>
+                    <li><strong>Email Templates:</strong> Tùy chỉnh nội dung email xác nhận, email đặt lại mật khẩu, v.v. (Trong Supabase Dashboard: "Authentication" -> "Templates").</li>
+                    <li><strong>Site URL:</strong> Trong Supabase Dashboard, vào "Authentication" -> "Settings". Đảm bảo rằng "Site URL" được đặt thành giá trị của biến <code>NEXT_PUBLIC_SITE_URL</code> từ file <code>.env.local</code> của bạn (ví dụ: <code>https://your-deployment-url.com</code>). Đây là URL cơ sở mà Supabase sẽ sử dụng để tạo các liên kết trong email.</li>
+                    <li><strong>Redirect URLs:</strong> Cũng trong "Authentication" -> "Settings", bạn có thể cần thêm các "Additional Redirect URLs" nếu ứng dụng của bạn có các luồng chuyển hướng phức tạp sau khi đăng nhập hoặc xác thực (ví dụ: <code>https://your-deployment-url.com/auth/callback</code>).</li>
+                    <li><strong>Email Templates (Mẫu Email):</strong> Trong "Authentication" -> "Templates", bạn có thể tùy chỉnh nội dung của các email mà Supabase gửi đi (xác nhận đăng ký, đặt lại mật khẩu, mời người dùng, thay đổi email). Bạn có thể sử dụng biến Liquid để cá nhân hóa email.</li>
+                    <li>
+                        <strong>Custom SMTP / Email Provider (Nhà cung cấp Email Tùy chỉnh):</strong>
+                        <p>Mặc định, Supabase gửi email qua một nhà cung cấp dịch vụ email của họ với giới hạn nhất định (đặc biệt trên gói miễn phí). Để có độ tin cậy cao hơn, khả năng gửi email lớn hơn và tùy chỉnh tên miền người gửi (sender domain), bạn nên cấu hình SMTP tùy chỉnh.</p>
+                        <p>Trong Supabase Dashboard, vào "Project Settings" -> "Authentication" -> "SMTP settings". Tại đây bạn có thể cấu hình thông tin máy chủ SMTP của riêng mình (ví dụ: SendGrid, Mailgun, AWS SES, Postmark, hoặc SMTP server của công ty bạn).</p>
+                        <p>Các thông tin thường cần cung cấp:</p>
+                        <ul>
+                            <li><strong>SMTP Host:</strong> Địa chỉ máy chủ SMTP (ví dụ: <code>smtp.sendgrid.net</code>).</li>
+                            <li><strong>SMTP Port:</strong> Cổng SMTP (thường là <code>587</code> cho TLS hoặc <code>465</code> cho SSL).</li>
+                            <li><strong>SMTP Username:</strong> Tên người dùng để xác thực với SMTP server (thường là API key hoặc email).</li>
+                            <li><strong>SMTP Password:</strong> Mật khẩu hoặc API key cho SMTP server.</li>
+                            <li><strong>Sender Email:</strong> Địa chỉ email sẽ hiển thị là người gửi (ví dụ: <code>noreply@your-domain.com</code>). Đảm bảo tên miền này đã được xác thực với nhà cung cấp SMTP của bạn.</li>
+                        </ul>
+                        <p class="warning">Việc cấu hình SMTP tùy chỉnh giúp email của bạn ít bị đánh dấu là spam hơn và tăng tính chuyên nghiệp.</p>
+                    </li>
+                    <li>
+                        <strong>Email Domain Allowlist (Danh sách tên miền email được phép):</strong>
+                        <p>File <code>supabase-email-config.sql</code> của bạn có đoạn mã để cấu hình <code>email_domain_allowlist</code>. Điều này cho phép bạn kiểm soát những tên miền email nào được phép đăng ký tài khoản.</p>
+                        <ul>
+                            <li>Để cho phép tất cả các tên miền email đăng ký:
+                                <pre><code>UPDATE auth.config SET email_domain_allowlist = null WHERE id = 1;</code></pre>
+                            </li>
+                            <li>Để chỉ cho phép một số tên miền cụ thể (ví dụ: email nội bộ công ty):
+                                <pre><code>UPDATE auth.config SET email_domain_allowlist = ARRAY['company.com', 'partner.org'] WHERE id = 1;</code></pre>
+                                <p>Bạn cần chạy các lệnh SQL này trực tiếp trong SQL Editor của Supabase Dashboard ("SQL Editor" -> "New query").</p>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong>Email Confirmation for Email Changes (Xác nhận email khi thay đổi địa chỉ email):</strong>
+                        <p>File <code>supabase-email-config.sql</code> cũng đề cập đến <code>email_confirm_email_changes</code>. Mặc định, Supabase yêu cầu người dùng xác nhận địa chỉ email mới khi họ thay đổi email. Bạn có thể tắt tính năng này (không khuyến khích) bằng lệnh:</p>
+                        <pre><code>-- UPDATE auth.config SET email_confirm_email_changes = false WHERE id = 1;</code></pre>
+                        <p>Nên giữ cài đặt này là <code>true</code> để tăng cường bảo mật.</p>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <strong>Database (Cơ sở dữ liệu):</strong>
+                <ul>
+                    <li><strong>Schema Migrations:</strong> Đảm bảo schema cơ sở dữ liệu (các bảng, cột, quan hệ) đã được áp dụng đúng cho project Supabase của khách hàng. Nếu đây là triển khai mới, bạn cần chạy các migration script để tạo cấu trúc CSDL. (Thường được quản lý bằng Supabase CLI: <code>supabase db push</code> hoặc <code>supabase migration up</code>).</li>
+                    <li><strong>Row Level Security (RLS):</strong> Kiểm tra và đảm bảo các chính sách RLS được thiết lập đúng để bảo vệ dữ liệu.</li>
+                </ul>
+            </li>
+            <li>
+                <strong>Storage (Lưu trữ file):</strong>
+                <ul>
+                    <li>Tạo các "Buckets" cần thiết để lưu trữ file (ví dụ: ảnh sản phẩm, avatar người dùng).</li>
+                    <li>Cấu hình chính sách truy cập cho từng bucket.</li>
+                </ul>
+            </li>
+            <li>
+                <strong>Functions (Edge Functions - nếu có):</strong>
+                <ul>
+                    <li>Triển khai các serverless functions cần thiết cho hệ thống.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>3.3. Cấu hình phía ứng dụng (nếu có)</h3>
+        <p>Một số cấu hình có thể nằm trực tiếp trong mã nguồn ứng dụng, ví dụ:</p>
+        <ul>
+            <li><strong>Cấu hình giao diện (Theme):</strong> Màu sắc, logo, font chữ có thể được định nghĩa trong các file CSS, SCSS hoặc thông qua các biến trong JavaScript/TypeScript.</li>
+            <li><strong>Ngôn ngữ mặc định:</strong> Nếu hệ thống hỗ trợ đa ngôn ngữ.</li>
+            <li><strong>Các hằng số hoặc cài đặt mặc định:</strong> Ví dụ: số lượng sản phẩm hiển thị trên mỗi trang, các tùy chọn mặc định cho bộ lọc.</li>
+        </ul>
+        <p>Việc thay đổi các cấu hình này thường đòi hỏi chỉnh sửa mã nguồn và build lại ứng dụng.</p>
+
+        <h3>3.4. Build ứng dụng</h3>
+        <p>Sau khi hoàn tất các bước cấu hình cơ bản trong <code>.env.local</code> và Supabase Dashboard:</p>
+        <ol>
+            <li>
+                <strong>Cài đặt dependencies:</strong> Đảm bảo tất cả các gói cần thiết cho dự án đã được cài đặt.
+                <pre><code>npm install
+# hoặc
+yarn install</code></pre>
+            </li>
+            <li>
+                <strong>Build ứng dụng:</strong> Chạy lệnh build để tạo ra phiên bản tối ưu cho production. Lệnh này thường sẽ biên dịch mã nguồn TypeScript/JavaScript, tối ưu hóa tài sản (assets) và chuẩn bị ứng dụng cho việc triển khai.
+                <pre><code>npm run build
+# hoặc
+yarn build</code></pre>
+                <p>Kết quả của quá trình build thường nằm trong một thư mục như <code>.next</code> (cho Next.js), <code>dist</code>, hoặc <code>build</code>.</p>
+            </li>
+        </ol>
+
+        <h3>3.5. Hướng dẫn Triển khai (Deployment) chi tiết</h3>
+        <p>Việc triển khai ứng dụng có thể được thực hiện trên nhiều nền tảng khác nhau. Dưới đây là hướng dẫn cho một số nền tảng phổ biến:</p>
+
+        <h4>3.5.1. Triển khai lên Vercel</h4>
+        <p>Vercel là nền tảng được tối ưu hóa cho các ứng dụng Next.js (framework mà dự án này có thể đang sử dụng).</p>
+        <ol>
+            <li><strong>Kết nối Repository:</strong>
+                <ul>
+                    <li>Đăng nhập vào tài khoản Vercel của bạn.</li>
+                    <li>Nhấp vào "Add New..." -> "Project".</li>
+                    <li>Chọn Git provider của bạn (GitHub, GitLab, Bitbucket) và chọn repository của dự án.</li>
+                </ul>
+            </li>
+            <li><strong>Cấu hình Project:</strong>
+                <ul>
+                    <li>Vercel thường tự động phát hiện các cài đặt cho dự án Next.js.</li>
+                    <li><strong>Build Command:</strong> Thường là <code>npm run build</code> hoặc <code>yarn build</code>.</li>
+                    <li><strong>Output Directory:</strong> Thường là <code>.next</code> cho Next.js.</li>
+                    <li><strong>Install Command:</strong> Thường là <code>npm install</code> hoặc <code>yarn install</code>.</li>
+                </ul>
+            </li>
+            <li><strong>Cấu hình Biến Môi trường:</strong>
+                <ul>
+                    <li>Trong cài đặt project trên Vercel, vào mục "Settings" -> "Environment Variables".</li>
+                    <li>Thêm tất cả các biến môi trường đã định nghĩa trong file <code>.env.local</code> (ví dụ: <code>NEXT_PUBLIC_SUPABASE_URL</code>, <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code>, <code>SUPABASE_SERVICE_ROLE_KEY</code>, và các API keys khác).</li>
+                    <li class="warning"><strong>QUAN TRỌNG:</strong> Đảm bảo rằng <code>SUPABASE_SERVICE_ROLE_KEY</code> và các khóa bí mật khác được đánh dấu là "Secret" và không bị lộ ra phía client.</li>
+                </ul>
+            </li>
+            <li><strong>Triển khai:</strong>
+                <ul>
+                    <li>Nhấp vào nút "Deploy". Vercel sẽ tự động build và triển khai ứng dụng của bạn.</li>
+                    <li>Sau khi triển khai thành công, Vercel sẽ cung cấp cho bạn một URL để truy cập ứng dụng.</li>
+                </ul>
+            </li>
+            <li><strong>Custom Domain:</strong> Bạn có thể thêm tên miền tùy chỉnh trong mục "Settings" -> "Domains".</li>
+        </ol>
+
+        <h4>3.5.2. Triển khai lên Netlify</h4>
+        <p>Netlify cũng là một lựa chọn phổ biến để triển khai các ứng dụng web hiện đại.</p>
+        <ol>
+            <li><strong>Kết nối Repository:</strong>
+                <ul>
+                    <li>Đăng nhập vào tài khoản Netlify.</li>
+                    <li>Nhấp vào "Add new site" -> "Import an existing project".</li>
+                    <li>Chọn Git provider và repository của dự án.</li>
+                </ul>
+            </li>
+            <li><strong>Cấu hình Build:</strong>
+                <ul>
+                    <li><strong>Branch to deploy:</strong> Chọn nhánh bạn muốn triển khai (ví dụ: <code>main</code> hoặc <code>master</code>).</li>
+                    <li><strong>Build command:</strong> Nhập lệnh build (ví dụ: <code>npm run build</code>).</li>
+                    <li><strong>Publish directory:</strong> Nhập thư mục chứa kết quả build (ví dụ: <code>.next</code> hoặc <code>out</code> nếu là static export của Next.js).</li>
+                </ul>
+            </li>
+            <li><strong>Cấu hình Biến Môi trường:</strong>
+                <ul>
+                    <li>Trong cài đặt site trên Netlify, vào mục "Site settings" -> "Build & deploy" -> "Environment".</li>
+                    <li>Thêm các biến môi trường từ file <code>.env.local</code>.</li>
+                </ul>
+            </li>
+            <li><strong>Triển khai:</strong> Netlify sẽ tự động build và triển khai khi bạn push code lên nhánh đã chọn. Bạn cũng có thể kích hoạt triển khai thủ công.</li>
+            <li><strong>Custom Domain:</strong> Cấu hình trong "Domain management".</li>
+        </ol>
+        <p class="note">Đối với Next.js, bạn có thể cần cài đặt Netlify adapter (ví dụ: <code>@netlify/plugin-nextjs</code>) để hỗ trợ các tính năng như Server-Side Rendering (SSR) và API Routes. Kiểm tra file <code>netlify.toml</code> của dự án (nếu có).</p>
+
+        <h4>3.5.3. Triển khai lên Server Riêng (Self-hosting)</h4>
+        <p>Triển khai lên server riêng (VPS, dedicated server) đòi hỏi nhiều cấu hình thủ công hơn.</p>
+        <ol>
+            <li><strong>Chuẩn bị Server:</strong>
+                <ul>
+                    <li>Cài đặt hệ điều hành (ví dụ: Ubuntu, CentOS).</li>
+                    <li>Cài đặt Node.js và npm/yarn.</li>
+                    <li>Cài đặt web server như Nginx hoặc Apache (thường dùng Nginx làm reverse proxy).</li>
+                    <li>Cấu hình firewall (ví dụ: ufw).</li>
+                </ul>
+            </li>
+            <li><strong>Tải Mã nguồn lên Server:</strong>
+                <ul>
+                    <li>Sử dụng Git để clone repository về server.</li>
+                    <li>Hoặc tải mã nguồn đã build (thư mục <code>.next</code> và các file cần thiết) lên server bằng SCP, FTP.</li>
+                </ul>
+            </li>
+            <li><strong>Cài đặt Dependencies và Build (nếu chưa build ở local):</strong>
+                <pre><code>npm install
+npm run build</code></pre>
+            </li>
+            <li><strong>Cấu hình Biến Môi trường:</strong>
+                <ul>
+                    <li>Tạo file <code>.env.local</code> trên server với các giá trị cấu hình cho môi trường production.</li>
+                    <li>Hoặc thiết lập biến môi trường trực tiếp trên hệ thống hoặc thông qua các công cụ quản lý tiến trình.</li>
+                </ul>
+            </li>
+            <li><strong>Chạy Ứng dụng:</strong>
+                <ul>
+                    <li>Sử dụng một trình quản lý tiến trình như PM2 để chạy ứng dụng Next.js và đảm bảo nó tự khởi động lại khi có lỗi hoặc server reboot.
+                        <pre><code>npm install pm2 -g
+pm2 start npm --name "my-app" -- start</code></pre>
+                        (Giả sử script <code>start</code> trong <code>package.json</code> là <code>next start</code>)
+                    </li>
+                </ul>
+            </li>
+            <li><strong>Cấu hình Reverse Proxy (Nginx):</strong>
+                <p>Cấu hình Nginx để chuyển tiếp các yêu cầu từ port 80 (HTTP) hoặc 443 (HTTPS) đến port mà ứng dụng Next.js đang chạy (mặc định là 3000).</p>
+                <p>Ví dụ cấu hình Nginx cơ bản (<code>/etc/nginx/sites-available/your-domain.com</code>):</p>
+                <pre><code>server {
+    listen 80;
+    server_name your-domain.com www.your-domain.com;
+
+    location / {
+        proxy_pass http://localhost:3000; # Hoặc port ứng dụng của bạn
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}</code></pre>
+                <ul>
+                    <li>Kích hoạt site: <code>sudo ln -s /etc/nginx/sites-available/your-domain.com /etc/nginx/sites-enabled/</code></li>
+                    <li>Kiểm tra cấu hình Nginx: <code>sudo nginx -t</code></li>
+                    <li>Reload Nginx: <code>sudo systemctl reload nginx</code></li>
+                </ul>
+            </li>
+            <li><strong>Cấu hình SSL/TLS (HTTPS):</strong>
+                <ul>
+                    <li>Sử dụng Let's Encrypt với Certbot để cài đặt chứng chỉ SSL miễn phí.
+                        <pre><code>sudo apt install certbot python3-certbot-nginx
+sudo certbot --nginx -d your-domain.com -d www.your-domain.com</code></pre>
+                    </li>
+                </ul>
+            </li>
+        </ol>
+
+        <h3>3.6. Kết nối với Phần cứng (Hardware Integration)</h3>
+        <p>Việc tích hợp phần cứng phụ thuộc rất nhiều vào loại phần cứng cụ thể và cách hệ thống được thiết kế để tương tác với chúng. Dưới đây là một số hướng dẫn chung:</p>
+
+        <h4>3.6.1. Máy in hóa đơn (Receipt Printers)</h4>
+        <ul>
+            <li><strong>Loại kết nối:</strong> Máy in hóa đơn có thể kết nối qua USB, Ethernet (mạng LAN), Serial port, hoặc Bluetooth.</li>
+            <li><strong>Driver:</strong> Đảm bảo driver của máy in đã được cài đặt đúng trên máy tính/thiết bị POS sẽ thực hiện việc in.</li>
+            <li><strong>Giao thức in:</strong>
+                <ul>
+                    <li><strong>ESC/POS:</strong> Đây là một bộ lệnh chuẩn được nhiều máy in hóa đơn hỗ trợ. Ứng dụng web có thể gửi các lệnh ESC/POS trực tiếp đến máy in (thường thông qua một ứng dụng trung gian hoặc WebUSB/Web Bluetooth nếu trình duyệt hỗ trợ và được phép).</li>
+                    <li><strong>In qua trình duyệt (Browser Printing):</strong> Cách đơn giản nhất là tạo một trang HTML được định dạng sẵn cho hóa đơn và sử dụng chức năng in của trình duyệt (<code>window.print()</code>). Cần cấu hình khổ giấy và lề trong cài đặt máy in của hệ điều hành.</li>
+                    <li><strong>Ứng dụng trung gian (Bridge Application):</strong> Một ứng dụng nhỏ chạy trên máy tính local có thể lắng nghe yêu cầu từ ứng dụng web (ví dụ qua HTTP request hoặc WebSockets) và gửi lệnh in đến máy in.</li>
+                </ul>
+            </li>
+            <li><strong>Cấu hình trong hệ thống:</strong> Hệ thống có thể cần cấu hình tên máy in mặc định hoặc địa chỉ IP của máy in mạng.</li>
+        </ul>
+
+        <h4>3.6.2. Máy quét mã vạch (Barcode Scanners)</h4>
+        <ul>
+            <li><strong>Hoạt động như bàn phím:</strong> Hầu hết các máy quét mã vạch USB hoạt động như một thiết bị nhập liệu bàn phím (HID - Human Interface Device). Khi quét một mã vạch, dữ liệu mã vạch sẽ được gửi đến ứng dụng như thể người dùng đang gõ nó vào trường input đang focus.</li>
+            <li><strong>Tích hợp:</strong>
+                <ul>
+                    <li>Đảm bảo trường input phù hợp (ví dụ: ô tìm kiếm sản phẩm, ô nhập mã sản phẩm) đang được focus khi quét.</li>
+                    <li>Có thể cần xử lý sự kiện <code>onchange</code> hoặc <code>onkeypress</code> (đặc biệt là phím Enter sau khi quét) để tự động gửi form hoặc thực hiện tìm kiếm.</li>
+                </ul>
+            </li>
+            <li><strong>Máy quét kết nối Serial/Bluetooth:</strong> Một số máy quét chuyên dụng có thể yêu cầu tích hợp phức tạp hơn thông qua thư viện hoặc SDK cụ thể.</li>
+        </ul>
+
+        <h4>3.6.3. Thiết bị POS (Point of Sale Terminals)</h4>
+        <ul>
+            <li><strong>Tích hợp thanh toán:</strong> Nếu hệ thống cần tích hợp với các thiết bị POS để xử lý thanh toán thẻ, điều này thường liên quan đến SDK hoặc API do nhà cung cấp thiết bị POS cung cấp.</li>
+            <li><strong>Giao tiếp:</strong> Có thể qua USB, Serial, Ethernet hoặc Wi-Fi.</li>
+            <li><strong>Bảo mật:</strong> Việc tích hợp với thiết bị thanh toán đòi hỏi tuân thủ các tiêu chuẩn bảo mật nghiêm ngặt (ví dụ: PCI DSS).</li>
+            <li class="warning">Tích hợp trực tiếp với thiết bị POS thường phức tạp và nên được thực hiện bởi người có kinh nghiệm hoặc theo hướng dẫn chi tiết từ nhà cung cấp.</li>
+        </ul>
+
+        <h4>3.6.4. Lưu ý chung khi tích hợp phần cứng</h4>
+        <ul>
+            <li><strong>Khả năng tương thích:</strong> Luôn kiểm tra khả năng tương thích của phần cứng với hệ điều hành và trình duyệt (nếu là ứng dụng web).</li>
+            <li><strong>Driver và SDK:</strong> Đảm bảo cài đặt đúng driver và sử dụng SDK (Software Development Kit) mới nhất từ nhà sản xuất phần cứng (nếu có).</li>
+            <li><strong>Quyền truy cập:</strong> Ứng dụng web có thể bị hạn chế quyền truy cập trực tiếp vào phần cứng do lý do bảo mật. Các API như WebUSB, WebSerial, Web Bluetooth đang dần mở ra khả năng này nhưng cần sự cho phép của người dùng và hỗ trợ từ trình duyệt.</li>
+            <li><strong>Thử nghiệm kỹ lưỡng:</strong> Luôn thử nghiệm kỹ lưỡng việc tích hợp phần cứng trên môi trường thực tế trước khi triển khai cho khách hàng.</li>
+            <li><strong>Tài liệu hóa:</strong> Ghi lại chi tiết các bước cấu hình phần cứng và các vấn đề thường gặp.</li>
+        </ul>
+
+        <h2>4. Kiểm tra sau cấu hình</h2>
+        <p>Sau khi triển khai, hãy thực hiện các kiểm tra sau để đảm bảo hệ thống hoạt động đúng:</p>
+        <ul>
+            <li>Truy cập vào URL của ứng dụng.</li>
+            <li>Thử các chức năng đăng ký, đăng nhập, đăng xuất.</li>
+            <li>Kiểm tra các chức năng chính của hệ thống (quản lý sản phẩm, đơn hàng, khách hàng, v.v.).</li>
+            <li>Kiểm tra việc tải lên và hiển thị hình ảnh (nếu có).</li>
+            <li>Kiểm tra log của server và console của trình duyệt để phát hiện lỗi (nếu có).</li>
+        </ul>
+
+        <h2>5. Xử lý sự cố thường gặp</h2>
+        <ul>
+            <li><strong>Lỗi kết nối Supabase:</strong>
+                <ul>
+                    <li>Kiểm tra lại giá trị <code>NEXT_PUBLIC_SUPABASE_URL</code> và <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> trong file <code>.env.local</code>.</li>
+                    <li>Đảm bảo project Supabase đang hoạt động.</li>
+                    <li>Kiểm tra kết nối mạng.</li>
+                </ul>
+            </li>
+            <li><strong>Lỗi xác thực:</strong>
+                <ul>
+                    <li>Kiểm tra cấu hình "Site URL" và "Redirect URLs" trong Supabase Dashboard.</li>
+                    <li>Đảm bảo các nhà cung cấp xác thực (Providers) đã được kích hoạt và cấu hình đúng.</li>
+                </ul>
+            </li>
+            <li><strong>Lỗi hiển thị dữ liệu:</strong>
+                <ul>
+                    <li>Kiểm tra các chính sách Row Level Security (RLS) trong Supabase.</li>
+                    <li>Đảm bảo schema CSDL đã được migrate đúng.</li>
+                </ul>
+            </li>
+            <li><strong>Ứng dụng không build được:</strong>
+                <ul>
+                    <li>Kiểm tra log lỗi trong quá trình build để xác định nguyên nhân.</li>
+                    <li>Đảm bảo tất cả dependencies đã được cài đặt.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h2>7. Bảo mật và Bảo trì Hệ thống</h2>
+        <p>Sau khi triển khai, việc đảm bảo an toàn và duy trì hoạt động ổn định cho hệ thống là vô cùng quan trọng.</p>
+
+        <h3>7.1. Các Thực hành Bảo mật Tốt nhất</h3>
+        <ul>
+            <li><strong>Cập nhật Dependencies Thường xuyên:</strong>
+                <ul>
+                    <li>Luôn giữ các gói thư viện (npm packages) của dự án được cập nhật lên phiên bản ổn định mới nhất để vá các lỗ hổng bảo mật đã biết.</li>
+                    <li>Sử dụng các công cụ như <code>npm audit</code> hoặc Snyk để kiểm tra lỗ hổng trong dependencies.</li>
+                </ul>
+            </li>
+            <li><strong>Bảo vệ API Keys và Thông tin Đăng nhập:</strong>
+                <ul>
+                    <li>Tuyệt đối không hardcode API keys, mật khẩu, hoặc các thông tin nhạy cảm khác trực tiếp trong mã nguồn. Luôn sử dụng biến môi trường.</li>
+                    <li>Đối với <code>SUPABASE_SERVICE_ROLE_KEY</code>, chỉ sử dụng ở phía server và không bao giờ để lộ ra client.</li>
+                    <li>Giới hạn quyền của các API key nếu có thể (ví dụ: API key chỉ đọc).</li>
+                </ul>
+            </li>
+            <li><strong>Quản lý Truy cập (Role-Based Access Control - RBAC):</strong>
+                <ul>
+                    <li>Sử dụng Row Level Security (RLS) của Supabase một cách hiệu quả để đảm bảo người dùng chỉ có thể truy cập dữ liệu mà họ được phép.</li>
+                    <li>Phân quyền rõ ràng cho các vai trò người dùng khác nhau trong hệ thống (ví dụ: admin, nhân viên, khách hàng).</li>
+                </ul>
+            </li>
+            <li><strong>Sao lưu và Phục hồi Dữ liệu:</strong>
+                <ul>
+                    <li>Supabase cung cấp tính năng sao lưu tự động. Hãy làm quen với quy trình sao lưu và phục hồi của Supabase.</li>
+                    <li>Xem xét việc thực hiện sao lưu thủ công định kỳ đối với dữ liệu quan trọng và lưu trữ ở một nơi an toàn khác.</li>
+                </ul>
+            </li>
+            <li><strong>Sử dụng HTTPS:</strong>
+                <ul>
+                    <li>Luôn sử dụng HTTPS để mã hóa dữ liệu truyền tải giữa client và server. Hầu hết các nền tảng triển khai hiện đại (Vercel, Netlify) đều tự động cung cấp SSL. Nếu tự host, hãy cài đặt chứng chỉ SSL (ví dụ: Let's Encrypt).</li>
+                </ul>
+            </li>
+            <li><strong>Xác thực và Làm sạch Đầu vào (Input Validation and Sanitization):</strong>
+                <ul>
+                    <li>Luôn xác thực dữ liệu đầu vào từ người dùng ở cả phía client và server để ngăn chặn các tấn công như XSS (Cross-Site Scripting) và SQL Injection (mặc dù Supabase client libraries giúp giảm thiểu nguy cơ SQL Injection).</li>
+                </ul>
+            </li>
+            <li><strong>Bảo mật phía Client:</strong>
+                <ul>
+                    <li>Sử dụng các HTTP security headers như Content Security Policy (CSP), X-Content-Type-Options, X-Frame-Options.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>7.2. Quản lý và Bảo trì Cơ sở dữ liệu (Supabase)</h3>
+        <ul>
+            <li><strong>Sao lưu (Backups):</strong>
+                <ul>
+                    <li>Supabase tự động sao lưu hàng ngày cho các project trả phí. Đối với project miễn phí, bạn có thể cần thực hiện sao lưu thủ công bằng cách dump CSDL.</li>
+                    <li>Hiểu rõ chính sách lưu giữ bản sao lưu và quy trình khôi phục.</li>
+                </ul>
+            </li>
+            <li><strong>Giám sát Hiệu suất CSDL:</strong>
+                <ul>
+                    <li>Sử dụng các công cụ giám sát của Supabase (trong Dashboard) để theo dõi việc sử dụng tài nguyên, các truy vấn chậm, v.v.</li>
+                    <li>Thường xuyên kiểm tra "Query Performance" trong Supabase SQL Editor.</li>
+                </ul>
+            </li>
+            <li><strong>Chiến lược Indexing:</strong>
+                <ul>
+                    <li>Đánh index cho các cột thường xuyên được sử dụng trong mệnh đề <code>WHERE</code>, <code>JOIN</code>, <code>ORDER BY</code> để tăng tốc độ truy vấn.</li>
+                    <li>Tránh đánh index quá nhiều vì nó có thể làm chậm các thao tác ghi (INSERT, UPDATE, DELETE).</li>
+                </ul>
+            </li>
+            <li><strong>Dọn dẹp Dữ liệu (Data Pruning):</strong>
+                <ul>
+                    <li>Nếu hệ thống lưu trữ nhiều dữ liệu tạm thời hoặc log, hãy có kế hoạch dọn dẹp định kỳ để tránh CSDL bị phình to không cần thiết.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>7.3. Giám sát và Ghi log (Monitoring and Logging)</h3>
+        <ul>
+            <li><strong>Công cụ Giám sát Ứng dụng (Application Performance Monitoring - APM):</strong>
+                <ul>
+                    <li>Các nền tảng như Vercel và Netlify cung cấp các công cụ analytics và monitoring tích hợp.</li>
+                    <li>Xem xét tích hợp các dịch vụ của bên thứ ba như Sentry (cho error tracking), New Relic, hoặc Datadog để có cái nhìn sâu sắc hơn về hiệu suất và lỗi ứng dụng.</li>
+                </ul>
+            </li>
+            <li><strong>Ghi Log Phía Server:</strong>
+                <ul>
+                    <li>Supabase Edge Functions và các API routes của Next.js có thể ghi log. Đảm bảo bạn biết cách truy cập và phân tích các log này.</li>
+                    <li>Nếu tự host, cấu hình Nginx và PM2 để ghi log truy cập và log lỗi.</li>
+                </ul>
+            </li>
+            <li><strong>Ghi Log Phía Client:</strong>
+                <ul>
+                    <li>Sử dụng <code>console.log</code>, <code>console.warn</code>, <code>console.error</code> một cách có chiến lược trong quá trình phát triển.</li>
+                    <li>Tích hợp Sentry hoặc các công cụ tương tự để tự động bắt lỗi JavaScript xảy ra trên trình duyệt của người dùng.</li>
+                </ul>
+            </li>
+            <li><strong>Alerts (Cảnh báo):</strong>
+                <ul>
+                    <li>Thiết lập cảnh báo cho các sự kiện quan trọng như lỗi nghiêm trọng, downtime, hoặc sử dụng tài nguyên vượt ngưỡng.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h2>8. Tùy chỉnh Nâng cao (Nếu có)</h2>
+        <p>Tùy thuộc vào cấu trúc của dự án, một số tùy chỉnh về giao diện hoặc tính năng có thể được thực hiện.</p>
+        <ul>
+            <li><strong>Thay đổi Logo và Màu sắc Chủ đạo:</strong>
+                <ul>
+                    <li>Kiểm tra xem có các biến CSS, file cấu hình theme (ví dụ: <code>tailwind.config.js</code> nếu dùng Tailwind CSS), hoặc các component React/Vue/Angular cho phép dễ dàng thay đổi logo và màu sắc chính của trang web không.</li>
+                    <li>Thông thường, logo có thể nằm trong thư mục <code>public/</code> hoặc <code>src/assets/</code>.</li>
+                </ul>
+            </li>
+            <li><strong>Ghi đè CSS Tùy chỉnh:</strong>
+                <ul>
+                    <li>Nếu cần thay đổi nhỏ về giao diện mà không sửa trực tiếp vào core CSS, bạn có thể tạo một file CSS tùy chỉnh (ví dụ: <code>custom.css</code>) và import nó sau cùng để ghi đè các style mặc định.</li>
+                    <li>Hãy cẩn thận để không làm phá vỡ layout hiện có. Sử dụng các selector CSS cụ thể.</li>
+                </ul>
+            </li>
+            <li><strong>Cấu hình Tính năng (Feature Flags):</strong>
+                <ul>
+                    <li>Một số hệ thống có thể sử dụng feature flags (cờ tính năng) để bật/tắt các chức năng nhất định. Kiểm tra xem có file cấu hình hoặc biến môi trường nào liên quan đến việc này không.</li>
+                </ul>
+            </li>
+        </ul>
+
+
+        <h2>9. Kết luận</h2>
+        <p>Việc cấu hình hệ thống là một bước quan trọng để đảm bảo ứng dụng hoạt động hiệu quả, an toàn và dễ bảo trì. Bằng cách làm theo hướng dẫn chi tiết này, bạn có thể tự tin triển khai và quản lý Hệ thống Quản lý Bán hàng cho các khách hàng khác nhau.</p>
+        <p>Luôn nhớ rằng mỗi hệ thống có thể có những đặc thù riêng. Hãy kết hợp tài liệu này với việc tìm hiểu kỹ mã nguồn và các tài liệu kỹ thuật khác của dự án (nếu có). Liên hệ với đội ngũ phát triển nếu bạn gặp phải các vấn đề phức tạp hoặc cần hỗ trợ chuyên sâu.</p>
+    </div>
+</body>
+</html>

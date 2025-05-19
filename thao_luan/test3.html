@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 3: Cấu hình Dịch vụ Cloud, Triển khai Ứng dụng và Thiết lập Thiết bị Điểm Bán (Chi tiết)</title>
+    <style>
+        body {
+            font-family: "Times New Roman", Times, serif;
+            line-height: 1.8;
+            margin: 20px;
+            font-size: 12pt;
+        }
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            margin: auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1, h2, h3, h4, h5 {
+            color: #2c3e50;
+        }
+        h1 {
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 15px;
+            text-align: center;
+            font-size: 20pt;
+            font-weight: bold;
+            margin-bottom: 35px;
+        }
+        h2 {
+            margin-top: 35px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            font-size: 17pt;
+            color: #2980b9;
+            font-weight: bold;
+        }
+        h3 {
+            font-size: 15pt;
+            margin-top: 30px;
+            color: #16a085;
+            font-weight: bold;
+            border-left: 5px solid #1abc9c;
+            padding-left: 10px;
+        }
+        h4 {
+            font-size: 13pt;
+            margin-top: 25px;
+            font-style: normal;
+            color: #27ae60;
+            font-weight: bold;
+        }
+        h5 {
+            font-size: 12pt;
+            margin-top: 20px;
+            font-style: italic;
+            color: #8e44ad;
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            margin-bottom: 25px;
+            font-size: 11pt;
+        }
+        th, td {
+            border: 1px solid #7f8c8d;
+            padding: 10px;
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            background-color: #ecf0f1;
+            font-weight: bold;
+            text-align: center;
+            color: #34495e;
+        }
+        ul, ol {
+            margin-left: 30px;
+            margin-bottom: 15px;
+        }
+        li {
+            margin-bottom: 6px;
+        }
+        .note {
+            background-color: #e7f3fe;
+            border-left: 6px solid #3498db;
+            padding: 12px 15px;
+            margin: 20px 0;
+            font-style: italic;
+            font-size: 11pt;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border-left: 6px solid #ffc107;
+            padding: 12px 15px;
+            margin: 20px 0;
+            font-size: 11pt;
+        }
+        .important {
+            background-color: #f8d7da;
+            border-left: 6px solid #e74c3c;
+            padding: 12px 15px;
+            margin: 20px 0;
+            font-weight: bold;
+            font-size: 11pt;
+        }
+        .checklist {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .checklist li::before {
+            content: "☐ ";
+            margin-right: 8px;
+            font-weight: bold;
+            color: #3498db;
+        }
+        .checklist li.completed::before {
+            content: "☑ ";
+            color: #2ecc71;
+        }
+        .code-block {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            border: 1px solid #34495e;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: "Consolas", "Monaco", "Courier New", Courier, monospace;
+            white-space: pre-wrap;
+            margin: 15px 0;
+            font-size: 10pt;
+            overflow-x: auto;
+            line-height: 1.5;
+        }
+        .code-block .comment { color: #7f8c8d; font-style: italic; }
+        .code-block .keyword { color: #3498db; }
+        .code-block .string { color: #e67e22; }
+        .code-block .variable { color: #9b59b6; }
+
+        .header-info {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header-info p {
+            margin: 5px 0;
+            font-size: 14pt;
+        }
+        .main-focus {
+            border: 2px dashed #3498db;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: #eaf5ff;
+        }
+        .main-focus h3 {
+            color: #2980b9;
+            border-left: none;
+            padding-left: 0;
+        }
+         .step-by-step ol > li {
+            margin-bottom: 15px;
+        }
+        .step-by-step ol ul li {
+            margin-bottom: 5px;
+        }
+        .sub-item { margin-left: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-info">
+            <p><strong>Quyển 3: Thực hành triển khai hệ thống thông tin ABC tại doanh nghiệp</strong></p>
+            <p><strong>Bài 5: Thực hành thiết lập cấu hình phần cứng, cài đặt phần mềm, chuyển đổi dữ liệu và đào tạo người sử dụng</strong></p>
+        </div>
+
+        <h1>Bài 3: Cấu hình Dịch vụ Cloud, Triển khai Ứng dụng và Thiết lập Thiết bị Điểm Bán (Chi tiết)</h1>
+        <p class="note"><strong>Đối tượng áp dụng:</strong> Five Guys Enterprises, LLC.<br>
+        <strong>Hệ thống mục tiêu:</strong> Hệ thống Thông tin Quản lý Bán hàng ABC (Nền tảng Next.js & Supabase) – Phương án Cloud-First.<br>
+        <strong>Người thực hiện:</strong> Đội ngũ kỹ thuật của Công ty Phần mềm ABC (phối hợp với IT Five Guys).</p>
+
+        <h2>I. Mục tiêu Tổng quát</h2>
+        <ul>
+            <li>Hoàn tất việc cấu hình chi tiết và tối ưu các dịch vụ cloud (Vercel Enterprise, Supabase Cloud Enterprise/Team Plan) cho môi trường <strong>Production</strong> (môi trường chạy thật).</li>
+            <li>Thực hiện quy trình <strong>build (xây dựng) và deploy (triển khai) phiên bản Production</strong> của ứng dụng Next.js frontend lên nền tảng Vercel, đảm bảo ứng dụng hoạt động ổn định và có thể truy cập công khai qua URL chính thức (ví dụ: <code>https://pos.fiveguys.com</code>).</li>
+            <li>Cung cấp hướng dẫn chi tiết để đội ngũ IT của Five Guys (hoặc đối tác được ủy quyền) thực hiện cài đặt và cấu hình các thiết bị tại điểm bán (Máy POS, Tablet Order, KDS), đảm bảo chúng sẵn sàng truy cập ứng dụng Production một cách an toàn và hiệu quả thông qua trình duyệt web.</li>
+            <li>Đảm bảo toàn bộ hệ thống (Cloud backend, Cloud frontend đã deploy, Thiết bị điểm bán đã cấu hình) được kết nối và hoạt động đồng bộ, sẵn sàng cho các giai đoạn tiếp theo như kiểm thử nghiệm thu, chuyển đổi dữ liệu, đào tạo người dùng và vận hành chính thức.</li>
+        </ul>
+
+        <h2>II. Danh mục Chuẩn bị Bắt buộc (Pre-requisites Checklist)</h2>
+         <p>(Giữ nguyên nội dung checklist như phiên bản trước, đảm bảo mọi thứ sẵn sàng trước khi bắt đầu cấu hình Production và triển khai)</p>
+        <ul class="checklist">
+            <li><strong class="completed">☑ Kế hoạch Hạ tầng Chi tiết (Bài 2):</strong> Đã được phê duyệt cuối cùng, bao gồm lựa chọn gói dịch vụ Vercel Enterprise và Supabase Cloud Enterprise/Team Plan, cấu hình chi tiết cho từng dịch vụ.</li>
+            <li><strong class="completed">☑ Hợp đồng Dịch vụ Cloud và Tài khoản Quản trị:</strong>
+                <ul>
+                    <li>Hợp đồng với Vercel và Supabase cho các gói Enterprise/Team Plan đã được ký kết.</li>
+                    <li>Tài khoản quản trị cấp cao (Owner/Admin) cho Vercel Organization và Supabase Organization/Project đã được tạo và cấp quyền đầy đủ cho đội ngũ kỹ thuật chịu trách nhiệm.</li>
+                    <li>Thông tin thanh toán (billing) đã được thiết lập.</li>
+                </ul>
+            </li>
+            <li><strong class="completed">☑ Kế hoạch và Thiết bị tại Điểm Bán:</strong>
+                <ul>
+                    <li>Kế hoạch mua sắm/nâng cấp máy POS, tablet, KDS, và các thiết bị ngoại vi đã được phê duyệt.</li>
+                    <li>Ít nhất một bộ thiết bị mẫu cho mỗi loại (POS, tablet, KDS) đã có sẵn để tiến hành cài đặt và cấu hình thử nghiệm.</li>
+                    <li>Danh sách chi tiết cấu hình phần cứng của các thiết bị này.</li>
+                </ul>
+            </li>
+            <li><strong class="completed">☑ Mã nguồn Ứng dụng ABC và Quản lý Phiên bản:</strong>
+                <ul>
+                    <li>Repository Git trung tâm (ví dụ: GitHub Enterprise, GitLab Premium/Ultimate) đã được thiết lập cho frontend (Next.js) và backend (Supabase migrations, functions, edge functions).</li>
+                    <li>Quy trình Git branching model (ví dụ: GitFlow) đã được thống nhất.</li>
+                    <li>Nhánh code cho phiên bản Production (ví dụ: `main` hoặc `release/v1.0`) đã ổn định, được kiểm thử và sẵn sàng để build/deploy.</li>
+                    <li>Quyền truy cập vào repository đã được cấp cho đội ngũ phát triển và DevOps/Deployment team.</li>
+                </ul>
+            </li>
+            <li><strong class="completed">☑ Thông tin Cấu hình và Dữ liệu Ban đầu:</strong>
+                <ul>
+                    <li>Danh sách đầy đủ các tên miền chính thức (custom domains) sẽ sử dụng cho ứng dụng production (ví dụ: `pos.fiveguys.com`).</li>
+                    <li>Thông tin chi tiết của nhà cung cấp SMTP production.</li>
+                    <li>Kế hoạch địa chỉ IP và cấu hình mạng chi tiết cho các cửa hàng (đã có từ Bài 1 và 2).</li>
+                    <li>Danh sách các tài khoản quản trị hệ thống, tài khoản dịch vụ production.</li>
+                    <li>Supabase Project URL và API Keys (anon, service_role) cho môi trường Production.</li>
+                    <li>Các API keys/secrets của dịch vụ bên thứ ba cho môi trường Production.</li>
+                </ul>
+            </li>
+            <li><strong class="completed">☑ Đội ngũ Kỹ thuật và Phân công Trách nhiệm:</strong>
+                <ul>
+                    <li>Nhân sự IT của Công ty Phần mềm ABC và/hoặc IT Five Guys đã được chỉ định rõ ràng cho từng hạng mục công việc cấu hình, triển khai và thiết lập thiết bị.</li>
+                </ul>
+            </li>
+            <li><strong class="completed">☑ Tài liệu Tham khảo:</strong>
+                <ul>
+                    <li>Tài liệu chính thức và cập nhật nhất từ Vercel và Supabase.</li>
+                    <li>Tài liệu kỹ thuật của các thiết bị phần cứng tại điểm bán.</li>
+                    <li>Quy trình quản lý thay đổi (Change Management) của Five Guys.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <div class="main-focus">
+            <h3>Trọng tâm của Bài 3: Hoàn thiện Cấu hình Cloud, Triển khai Phiên bản Production và Chuẩn bị Thiết bị Đầu cuối</h3>
+            <p>Chúng ta sẽ thực hiện các bước cấu hình cuối cùng trên môi trường cloud production, sau đó triển khai (deploy) mã nguồn ứng dụng đã được kiểm thử lên Vercel. Cuối cùng là hướng dẫn chi tiết việc cài đặt và cấu hình các máy POS, tablet tại cửa hàng để sẵn sàng truy cập vào hệ thống thông qua URL đã triển khai.</p>
+        </div>
+
+        <h2>III. Hoàn thiện Cấu hình Dịch vụ Cloud (Môi trường Production)</h2>
+        <p class="important"><strong>Cảnh báo:</strong> Mọi thao tác trong phần này đều ảnh hưởng trực tiếp đến môi trường Production. Cần thực hiện cẩn thận, tuân thủ quy trình quản lý thay đổi và có kế hoạch rollback.</p>
+
+        <div class="step-by-step">
+        <h3>1. Hoàn thiện Cấu hình Supabase Cloud Project (Production)</h3>
+        <p>(Các bước này tập trung vào việc rà soát, tối ưu và bảo mật cho môi trường Production)</p>
+        <ol>
+            <li><strong>Rà soát Cấu hình Project và Tài nguyên:</strong>
+                <ul>
+                    <li>Đăng nhập vào Supabase Dashboard cho Project Production.</li>
+                    <li>Xác nhận Region, Compute Instance Size, Database Storage Size đúng theo kế hoạch và hợp đồng Enterprise.</li>
+                    <li>Kiểm tra các giới hạn tài nguyên (số kết nối, băng thông, dung lượng) và đảm bảo có kế hoạch theo dõi/nâng cấp khi cần.</li>
+                    <li>Xác nhận API Keys và URL. Đảm bảo `service_role` key được quản lý an toàn tuyệt đối.</li>
+                </ul>
+            </li>
+            <li><strong>Hoàn thiện và Bảo mật Cấu hình Authentication:</strong>
+                <ul>
+                    <li>Kiểm tra lại Site URL và Redirect URLs cho Production domain.</li>
+                    <li>Đảm bảo **Email Confirmation** ĐÃ BẬT.</li>
+                    <li>Kiểm tra Custom SMTP Production hoạt động ổn định.</li>
+                    <li>Review kỹ lưỡng cấu hình SSO/SAML (nếu có).</li>
+                    <li>Kiểm tra và siết chặt Rate Limiting nếu cần thiết.</li>
+                </ul>
+            </li>
+            <li><strong>Áp dụng Database Migrations và Kiểm tra Schema:</strong>
+                <ul>
+                    <li>**Thực hiện trong Maintenance Window đã được phê duyệt.**</li>
+                    <li>Sử dụng Supabase CLI đã link đến Project Production.</li>
+                    <li>Checkout nhánh code production (`main` hoặc `release/vX.Y`).</li>
+                    <li>Chạy: <code>supabase db push</code>.</li>
+                    <li>**Kiểm tra sau migration:** Chạy các lệnh kiểm tra schema, dữ liệu mẫu, hoặc các unit test cho DB (nếu có) để đảm bảo migration thành công và không gây lỗi.</li>
+                </ul>
+            </li>
+            <li><strong>Rà soát và Tối ưu Row Level Security (RLS) & Database Policies:</strong>
+                <ul>
+                    <li>Xác nhận RLS đã được bật cho TẤT CẢ các bảng cần bảo vệ.</li>
+                    <li>Review từng RLS policy để đảm bảo logic đúng và không có lỗ hổng bảo mật.</li>
+                    <li>Kiểm thử truy cập bằng các vai trò khác nhau.</li>
+                    <li>Review các Postgres Policies khác (nếu có).</li>
+                </ul>
+            </li>
+            <li><strong>Tối ưu Indexing và Hiệu năng Database:</strong>
+                <ul>
+                    <li>Sử dụng công cụ như `pg_stat_statements` (cần kích hoạt extension) hoặc Supabase's query performance reports để xác định các truy vấn chậm trên Production (sau khi có tải thực tế hoặc tải giả lập).</li>
+                    <li>Tạo thêm hoặc điều chỉnh index nếu cần thiết (sử dụng `CREATE INDEX CONCURRENTLY`).</li>
+                </ul>
+            </li>
+             <li><strong>Hoàn thiện Cấu hình Storage và Policies:</strong>
+                <ul>
+                    <li>Kiểm tra lại Storage Buckets và Storage Policies.</li>
+                    <li>Đảm bảo CDN cho public buckets đang hoạt động.</li>
+                </ul>
+            </li>
+             <li><strong>Kiểm tra Cấu hình Backup, Recovery và Monitoring:</strong>
+                <ul>
+                    <li>Xác nhận chính sách PITR đang hoạt động.</li>
+                    <li>Kiểm tra lại quy trình export dữ liệu định kỳ ra S3 của Five Guys.</li>
+                    <li>Đảm bảo Log Drains (nếu có) và hệ thống monitoring/alerting đã được cấu hình và nhận dữ liệu từ Supabase Production.</li>
+                </ul>
+            </li>
+        </ol>
+        </div>
+
+        <div class="step-by-step">
+        <h3>2. Build và Deploy Ứng dụng Next.js lên Vercel (Production)</h3>
+        <p>Quá trình này tập trung vào việc đưa phiên bản ứng dụng ổn định lên môi trường Production.</p>
+        <ol>
+            <li><strong>Chuẩn bị và Merge Nhánh Code Production:</strong>
+                <ul>
+                    <li>Đảm bảo nhánh `main` (hoặc nhánh production tương ứng) chứa phiên bản code đã được QA duyệt, pass tất cả các bài test tự động, và sẵn sàng cho release.</li>
+                    <li>Thực hiện merge code từ nhánh staging/release vào nhánh production theo quy trình GitFlow.</li>
+                </ul>
+            </li>
+             <li><strong>Xác thực Environment Variables (Production) trên Vercel:</strong>
+                <ul>
+                    <li>Vào Vercel Project Settings -> Environment Variables.</li>
+                    <li>Kiểm tra lại MỘT LẦN NỮA tất cả các biến môi trường cho scope "Production":
+                        <ul>
+                           <li><code>NEXT_PUBLIC_SUPABASE_URL</code>: Trỏ đến URL Supabase Production.</li>
+                           <li><code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code>: Sử dụng Anon Key Production.</li>
+                           <li><code>SUPABASE_SERVICE_ROLE_KEY</code>: Đảm bảo sử dụng Secret chứa Service Role Key Production.</li>
+                           <li><code>NEXT_PUBLIC_SITE_URL</code>: Đặt là URL Production (<code>https://pos.fiveguys.com</code>).</li>
+                           <li>Các keys/secrets khác cho dịch vụ bên thứ ba (ví dụ: cổng thanh toán, dịch vụ email) cũng phải là key Production.</li>
+                        </ul>
+                    </li>
+                 </ul>
+            </li>
+             <li><strong>Kích hoạt Production Deployment trên Vercel:</strong>
+                <ul>
+                    <li>Sau khi merge code vào nhánh production, Vercel CI/CD sẽ tự động kích hoạt quá trình build và deploy.</li>
+                    <li>**Deployment Protection (Nếu cấu hình cho Enterprise):** Quá trình deploy có thể cần sự phê duyệt thủ công từ người có thẩm quyền trên Vercel Dashboard trước khi traffic được chuyển sang phiên bản mới.</li>
+                 </ul>
+            </li>
+             <li><strong>Theo dõi và Xác nhận Deployment Thành Công:</strong>
+                <ul>
+                    <li>Theo dõi trạng thái trong Vercel Dashboard -> Project -> Deployments.</li>
+                    <li>Đảm bảo quá trình build hoàn tất không có lỗi.</li>
+                    <li>Đảm bảo deployment mới được gán vào Production domain.</li>
+                </ul>
+            </li>
+            <li><strong>Kiểm tra Nhanh Sau Deployment (Post-Deployment Smoke Testing):</strong>
+                <ul>
+                    <li>Truy cập URL Production (<code>https://pos.fiveguys.com</code>).</li>
+                    <li>Thực hiện các bước smoke test quan trọng nhất (đăng nhập, chức năng cốt lõi) để đảm bảo ứng dụng hoạt động.</li>
+                     <li>Kiểm tra console trình duyệt và Vercel Function logs xem có lỗi nghiêm trọng nào không.</li>
+                 </ul>
+            </li>
+            <li><strong>Xác nhận Cấu hình Domain, SSL và CDN:</strong>
+                <ul>
+                    <li>Kiểm tra domain production đã hoạt động và trỏ đúng deployment.</li>
+                    <li>Kiểm tra chứng chỉ SSL hợp lệ.</li>
+                    <li>Kiểm tra tốc độ tải trang từ các địa điểm khác nhau để xác nhận CDN hoạt động.</li>
+                </ul>
+            </li>
+        </ol>
+        </div>
+
+        <div class="step-by-step">
+        <h2>IV. Hướng dẫn Thiết lập Thiết bị tại Điểm Bán (Dành cho IT Five Guys/Đối tác)</h2>
+        <p class="important"><strong>Lưu ý:</strong> Các bước dưới đây cần được thực hiện bởi nhân viên kỹ thuật có chuyên môn tại mỗi cửa hàng hoặc thông qua các công cụ quản lý và triển khai từ xa.</p>
+        <ol>
+            <li><strong>Yêu cầu Phần cứng:</strong> Đảm bảo thiết bị (Máy POS, Tablet, KDS) đáp ứng cấu hình tối thiểu đã đề xuất trong Bài 2.</li>
+            <li><strong>Cài đặt Hệ điều hành (Máy POS Windows):</strong>
+                <ul>
+                    <li>Sử dụng "Golden Image" Windows 10/11 IoT/Pro đã được chuẩn bị sẵn (bao gồm HĐH cập nhật, drivers, trình duyệt, agents).</li>
+                    <li>Triển khai image lên thiết bị bằng phương pháp đã được phê duyệt (MDT, SCCM, Intune Autopilot, USB/Clonezilla).</li>
+                    <li>Trong quá trình cài đặt hoặc sau đó, đảm bảo máy được đặt tên đúng quy ước và kết nối vào mạng LAN/Wi-Fi của cửa hàng.</li>
+                </ul>
+            </li>
+             <li><strong>Cài đặt và Cấu hình Tablet/KDS (Android/iOS/Windows/Linux):</strong>
+                 <ul>
+                    <li>Sử dụng công cụ MDM/UEM để enroll và cấu hình thiết bị.</li>
+                    <li>Đẩy profile Wi-Fi, cài đặt trình duyệt/PWA.</li>
+                    <li>Áp dụng Kiosk Mode khóa thiết bị chỉ cho phép truy cập URL POS/KDS.</li>
+                 </ul>
+            </li>
+            <li><strong>Cài đặt Drivers Thiết bị Ngoại vi (Máy POS):</strong>
+                <ul>
+                    <li>Kết nối máy in bill, máy quét mã vạch, ngăn kéo tiền, thiết bị thanh toán.</li>
+                    <li>Cài đặt drivers mới nhất nếu chưa có trong Golden Image.</li>
+                    <li>Kiểm tra hoạt động của từng thiết bị.</li>
+                </ul>
+            </li>
+            <li><strong>Cấu hình Trình duyệt Web (Quan trọng):</strong>
+                <ul>
+                    <li><strong>Đặt Trang chủ (Homepage):</strong> Cấu hình trình duyệt (Chrome/Edge) tự động mở URL Production của hệ thống POS ABC (ví dụ: `https://pos.fiveguys.com`) khi khởi động.</li>
+                    <li><strong>Chế độ Kiosk/Toàn màn hình:</strong> Cấu hình trình duyệt chạy ở chế độ kiosk hoặc toàn màn hình để tối ưu giao diện cho POS.</li>
+                    <li><strong>Cấu hình Bảo mật Trình duyệt:</strong> Tắt lưu mật khẩu, tự động điền, chặn pop-up không cần thiết.</li>
+                    <li><strong>Xóa Cache/Dữ liệu duyệt web:</strong> Cấu hình tự động xóa cache/cookies khi đóng trình duyệt (cân nhắc ảnh hưởng PWA offline).</li>
+                    <li>(Các cấu hình này nên được quản lý tập trung qua GPO hoặc MDM).</li>
+                </ul>
+            </li>
+            <li><strong>Kiểm tra Kết nối và Truy cập Hệ thống:</strong>
+                 <ul>
+                    <li>Đảm bảo thiết bị kết nối mạng ổn định (ưu tiên LAN cho POS).</li>
+                    <li>Mở trình duyệt -> Truy cập URL POS ABC -> Đăng nhập thử bằng tài khoản cửa hàng.</li>
+                    <li>Kiểm tra tốc độ và sự ổn định.</li>
+                 </ul>
+            </li>
+             <li><strong>Hoàn tất:</strong> Xác nhận thiết bị hoạt động đúng, dán nhãn tài sản, ghi nhận vào hệ thống ITAM.</li>
+        </ol>
+        <p class="warning"><strong>Hỗ trợ Kỹ thuật:</strong> Cần có quy trình rõ ràng để nhân viên cửa hàng báo cáo sự cố thiết bị và nhận hỗ trợ từ đội ngũ IT trung tâm hoặc đối tác tại chỗ.</p>
+        </div>
+
+        <div class="step-by-step">
+        <h2>V. Ghi chú Vận hành và Bảo mật Sau Triển khai</h2>
+         <p>(Giữ nguyên nội dung chi tiết như phiên bản trước, tập trung vào các hoạt động cần thiết sau khi hệ thống đã hoạt động)</p>
+         <ol>
+            <li><strong>Tài liệu hóa Hệ thống Toàn diện:</strong>
+                <ul class="sub-item">
+                    <li><strong>Kiến trúc hệ thống:</strong> Sơ đồ chi tiết mô tả luồng dữ liệu, các thành phần cloud, tích hợp.</li>
+                    <li><strong>Cấu hình Dịch vụ Cloud:</strong> Ghi lại tất cả cài đặt quan trọng trên Vercel và Supabase (settings, policies, keys - tham chiếu đến vault).</li>
+                    <li><strong>Cấu hình Thiết bị Điểm Bán:</strong> Tài liệu quy trình tạo Golden Image, cấu hình MDM/UEM, cấu hình chuẩn cho từng loại thiết bị.</li>
+                    <li><strong>Quy trình Vận hành:</strong> Backup/Restore, Monitoring, Alerting, Deployment, Rollback, Quản lý User/Access, Xử lý sự cố.</li>
+                    <li><strong>Tài liệu API và Tích hợp:</strong> Mô tả các API nội bộ và cách tích hợp với hệ thống bên thứ ba.</li>
+                    <li>Sử dụng wiki nội bộ (Confluence, Notion) hoặc hệ thống quản lý tài liệu tập trung.</li>
+                </ul>
+            </li>
+             <li><strong>Quy trình Quản lý Thay đổi (Change Management):</strong>
+                <ul class="sub-item">
+                    <li>Áp dụng quy trình quản lý thay đổi chặt chẽ cho mọi thay đổi trên môi trường production (cấu hình cloud, code deploy, DB migration).</li>
+                    <li>Yêu cầu Change Request, đánh giá rủi ro, kế hoạch thực hiện, kế hoạch rollback, phê duyệt từ các bên liên quan.</li>
+                </ul>
+            </li>
+            <li><strong>Quản lý Phiên bản và CI/CD:</strong>
+                <ul class="sub-item">
+                    <li>Tuân thủ nghiêm ngặt Git branching model đã thống nhất.</li>
+                    <li>Sử dụng Pull Requests cho mọi thay đổi code, yêu cầu code review.</li>
+                    <li>Tích hợp các bước kiểm thử tự động (unit test, integration test, E2E test) vào pipeline CI/CD.</li>
+                    <li>Đảm bảo pipeline CI/CD triển khai nhất quán lên các môi trường (staging, production).</li>
+                </ul>
+            </li>
+            <li><strong>Checklist Bảo mật Định kỳ:</strong>
+                <ul class="sub-item">
+                    <li><strong>Supabase RLS & Policies:</strong> Review định kỳ tất cả các RLS policies và Storage policies.</li>
+                    <li><strong>API Keys & Secrets Management:</strong> Review và rotate các API keys, JWT secrets, service role key định kỳ. Sử dụng vault.</li>
+                    <li><strong>Dependency Scanning:</strong> Sử dụng các công cụ như `npm audit`, Snyk, Dependabot để quét và vá lỗi bảo mật trong các thư viện Node.js.</li>
+                    <li><strong>Vercel Security Settings:</strong> Review cấu hình WAF, DDoS protection, SSO.</li>
+                    <li><strong>Access Control:</strong> Review quyền truy cập của user vào Vercel, Supabase, Git repository. Áp dụng nguyên tắc đặc quyền tối thiểu (least privilege).</li>
+                    <li><strong>Vulnerability Assessment / Penetration Testing:</strong> Thực hiện định kỳ bởi đội ngũ bảo mật nội bộ hoặc bên thứ ba.</li>
+                </ul>
+            </li>
+            <li><strong>Kế hoạch Khôi phục Thảm họa (Disaster Recovery - DR):</strong>
+                <ul class="sub-item">
+                    <li>Định nghĩa RPO (Recovery Point Objective) và RTO (Recovery Time Objective) cho hệ thống.</li>
+                    <li>Xây dựng kế hoạch DR chi tiết, bao gồm các bước phục hồi CSDL từ backup, phục hồi Storage, deploy lại frontend.</li>
+                    <li>Thực hiện DR Drills (thực hành kịch bản DR) định kỳ (ví dụ: 6 tháng/lần) để đảm bảo kế hoạch hoạt động và đội ngũ quen thuộc với quy trình.</li>
+                </ul>
+            </li>
+             <li><strong>Quản lý Hiệu năng (Performance Management):</strong>
+                <ul class="sub-item">
+                    <li>Định kỳ phân tích hiệu năng CSDL, API, Frontend (Core Web Vitals).</li>
+                    <li>Tối ưu hóa truy vấn, indexing, code frontend/backend khi cần thiết.</li>
+                    <li>Xem xét nâng cấp Compute Instance hoặc các tài nguyên cloud khác nếu đạt ngưỡng.</li>
+                </ul>
+            </li>
+             <li><strong>Quản lý Chi phí Cloud (Cost Management):</strong>
+                <ul class="sub-item">
+                    <li>Theo dõi chi tiết hóa đơn Vercel và Supabase.</li>
+                    <li>Sử dụng các công cụ cost analysis của nhà cung cấp hoặc bên thứ ba.</li>
+                    <li>Tối ưu hóa việc sử dụng tài nguyên (ví dụ: chọn đúng kích thước instance, xóa tài nguyên không dùng, tối ưu egress).</li>
+                    <li>Xem xét Reserved Instances hoặc Savings Plans nếu cam kết sử dụng dài hạn.</li>
+                </ul>
+            </li>
+        </ol>
+        </div>
+
+        <p class="important">Sau khi hoàn thành Bài 3, Hệ thống Thông tin Quản lý Bán hàng ABC đã được cấu hình hoàn chỉnh trên môi trường cloud, phiên bản production đã được triển khai và các thiết bị tại điểm bán đã sẵn sàng để người dùng cuối truy cập và sử dụng thông qua trình duyệt web.</p>
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 2 (Điều chỉnh Thực tế): Lập Kế Hoạch Triển Khai HTTT - Five Guys</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.7;
+            margin: 25px;
+            color: #333;
+        }
+        h2 {
+            color: #0056b3; /* Dark Blue */
+            border-bottom: 3px solid #0056b3;
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+        h3 {
+            color: #007bff; /* Bright Blue */
+            margin-top: 30px;
+            border-left: 5px solid #007bff;
+            padding-left: 10px;
+        }
+        h4 {
+            color: #17a2b8; /* Teal */
+            margin-top: 25px;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        li {
+            margin-bottom: 15px;
+            border-left: 3px solid #ccc;
+            padding-left: 15px;
+            transition: border-left-color 0.3s ease;
+        }
+         li:hover {
+            border-left-color: #007bff;
+         }
+        strong {
+            font-weight: 600;
+            color: #343a40; /* Dark Gray */
+        }
+        .role-description, .plan-details {
+            margin-left: 20px;
+            font-size: 0.95em;
+            color: #555;
+            padding-top: 5px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            box-shadow: 0 2px 3px rgba(0,0,0,0.1);
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #e9ecef; /* Light Gray */
+            font-weight: bold;
+            color: #495057; /* Darker Gray */
+            position: sticky;
+            top: 0; /* Stick header */
+        }
+        .task-assignment {
+            font-size: 0.9em;
+            font-style: italic;
+            color: #6c757d; /* Medium Gray */
+            margin-top: 5px;
+            display: block;
+        }
+        .important-note, .budget-note {
+            font-size: 0.9em;
+            color: #dc3545; /* Red for important notes/warnings */
+            font-weight: bold;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+        }
+         .section-summary {
+            background-color: #eef7ff; /* Lighter Blue */
+            border: 1px solid #bce8f1;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 5px;
+         }
+         .phase-plan {
+             border: 1px dashed #007bff;
+             padding: 15px;
+             margin-top: 15px;
+             background-color: #f8f9fa; /* Very Light Gray */
+         }
+         .pilot-scope {
+             font-weight: bold;
+             color: #17a2b8;
+         }
+         .realistic-estimate {
+             font-weight: bold;
+             color: #28a745; /* Green for realistic */
+         }
+          .cost-breakdown li {
+            border-left: none;
+            padding-left: 0;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+          }
+          .cost-breakdown {
+            margin-top: 10px;
+          }
+    </style>
+</head>
+<body>
+
+    <h2>Bài 2 (Điều chỉnh Thực tế): Lập Kế Hoạch Triển Khai HTTT Quản Lý Bán Hàng Five Guys</h2>
+
+    <div class="section-summary">
+        <strong>Mục đích:</strong> Xây dựng kế hoạch chi tiết, *thực tế và khả thi* cho việc triển khai HTTT Quản lý Bán hàng tại Five Guys, áp dụng phương pháp **Triển khai theo Giai đoạn (Phased Rollout)**. Kế hoạch tập trung vào **Giai đoạn 1 - Pilot** với **thời gian và ngân sách ước tính hợp lý hơn**, đồng thời đề xuất khung cho các giai đoạn sau.
+    </div>
+
+    <div class="important-note">
+        <strong>LƯU Ý QUAN TRỌNG VỀ NGÂN SÁCH & THỜI GIAN BAN ĐẦU:</strong> Kế hoạch gốc với thời gian 4 tháng và kinh phí ~373 triệu VNĐ (~$15,000 USD) là **hoàn toàn không phù hợp** với quy mô triển khai trên toàn bộ 1500+ cửa hàng. Kế hoạch này đã được điều chỉnh theo phương án Phased Rollout. Ngân sách và thời gian tổng thể **CẦN PHẢI ĐƯỢC XÁC NHẬN LẠI KHẨN CẤP** với Five Guys.
+    </div>
+
+    <h3>1. Kế hoạch triển khai chi tiết (Phương án Phased Rollout)</h3>
+
+    <h4>1.1. Kế hoạch về Thời gian</h4>
+    <div class="plan-details">
+        <div class="phase-plan">
+            <strong>Giai đoạn 1: Pilot (Thí điểm)</strong>
+            <ul>
+                <li><strong>Thời gian dự kiến:</strong> <span class="realistic-estimate">6 tháng</span> (Điều chỉnh từ 4 tháng để có thêm thời gian khảo sát hạ tầng kỹ, UAT kỹ lưỡng và tinh chỉnh trước khi Rollout).</li>
+                <li><strong>Bắt đầu dự kiến:</strong> [Cần xác nhận lại, ví dụ: 01/07/2025]</li>
+                <li><strong>Kết thúc dự kiến:</strong> [Cần xác nhận lại, ví dụ: 31/12/2025]</li>
+                <li><strong>Phạm vi:</strong> <span class="pilot-scope">Triển khai tại 15-25 cửa hàng đại diện (ở 2-3 khu vực).</span> Bao gồm đầy đủ các bước: Khảo sát chi tiết hạ tầng, Cấu hình hệ thống, Cài đặt, Chuyển đổi dữ liệu (cho điểm Pilot), Đào tạo chuyên sâu Key Users & nhân viên Pilot, Vận hành thử nghiệm có giám sát chặt chẽ, Thu thập phản hồi qua nhiều kênh, Đánh giá hiệu quả & Tinh chỉnh hệ thống/quy trình.</li>
+                <li><strong>Mục tiêu:</strong> (Giữ nguyên mục tiêu như bản trước)
+                    <ul>
+                        <li>Kiểm chứng tính ổn định và phù hợp của hệ thống.</li>
+                        <li>Hoàn thiện quy trình triển khai, cài đặt, chuyển đổi dữ liệu, đào tạo.</li>
+                        <li>Xác định chính xác yêu cầu hạ tầng và chi phí nâng cấp.</li>
+                        <li>Thu thập phản hồi chi tiết từ người dùng.</li>
+                        <li>Làm cơ sở vững chắc để lập kế hoạch Rollout.</li>
+                    </ul>
+                </li>
+                 <li><strong>Các mốc chính (Trong 6 tháng Pilot - Ước tính):</strong>
+                    <ul>
+                        <li>Tháng 1-2: Hoàn thiện Yêu cầu chi tiết, Thiết kế chi tiết, Khảo sát hạ tầng Pilot.</li>
+                        <li>Tháng 3-4: Phát triển & Tinh chỉnh chức năng lõi, Chuẩn bị Môi trường Pilot, Bắt đầu chuẩn bị dữ liệu.</li>
+                        <li>Tháng 5: Cài đặt tại điểm Pilot, Chuyển đổi dữ liệu Pilot, Đào tạo Key Users/Nhân viên Pilot.</li>
+                        <li>Tháng 6: Go-live Pilot, Vận hành & Hỗ trợ, Thu thập phản hồi, Bắt đầu đánh giá.</li>
+                    </ul>
+                 </li>
+            </ul>
+        </div>
+         <div class="phase-plan future-phase">
+            <strong>Giai đoạn 2: Rollout (Mở rộng)</strong>
+            <ul>
+                <li><strong>Thời gian dự kiến:</strong> <span class="realistic-estimate">18-24 tháng (hoặc lâu hơn)</span>. Cần lập kế hoạch chi tiết với lộ trình rõ ràng cho từng đợt rollout sau Giai đoạn 1.</li>
+                <li><strong>Phạm vi:</strong> Triển khai cho tất cả các cửa hàng còn lại, chia theo từng đợt (batch) hợp lý (ví dụ: 50-100 cửa hàng/đợt).</li>
+                <li><strong>Hoạt động chính:</strong> Lặp lại quy trình đã chuẩn hóa từ Pilot (Chuẩn bị hạ tầng hàng loạt, Cài đặt, Chuyển đổi dữ liệu, Đào tạo diện rộng, Hỗ trợ Go-live) cho từng batch.</li>
+            </ul>
+        </div>
+    </div>
+
+    <h4>1.2. Kế hoạch về Kinh phí</h4>
+    <div class="plan-details">
+         <div class="phase-plan">
+            <strong>Giai đoạn 1: Pilot (Thí điểm - 6 tháng)</strong>
+             <ul>
+                 <li><strong>Ngân sách ước tính:</strong> <span class="budget-note realistic-estimate">[CẦN XÁC NHẬN VỚI FIVE GUYS - Con số 373 triệu VNĐ là quá thấp]. Ước tính hợp lý hơn cho Pilot 6 tháng với đội ngũ này có thể dao động trong khoảng 1.5 - 3 tỷ VNĐ ($60,000 - $120,000 USD), tùy thuộc vào chi phí phần cứng Pilot và yêu cầu hỗ trợ tại chỗ.</span></li>
+                 <li><strong>Các hạng mục chi phí chính (ước tính):</strong>
+                    <ul class="cost-breakdown">
+                        <li>Chi phí nhân công N3 (10-12 người x 6 tháng).</li>
+                        <li>Chi phí nền tảng Cloud (Vercel/Supabase cho Dev/Staging/Pilot).</li>
+                        <li>Chi phí khảo sát hạ tầng chi tiết (có thể bao gồm đi lại).</li>
+                        <li>Chi phí nâng cấp/thay thế phần cứng *tối thiểu* tại điểm Pilot.</li>
+                        <li>Chi phí xây dựng tài liệu & thực hiện đào tạo Pilot.</li>
+                        <li>Chi phí công cụ quản lý dự án, giao tiếp.</li>
+                        <li>Dự phòng phí (15-20%).</li>
+                    </ul>
+                 </li>
+             </ul>
+         </div>
+         <div class="phase-plan future-phase">
+            <strong>Giai đoạn 2: Rollout (Mở rộng - 18-24 tháng)</strong>
+             <ul>
+                 <li><strong>Ngân sách ước tính:</strong> <span class="important-note realistic-estimate">Sẽ là con số rất lớn, dự kiến hàng triệu USD.</span> Cần lập dự toán chi tiết sau Pilot, bao gồm:
+                    <ul class="cost-breakdown">
+                        <li>Chi phí nhân công N3/Đối tác triển khai/đào tạo.</li>
+                        <li>Chi phí nền tảng Cloud quy mô lớn.</li>
+                        <li>Chi phí **nâng cấp/thay thế phần cứng đồng loạt** (khả năng cao là khoản lớn nhất).</li>
+                        <li>Chi phí đào tạo diện rộng (nền tảng LMS, tài liệu, giảng viên...).</li>
+                        <li>Chi phí hỗ trợ vận hành sau Go-live (support team, SLA).</li>
+                        <li>Dự phòng phí.</li>
+                    </ul>
+                 </li>
+             </ul>
+         </div>
+         <div class="important-note">
+            **YÊU CẦU HÀNH ĐỘNG:** Ưu tiên hàng đầu là làm việc với Five Guys để thống nhất ngân sách thực tế cho Giai đoạn Pilot và khung ngân sách tổng thể.
+         </div>
+    </div>
+
+    <h4>1.3. Kế hoạch về Nhân sự</h4>
+    <div class="plan-details">
+         <p>(Giữ nguyên đề xuất tái cấu trúc và phân công nhân sự cho Giai đoạn Pilot và khung cho Giai đoạn Rollout như bản điều chỉnh trước, vì cơ cấu này đã hợp lý hơn với quy mô Pilot 6 tháng).</p>
+        <!-- Phần này giữ nguyên nội dung chi tiết từ bản HTML trước -->
+         <div class="phase-plan">
+            <strong>Giai đoạn 1: Pilot (Thí điểm - 6 tháng)</strong>
+             <ul>
+                <li><strong>Nhân sự N3 Software:</strong> Đội ngũ cốt lõi (khoảng 10-12 người). Tách riêng vai trò BA và QA/Tester. PM tập trung quản lý Pilot. Kỹ sư hạ tầng tập trung khảo sát/chuẩn bị Pilot. Dev tập trung hoàn thiện/sửa lỗi. HR chuẩn bị khung đào tạo.</li>
+                 <li><strong>Nhân sự Five Guys tham gia Pilot:</strong> Client PM, SMEs & Key Users tại điểm Pilot (cần cam kết thời gian), Đại diện IT hỗ trợ hạ tầng Pilot.</li>
+             </ul>
+        </div>
+         <div class="phase-plan future-phase">
+            <strong>Giai đoạn 2: Rollout (Mở rộng)</strong>
+             <ul>
+                <li><strong>Nhân sự N3/Đối tác:** Cần đội ngũ triển khai & đào tạo riêng.</li>
+                 <li><strong>Nhân sự Five Guys:** Client PM, Champion Users theo vùng, Đại diện IT hỗ trợ hạ tầng hàng loạt.</li>
+             </ul>
+         </div>
+    </div>
+
+     <h4>1.4. Kế hoạch về Công nghệ</h4>
+    <div class="plan-details">
+        <p>(Giữ nguyên kế hoạch công nghệ như bản điều chỉnh trước, tập trung Cloud-First và khảo sát/nâng cấp hạ tầng theo từng giai đoạn).</p>
+         <!-- Phần này giữ nguyên nội dung chi tiết từ bản HTML trước -->
+        <ul>
+            <li><strong>Kiến trúc hệ thống:</strong> Cloud-First (Vercel + Supabase).</li>
+            <li><strong>Hạ tầng tại điểm bán:</strong>
+                <ul>
+                    <li>**Giai đoạn Pilot:** Khảo sát chi tiết, nâng cấp tối thiểu nếu cần, tạo "Golden Image".</li>
+                    <li>**Giai đoạn Rollout:** Nâng cấp/thay thế hàng loạt dựa trên kết quả Pilot, deploy "Golden Image".</li>
+                </ul>
+            </li>
+             <li><strong>Công nghệ phát triển & Công cụ quản lý:</strong> Giữ nguyên.</li>
+        </ul>
+    </div>
+
+    <h3>2. Thành lập nhóm triển khai và Phân công nhiệm vụ (Điều chỉnh cho Giai đoạn Pilot - 6 tháng)</h3>
+
+    <p>(Giữ nguyên bảng phân công nhiệm vụ chi tiết của Nhóm N3 và vai trò của các Bên liên quan Five Guys như trong bản điều chỉnh trước, vì cấu trúc này phù hợp với Giai đoạn Pilot đã điều chỉnh).</p>
+
+    <!-- Phần này giữ nguyên nội dung chi tiết từ bản HTML trước -->
+     <h4>2.1. Nhóm triển khai N3 Software (Đội ngũ Pilot)</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>Thành viên</th>
+                <th>Vai trò Chính (Giai đoạn Pilot)</th>
+                <th>Nhiệm vụ Cụ thể (Giai đoạn Pilot)</th>
+                <th>Task Baseline Liên quan</th>
+            </tr>
+        </thead>
+        <tbody>
+             <!-- Copy nội dung bảng từ HTML trước -->
+             <tr>
+                <td>Phạm Quang Minh</td>
+                <td><strong>Project Manager (PM)</strong></td>
+                <td>Quản lý tổng thể GĐ Pilot (tiến độ, ngân sách, rủi ro), Điều phối N3 & Five Guys, Báo cáo, Quản lý phạm vi Pilot, Hỗ trợ giải quyết vấn đề.</td>
+                <td>Khởi động, Lập kế hoạch, Mô tả yêu cầu (hỗ trợ BA), Đánh giá, Khắc phục vấn đề.</td>
+            </tr>
+            <tr>
+                <td>Đồng Thị Hường</td>
+                <td><strong>Business Analyst (BA), Thư ký dự án</strong></td>
+                <td>Thu thập, phân tích, tài liệu hóa, xác nhận yêu cầu (tập trung vào các điểm Pilot & yêu cầu cốt lõi), Làm việc với SMEs, Hỗ trợ PM mô tả yêu cầu, Ghi chép & Lưu trữ tài liệu.</td>
+                <td>Thu thập yêu cầu (BA), Mô tả yêu cầu (PM, BA), Thực hiện yêu cầu (hỗ trợ DEV/QA), Khắc phục vấn đề (hỗ trợ).</td>
+            </tr>
+             <tr>
+                <td><em>[Cần bổ sung]</em></td>
+                <td><strong>QA Lead / Tester</strong></td>
+                <td>Lập Test Plan cho Pilot, Viết Test Cases (tập trung vào chức năng lõi & quy trình Pilot), Thực hiện Testing, Log & Track bugs, Báo cáo chất lượng.</td>
+                <td>Thực hiện yêu cầu (QA), Thực hiện kiểm thử (Tester), Theo dõi, báo cáo (QA), Khắc phục vấn đề (QA).</td>
+            </tr>
+            <tr>
+                <td>Hoàng Thị Ngọc Linh</td>
+                <td><strong>Developer (DEV), HR (Chuẩn bị Đào tạo)</strong></td>
+                <td>Phát triển/Sửa lỗi chức năng được giao, Unit test. Chuẩn bị khung tài liệu & kế hoạch đào tạo cho GĐ Rollout, Hỗ trợ tổ chức đào tạo Pilot.</td>
+                <td>Thực hiện yêu cầu (DEV), Khắc phục vấn đề (DEV), Phát triển phần mềm (Coding), Xác định nhân sự (hỗ trợ HR), Hướng dẫn sử dụng, Training (chuẩn bị).</td>
+            </tr>
+            <tr>
+                <td>Nguyễn Thị Ngọc Lan</td>
+                <td><strong>Developer (Frontend), UX/UI Lead</strong></td>
+                <td>Thiết kế & hoàn thiện UI/UX, Đảm bảo trải nghiệm người dùng tốt. Phát triển các thành phần Frontend chính, Sửa lỗi UI/UX.</td>
+                <td>Thiết kế giao diện (UX/UI), Thiết kế kiến trúc & giao diện (hỗ trợ), Thực hiện yêu cầu (DEV), Phát triển phần mềm (Coding).</td>
+            </tr>
+             <tr>
+                <td>Nguyễn Thị Nhung Huyền</td>
+                <td><strong>Developer (Fullstack)</strong></td>
+                <td>Lập trình các chức năng Frontend/Backend được phân công, Unit test, Sửa lỗi. Phối hợp thiết kế UI/UX.</td>
+                <td>Thực hiện yêu cầu (DEV), Khắc phục vấn đề (DEV), Phát triển phần mềm (Coding), Thiết kế giao diện (hỗ trợ).</td>
+            </tr>
+            <tr>
+                <td>Nguyễn Thu Minh</td>
+                <td><strong>DBA, Network Engineer (Pilot Focus)</strong></td>
+                <td>Thiết kế/Tinh chỉnh CSDL, Viết migration scripts, Tối ưu CSDL. Khảo sát chi tiết mạng/hạ tầng tại điểm Pilot, Cấu hình mạng Pilot, Hỗ trợ KSTK cài đặt, Xác định & Chuẩn bị chuyển đổi dữ liệu Pilot.</td>
+                <td>Thu thập thông tin phần cứng (KSM, KSTK), Thiết kế CSDL (DBA), Xác định & Chuẩn bị CĐDL (DBA), Khảo sát & Cấu hình mạng Pilot.</td>
+            </tr>
+             <tr>
+                <td><em>[Xác định nếu cần]</em></td>
+                <td><strong>System Architect / Senior Dev</strong></td>
+                <td>Review kiến trúc, Hỗ trợ giải quyết vấn đề kỹ thuật phức tạp.</td>
+                <td>Thiết kế kiến trúc (hỗ trợ).</td>
+            </tr>
+             <tr>
+                <td><em>[Xác định nếu cần]</em></td>
+                <td><strong>Deployment Engineer / Kỹ sư triển khai</strong></td>
+                <td>Hỗ trợ PM và Kỹ sư mạng/DBA trong việc cài đặt, cấu hình hệ thống, chuẩn bị "Golden Image".</td>
+                <td>Triển khai thí điểm (KSTK), Triển khai toàn bộ (KSTK - chuẩn bị).</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h4>2.2. Các Bên Liên Quan Phía Five Guys (Tập trung cho Giai đoạn Pilot)</h4>
+     <p>(Giữ nguyên vai trò và nhiệm vụ như bản điều chỉnh trước).</p>
+     <!-- Phần này giữ nguyên nội dung chi tiết từ bản HTML trước -->
+     <ul>
+        <li><strong>Người bảo trợ dự án (Project Sponsor):</strong> Cung cấp phê duyệt, theo dõi kết quả Pilot.</li>
+        <li><strong>Quản lý dự án phía khách hàng (Client PM):</strong> Điều phối chặt chẽ nhân sự Five Guys tham gia Pilot.</li>
+        <li><strong>Chuyên gia nghiệp vụ (SMEs - tại điểm Pilot):</strong> Dành thời gian cung cấp thông tin, tham gia UAT.</li>
+        <li><strong>Đại diện IT/Hạ tầng của Five Guys:</strong> Hỗ trợ khảo sát, chuẩn bị hạ tầng Pilot.</li>
+        <li><strong>Người dùng chủ chốt (Key Users - tại điểm Pilot):</strong> Tham gia UAT, cung cấp phản hồi.</li>
+    </ul>
+
+
+      <h4>2.3. Cơ chế Phối hợp (Nhấn mạnh cho Giai đoạn Pilot)</h4>
+    <p>(Giữ nguyên cơ chế phối hợp như bản điều chỉnh trước).</p>
+    <!-- Phần này giữ nguyên nội dung chi tiết từ bản HTML trước -->
+    <div class="plan-details">
+        <ul>
+            <li>Họp định kỳ (Daily/Weekly).</li>
+            <li>Workshop chuyên sâu.</li>
+            <li>Kênh phản hồi nhanh cho Pilot.</li>
+            <li>Báo cáo Pilot chi tiết hàng tuần.</li>
+        </ul>
+    </div>
+
+</body>
+</html>

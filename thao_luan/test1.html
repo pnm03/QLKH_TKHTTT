@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phiếu Khảo sát Hiện trạng Phần cứng - Hệ thống QLBH Five Guys</title>
+    <style>
+        body { font-family: "Times New Roman", Times, serif; line-height: 1.7; margin: 25px; font-size: 12pt; }
+        .container { width: 100%; max-width: 850px; margin: auto; background-color: #fff; padding: 30px; border: 1px solid #ccc; }
+        h1, h2, h3 { text-align: center; color: #000; }
+        h1 { font-size: 16pt; font-weight: bold; margin-bottom: 15px; }
+        h2 { font-size: 14pt; font-weight: bold; margin-bottom: 25px; }
+        h3 { font-size: 13pt; font-weight: bold; margin-top: 25px; margin-bottom: 15px; text-align: left; background-color: #e9ecef; padding: 8px; border-left: 4px solid #0056b3; }
+        .survey-section { margin-bottom: 25px; padding-left: 10px; border-bottom: 1px dashed #eee; padding-bottom: 15px; }
+        .form-group { margin-bottom: 12px; display: flex; align-items: top; /* Align label and input area */ flex-wrap: wrap; } /* Allow wrap on small screens */
+        .form-label { font-weight: bold; min-width: 220px; /* Adjust as needed */ display: inline-block; padding-right: 10px; margin-bottom: 5px; }
+        .input-area { border-bottom: 1px dotted #888; min-height: 20px; flex-grow: 1; /* Take remaining space */ font-style: italic; color: #555; padding-left: 5px; }
+        .input-area-small { min-width: 150px; flex-grow: 0; margin-right: 20px;} /* For smaller inputs like checkboxes */
+        .notes { font-size: 10pt; color: #666; margin-left: 230px; /* Align with input area */ }
+         .checkbox-group label { margin-right: 15px; font-weight: normal;}
+         .checkbox-group input { margin-right: 5px;}
+        .signature-section { margin-top: 40px; text-align: left; } /* Align signature left */
+        .signature-line { border-bottom: 1px solid #000; height: 40px; margin-top: 30px; margin-bottom: 5px; }
+        .placeholder { font-style: italic; color: #777; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PHIẾU KHẢO SÁT HIỆN TRẠNG PHẦN CỨNG</h1>
+        <h2>Hệ thống Thông tin Quản lý Bán hàng Five Guys</h2>
+
+        <div class="survey-section">
+            <h3>A. Thông tin Chung về Cửa hàng và Phiếu Khảo sát</h3>
+            <div class="form-group">
+                <span class="form-label">Mã/Tên Cửa hàng:</span>
+                <span class="input-area">[Ghi rõ mã và tên cửa hàng]</span>
+            </div>
+            <div class="form-group">
+                <span class="form-label">Địa chỉ Cửa hàng:</span>
+                <span class="input-area">[Ghi địa chỉ đầy đủ]</span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Ngày Khảo sát:</span>
+                <span class="input-area">[dd/mm/yyyy]</span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Người Khảo sát:</span>
+                <span class="input-area">[Họ và tên người thực hiện]</span>
+            </div>
+            <div class="form-group">
+                <span class="form-label">Người Quản lý Cửa hàng (Tiếp nhận):</span>
+                <span class="input-area">[Họ và tên]</span>
+            </div>
+        </div>
+
+        <div class="survey-section">
+            <h3>B. Thông tin chi tiết từng Thiết bị</h3>
+            <p><em>Hướng dẫn: Điền thông tin cho TẤT CẢ các thiết bị POS, Tablet, KDS và ngoại vi tại cửa hàng. Nếu có nhiều thiết bị cùng loại, nhân bản phần tương ứng hoặc sử dụng phụ lục.</em></p>
+
+            <h4>B.1. Máy POS (Point of Sale Terminal) - Thiết bị số: [1]</h4>
+            <div class="form-group">
+                <span class="form-label">Vị trí đặt máy:</span>
+                <span class="input-area">[Ví dụ: Quầy Thu ngân số 1]</span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Hãng sản xuất (Make):</span>
+                <span class="input-area">[Ví dụ: PAR, HP, Dell, Lightspeed...]</span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Model:</span>
+                <span class="input-area">[Ví dụ: EverServ 7700]</span>
+                 <span class="notes">(Ghi rõ model trên nhãn thiết bị)</span>
+            </div>
+            <div class="form-group">
+                <span class="form-label">Số Serial (S/N):</span>
+                <span class="input-area">[Ghi số Serial]</span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Mã Tài sản (Asset Tag - nếu có):</span>
+                <span class="input-area">[Ghi mã tài sản của Five Guys]</span>
+            </div>
+            <div class="form-group">
+                <span class="form-label">Năm sản xuất / Năm mua:</span>
+                <span class="input-area">[Ước tính hoặc xem trên tem]</span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">CPU (Bộ xử lý):</span>
+                <span class="input-area">[Ví dụ: Intel Core i5-8500T @ 2.1GHz]</span>
+                 <span class="notes">(Kiểm tra trong System Information/Properties)</span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">RAM (Bộ nhớ):</span>
+                <span class="input-area">[Ví dụ: 8 GB DDR4]</span>
+                 <span class="notes">(Kiểm tra trong System Information/Properties)</span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Ổ cứng (Loại & Dung lượng):</span>
+                <span class="input-area">[Ví dụ: SSD SATA 256GB / NVMe 512GB]</span>
+                 <span class="notes">(Kiểm tra trong Disk Management/System Info)</span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Hệ điều hành (OS):</span>
+                <span class="input-area">[Ví dụ: Windows 10 IoT Enterprise LTSC 2019, Windows 10 Pro]</span>
+                 <span class="notes">(Kiểm tra trong System Information/Properties)</span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Màn hình (Kích thước, Độ phân giải):</span>
+                <span class="input-area">[Ví dụ: 15.6 inch, 1920x1080]</span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Màn hình cảm ứng:</span>
+                 <span class="input-area input-area-small checkbox-group">
+                    <input type="checkbox" id="pos1_touch_yes"><label for="pos1_touch_yes">Có</label>
+                    <input type="checkbox" id="pos1_touch_no"><label for="pos1_touch_no">Không</label>
+                 </span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Kết nối mạng chính:</span>
+                 <span class="input-area input-area-small checkbox-group">
+                    <input type="checkbox" id="pos1_net_lan"><label for="pos1_net_lan">LAN Ethernet</label>
+                    <input type="checkbox" id="pos1_net_wifi"><label for="pos1_net_wifi">Wi-Fi</label>
+                 </span>
+                 <span class="notes">(Ghi tốc độ nếu biết, ví dụ: 1 Gbps)</span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Số lượng cổng USB hoạt động:</span>
+                <span class="input-area">[Đếm số cổng đang sử dụng và còn trống]</span>
+            </div>
+            <div class="form-group">
+                <span class="form-label">Địa chỉ IP:</span>
+                <span class="input-area">[Ví dụ: 192.168.10.50 / DHCP]</span>
+                 <span class="notes">(Chạy ipconfig / ifconfig)</span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Địa chỉ MAC (Ethernet/Wifi):</span>
+                <span class="input-area">[Ghi địa chỉ MAC tương ứng]</span>
+                 <span class="notes">(Chạy ipconfig /all / ifconfig)</span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Phần mềm POS hiện tại:</span>
+                <span class="input-area">[Ví dụ: PAR Brink POS, Lightspeed Restaurant]</span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Tình trạng vật lý:</span>
+                <span class="input-area">[Ví dụ: Tốt, Màn hình xước nhẹ, Vỏ nứt...]</span>
+            </div>
+            <div class="form-group">
+                <span class="form-label">Ghi chú khác (POS):</span>
+                <span class="input-area"></span>
+            </div>
+            <hr>
+            <p><em>(Lặp lại mục B.1 cho các Máy POS khác tại cửa hàng)</em></p>
+
+            <h4>B.2. Tablet Đặt hàng / Mobile Order - Thiết bị số: [1]</h4>
+             <div class="form-group">
+                <span class="form-label">Người sử dụng chính:</span>
+                <span class="input-area">[Ví dụ: Nhân viên phục vụ/Line Buster]</span>
+            </div>
+            <div class="form-group">
+                <span class="form-label">Hãng sản xuất (Make):</span>
+                <span class="input-area">[Ví dụ: PAR, Apple, Samsung]</span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Model:</span>
+                <span class="input-area">[Ví dụ: Mobile Tablet 10s, iPad Air 4, Galaxy Tab S7]</span>
+            </div>
+            <div class="form-group">
+                <span class="form-label">Số Serial (S/N):</span>
+                <span class="input-area"></span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Mã Tài sản (Asset Tag - nếu có):</span>
+                <span class="input-area"></span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Hệ điều hành & Phiên bản:</span>
+                <span class="input-area">[Ví dụ: Android 12, iOS 16.1]</span>
+                 <span class="notes">(Kiểm tra trong Settings -> About)</span>
+            </div>
+            <div class="form-group">
+                <span class="form-label">RAM / Bộ nhớ trong:</span>
+                <span class="input-area">[Ví dụ: 4GB / 64GB]</span>
+                 <span class="notes">(Kiểm tra trong Settings -> About/Storage)</span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Kích thước màn hình:</span>
+                <span class="input-area">[Ví dụ: 10.1 inch]</span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Kết nối mạng:</span>
+                <span class="input-area">[Ví dụ: Wi-Fi AC, Wi-Fi 6]</span>
+                <span class="notes">(Ghi rõ SSID đang kết nối: Staff Wi-Fi?)</span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Bluetooth:</span>
+                 <span class="input-area input-area-small checkbox-group">
+                    <input type="checkbox" id="tab1_bt_yes"><label for="tab1_bt_yes">Có (Phiên bản?)</label>
+                    <input type="checkbox" id="tab1_bt_no"><label for="tab1_bt_no">Không</label>
+                 </span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Vỏ bảo vệ:</span>
+                 <span class="input-area input-area-small checkbox-group">
+                    <input type="checkbox" id="tab1_case_yes"><label for="tab1_case_yes">Có</label>
+                    <input type="checkbox" id="tab1_case_no"><label for="tab1_case_no">Không</label>
+                 </span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Tình trạng vật lý/Pin:</span>
+                <span class="input-area">[Ví dụ: Tốt, Pin còn tốt, Màn hình nứt...]</span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Ghi chú khác (Tablet):</span>
+                <span class="input-area"></span>
+            </div>
+            <hr>
+             <p><em>(Lặp lại mục B.2 cho các Tablet khác tại cửa hàng)</em></p>
+
+             <h4>B.3. Hệ thống Hiển thị Nhà bếp (KDS) - Thiết bị số: [1]</h4>
+             <div class="form-group">
+                <span class="form-label">Vị trí lắp đặt:</span>
+                <span class="input-area">[Ví dụ: Khu vực bếp nóng, Khu vực chuẩn bị đồ uống]</span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Loại thiết bị:</span>
+                 <span class="input-area input-area-small checkbox-group">
+                    <input type="checkbox" id="kds1_type_aio"><label for="kds1_type_aio">All-in-One</label>
+                    <input type="checkbox" id="kds1_type_pc"><label for="kds1_type_pc">Mini PC + Màn hình</label>
+                 </span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Hãng sản xuất/Model (Màn hình/PC):</span>
+                <span class="input-area">[Ví dụ: Bematech LV4000 / Intel NUC + Dell Monitor]</span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Số Serial / Asset Tag:</span>
+                <span class="input-area"></span>
+            </div>
+              <div class="form-group">
+                <span class="form-label">Kích thước màn hình:</span>
+                <span class="input-area">[Ví dụ: 21.5 inch]</span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Cảm ứng:</span>
+                 <span class="input-area input-area-small checkbox-group">
+                    <input type="checkbox" id="kds1_touch_yes"><label for="kds1_touch_yes">Có</label>
+                    <input type="checkbox" id="kds1_touch_no"><label for="kds1_touch_no">Không</label>
+                 </span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Kết nối mạng:</span>
+                 <span class="input-area input-area-small checkbox-group">
+                    <input type="checkbox" id="kds1_net_lan"><label for="kds1_net_lan">LAN Ethernet</label>
+                    <input type="checkbox" id="kds1_net_wifi"><label for="kds1_net_wifi">Wi-Fi</label>
+                 </span>
+                  <span class="notes">(Ghi IP/MAC nếu có thể)</span>
+            </div>
+            <div class="form-group">
+                <span class="form-label">HĐH (Nếu là Mini PC):</span>
+                <span class="input-area">[Ví dụ: Windows 10 Pro, Ubuntu]</span>
+            </div>
+            <div class="form-group">
+                <span class="form-label">Tình trạng vật lý:</span>
+                <span class="input-area">[Ví dụ: Hoạt động tốt, bám bẩn nhiều...]</span>
+            </div>
+            <div class="form-group">
+                <span class="form-label">Ghi chú khác (KDS):</span>
+                <span class="input-area"></span>
+            </div>
+            <hr>
+             <p><em>(Lặp lại mục B.3 cho các KDS khác tại cửa hàng)</em></p>
+
+             <h4>B.4. Máy in hóa đơn - Thiết bị số: [1]</h4>
+              <div class="form-group">
+                <span class="form-label">Kết nối với Máy POS số:</span>
+                <span class="input-area">[Ghi số thứ tự hoặc Asset Tag của máy POS]</span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Hãng sản xuất (Make):</span>
+                <span class="input-area">[Ví dụ: Epson, Star Micronics]</span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Model:</span>
+                <span class="input-area">[Ví dụ: TM-T88VII, TSP143III]</span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Số Serial / Asset Tag:</span>
+                <span class="input-area"></span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Loại in:</span>
+                 <span class="input-area input-area-small checkbox-group">
+                    <input type="checkbox" id="prt1_type_thermal"><label for="prt1_type_thermal">In nhiệt</label>
+                    <input type="checkbox" id="prt1_type_impact"><label for="prt1_type_impact">In kim</label>
+                 </span>
+            </div>
+            <div class="form-group">
+                <span class="form-label">Khổ giấy:</span>
+                <span class="input-area">[Ví dụ: 80mm (K80)]</span>
+            </div>
+            <div class="form-group">
+                <span class="form-label">Kết nối:</span>
+                 <span class="input-area input-area-small checkbox-group">
+                    <input type="checkbox" id="prt1_conn_lan"><label for="prt1_conn_lan">LAN</label>
+                    <input type="checkbox" id="prt1_conn_usb"><label for="prt1_conn_usb">USB</label>
+                    <input type="checkbox" id="prt1_conn_ser"><label for="prt1_conn_ser">Serial</label>
+                     <input type="checkbox" id="prt1_conn_bt"><label for="prt1_conn_bt">Bluetooth</label>
+                 </span>
+            </div>
+            <div class="form-group">
+                <span class="form-label">Tự động cắt giấy:</span>
+                 <span class="input-area input-area-small checkbox-group">
+                    <input type="checkbox" id="prt1_cut_yes"><label for="prt1_cut_yes">Có</label>
+                    <input type="checkbox" id="prt1_cut_no"><label for="prt1_cut_no">Không</label>
+                 </span>
+            </div>
+            <div class="form-group">
+                <span class="form-label">Tình trạng hoạt động:</span>
+                <span class="input-area">[Ví dụ: In rõ, In mờ, Kẹt giấy...]</span>
+            </div>
+            <div class="form-group">
+                <span class="form-label">Ghi chú khác (Máy in):</span>
+                <span class="input-area"></span>
+            </div>
+            <hr>
+            <p><em>(Lặp lại mục B.4 cho các Máy in khác tại cửa hàng)</em></p>
+
+             <h4>B.5. Máy quét mã vạch - Thiết bị số: [1]</h4>
+            <div class="form-group">
+                <span class="form-label">Kết nối với Máy POS số:</span>
+                <span class="input-area">[Ghi số thứ tự hoặc Asset Tag của máy POS]</span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Hãng sản xuất (Make):</span>
+                <span class="input-area">[Ví dụ: Honeywell, Zebra, Symbol]</span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Model:</span>
+                <span class="input-area">[Ví dụ: Xenon XP 1950g, DS2208]</span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Số Serial / Asset Tag:</span>
+                <span class="input-area"></span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Loại quét:</span>
+                 <span class="input-area input-area-small checkbox-group">
+                    <input type="checkbox" id="scn1_type_1d"><label for="scn1_type_1d">1D (Linear)</label>
+                    <input type="checkbox" id="scn1_type_2d"><label for="scn1_type_2d">2D (QR Code)</label>
+                 </span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Kiểu dáng:</span>
+                 <span class="input-area input-area-small checkbox-group">
+                    <input type="checkbox" id="scn1_form_hh"><label for="scn1_form_hh">Cầm tay</label>
+                    <input type="checkbox" id="scn1_form_fix"><label for="scn1_form_fix">Để bàn</label>
+                 </span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Kết nối:</span>
+                 <span class="input-area input-area-small checkbox-group">
+                    <input type="checkbox" id="scn1_conn_usb"><label for="scn1_conn_usb">USB</label>
+                    <input type="checkbox" id="scn1_conn_ser"><label for="scn1_conn_ser">Serial</label>
+                    <input type="checkbox" id="scn1_conn_bt"><label for="scn1_conn_bt">Bluetooth</label>
+                 </span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Tình trạng hoạt động:</span>
+                <span class="input-area">[Ví dụ: Quét nhạy, Khó quét mã mờ...]</span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Ghi chú khác (Máy quét):</span>
+                <span class="input-area"></span>
+            </div>
+             <hr>
+            <p><em>(Lặp lại mục B.5 cho các Máy quét khác tại cửa hàng)</em></p>
+
+             <h4>B.6. Thiết bị thanh toán thẻ - Thiết bị số: [1]</h4>
+              <div class="form-group">
+                <span class="form-label">Kết nối với Máy POS số:</span>
+                <span class="input-area">[Ghi số thứ tự hoặc Asset Tag của máy POS]</span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Hãng sản xuất (Make):</span>
+                <span class="input-area">[Ví dụ: Verifone, Ingenico, PAX]</span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Model:</span>
+                <span class="input-area">[Ví dụ: P400, Lane/3000, A920]</span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Số Serial / Asset Tag:</span>
+                <span class="input-area"></span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Kết nối:</span>
+                 <span class="input-area input-area-small checkbox-group">
+                    <input type="checkbox" id="pay1_conn_lan"><label for="pay1_conn_lan">LAN</label>
+                    <input type="checkbox" id="pay1_conn_usb"><label for="pay1_conn_usb">USB</label>
+                    <input type="checkbox" id="pay1_conn_ser"><label for="pay1_conn_ser">Serial</label>
+                     <input type="checkbox" id="pay1_conn_bt"><label for="pay1_conn_bt">Bluetooth</label>
+                      <input type="checkbox" id="pay1_conn_wifi"><label for="pay1_conn_wifi">Wi-Fi</label>
+                 </span>
+            </div>
+            <div class="form-group">
+                <span class="form-label">Hỗ trợ Contactless/NFC:</span>
+                 <span class="input-area input-area-small checkbox-group">
+                    <input type="checkbox" id="pay1_nfc_yes"><label for="pay1_nfc_yes">Có</label>
+                    <input type="checkbox" id="pay1_nfc_no"><label for="pay1_nfc_no">Không</label>
+                 </span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Phiên bản PCI PTS:</span>
+                <span class="input-area">[Ví dụ: 5.x, 6.x]</span>
+                 <span class="notes">(Xem trên nhãn thiết bị hoặc hỏi nhà cung cấp dịch vụ thanh toán)</span>
+            </div>
+             <div class="form-group">
+                <span class="form-label">Nhà cung cấp dịch vụ thanh toán (Acquirer/Processor):</span>
+                <span class="input-area">[Ghi tên đơn vị xử lý thẻ]</span>
+            </div>
+            <div class="form-group">
+                <span class="form-label">Tình trạng hoạt động:</span>
+                <span class="input-area">[Ví dụ: Hoạt động tốt, Thỉnh thoảng mất kết nối...]</span>
+            </div>
+            <div class="form-group">
+                <span class="form-label">Ghi chú khác (Thiết bị TT):</span>
+                <span class="input-area"></span>
+            </div>
+             <hr>
+            <p><em>(Lặp lại mục B.6 cho các Thiết bị thanh toán khác tại cửa hàng)</em></p>
+
+             <!-- Thêm các loại thiết bị khác nếu cần, ví dụ: Ngăn kéo tiền, Màn hình phụ -->
+
+        </div>
+
+         <div class="survey-section">
+              <h3>C. Ghi chú chung về Hạ tầng tại Cửa hàng</h3>
+               <div class="form-group">
+                <span class="form-label">Tình trạng hệ thống mạng LAN (Switch, Dây cáp):</span>
+                <span class="input-area">[Ví dụ: Switch Ubiquiti UniFi 24 port PoE, cáp Cat6 đi âm tường, gọn gàng]</span>
+               </div>
+               <div class="form-group">
+                <span class="form-label">Tình trạng hệ thống Wi-Fi (AP Model, Vị trí, SSID):</span>
+                <span class="input-area">[Ví dụ: 2 x UniFi AP AC Pro, gắn trần, SSID: FiveGuys-Staff, FiveGuys-Guest]</span>
+               </div>
+                <div class="form-group">
+                <span class="form-label">Thiết bị mạng chính (Router/Firewall Model):</span>
+                <span class="input-area">[Ví dụ: UniFi Security Gateway (USG)]</span>
+               </div>
+               <div class="form-group">
+                <span class="form-label">Nhà cung cấp Internet chính & Tốc độ gói cước:</span>
+                <span class="input-area">[Ví dụ: Comcast Business, 200/50 Mbps]</span>
+               </div>
+               <div class="form-group">
+                <span class="form-label">Kết nối Internet dự phòng (Nếu có):</span>
+                <span class="input-area">[Ví dụ: Verizon 4G LTE Backup]</span>
+               </div>
+               <div class="form-group">
+                <span class="form-label">Tình trạng nguồn điện, UPS (Nếu có):</span>
+                <span class="input-area">[Ví dụ: Có UPS cho quầy POS, công suất 1500VA]</span>
+               </div>
+               <div class="form-group">
+                <span class="form-label">Các vấn đề hoặc ghi chú khác về hạ tầng:</span>
+                <span class="input-area"></span>
+               </div>
+         </div>
+
+        <div class="signature-section">
+            <p><strong>Người Khảo sát</strong></p>
+            <div class="signature-line"></div>
+            <p>[Họ và tên]</p>
+        </div>
+
+         <div class="signature-section">
+            <p><strong>Quản lý Cửa hàng (Xác nhận thông tin)</strong></p>
+            <div class="signature-line"></div>
+            <p>[Họ và tên]</p>
+        </div>
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kế hoạch và Nội dung Huấn luyện Hệ thống QLBH</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; color: #333; }
+        .container { max-width: 900px; margin: auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border: 1px solid #e0e0e0; }
+        h1 { text-align: center; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; margin-bottom: 30px; }
+        h2 { color: #3498db; margin-top: 40px; border-bottom: 1px solid #ecf0f1; padding-bottom: 8px; }
+        h3 { color: #2980b9; margin-top: 25px; }
+        h4 { color: #16a085; margin-top: 20px; }
+        p { margin-bottom: 15px; }
+        ul, ol { margin-bottom: 15px; padding-left: 25px; }
+        li { margin-bottom: 8px; }
+        strong { color: #2c3e50; }
+        em { font-style: italic; color: #7f8c8d; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #f2f2f2; color: #555; font-weight: bold; }
+        .module-section { background-color: #f9f9f9; border: 1px solid #eee; border-radius: 5px; padding: 20px; margin-top: 20px; }
+        .role-title { font-weight: bold; font-size: 1.1em; color: #e67e22; }
+        .note { background-color: #fff3cd; border-left: 4px solid #ffeeba; padding: 10px; margin-top: 15px; font-size: 0.9em; color: #856404; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Kế hoạch và Nội dung Huấn luyện Hệ thống Quản lý Bán hàng (QLBH)</h1>
+
+        <section id="introduction">
+            <h2>1. Giới thiệu</h2>
+            <p>Tài liệu này trình bày kế hoạch và nội dung chi tiết cho các buổi huấn luyện sử dụng Hệ thống Quản lý Bán hàng (QLBH). Mục tiêu là đảm bảo các nhóm người dùng khác nhau (Quản lý, Quản trị viên, Người dùng cuối) hiểu rõ và sử dụng thành thạo các chức năng phù hợp với vai trò của mình.</p>
+            <p><strong>Đối tượng mục tiêu:</strong></p>
+            <ul>
+                <li><strong>Người dùng cuối (End-Users):</strong> Nhân viên bán hàng, nhân viên kho, nhân viên chăm sóc khách hàng, v.v.</li>
+                <li><strong>Quản lý (Managers):</strong> Trưởng bộ phận, quản lý cửa hàng/chi nhánh, giám sát viên.</li>
+                <li><strong>Quản trị viên (Administrators):</strong> Nhân viên IT, người chịu trách nhiệm quản trị và cấu hình hệ thống.</li>
+            </ul>
+        </section>
+
+        <section id="objectives">
+            <h2>2. Mục tiêu Huấn luyện</h2>
+            <p>Sau khi hoàn thành khóa huấn luyện, người tham dự sẽ có khả năng:</p>
+            <ul>
+                <li><strong class="role-title">Người dùng cuối:</strong>
+                    <ul>
+                        <li>Đăng nhập, đăng xuất và quản lý mật khẩu cá nhân.</li>
+                        <li>Hiểu và điều hướng giao diện chính của hệ thống (Dashboard).</li>
+                        <li>Thực hiện các tác vụ hàng ngày liên quan đến vai trò (ví dụ: tạo đơn hàng, kiểm tra tồn kho, xem thông tin khách hàng).</li>
+                        <li>Sử dụng các chức năng tìm kiếm và lọc dữ liệu cơ bản.</li>
+                        <li>Sử dụng công cụ chat nội bộ (nếu có).</li>
+                    </ul>
+                </li>
+                <li><strong class="role-title">Quản lý:</strong>
+                    <ul>
+                        <li>Thực hiện tất cả các chức năng của Người dùng cuối.</li>
+                        <li>Hiểu và phân tích các số liệu, biểu đồ trên Dashboard.</li>
+                        <li>Xem và tạo các báo cáo cơ bản (doanh số, đơn hàng, v.v.).</li>
+                        <li>Quản lý thông tin nhân viên thuộc quyền quản lý (xem thông tin, duyệt nghỉ phép - nếu có).</li>
+                        <li>Giám sát hoạt động của chi nhánh/bộ phận (nếu có).</li>
+                        <li>Quản lý quyền hạn cơ bản cho người dùng trong phạm vi (nếu được phân quyền).</li>
+                    </ul>
+                </li>
+                <li><strong class="role-title">Quản trị viên:</strong>
+                    <ul>
+                        <li>Thực hiện tất cả các chức năng của Quản lý.</li>
+                        <li>Quản lý toàn bộ tài khoản người dùng (tạo, xóa, khóa/mở khóa).</li>
+                        <li>Quản lý chi nhánh (thêm, sửa, xóa).</li>
+                        <li>Quản lý thông tin nhân viên (thêm, sửa, cập nhật trạng thái).</li>
+                        <li>Cấu hình hệ thống cơ bản (nếu có).</li>
+                        <li>Hiểu cấu trúc dữ liệu cơ bản và thực hiện kiểm tra đơn giản.</li>
+                        <li>Hỗ trợ người dùng và xử lý các sự cố cơ bản.</li>
+                    </ul>
+                </li>
+            </ul>
+        </section>
+
+        <section id="modules">
+            <h2>3. Nội dung Huấn luyện Chi tiết</h2>
+            <p>Nội dung huấn luyện được chia thành các module, tập trung vào từng nhóm đối tượng và chức năng cụ thể.</p>
+
+            <div class="module-section">
+                <h3>Module 1: Dành cho Người dùng cuối (End-Users)</h3>
+                <h4>1.1. Giới thiệu và Đăng nhập</h4>
+                <ul>
+                    <li>Tổng quan về hệ thống QLBH và vai trò của nó.</li>
+                    <li>Cách truy cập hệ thống.</li>
+                    <li>Quy trình Đăng nhập (Sign In), bao gồm cả sử dụng tài khoản đã lưu.</li>
+                    <li>Quy trình Đăng xuất (Sign Out).</li>
+                    <li>Quy trình Quên mật khẩu (Forgot Password) và Đặt lại mật khẩu (Reset Password).</li>
+                    <li>Quy trình Thay đổi mật khẩu (Change Password) khi đang đăng nhập.</li>
+                </ul>
+                <h4>1.2. Giao diện Tổng quan (Dashboard)</h4>
+                <ul>
+                    <li>Giới thiệu bố cục trang Dashboard chính.</li>
+                    <li>Cách đọc các thông số thống kê cơ bản (nếu hiển thị cho vai trò này).</li>
+                    <li>Cách sử dụng menu điều hướng (sidebar) để truy cập các chức năng.</li>
+                </ul>
+                <h4>1.3. Quản lý Hồ sơ cá nhân (Profile)</h4>
+                <ul>
+                    <li>Truy cập trang Hồ sơ (<em>/dashboard/profile</em> hoặc <em>/profile</em>).</li>
+                    <li>Xem và cập nhật thông tin cá nhân (tên, số điện thoại, địa chỉ - nếu được phép).</li>
+                    <li>Thay đổi mật khẩu từ trang hồ sơ.</li>
+                </ul>
+                <h4>1.4. Nghiệp vụ Bán hàng (Sales - Tùy theo vai trò)</h4>
+                <ul>
+                    <li>Truy cập module Bán hàng (<em>/dashboard/sales</em>).</li>
+                    <li>Quy trình tạo đơn hàng mới (<em>/dashboard/sales/create</em>).</li>
+                    <li>Quy trình xử lý thanh toán (<em>/dashboard/sales/payment</em>).</li>
+                </ul>
+                 <h4>1.5. Quản lý Đơn hàng (Orders - Tùy theo vai trò)</h4>
+                 <p>Module này cho phép người dùng quản lý các đơn hàng liên quan đến hoạt động bán hàng.</p>
+                 <ul>
+                    <li><strong>Truy cập Module:</strong> Mở module Đơn hàng từ menu chính (<em>/dashboard/orders</em>).</li>
+                    <li><strong>Trang Tổng quan Đơn hàng (<em>/dashboard/orders</em>):</strong>
+                        <ul>
+                            <li>Xem các thống kê nhanh: Tổng số đơn hàng, số đơn đã thanh toán, số đơn chưa thanh toán, số đơn có vận chuyển.</li>
+                            <li>Xem danh sách các đơn hàng gần đây nhất (Mã đơn, Khách hàng, Ngày đặt, Tổng tiền, Trạng thái).</li>
+                            <li>Truy cập nhanh chức năng "Tạo đơn hàng" (<em>/dashboard/orders/create</em>).</li>
+                            <li>Truy cập nhanh chức năng "Tìm kiếm đơn hàng" (<em>/dashboard/orders/search</em>).</li>
+                            <li>Có thể có nút "Làm mới" để cập nhật danh sách đơn hàng gần đây.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Tạo Đơn hàng mới (<em>/dashboard/orders/create</em>):</strong>
+                        <ul>
+                            <li><strong>Giao diện chính:</strong> Chia thành khu vực tìm kiếm/thông tin khách hàng và khu vực danh sách sản phẩm trong đơn hàng.</li>
+                            <li><strong>Quản lý nhiều đơn hàng:</strong> Có thể tạo và chuyển đổi giữa nhiều tab đơn hàng nháp (ví dụ: "Đơn hàng 1", "Đơn hàng 2",...).</li>
+                            <li><strong>Tìm kiếm và Thêm sản phẩm:</strong>
+                                <ul>
+                                    <li>Sử dụng ô tìm kiếm để tìm sản phẩm theo tên hoặc ID.</li>
+                                    <li>Kết quả tìm kiếm hiển thị dưới ô tìm kiếm với hình ảnh (nếu có), tên, màu sắc/kích thước, giá và tồn kho.</li>
+                                    <li>Nhấp vào sản phẩm trong kết quả tìm kiếm để thêm vào đơn hàng hiện tại.</li>
+                                    <li>Nếu sản phẩm đã có, số lượng sẽ tự động tăng lên 1.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Quản lý sản phẩm trong đơn hàng:</strong>
+                                <ul>
+                                    <li>Xem danh sách sản phẩm đã thêm với hình ảnh, tên, giá, số lượng và thành tiền.</li>
+                                    <li>Tăng/giảm số lượng bằng các nút (+) / (-). Hệ thống kiểm tra tồn kho khi tăng số lượng.</li>
+                                    <li>Nhập số lượng trực tiếp vào ô số lượng.</li>
+                                    <li>Xóa sản phẩm khỏi đơn hàng bằng nút xóa (<TrashIcon className="inline-block h-4 w-4" />).</li>
+                                    <li>Tổng tiền của đơn hàng được tự động cập nhật.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Quản lý thông tin khách hàng:</strong>
+                                <ul>
+                                    <li>Tìm kiếm khách hàng hiện có theo tên, số điện thoại hoặc email.</li>
+                                    <li>Chọn khách hàng từ kết quả tìm kiếm để tự động điền thông tin vào đơn hàng (Tên, SĐT, Email, Địa chỉ).</li>
+                                    <li>Hiển thị thông tin khách hàng đã chọn ở khu vực riêng biệt. Có thể xóa khách hàng đã chọn để nhập thủ công hoặc tìm khách hàng khác.</li>
+                                    <li>Nhập thông tin khách hàng mới trực tiếp vào các ô (Tên, SĐT, Email, Địa chỉ).</li>
+                                    <li>Thêm khách hàng mới vào hệ thống thông qua nút (+) bên cạnh ô tìm kiếm khách hàng:
+                                        <ul>
+                                            <li>Mở popup nhập thông tin: Họ tên, SĐT, Email, Địa chỉ.</li>
+                                            <li>Hệ thống kiểm tra SĐT và Email trùng lặp trước khi thêm.</li>
+                                            <li>Sau khi thêm thành công, khách hàng mới sẽ tự động được chọn cho đơn hàng hiện tại.</li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </li>
+                             <li><strong>Thông tin người bán:</strong> Hiển thị tên người dùng đang đăng nhập (người tạo đơn hàng).</li>
+                             <li><strong>Lưu đơn hàng:</strong>
+                                <ul>
+                                    <li>Nhấn nút "Lưu đơn hàng".</li>
+                                    <li>Hệ thống kiểm tra điều kiện: phải có ít nhất 1 sản phẩm và thông tin tên/SĐT khách hàng.</li>
+                                    <li><em>(Lưu ý: Logic lưu vào cơ sở dữ liệu cụ thể cần được xác nhận thêm).</em></li>
+                                    <li>Hiển thị thông báo thành công hoặc lỗi.</li>
+                                </ul>
+                             </li>
+                        </ul>
+                    </li>
+                    <li><strong>Tìm kiếm Đơn hàng (<em>/dashboard/orders/search</em>):</strong>
+                        <ul>
+                            <li><strong>Giao diện tìm kiếm và lọc:</strong>
+                                <ul>
+                                    <li>Ô tìm kiếm chính: Nhập từ khóa để tìm theo Mã đơn hàng, ID khách hàng, Tên người tạo, Tên khách hàng.</li>
+                                    <li>Bộ lọc trạng thái: Chọn "Tất cả trạng thái", "Đã thanh toán", hoặc "Chưa thanh toán".</li>
+                                    <li>Bộ lọc ngày: Chọn khoảng thời gian "Từ ngày" và "Đến ngày" để lọc đơn hàng theo ngày đặt.</li>
+                                    <li>Nút "Tìm kiếm": Áp dụng các bộ lọc và từ khóa đã nhập. Tìm kiếm cũng có thể tự động kích hoạt khi thay đổi bộ lọc hoặc sau khi ngừng gõ vào ô tìm kiếm.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Hiển thị kết quả:</strong>
+                                <ul>
+                                    <li>Danh sách đơn hàng được hiển thị trong bảng với các cột: Mã đơn hàng, Người tạo, Khách hàng, Ngày đặt, Tổng tiền, Trạng thái, Vận chuyển (Có/Không), Phương thức thanh toán.</li>
+                                    <li>Hiển thị số lượng dòng/trang (ví dụ: 10, 20, 50, 100) và phân trang nếu kết quả có nhiều trang.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Thao tác trên đơn hàng:</strong>
+                                <ul>
+                                    <li>Nhấp vào một hàng trong bảng để xem chi tiết đơn hàng trong popup (sử dụng component `OrderDetailsPopup`).</li>
+                                    <li>Nút "Xem chi tiết" (<EyeIcon className="inline-block h-4 w-4" />) để mở popup chi tiết.</li>
+                                    <li>Nút "Xuất PDF" (<ArrowDownTrayIcon className="inline-block h-4 w-4" />) để tạo và tải xuống hóa đơn PDF cho đơn hàng đó.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Tạo dữ liệu mẫu:</strong> Nếu không có đơn hàng nào, có thể có nút "Tạo dữ liệu mẫu" để thêm các đơn hàng ví dụ vào hệ thống.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Xem/Cập nhật chi tiết Đơn hàng (Popup):</strong>
+                        <ul>
+                           <li>Popup hiển thị thông tin chi tiết của đơn hàng được chọn, bao gồm thông tin khách hàng, danh sách sản phẩm, tổng tiền, trạng thái, v.v.</li>
+                           <li>Có thể có các nút hành động trong popup như "Thanh toán", "In hóa đơn" (Xuất PDF), hoặc các thao tác cập nhật khác tùy thuộc vào component `OrderDetailsPopup`.</li>
+                           <li><em>(Chi tiết cụ thể phụ thuộc vào component OrderDetailsPopup)</em></li>
+                        </ul>
+                    </li>
+                    <li><strong>Quản lý Giao nhận (<em>/dashboard/orders/shipping</em>):</strong>
+                        <ul>
+                            <li><strong>Giao diện chính:</strong> Hiển thị danh sách các đơn hàng cần vận chuyển hoặc đang được vận chuyển.</li>
+                            <li><strong>Tìm kiếm và Lọc:</strong>
+                                <ul>
+                                    <li>Tìm kiếm theo Mã đơn hàng, Mã vận chuyển, Tên/SĐT khách hàng, Mã vận đơn.</li>
+                                    <li>Lọc theo Trạng thái vận chuyển (Chưa giao, Đang chuẩn bị, Đang giao, Đã giao, Đang hoàn, Đã hủy).</li>
+                                    <li>Lọc theo Khoảng ngày tạo đơn hàng.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Hiển thị danh sách:</strong>
+                                <ul>
+                                    <li>Bảng liệt kê các đơn vận chuyển với thông tin: Trạng thái VC, Thông tin ĐVVC/Mã VC, Thông tin người nhận, Thông tin đơn hàng gốc, Kích thước/Trọng lượng, Ngày tạo VC.</li>
+                                    <li>Phân trang và tùy chọn số dòng hiển thị/trang.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Cập nhật trạng thái vận chuyển:</strong>
+                                <ul>
+                                    <li>Nhấp vào trạng thái hiện tại của đơn vận chuyển trong bảng để mở dropdown.</li>
+                                    <li>Chọn trạng thái mới từ danh sách (Chưa giao, Đang chuẩn bị, Đang giao, Đã giao, Đang hoàn, Đã hủy).</li>
+                                    <li>Hệ thống tự động lưu trạng thái mới.</li>
+                                    <li>Nếu trạng thái mới là "Đã giao hàng", trạng thái đơn hàng gốc (trong bảng `orders`) sẽ tự động cập nhật thành "Đã thanh toán" và gán phương thức thanh toán (ưu tiên tiền mặt nếu có).</li>
+                                    <li>Nếu đơn hàng là COD và trạng thái VC chuyển về "Chưa giao", "Đang chuẩn bị", hoặc "Đang giao", trạng thái đơn hàng gốc sẽ cập nhật thành "Chưa thanh toán" và xóa PTTT.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Xem và Chỉnh sửa chi tiết vận chuyển (Popup):</strong>
+                                <ul>
+                                    <li>Nhấp vào một hàng trong bảng (hoặc nút Xem chi tiết) để mở popup.</li>
+                                    <li>Hiển thị đầy đủ thông tin đơn hàng gốc, thông tin vận chuyển, thông tin người nhận, kích thước/trọng lượng, và chi tiết sản phẩm.</li>
+                                    <li>Nhấn nút "Sửa" để cho phép chỉnh sửa các thông tin vận chuyển (ĐVVC, Mã VC, Phí VC, Trạng thái VC, COD, Ngày giao/nhận, Kích thước, Trọng lượng, Thông tin người nhận).</li>
+                                    <li>Nhấn "Lưu thay đổi" để cập nhật thông tin.</li>
+                                </ul>
+                            </li>
+                             <li><strong>In ấn:</strong>
+                                <ul>
+                                    <li>Trong popup chi tiết, nhấn nút "Xuất phiếu gửi" để in phiếu gửi hàng (shipping label).</li>
+                                    <li>Trong popup chi tiết, nhấn nút "In hóa đơn" để in hóa đơn bán hàng chi tiết.</li>
+                                </ul>
+                             </li>
+                        </ul>
+                    </li>
+                 </ul>
+                 <h4>1.6. Quản lý Sản phẩm (Products - Tùy theo vai trò)</h4>
+                 <p>Module này cho phép người dùng xem, tìm kiếm và quản lý thông tin sản phẩm.</p>
+                 <ul>
+                    <li><strong>Truy cập Module:</strong> Mở module Sản phẩm từ menu chính (<em>/dashboard/products</em>).</li>
+                    <li><strong>Giao diện chính (<em>/dashboard/products</em>):</strong>
+                        <ul>
+                            <li><strong>Tìm kiếm:</strong> Tìm kiếm sản phẩm theo Tên, Mô tả, Màu sắc, Kích thước.</li>
+                            <li><strong>Chuyển đổi chế độ xem:</strong>
+                                <ul>
+                                    <li><strong>Dạng lưới (Grid View):</strong> Hiển thị sản phẩm dưới dạng các thẻ (card), mỗi thẻ bao gồm hình ảnh, tên, màu, kích thước, giá và tồn kho.</li>
+                                    <li><strong>Theo danh mục (Category View):</strong> Nhóm sản phẩm theo từng danh mục. Mỗi danh mục có thể mở rộng/thu gọn để xem danh sách sản phẩm bên trong.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Thao tác nhanh:</strong>
+                                <ul>
+                                    <li>Nhấp vào thẻ sản phẩm (dạng lưới) hoặc dòng sản phẩm (dạng danh mục) để mở popup xem chi tiết.</li>
+                                    <li>Nút "Thêm sản phẩm" để điều hướng đến trang thêm sản phẩm mới (<em>/dashboard/products/add</em>).</li>
+                                </ul>
+                            </li>
+                            <li><strong>Thống kê nhanh:</strong> Hiển thị tổng số sản phẩm, số sản phẩm có sẵn, số sản phẩm cần nhập thêm (tồn kho thấp).</li>
+                        </ul>
+                    </li>
+                    <li><strong>Xem chi tiết sản phẩm (Popup):</strong>
+                        <ul>
+                            <li>Hiển thị hình ảnh lớn (nếu có), tên sản phẩm, giá, màu, kích thước, tồn kho, mô tả, ngày tạo, ngày cập nhật.</li>
+                            <li>Nút "Chỉnh sửa" để điều hướng đến trang chỉnh sửa sản phẩm (<em>/dashboard/products/edit/[id]</em>).</li>
+                            <li>Nút "Xóa" để mở popup xác nhận xóa sản phẩm.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Xóa sản phẩm (Popup xác nhận):</strong>
+                        <ul>
+                            <li>Hiển thị cảnh báo xác nhận xóa.</li>
+                            <li>Nhấn "Xóa" để xác nhận và xóa sản phẩm khỏi hệ thống.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Thêm sản phẩm mới (<em>/dashboard/products/add</em>):</strong>
+                        <ul>
+                            <li><strong>Điều kiện truy cập:</strong> Yêu cầu quyền Admin hoặc Nhân viên kho (NVK). Người dùng không có quyền sẽ thấy thông báo "Truy cập bị từ chối".</li>
+                            <li><strong>Giao diện:</strong> Form nhập liệu chi tiết cho sản phẩm mới.</li>
+                            <li><strong>Các trường thông tin:</strong>
+                                <ul>
+                                    <li><strong>Tên sản phẩm:</strong> (Bắt buộc) Tên của sản phẩm.</li>
+                                    <li><strong>Mô tả:</strong> Mô tả chi tiết về sản phẩm.</li>
+                                    <li><strong>Giá:</strong> (Bắt buộc) Giá bán của sản phẩm (VNĐ).</li>
+                                    <li><strong>Số lượng:</strong> (Bắt buộc) Số lượng tồn kho ban đầu.</li>
+                                    <li><strong>Danh mục sản phẩm:</strong> (Bắt buộc) Chọn danh mục từ danh sách thả xuống (có thể kèm hình ảnh danh mục).</li>
+                                    <li><strong>Màu sắc:</strong> Chọn màu từ bảng màu hoặc nhập tên màu.</li>
+                                    <li><strong>Kích cỡ:</strong> Chọn kích cỡ từ danh sách thả xuống (ví dụ: XS, S, M, L, XL,... kèm mô tả cân nặng tương ứng).</li>
+                                    <li><strong>Hình ảnh sản phẩm:</strong> Tải lên file ảnh (PNG, JPG, GIF). Có chức năng xem trước ảnh và kiểm tra định dạng/kích thước file. Ảnh được chuyển đổi sang base64 trước khi lưu.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Lưu sản phẩm:</strong>
+                                <ul>
+                                    <li>Nhấn nút "Thêm sản phẩm".</li>
+                                    <li>Hệ thống kiểm tra các trường bắt buộc.</li>
+                                    <li>Dữ liệu sản phẩm (bao gồm chuỗi base64 của ảnh) được lưu vào cơ sở dữ liệu.</li>
+                                    <li>Hiển thị thông báo thành công hoặc lỗi.</li>
+                                    <li>Sau khi thành công, form sẽ được làm mới để có thể tiếp tục thêm sản phẩm khác.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Nút Quay lại:</strong> Cho phép người dùng quay lại trang danh sách sản phẩm.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Chỉnh sửa sản phẩm (<em>/dashboard/products/edit/[id]</em>):</strong>
+                        <ul>
+                            <li><strong>Điều kiện truy cập:</strong> Yêu cầu quyền Admin hoặc Nhân viên kho (NVK).</li>
+                            <li><strong>Truy cập:</strong> Từ popup chi tiết sản phẩm hoặc trực tiếp qua URL với ID sản phẩm.</li>
+                            <li><strong>Giao diện:</strong> Form chỉnh sửa với các thông tin sản phẩm hiện tại được điền sẵn.</li>
+                            <li><strong>Chức năng:</strong>
+                                <ul>
+                                    <li>Cho phép thay đổi tất cả thông tin sản phẩm: Tên, Mô tả, Giá, Số lượng, Màu sắc, Kích cỡ, Hình ảnh (tải ảnh mới sẽ thay thế ảnh cũ).</li>
+                                    <li><em>Lưu ý: Việc thay đổi Danh mục sản phẩm có thể không được phép hoặc cần xem xét kỹ lưỡng.</em></li>
+                                    <li>Nút "Lưu thay đổi" để cập nhật thông tin vào cơ sở dữ liệu.</li>
+                                    <li>Nút "Đặt lại" để hoàn tác các thay đổi về trạng thái ban đầu khi tải trang.</li>
+                                    <li>Nút "Quay lại" để trở về trang danh sách sản phẩm.</li>
+                                    <li>Hiển thị thông báo thành công hoặc lỗi sau khi lưu.</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                    <li><strong>Quản lý Danh mục (<em>/dashboard/products/categories</em>):</strong> <em>(Nội dung chi tiết sẽ được bổ sung sau khi phân tích file này)</em></li>
+                 </ul>
+                 <h4>1.7. Quản lý Đối tác (Partners - Tùy theo vai trò)</h4>
+                 <p>Module này tập trung vào quản lý thông tin khách hàng và các hoạt động liên quan.</p>
+                 <ul>
+                    <li><strong>Truy cập Module:</strong> Mở module Đối tác từ menu chính (<em>/dashboard/partners</em>). Hệ thống sẽ tự động chuyển hướng đến trang quản lý khách hàng (<em>/dashboard/partners/customers</em>).</li>
+                    <li><strong>Quản lý Khách hàng (<em>/dashboard/partners/customers</em>):</strong>
+                        <ul>
+                            <li><strong>Giao diện chính:</strong> Hiển thị danh sách khách hàng và các công cụ quản lý.</li>
+                            <li><strong>Tìm kiếm:</strong> Tìm kiếm khách hàng theo Tên, Email, Số điện thoại hoặc Quê quán.</li>
+                            <li><strong>Thêm khách hàng mới:</strong>
+                                <ul>
+                                    <li>Nhấn nút "Thêm khách hàng".</li>
+                                    <li>Mở popup nhập thông tin: Họ tên, SĐT, Email, Quê quán.</li>
+                                    <li>Hệ thống kiểm tra SĐT và Email trùng lặp trước khi thêm.</li>
+                                    <li>Nhấn "Thêm mới" để lưu.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Hiển thị danh sách:</strong>
+                                <ul>
+                                    <li>Bảng liệt kê khách hàng với các cột: Khách hàng (Tên, ID), Liên hệ (Email, SĐT), Quê quán, Ngày tạo.</li>
+                                    <li>Có nút "Tải lại" để làm mới danh sách.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Xem chi tiết khách hàng:</strong>
+                                <ul>
+                                    <li>Nhấp vào một hàng trong bảng để mở popup chi tiết.</li>
+                                    <li>Hiển thị đầy đủ thông tin: Tên, Email, SĐT, Quê quán, Ngày tạo, Ngày cập nhật.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Chỉnh sửa khách hàng:</strong>
+                                <ul>
+                                    <li>Trong popup chi tiết, nhấn nút "Chỉnh sửa".</li>
+                                    <li>Mở popup cho phép thay đổi thông tin: Họ tên, SĐT, Email, Quê quán.</li>
+                                    <li>Hệ thống kiểm tra SĐT và Email trùng lặp (ngoại trừ chính khách hàng đang sửa).</li>
+                                    <li>Nhấn "Cập nhật" để lưu.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Xóa khách hàng:</strong>
+                                <ul>
+                                    <li>Trong popup chi tiết, nhấn nút "Xóa".</li>
+                                    <li>Mở popup yêu cầu xác nhận.</li>
+                                    <li>Nhấn "Xóa" để xác nhận và xóa khách hàng khỏi hệ thống.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Thông báo:</strong> Hiển thị thông báo thành công/lỗi cho các thao tác thêm, sửa, xóa.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Quản lý Yêu cầu Đổi/Trả (<em>/dashboard/partners/customer-care</em>):</strong>
+                        <ul>
+                            <li><strong>Giao diện chính:</strong> Hiển thị danh sách các yêu cầu đổi/trả hàng đã được tạo.</li>
+                            <li><strong>Hiển thị danh sách:</strong>
+                                <ul>
+                                    <li>Bảng liệt kê các yêu cầu với các cột: ID Yêu cầu, Tên Yêu cầu (tùy chọn), Mã Đơn hàng gốc, Ngày yêu cầu, Lý do, Số tiền hoàn lại (nếu có), Trạng thái (Đang xử lý, Đã chấp nhận, Đã từ chối).</li>
+                                    <li>Có nút "Làm mới" để tải lại danh sách.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Thêm yêu cầu mới:</strong>
+                                <ul>
+                                    <li>Nhấn nút "Thêm yêu cầu".</li>
+                                    <li>Mở popup nhập thông tin: Tên yêu cầu (tùy chọn), Mã đơn hàng gốc (bắt buộc, có gợi ý khi nhập), Lý do đổi/trả (bắt buộc), Số tiền hoàn lại (tùy chọn, định dạng số), Trạng thái (mặc định là "Đang xử lý").</li>
+                                    <li>Hệ thống kiểm tra Mã đơn hàng có tồn tại không và đơn hàng đó đã có yêu cầu đổi/trả trước đó chưa.</li>
+                                    <li>Nhấn "Thêm yêu cầu" để lưu.</li>
+                                </ul>
+                            </li>
+                             <li><strong>Xem chi tiết yêu cầu:</strong>
+                                <ul>
+                                    <li>Nhấp vào một hàng trong bảng để mở popup chi tiết.</li>
+                                    <li>Hiển thị đầy đủ thông tin yêu cầu đổi/trả.</li>
+                                    <li>Hiển thị thông tin đơn hàng gốc liên quan (Mã ĐH, Ngày đặt, Tổng tiền, Trạng thái TT).</li>
+                                    <li>Hiển thị thông tin khách hàng liên quan (Tên, SĐT, Email).</li>
+                                    <li>Hiển thị chi tiết sản phẩm trong đơn hàng gốc.</li>
+                                    <li>Hiển thị thông tin vận chuyển của đơn hàng gốc (nếu có).</li>
+                                </ul>
+                            </li>
+                             <li><strong>Chỉnh sửa yêu cầu:</strong>
+                                <ul>
+                                    <li>Trong popup chi tiết, nhấn nút "Chỉnh sửa".</li>
+                                    <li>Cho phép thay đổi: Tên yêu cầu, Lý do, Số tiền hoàn lại, Trạng thái.</li>
+                                    <li>Nhấn "Lưu thay đổi" để cập nhật.</li>
+                                </ul>
+                            </li>
+                             <li><strong>Xóa yêu cầu:</strong>
+                                <ul>
+                                    <li>Trong popup chi tiết, nhấn nút "Xóa".</li>
+                                    <li>Mở popup yêu cầu xác nhận.</li>
+                                    <li>Nhấn "Xác nhận xóa" để xóa yêu cầu khỏi hệ thống.</li>
+                                </ul>
+                            </li>
+                             <li><strong>Cập nhật trạng thái nhanh:</strong>
+                                <ul>
+                                    <li>Trong popup chi tiết, có thể có dropdown hoặc nút để nhanh chóng cập nhật trạng thái (Đang xử lý, Đã chấp nhận, Đã từ chối).</li>
+                                </ul>
+                             </li>
+                             <li><strong>In biên bản:</strong>
+                                <ul>
+                                    <li>Trong popup chi tiết, nhấn nút "In biên bản" để tạo và mở cửa sổ in "Biên bản yêu cầu đổi/trả hàng" với đầy đủ thông tin.</li>
+                                </ul>
+                             </li>
+                             <li><strong>Thông báo:</strong> Hiển thị thông báo thành công/lỗi cho các thao tác.</li>
+                        </ul>
+                    </li>
+                 </ul>
+                 <h4>1.8. Chat Nội bộ (Business Chat - Nếu có)</h4>
+                 <ul>
+                    <li>Truy cập chức năng Chat (<em>/dashboard/business/chat</em>).</li>
+                    <li>Gửi và nhận tin nhắn.</li>
+                    <li>Quản lý các cuộc trò chuyện.</li>
+                 </ul>
+            </div>
+
+            <div class="module-section">
+                <h3>Module 2: Dành cho Quản lý (Managers)</h3>
+                <p><em>Bao gồm tất cả nội dung của Module 1.</em></p>
+                <h4>2.1. Phân tích Dashboard Nâng cao</h4>
+                <ul>
+                    <li>Hiểu sâu hơn về các chỉ số KPI trên Dashboard.</li>
+                    <li>Phân tích biểu đồ doanh số, trạng thái đơn hàng, sản phẩm bán chạy.</li>
+                    <li>Cách sử dụng dữ liệu Dashboard để ra quyết định.</li>
+                </ul>
+                <h4>2.2. Quản lý Báo cáo (Reports)</h4>
+                <ul>
+                    <li>Truy cập module Báo cáo (<em>/dashboard/reports</em>).</li>
+                    <li>Xem các báo cáo có sẵn (Tài chính, Đơn hàng, Giao nhận).</li>
+                    <li>Cách lọc và tùy chỉnh báo cáo (nếu có).</li>
+                    <li>Xuất báo cáo (nếu có chức năng).</li>
+                </ul>
+                <h4>2.3. Giám sát Nhân viên và Chi nhánh (Business Module)</h4>
+                <ul>
+                    <li>Xem thông tin tổng quan về nhân viên thuộc quyền quản lý (<em>/dashboard/business/staff</em>).</li>
+                    <li>Xem thông tin chi tiết về chi nhánh mình quản lý (<em>/dashboard/business/branches</em>).</li>
+                    <li>Phê duyệt yêu cầu (nghỉ phép, v.v. - nếu có chức năng).</li>
+                </ul>
+                 <h4>2.4. Quản lý Quyền hạn Cơ bản (User Permissions - Nếu có)</h4>
+                 <ul>
+                    <li>Truy cập module Người dùng (<em>/dashboard/users</em>).</li>
+                    <li>Xem danh sách người dùng thuộc phạm vi quản lý.</li>
+                    <li>Gán/thay đổi vai trò hoặc quyền hạn cụ thể cho người dùng (<em>/dashboard/users/permissions/[id]</em> - nếu được phân quyền).</li>
+                 </ul>
+            </div>
+
+            <div class="module-section">
+                <h3>Module 3: Dành cho Quản trị viên (Administrators)</h3>
+                <p><em>Bao gồm tất cả nội dung của Module 1 và Module 2.</em></p>
+                <h4>3.1. Quản trị Người dùng Toàn diện (Admin Users)</h4>
+                <ul>
+                    <li>Truy cập module Quản trị (<em>/dashboard/admin/users</em>).</li>
+                    <li>Xem danh sách tất cả người dùng hệ thống.</li>
+                    <li>Xóa tài khoản người dùng.</li>
+                    <li>Khóa/Mở khóa tài khoản (thông qua quy trình Reset Password hoặc trực tiếp nếu có).</li>
+                    <li>Tạo tài khoản người dùng mới (nếu có chức năng - kiểm tra <em>/api/admin/create-user</em>).</li>
+                    <li>Quản lý vai trò và quyền hạn chi tiết.</li>
+                </ul>
+                <h4>3.2. Quản lý Chi nhánh (Branches)</h4>
+                <ul>
+                    <li>Truy cập module Kinh doanh -> Chi nhánh (<em>/dashboard/business/branches</em>).</li>
+                    <li>Thêm mới chi nhánh, bao gồm gán quản lý và xác định vị trí bản đồ.</li>
+                    <li>Chỉnh sửa thông tin chi nhánh hiện có.</li>
+                    <li>Xóa chi nhánh (lưu ý điều kiện ràng buộc về nhân viên).</li>
+                </ul>
+                <h4>3.3. Quản lý Nhân viên (Staff - <em>app/dashboard/business/staff</em>)</h4>
+                 <p>Trang này cho phép <strong>quản trị viên (admin)</strong> quản lý hồ sơ làm việc của nhân viên. Yêu cầu quyền admin để truy cập.</p>
+                 <ul>
+                    <li><strong>Xem danh sách nhân viên:</strong>
+                        <ul>
+                            <li>Hiển thị bảng danh sách các nhân viên đã được thêm vào hệ thống (bảng `staff`).</li>
+                            <li>Thông tin bao gồm: ID nhân viên, Tên nhân viên (từ bảng `users`), Email, Ngày bắt đầu, Ca làm việc, Lương, Loại hợp đồng, Trạng thái làm việc, Tên quản lý trực tiếp, Chi nhánh (thường được xác định bởi chi nhánh của quản lý).</li>
+                        </ul>
+                    </li>
+                    <li><strong>Thêm hồ sơ nhân viên mới:</strong>
+                        <ul>
+                            <li>Nhấn nút "Thêm nhân viên".</li>
+                            <li>Chọn một người dùng đã có tài khoản trong hệ thống (từ bảng `users`) để tạo hồ sơ nhân viên. <em>Lưu ý: Một người dùng chỉ có thể có một hồ sơ nhân viên.</em></li>
+                            <li>Nhập thông tin: Ngày bắt đầu, Ca làm việc, Lương, Loại hợp đồng (Toàn thời gian, Bán thời gian, Hợp đồng), Trạng thái làm việc (Đang làm việc, Nghỉ phép).</li>
+                            <li>Tùy chọn: Chọn Quản lý trực tiếp từ danh sách người dùng là quản lý. Chi nhánh của nhân viên sẽ tự động được xác định dựa trên chi nhánh của người quản lý được chọn.</li>
+                            <li>Nhấn "Thêm mới" để lưu.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Xem chi tiết nhân viên:</strong>
+                        <ul>
+                            <li>Nhấp vào một hàng trong bảng để xem chi tiết thông tin nhân viên trong popup.</li>
+                            <li>Hiển thị đầy đủ thông tin cá nhân (từ `users`) và thông tin công việc (từ `staff`).</li>
+                        </ul>
+                    </li>
+                    <li><strong>Chỉnh sửa thông tin nhân viên:</strong>
+                        <ul>
+                            <li>Trong popup xem chi tiết, nhấn nút "Chỉnh sửa".</li>
+                            <li>Thay đổi các thông tin công việc: Ngày bắt đầu/kết thúc, Ca làm việc, Lương, Loại hợp đồng, Trạng thái làm việc, Quản lý trực tiếp.</li>
+                            <li><em>Lưu ý: Không thể thay đổi người dùng đã liên kết với hồ sơ nhân viên này.</em></li>
+                            <li>Nhấn "Cập nhật" để lưu thay đổi.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Vô hiệu hóa/Xóa nhân viên:</strong>
+                        <ul>
+                            <li>Trong popup xem chi tiết, nhấn nút "Xóa".</li>
+                            <li>Hệ thống sẽ yêu cầu xác nhận.</li>
+                            <li>Hành động này sẽ:
+                                <ul>
+                                    <li>Gọi API để <strong>xóa tài khoản đăng nhập</strong> của người dùng tương ứng (từ `auth.users` và `accounts`).</li>
+                                    <li>Cập nhật trạng thái làm việc của nhân viên trong bảng `staff` thành "Đã nghỉ việc" (terminated).</li>
+                                    <li>Cập nhật ngày kết thúc (end_date) thành ngày hiện tại.</li>
+                                </ul>
+                            </li>
+                            <li><em>Lưu ý: Thông tin hồ sơ nhân viên trong bảng `staff` và thông tin cá nhân trong bảng `users` vẫn được giữ lại, chỉ có tài khoản đăng nhập bị xóa và trạng thái được cập nhật.</em></li>
+                        </ul>
+                    </li>
+                    <li><strong>Thông báo:</strong> Hiển thị thông báo thành công/lỗi cho các thao tác.</li>
+                 </ul>
+                 <h4>3.4. Cấu hình Hệ thống (System Configuration - Nếu có)</h4>
+                 <ul>
+                    <li>Truy cập các trang/module cấu hình (ví dụ: cài đặt chung, mẫu email, tích hợp).</li>
+                    <li>Hướng dẫn thay đổi các tham số cấu hình quan trọng.</li>
+                 </ul>
+                 <h4>3.5. Kiểm tra và Bảo trì Cơ bản</h4>
+                 <ul>
+                    <li>Cách kiểm tra trạng thái các bảng dữ liệu (ví dụ: sử dụng <em>/api/check-tables</em> nếu có).</li>
+                    <li>Hướng dẫn xử lý các lỗi thường gặp.</li>
+                    <li>Quy trình sao lưu và phục hồi dữ liệu (nếu có).</li>
+                 </ul>
+            </div>
+        </section>
+
+        <section id="methodology">
+            <h2>4. Phương pháp Huấn luyện</h2>
+            <ul>
+                <li><strong>Lý thuyết kết hợp Thực hành:</strong> Giới thiệu khái niệm, chức năng sau đó người tham dự thực hành trực tiếp trên hệ thống (môi trường thử nghiệm nếu có).</li>
+                <li><strong>Trình diễn trực tiếp (Live Demo):</strong> Huấn luyện viên thực hiện các thao tác mẫu trên hệ thống.</li>
+                <li><strong>Bài tập tình huống (Case Studies):</strong> Sử dụng các kịch bản thực tế để người dùng áp dụng kiến thức.</li>
+                <li><strong>Hỏi & Đáp (Q&A):</strong> Phiên giải đáp thắc mắc trực tiếp trong và sau buổi huấn luyện.</li>
+                <li><strong>Tài liệu tham khảo:</strong> Cung cấp tài liệu hướng dẫn sử dụng (bản HTML này và bản Word được tạo từ nó), video hướng dẫn (nếu có).</li>
+            </ul>
+        </section>
+
+        <section id="schedule">
+            <h2>5. Lịch trình Huấn luyện (Dự kiến)</h2>
+            <p><em>Lịch trình chi tiết sẽ được xác định dựa trên số lượng người tham dự và mức độ phức tạp của từng vai trò. Dưới đây là cấu trúc gợi ý:</em></p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Buổi</th>
+                        <th>Đối tượng</th>
+                        <th>Thời lượng (giờ)</th>
+                        <th>Nội dung chính</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>Tất cả (End-Users, Managers, Admins)</td>
+                        <td>2</td>
+                        <td>Giới thiệu chung, Đăng nhập, Giao diện Dashboard, Hồ sơ cá nhân.</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>End-Users (theo nhóm nghiệp vụ)</td>
+                        <td>2-3</td>
+                        <td>Module Bán hàng, Đơn hàng, Sản phẩm, Đối tác (phù hợp vai trò). Chat nội bộ.</td>
+                    </tr>
+                     <tr>
+                        <td>3</td>
+                        <td>Managers</td>
+                        <td>3</td>
+                        <td>Ôn tập Module 1, Phân tích Dashboard, Báo cáo, Giám sát nhân viên/chi nhánh, Quyền hạn cơ bản.</td>
+                    </tr>
+                     <tr>
+                        <td>4</td>
+                        <td>Administrators</td>
+                        <td>3-4</td>
+                        <td>Ôn tập Module 1 & 2, Quản trị User toàn diện, Quản lý Chi nhánh, Quản lý Nhân viên.</td>
+                    </tr>
+                     <tr>
+                        <td>5</td>
+                        <td>Administrators</td>
+                        <td>2</td>
+                        <td>Cấu hình hệ thống, Kiểm tra & Bảo trì, Hỏi & Đáp nâng cao.</td>
+                    </tr>
+                    <!-- Thêm các buổi khác nếu cần -->
+                </tbody>
+            </table>
+        </section>
+
+        <section id="resources">
+            <h2>6. Tài nguyên và Hỗ trợ</h2>
+            <ul>
+                <li><strong>Tài liệu Hướng dẫn Sử dụng:</strong>
+                    <ul>
+                        <li>Bản HTML: <code>thao_luan/user_manual.html</code> (đang xây dựng)</li>
+                        <li>Bản Word: (Người dùng tự tạo bằng cách copy nội dung từ file HTML)</li>
+                    </ul>
+                </li>
+                <li><strong>Tài liệu Huấn luyện:</strong> Chính là tài liệu này (<code>thao_luan/training_plan.html</code>).</li>
+                <li><strong>Hỗ trợ sau huấn luyện:</strong>
+                    <ul>
+                        <li>Kênh liên hệ hỗ trợ (Email, Số điện thoại, Nhóm chat).</li>
+                        <li>Người phụ trách hỗ trợ chính.</li>
+                    </ul>
+                </li>
+            </ul>
+        </section>
+
+        <footer>
+            <p style="text-align:center; font-size:0.9em; color:#777;">Tài liệu được tạo tự động - &copy; 2025</p>
+        </footer>
+    </div>
+</body>
+</html>
+
+</final_file_content>
+
+IMPORTANT: For any future changes to this file, use the final_file_content shown above as your reference. This content reflects the current state of the file, including any auto-formatting (e.g., if you used single quotes but the formatter converted them to double quotes). Always base your SEARCH/REPLACE operations on this final version to ensure accuracy.
+
+<environment_details>
+# VSCode Visible Files
+Note_SQL/database.txt
+C:/Users/qmjnh/AppData/Local/Programs/Microsoft VS Code/thao_luan/configuration_guide.html
+C:/Users/qmjnh/AppData/Local/Programs/Microsoft VS Code/thao_luan/configuration_guide.html
+thao_luan/training_plan.html
+
+# VSCode Open Tabs
+Note_SQL/database.txt
+app/api/categories/route.ts
+create-category-table.js
+app/debug/page.tsx
+app/dashboard/products/categories/page.tsx
+app/dashboard/products/add/page.tsx
+app/api/partners/returns/route.ts
+app/dashboard/partners/customer-care/page.tsx
+create-category-table.sql
+supabase/migrations/20250401_create_category_table.sql
+execute-category-sql.js
+app/api/create-category/route.ts
+app/api/check-tables/route.ts
+app/debug/category/page.tsx
+HUONG-DAN-FIX-LOI-CATEGORY.md
+utils/supabase/client.ts
+middleware.ts
+utils/supabase/middleware.tsx
+.gitignore
+Note_SQL/tao_sql.sql
+.env.local
+package.json
+app/dashboard/payment/page.tsx
+app/dashboard/orders/page.tsx
+next.config.js
+app/todo-example/page.tsx
+README.md
+tsconfig.json
+.gitmodules
+vercel.json
+thao_luan/Kiem-thu-tich-hop-he-thong.html
+thao_luan/project_structure.html
+configuration_guide.html
+thao_luan/configuration_guide.html
+thao_luan/bai4_kiem_thu_ket_noi_cau_hinh.html
+thao_luan/bien_ban_nghiem_thu_cau_hinh_phan_cung.html
+thao_luan/bao_cao_kiem_tra_cai_dat.html
+thao_luan/so_do_mang_de_xuat.html
+thao_luan/bai1_khao_sat_ha_tang.html
+thao_luan/bai2_xac_dinh_cau_hinh_chuan.html
+thao_luan/bai3_thiet_lap_cai_dat.html
+thao_luan/test1.html
+thao_luan/test2.html
+thao_luan/user_manual.html
+thao_luan/training_plan.html
+thao_luan/test3.html
+app/dashboard/reports/shipping/page.tsx
+Kich-ban-kiem-thu.html
+integration_test.html
+thao_luan/integration_test.html
+app/dashboard/users/permissions/[id]/page.tsx
+app/dashboard/reports/shipping/ShippingReportClient.tsx
+.github/workflows/deploy.yml
+utils/supabase/server.tsx
+chat.txt
+Note_SQL/database.txt
+
+# Current Time
+5/8/2025, 11:01:58 PM (Asia/Saigon, UTC+7:00)
+
+# Context Window Usage
+551,716 / 1,048.576K tokens used (53%)
+
+# Current Mode
+ACT MODE
+</environment_details>
