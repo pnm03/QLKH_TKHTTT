@@ -25,6 +25,7 @@ interface FinancialTransaction {
   date: string
   type: 'income' | 'expense'
   amount: number
+  capital?: number
   source: string
   description: string
   order_id?: string
@@ -36,6 +37,7 @@ interface FinancialTransaction {
 interface FinancialSummary {
   totalIncome: number
   totalExpense: number
+  totalCapital: number
   netCashflow: number
   incomeCount: number
   expenseCount: number
@@ -98,6 +100,7 @@ export default function FinancialReportsPage() {
   const [financialSummary, setFinancialSummary] = useState<FinancialSummary>({
     totalIncome: 0,
     totalExpense: 0,
+    totalCapital: 0,
     netCashflow: 0,
     incomeCount: 0,
     expenseCount: 0
@@ -218,6 +221,44 @@ export default function FinancialReportsPage() {
         throw ordersError
       }
 
+      // Lấy dữ liệu chi tiết đơn hàng để tính tổng vốn (chi phí nhập hàng)
+      let orderDetailsQuery = supabase
+        .from('orderdetails')
+        .select(`
+          orderdetail_id,
+          order_id,
+          quantity,
+          cost_price_at_sale
+        `)
+
+      // Lọc theo danh sách order_id từ ordersData
+      if (ordersData && ordersData.length > 0) {
+        const orderIds = ordersData.map(order => order.order_id)
+        orderDetailsQuery = orderDetailsQuery.in('order_id', orderIds)
+      }
+
+      const { data: orderDetailsData, error: orderDetailsError } = await orderDetailsQuery
+
+      if (orderDetailsError) {
+        console.error('Lỗi khi lấy chi tiết đơn hàng:', orderDetailsError)
+      }
+
+      // Tính tổng vốn cho mỗi đơn hàng
+      const orderCapitalMap = new Map()
+      
+      if (orderDetailsData) {
+        orderDetailsData.forEach(detail => {
+          const orderId = detail.order_id
+          const detailCapital = (detail.cost_price_at_sale || 0) * (detail.quantity || 0)
+          
+          if (orderCapitalMap.has(orderId)) {
+            orderCapitalMap.set(orderId, orderCapitalMap.get(orderId) + detailCapital)
+          } else {
+            orderCapitalMap.set(orderId, detailCapital)
+          }
+        })
+      }
+
       // Lấy dữ liệu trả hàng (chi)
       let returnsQuery = supabase
         .from('returns')
@@ -249,29 +290,51 @@ export default function FinancialReportsPage() {
       }
 
       // Chuyển đổi dữ liệu đơn hàng thành giao dịch tài chính
-      const incomeTransactions: FinancialTransaction[] = (ordersData || []).map(order => ({
-        id: `order-${order.order_id}`,
-        date: order.order_date,
-        type: 'income',
-        amount: order.price || 0,
-        source: 'Bán hàng',
-        description: `Đơn hàng #${order.order_id}`,
-        order_id: order.order_id,
-        payment_method: order.payments?.payment_method_name || 'Không xác định'
-      }))
+      const incomeTransactions: FinancialTransaction[] = (ordersData || []).map(order => {
+        // Lấy tổng vốn của đơn hàng này
+        const orderCapital = orderCapitalMap.get(order.order_id) || 0
+        
+        // Lấy tên phương thức thanh toán, xử lý an toàn hơn
+        let paymentMethodName = 'Không xác định';
+        if (order.payments && typeof order.payments === 'object') {
+          paymentMethodName = order.payments.payment_method_name || 'Không xác định';
+        }
+        
+        return {
+          id: `order-${order.order_id}`,
+          date: order.order_date,
+          type: 'income',
+          amount: order.price || 0,
+          capital: orderCapital, // Thêm thông tin vốn
+          source: 'Bán hàng',
+          description: `Đơn hàng #${order.order_id}`,
+          order_id: order.order_id,
+          payment_method: paymentMethodName
+        }
+      })
 
       // Chuyển đổi dữ liệu trả hàng thành giao dịch tài chính
-      const expenseTransactions: FinancialTransaction[] = (returnsData || []).map(returnItem => ({
-        id: `return-${returnItem.return_id}`,
-        date: returnItem.return_date,
-        type: 'expense',
-        amount: returnItem.refund_amount || 0,
-        source: 'Trả hàng',
-        description: `${returnItem.name_return || 'Trả hàng'} #${returnItem.return_id} - ${returnItem.return_reason || ''}`,
-        order_id: returnItem.order_id,
-        return_id: returnItem.return_id.toString(),
-        payment_method: returnItem.orders?.payments?.payment_method_name || 'Không xác định'
-      }))
+      const expenseTransactions: FinancialTransaction[] = (returnsData || []).map(returnItem => {
+        // Lấy tên phương thức thanh toán, xử lý an toàn hơn
+        let paymentMethodName = 'Không xác định';
+        if (returnItem.orders && typeof returnItem.orders === 'object' && 
+            returnItem.orders.payments && typeof returnItem.orders.payments === 'object') {
+          paymentMethodName = returnItem.orders.payments.payment_method_name || 'Không xác định';
+        }
+        
+        return {
+          id: `return-${returnItem.return_id}`,
+          date: returnItem.return_date,
+          type: 'expense',
+          amount: returnItem.refund_amount || 0,
+          capital: 0, // Trả hàng không tính vốn
+          source: 'Trả hàng',
+          description: `${returnItem.name_return || 'Trả hàng'} #${returnItem.return_id} - ${returnItem.return_reason || ''}`,
+          order_id: returnItem.order_id,
+          return_id: returnItem.return_id.toString(),
+          payment_method: paymentMethodName
+        }
+      })
 
       // Kết hợp và lọc giao dịch
       let allTransactions = [...incomeTransactions, ...expenseTransactions]
@@ -308,6 +371,7 @@ export default function FinancialReportsPage() {
       setFinancialSummary({
         totalIncome: 0,
         totalExpense: 0,
+        totalCapital: 0,
         netCashflow: 0,
         incomeCount: 0,
         expenseCount: 0
@@ -340,6 +404,11 @@ export default function FinancialReportsPage() {
     const totalExpense = transactionsData
       .filter(transaction => transaction.type === 'expense')
       .reduce((sum, transaction) => sum + transaction.amount, 0)
+    
+    // Tính tổng vốn từ tất cả các giao dịch thu nhập
+    const totalCapital = transactionsData
+      .filter(transaction => transaction.type === 'income')
+      .reduce((sum, transaction) => sum + (transaction.capital || 0), 0)
 
     const incomeCount = transactionsData.filter(transaction => transaction.type === 'income').length
     const expenseCount = transactionsData.filter(transaction => transaction.type === 'expense').length
@@ -347,7 +416,8 @@ export default function FinancialReportsPage() {
     setFinancialSummary({
       totalIncome,
       totalExpense,
-      netCashflow: totalIncome - totalExpense,
+      totalCapital,
+      netCashflow: totalIncome - totalExpense - totalCapital,
       incomeCount,
       expenseCount
     })
@@ -532,51 +602,40 @@ export default function FinancialReportsPage() {
     }
   }
 
-  // Hàm xuất dữ liệu chi tiết sang CSV
+  // Xuất dữ liệu sang CSV
   const exportToCSV = () => {
-    if (transactions.length === 0) return
+    // Tạo tiêu đề
+    let csvContent = 'ID,Ngày,Loại giao dịch,Nguồn,Mô tả,Giá trị,Vốn,Phương thức thanh toán\n'
 
-    try {
-      // Tạo header cho file CSV
-      const headers = [
-        'ID',
-        'Ngày',
-        'Loại',
-        'Số tiền',
-        'Nguồn',
-        'Mô tả',
-        'Mã đơn hàng',
-        'Phương thức thanh toán'
-      ].join(',')
+    // Thêm dữ liệu từng giao dịch
+    transactions.forEach(transaction => {
+      // Định dạng ngày
+      const date = new Date(transaction.date)
+      const formattedDate = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`
 
-      // Tạo dữ liệu cho file CSV
-      const csvData = transactions.map(transaction => [
-        transaction.id,
-        new Date(transaction.date).toLocaleDateString('vi-VN'),
-        transaction.type === 'income' ? 'Thu' : 'Chi',
-        transaction.amount.toLocaleString('vi-VN'),
-        transaction.source,
-        `"${transaction.description.replace(/"/g, '""')}"`, // Escape dấu nháy kép
-        transaction.order_id || '',
-        transaction.payment_method || 'Không xác định'
-      ].join(','))
+      // Thêm dòng dữ liệu
+      csvContent += `"${transaction.id}","${formattedDate}","${
+        transaction.type === 'income' ? 'Thu' : 'Chi'
+      }","${transaction.source}","${transaction.description}","${
+        transaction.amount
+      }","${transaction.capital || 0}","${transaction.payment_method || 'Không xác định'}"\n`
+    })
 
-      // Kết hợp header và dữ liệu
-      const csvContent = [headers, ...csvData].join('\n')
+    // Tính tổng
+    csvContent += `\n"TỔNG","","","","","${financialSummary.totalIncome}","${financialSummary.totalCapital}"\n`
+    csvContent += `"TỔNG CHI","","","","","${financialSummary.totalExpense}",""\n`
+    csvContent += `"DÒNG TIỀN RÒNG","","","","","${financialSummary.netCashflow}",""\n`
 
-      // Tạo blob và download
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-      const url = URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.setAttribute('href', url)
-      link.setAttribute('download', `giao-dich-tai-chinh-${new Date().toISOString().split('T')[0]}.csv`)
-      link.style.visibility = 'hidden'
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-    } catch (error) {
-      console.error('Lỗi khi xuất CSV:', error)
-    }
+    // Tạo đối tượng Blob và URL tải xuống
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.setAttribute('href', url)
+    link.setAttribute('download', `bao-cao-tai-chinh-${new Date().toISOString().slice(0, 10)}.csv`)
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
   }
 
   // Format số tiền
@@ -826,7 +885,7 @@ export default function FinancialReportsPage() {
             {activeTab === 'overview' && (
               <div>
                 {/* Thẻ tổng quan */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
                   <div className="bg-white rounded-lg overflow-hidden border-l-4 border-green-500">
                     <div className="p-4">
                       <div className="flex items-center justify-between">
@@ -875,6 +934,28 @@ export default function FinancialReportsPage() {
                     </div>
                   </div>
 
+                  {/* Thêm ô mới: Tổng vốn */}
+                  <div className="bg-white rounded-lg overflow-hidden border-l-4 border-yellow-500">
+                    <div className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm font-medium text-gray-500">
+                          Tổng vốn
+                        </div>
+                        <div>
+                          <ReceiptRefundIcon className="h-5 w-5 text-yellow-600" />
+                        </div>
+                      </div>
+                      <div className="mt-1">
+                        <div className="text-xl font-semibold">
+                          {formatCurrency(financialSummary.totalCapital)}
+                        </div>
+                      </div>
+                      <div className="mt-2 text-sm font-medium text-yellow-600">
+                        Giá nhập của hàng bán
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="bg-white rounded-lg overflow-hidden border-l-4 border-blue-500">
                     <div className="p-4">
                       <div className="flex items-center justify-between">
@@ -891,7 +972,7 @@ export default function FinancialReportsPage() {
                         </div>
                       </div>
                       <div className="mt-2 text-sm font-medium text-blue-600">
-                        {financialSummary.netCashflow >= 0 ? 'Dương' : 'Âm'}
+                        Lợi nhuận của doanh nghiệp
                       </div>
                     </div>
                   </div>
@@ -1138,16 +1219,24 @@ export default function FinancialReportsPage() {
                     <div className="px-4 py-2 bg-gray-50 border-b border-gray-200">
                       <div className="flex justify-between items-center">
                         <div className="flex space-x-4">
-                          <div>
+                          <div className="mb-2 md:mb-0 md:mr-6">
                             <span className="text-sm font-medium text-gray-500">Tổng thu:</span>{' '}
-                            <span className="text-sm font-medium text-green-600">
-                              {formatCurrency(financialSummary.totalIncome)}
-                            </span>
+                            <span className="font-bold text-green-600">{formatCurrency(financialSummary.totalIncome)}</span>
+                          </div>
+                          <div className="mb-2 md:mb-0 md:mr-6">
+                            <span className="text-sm font-medium text-gray-500">Tổng chi:</span>{' '}
+                            <span className="font-bold text-red-600">{formatCurrency(financialSummary.totalExpense)}</span>
+                          </div>
+                          <div className="mb-2 md:mb-0 md:mr-6">
+                            <span className="text-sm font-medium text-gray-500">Tổng vốn:</span>{' '}
+                            <span className="font-bold text-yellow-600">{formatCurrency(financialSummary.totalCapital)}</span>
                           </div>
                           <div>
-                            <span className="text-sm font-medium text-gray-500">Tổng chi:</span>{' '}
-                            <span className="text-sm font-medium text-red-600">
-                              {formatCurrency(financialSummary.totalExpense)}
+                            <span className="text-sm font-medium text-gray-500">Dòng tiền ròng:</span>{' '}
+                            <span className={`font-bold ${
+                              financialSummary.netCashflow >= 0 ? 'text-blue-600' : 'text-yellow-600'
+                            }`}>
+                              {formatCurrency(financialSummary.netCashflow)}
                             </span>
                           </div>
                         </div>
@@ -1235,7 +1324,7 @@ export default function FinancialReportsPage() {
                           <button
                             onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(transactions.length / pageSize)))}
                             disabled={currentPage === Math.ceil(transactions.length / pageSize)}
-                            className="ml-2 relative inline-flex items-center px-3 py-1 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                            className="ml-2 relative inline-flex items-center px-3 py-1 border border-gray-300 bg-white text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
                           >
                             Sau
                           </button>
@@ -1308,7 +1397,7 @@ export default function FinancialReportsPage() {
                               <button
                                 onClick={() => setCurrentPage(Math.ceil(transactions.length / pageSize))}
                                 disabled={currentPage === Math.ceil(transactions.length / pageSize)}
-                                className="relative inline-flex items-center px-1.5 py-1 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                                className="relative inline-flex items-center px-1.5 py-1 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
                               >
                                 <span className="sr-only">Trang cuối</span>
                                 <span>&raquo;</span>
