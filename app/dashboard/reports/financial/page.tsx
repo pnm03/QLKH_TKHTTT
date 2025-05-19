@@ -58,6 +58,16 @@ interface PaymentMethodSummary {
   transaction_count: number
 }
 
+interface TooltipState {
+  visible: boolean;
+  x: number;
+  y: number;
+  content: string;
+  type: string;
+  date: string;
+  frozen: boolean; // Thêm trạng thái đóng băng
+}
+
 export default function FinancialReportsPage() {
   const supabase = createClientComponentClient()
   const [mounted, setMounted] = useState(false)
@@ -118,6 +128,37 @@ export default function FinancialReportsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [exportingPdf, setExportingPdf] = useState(false)
+
+  // State để quản lý tooltip
+  const [tooltipState, setTooltipState] = useState<TooltipState>({
+    visible: false,
+    x: 0,
+    y: 0,
+    content: '',
+    type: '',
+    date: '',
+    frozen: false
+  })
+
+  // Tham chiếu đến timer xử lý ẩn tooltip
+  const tooltipTimerRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Hàm xử lý ẩn tooltip có độ trễ
+  const handleHideTooltip = () => {
+    // Nếu tooltip đang bị đóng băng, không ẩn
+    if (tooltipState.frozen) return;
+    
+    // Tạo độ trễ trước khi ẩn tooltip
+    tooltipTimerRef.current = setTimeout(() => {
+      setTooltipState(prev => ({ ...prev, visible: false }));
+    }, 1000); // Độ trễ 1 giây
+  };
+  
+  // Hàm xử lý khi click vào cột để đóng băng/bỏ đóng băng tooltip
+  const toggleFreezeTooltip = (e) => {
+    e.stopPropagation(); // Ngăn sự kiện click lan ra ngoài
+    setTooltipState(prev => ({ ...prev, frozen: !prev.frozen }));
+  };
 
   // Set mounted = true sau khi component được render ở client
   useEffect(() => {
@@ -1006,118 +1047,378 @@ export default function FinancialReportsPage() {
                   </div>
 
                   {cashflowByDay.labels.length > 0 ? (
-                    <div className="h-48 relative">
-                      <div className="relative h-full flex flex-col">
-                        {/* Tính toán giá trị tối đa và các đường kẻ ngang */}
+                    <div className="bg-white rounded-lg shadow p-6 mb-6">
+                      <h3 className="text-lg font-medium text-gray-900 mb-4">Doanh thu theo {timeGrouping === 'day' ? 'ngày' : timeGrouping === 'month' ? 'tháng' : 'tuần'}</h3>
+                      
+                      <div className="relative h-80 mt-4 mb-8">
+                        {/* Tính toán giá trị trước để sử dụng cho cả biểu đồ và thông báo */}
                         {(() => {
                           // Tìm giá trị lớn nhất
                           const maxIncome = Math.max(...cashflowByDay.incomeValues);
                           const maxExpense = Math.max(...cashflowByDay.expenseValues);
-                          const maxValue = Math.max(maxIncome, maxExpense);
-
-                          // Log để kiểm tra giá trị
-                          console.log("Giá trị thu:", cashflowByDay.incomeValues);
-                          console.log("Giá trị chi:", cashflowByDay.expenseValues);
-                          console.log("Giá trị lớn nhất:", maxValue);
-
-                          // Đảm bảo giá trị tối đa không bị làm tròn
-                          // Sử dụng giá trị tối đa thực tế để tính toán
-                          // Điều này sẽ giúp cột cao nhất gần như chạm đến phần tiêu đề
-                          // và các cột khác có chiều cao tỷ lệ thuận chính xác
-                          const roundedMax = maxValue;
-
-                          // Tạo các mức giá trị cho đường kẻ ngang (6 mức từ 0 đến giá trị tối đa)
-                          const steps = 6;
-                          const gridValues = [];
-
-                          // Làm tròn giá trị tối đa lên để có số đẹp hơn cho việc hiển thị trên trục Y
-                          const displayMax = Math.ceil(maxValue / 3000000) * 3000000;
-
-                          for (let i = 0; i < steps; i++) {
-                            gridValues.push(Math.round(displayMax * i / (steps - 1)));
+                          const maxValue = Math.max(maxIncome, maxExpense, 1); // Đảm bảo không bị chia cho 0
+                          
+                          // Điều chỉnh tỷ lệ để các giá trị thấp vẫn có thể nhìn thấy được
+                          // Ước tính giá trị trung bình để làm cơ sở
+                          const avgIncome = cashflowByDay.incomeValues.reduce((sum, val) => sum + val, 0) / cashflowByDay.incomeValues.length;
+                          
+                          // Nếu giá trị max > 10 lần giá trị trung bình (không tính max), thì điều chỉnh tỷ lệ
+                          let roundedMax = Math.ceil(maxValue / 1000000) * 1000000;
+                          
+                          // Nếu sử dụng biểu đồ cột kết hợp, các giá trị nhỏ vẫn hiển thị tốt
+                          // Nên chỉ điều chỉnh nếu giá trị lớn nhất > 20 lần giá trị trung bình
+                          if (maxValue > avgIncome * 20) {
+                            roundedMax = Math.ceil(avgIncome * 5 / 1000000) * 1000000;
                           }
+                          
+                          // Đảm bảo có giá trị tối thiểu cho roundedMax
+                          roundedMax = Math.max(roundedMax, 1000000); // Ít nhất 1 triệu
+                          
+                          // Tạo mảng các ngày của tuần để hiển thị tất cả điểm dữ liệu
+                          const availableDates = cashflowByDay.labels.map((label, index) => ({
+                            label,
+                            incomeValue: cashflowByDay.incomeValues[index] || 0,
+                            expenseValue: cashflowByDay.expenseValues[index] || 0,
+                            // Đánh dấu giá trị vượt quá tỷ lệ
+                            isIncomeExceeded: cashflowByDay.incomeValues[index] > roundedMax,
+                            isExpenseExceeded: cashflowByDay.expenseValues[index] > roundedMax,
+                            // Lưu giá trị hiển thị (bị cắt ngọn nếu cần)
+                            displayIncomeValue: Math.min(cashflowByDay.incomeValues[index] || 0, roundedMax),
+                            displayExpenseValue: Math.min(cashflowByDay.expenseValues[index] || 0, roundedMax)
+                          }));
+                          
+                          // Tính số triệu đồng để hiển thị
+                          const formatToMillions = (value) => {
+                            return `${(value / 1000000).toFixed(1)} tr`;
+                          };
+                          
+                          // Tính khoảng cách giữa các mức grid line
+                          const yAxisSteps = 6; // 6 steps
+                          const stepValue = roundedMax / (yAxisSteps - 1);
+                          
+                          // Tính chiều rộng của mỗi cột
+                          const barWidth = 4; // Cột nhỏ hơn, giảm từ 6px xuống 4px
+                          const columnCount = availableDates.length;
+                          
+                          // Format giá trị tiền tệ ngắn gọn
+                          const formatCurrency = (value) => {
+                            if (value >= 1000000000) {
+                              return `${(value / 1000000000).toFixed(1)}tỷ`;
+                            } else if (value >= 1000000) {
+                              return `${(value / 1000000).toFixed(1)}tr`;
+                            } else if (value >= 1000) {
+                              return `${(value / 1000).toFixed(0)}k`;
+                            }
+                            return `${value}đ`;
+                          };
 
                           return (
                             <>
-
-                              {/* Vẽ các cột biểu đồ */}
-                              <div className="flex flex-grow items-end justify-evenly mt-2 mb-4">
-                                {cashflowByDay.labels.map((label, index) => {
-                                  const incomeValue = cashflowByDay.incomeValues[index];
-                                  const expenseValue = cashflowByDay.expenseValues[index];
-
-                                  // Tính chiều cao tương đối dựa trên giá trị thực tế
-                                  // Đảm bảo cột cao nhất chiếm gần như toàn bộ không gian có sẵn
-                                  // Đặt giá trị tối thiểu là 5% để các cột nhỏ vẫn nhìn thấy được
-                                  // Sử dụng 100% để tận dụng tối đa không gian
-                                  const incomeHeight = incomeValue > 0
-                                    ? (incomeValue / roundedMax) * 100
-                                    : 0;
-
-                                  const expenseHeight = expenseValue > 0
-                                    ? (expenseValue / roundedMax) * 100
-                                    : 0;
-
+                              {/* Tiêu đề đơn vị */}
+                              <div className="flex justify-center mb-4">
+                                <div className="flex items-center px-3 py-1 rounded-full bg-blue-100 border border-blue-200">
+                                  <div className="w-4 h-4 bg-blue-500 rounded-sm mr-2"></div>
+                                  <span className="text-sm font-medium">Doanh số (triệu VNĐ)</span>
+                                </div>
+                              </div>
+                            
+                              {/* Vùng grid lines */}
+                              <div className="absolute inset-0 right-0 bottom-10 border border-gray-200 bg-white">
+                                {/* Đường kẻ dọc */}
+                                {Array.from({ length: availableDates.length }).map((_, i) => (
+                                  <div 
+                                    key={`vgrid-${i}`} 
+                                    className="absolute bottom-0 top-0 border-l border-gray-100"
+                                    style={{ 
+                                      left: `${14 + (i * (100 - 14) / (columnCount - 1))}%`,
+                                      borderLeftWidth: i === 0 ? 0 : '1px'
+                                    }}
+                                  />
+                                ))}
+                                
+                                {/* Đường kẻ ngang và giá trị */}
+                                {Array.from({ length: yAxisSteps }).map((_, i) => {
+                                  const yPos = i * (100 / (yAxisSteps - 1));
+                                  const value = roundedMax - (i * stepValue);
                                   return (
-                                    <div key={label} className="flex flex-col items-center" style={{ width: '80px' }}>
-                                      <div className="flex items-end h-full justify-center">
-                                        {/* Cột thu */}
-                                        <div className="relative group">
-                                          {incomeValue > 0 && (
-                                            <div
-                                              className="w-12 bg-blue-500 rounded-t shadow-md hover:bg-blue-600 transition-colors mx-1 cursor-pointer"
-                                              style={{
-                                                height: `${incomeHeight}%`,
-                                                minHeight: incomeValue > 0 ? '20px' : '0'
-                                              }}
+                                    <div 
+                                      key={`hgrid-${i}`}
+                                      className="absolute left-0 right-0 flex items-center"
+                                      style={{ top: `${yPos}%` }}
+                                    >
+                                      <span className="text-xs text-gray-500 w-14 text-right pr-2">
+                                        {formatToMillions(value)}
+                                      </span>
+                                      <div className="flex-1 border-b border-gray-100"></div>
+                                    </div>
+                                  );
+                                })}
+                                
+                                {/* Biểu đồ */}
+                                <div className="absolute top-0 left-14 right-4 bottom-0">
+                                  <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+                                    {/* Biểu đồ cột cho Thu */}
+                                    {availableDates.map((item, index) => {
+                                      const x = index * (100 / (columnCount - 1));
+                                      const barHeight = (item.displayIncomeValue / roundedMax) * 100;
+                                      const barX = x - (barWidth / 2);
+                                      
+                                      return (
+                                        <g 
+                                          key={`bar-income-${index}`} 
+                                          className="cursor-pointer"
+                                          onMouseEnter={(e) => {
+                                            // Hủy timer ẩn nếu có
+                                            if (tooltipTimerRef.current) {
+                                              clearTimeout(tooltipTimerRef.current);
+                                              tooltipTimerRef.current = null;
+                                            }
+                                            
+                                            // Lấy vị trí của sự kiện chuột
+                                            const svg = e.currentTarget.closest('svg');
+                                            const pt = svg.createSVGPoint();
+                                            pt.x = e.clientX;
+                                            pt.y = e.clientY;
+                                            const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+                                            
+                                            // Hiển thị tooltip với nội dung là giá trị thu
+                                            setTooltipState({
+                                              visible: true,
+                                              x: svgP.x,
+                                              y: Math.max(svgP.y - 5, 10), // Đảm bảo tooltip không bị cắt phía trên
+                                              content: formatCurrency(item.incomeValue),
+                                              type: 'income',
+                                              date: item.label,
+                                              frozen: tooltipState.frozen // Giữ nguyên trạng thái đóng băng
+                                            });
+                                          }}
+                                                                                    onMouseLeave={handleHideTooltip}                                          onClick={toggleFreezeTooltip}
+                                        >
+                                          {/* Cột thu */}
+                                          <rect 
+                                            x={barX} 
+                                            y={100 - barHeight} 
+                                            width={barWidth} 
+                                            height={barHeight}
+                                            fill="rgba(79, 129, 255, 0.5)"
+                                            rx="1"
+                                            className="transition-opacity duration-150"
+                                            opacity={tooltipState.visible && tooltipState.type === 'income' && tooltipState.date === item.label ? "0.9" : "0.5"}
+                                          />
+                                          
+                                          {/* Thêm điểm tròn ở đỉnh cột */}
+                                          <circle 
+                                            cx={x}
+                                            cy={100 - barHeight}
+                                            r="1.5"
+                                            fill="#4F81FF"
+                                            opacity={barHeight > 0 ? "1" : "0"}
+                                          />
+                                          
+                                          {/* Hiển thị dấu ^ nếu giá trị vượt quá */}
+                                          {item.isIncomeExceeded && (
+                                            <text 
+                                              x={x}
+                                              y={5}
+                                              textAnchor="middle"
+                                              fontSize="6"
+                                              fill="#4F81FF"
+                                              fontWeight="bold"
                                             >
-                                              {/* Tooltip */}
-                                              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                                                Thu: {incomeValue.toLocaleString()} đ
-                                              </div>
+                                              ↑
+                                            </text>
+                                          )}
+                                        </g>
+                                      );
+                                    })}
+                                    
+                                    {/* Đường kết nối cho biểu đồ cột Thu */}
+                                    <path 
+                                      d={`M${availableDates.map((item, index) => {
+                                        const x = index * (100 / (columnCount - 1));
+                                        const y = 100 - (item.displayIncomeValue / roundedMax * 100);
+                                        return `${index === 0 ? 'M' : 'L'}${x},${y}`;
+                                      }).join(' ')}`}
+                                      fill="none"
+                                      stroke="#4F81FF" 
+                                      strokeWidth="1.5"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeDasharray={timeGrouping === 'month' ? "0" : "1,1"}
+                                    />
+                                    
+                                    {/* Biểu đồ cột cho Chi */}
+                                    {availableDates.map((item, index) => {
+                                      const x = index * (100 / (columnCount - 1));
+                                      const barHeight = (item.displayExpenseValue / roundedMax) * 100;
+                                      const barX = x - (barWidth / 2);
+                                      
+                                      return (
+                                        <g 
+                                          key={`bar-expense-${index}`} 
+                                          className="cursor-pointer"
+                                          onMouseEnter={(e) => {
+                                            // Lấy vị trí của sự kiện chuột
+                                            const svg = e.currentTarget.closest('svg');
+                                            const pt = svg.createSVGPoint();
+                                            pt.x = e.clientX;
+                                            pt.y = e.clientY;
+                                            const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+                                            
+                                            // Hiển thị tooltip với nội dung là giá trị chi
+                                            setTooltipState({
+                                              visible: true,
+                                              x: svgP.x,
+                                              y: Math.max(svgP.y - 5, 10), // Đảm bảo tooltip không bị cắt phía trên
+                                              content: formatCurrency(item.expenseValue),
+                                              type: 'expense',
+                                              date: item.label,
+                                              frozen: false
+                                            });
+                                          }}
+                                                                                    onMouseLeave={handleHideTooltip}                                          onClick={toggleFreezeTooltip}
+                                        >
+                                          {/* Cột chi */}
+                                          <rect 
+                                            x={barX} 
+                                            y={100 - barHeight} 
+                                            width={barWidth} 
+                                            height={barHeight}
+                                            fill="rgba(255, 77, 79, 0.3)"
+                                            rx="1"
+                                            className="transition-opacity duration-150"
+                                            opacity={tooltipState.visible && tooltipState.type === 'expense' && tooltipState.date === item.label ? "0.8" : "0.3"}
+                                          />
+                                          
+                                          {/* Thêm điểm tròn ở đỉnh cột */}
+                                          <circle 
+                                            cx={x}
+                                            cy={100 - barHeight}
+                                            r="1.5"
+                                            fill="#FF4D4F"
+                                            opacity={barHeight > 0 ? "1" : "0"}
+                                          />
+                                          
+                                          {/* Hiển thị dấu ^ nếu giá trị vượt quá */}
+                                          {item.isExpenseExceeded && (
+                                            <text 
+                                              x={x}
+                                              y={10}
+                                              textAnchor="middle"
+                                              fontSize="6"
+                                              fill="#FF4D4F"
+                                              fontWeight="bold"
+                                            >
+                                              ↑
+                                            </text>
+                                          )}
+                                        </g>
+                                      );
+                                    })}
+                                    
+                                    {/* Đường kết nối cho biểu đồ cột Chi */}
+                                    <path 
+                                      d={`M${availableDates.map((item, index) => {
+                                        const x = index * (100 / (columnCount - 1));
+                                        const y = 100 - (item.displayExpenseValue / roundedMax * 100);
+                                        return `${index === 0 ? 'M' : 'L'}${x},${y}`;
+                                      }).join(' ')}`}
+                                      fill="none"
+                                      stroke="#FF4D4F" 
+                                      strokeWidth="1.5"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      opacity="0.8"
+                                      strokeDasharray={timeGrouping === 'month' ? "0" : "1,1"}
+                                    />
+
+                                    {/* Tooltip tùy chỉnh */}
+                                    {tooltipState.visible && (
+                                      <foreignObject 
+                                        x={tooltipState.x - 15} 
+                                        y={tooltipState.y - 15} 
+                                        width="30" 
+                                        height="30"
+                                      >
+                                        <div 
+                                          className={`py-0.5 px-1 rounded-sm text-white font-medium shadow-sm ${
+                                            tooltipState.type === 'income' ? 'bg-blue-600' : 'bg-red-600'
+                                          } ${tooltipState.frozen ? 'ring-1 ring-yellow-300' : ''}`}
+                                          style={{ 
+                                            fontSize: '6px', 
+                                            lineHeight: '8px',
+                                            whiteSpace: 'nowrap',
+                                            transform: 'scale(0.85)',
+                                            transformOrigin: 'center'
+                                          }}
+                                        >
+                                          <div>{tooltipState.date}</div>
+                                          <div>{tooltipState.content}</div>
+                                          {tooltipState.frozen && (
+                                            <div className="text-yellow-200 text-[5px] mt-0.5">
+                                              Nhấp để bỏ ghim
                                             </div>
                                           )}
                                         </div>
-
-                                        {/* Cột chi */}
-                                        <div className="relative group">
-                                          {expenseValue > 0 && (
-                                            <div
-                                              className="w-12 bg-red-500 rounded-t shadow-md hover:bg-red-600 transition-colors mx-1 cursor-pointer"
-                                              style={{
-                                                height: `${expenseHeight}%`,
-                                                minHeight: expenseValue > 0 ? '20px' : '0'
-                                              }}
-                                            >
-                                              {/* Tooltip */}
-                                              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                                                Chi: {expenseValue.toLocaleString()} đ
-                                              </div>
-                                            </div>
-                                          )}
-                                        </div>
-                                      </div>
-
-                                      {/* Nhãn */}
-                                      <div className="text-xs font-medium text-gray-600 mt-2 w-full text-center truncate">{label}</div>
+                                      </foreignObject>
+                                    )}
+                                  </svg>
+                                </div>
+                              </div>
+                              
+                              {/* Nhãn trục X */}
+                              <div className="absolute left-14 right-4 bottom-0">
+                                {availableDates.map((item, index) => {
+                                  // Tính toán vị trí chính xác cho mỗi nhãn để thẳng với cột
+                                  const position = (index / (columnCount - 1)) * 100;
+                                  return (
+                                    <div 
+                                      key={`label-${index}`} 
+                                      className="absolute text-xs font-medium text-gray-600 text-center"
+                                      style={{
+                                        left: `${position}%`,
+                                        transform: 'translateX(-50%)', // Căn giữa nhãn với cột
+                                        bottom: '2px',
+                                        width: 'auto', // Cho phép nhãn hiển thị đúng kích thước
+                                        maxWidth: '40px', // Giới hạn chiều rộng tối đa
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis'
+                                      }}
+                                    >
+                                      {item.label}
                                     </div>
                                   );
                                 })}
                               </div>
+                              
+                              {/* Chú thích */}
+                              <div className="absolute -bottom-8 w-full flex justify-center">
+                                <div className="flex items-center space-x-6">
+                                  <div className="flex items-center">
+                                    <div className="h-3 w-6 bg-blue-500 opacity-50 rounded-sm mr-2"></div>
+                                    <span className="text-sm text-gray-700">Thu</span>
+                                  </div>
+                                  <div className="flex items-center">
+                                    <div className="h-3 w-6 bg-red-500 opacity-30 rounded-sm mr-2"></div>
+                                    <span className="text-sm text-gray-700">Chi</span>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              {/* Thông báo về giá trị vượt quá */}
+                              {availableDates.some(d => d.isIncomeExceeded || d.isExpenseExceeded) && (
+                                <div className="absolute -bottom-16 w-full flex justify-center">
+                                  <div className="text-xs text-gray-500">
+                                    ↑ Một số giá trị vượt quá thang đo, kiểm tra chi tiết bằng cách di chuột vào biểu đồ
+                                  </div>
+                                </div>
+                              )}
+                              
+                              {/* Hướng dẫn sử dụng */}
+                                                            <div className="absolute -bottom-24 w-full flex justify-center">                                <div className="bg-gray-50 px-3 py-1.5 rounded-md shadow-sm border border-gray-200">                                  <div className="text-xs text-gray-700 flex items-center space-x-3">                                    <span>                                      <span className="font-medium text-blue-600">Di chuột</span>: Xem chi tiết                                    </span>                                    <span>                                      <span className="font-medium text-blue-600">Nhấp lần đầu</span>: Ghim thông tin                                    </span>                                    <span>                                      <span className="font-medium text-blue-600">Nhấp lại</span>: Bỏ ghim                                    </span>                                  </div>                                </div>                              </div>
                             </>
                           );
                         })()}
-                      </div>
-
-                      <div className="mt-6 flex items-center justify-center space-x-8">
-                        <div className="flex items-center bg-gray-50 px-4 py-2 rounded-full shadow-sm">
-                          <div className="w-4 h-4 bg-blue-500 rounded mr-2"></div>
-                          <span className="text-sm font-medium text-gray-700">Thu</span>
-                        </div>
-                        <div className="flex items-center bg-gray-50 px-4 py-2 rounded-full shadow-sm">
-                          <div className="w-4 h-4 bg-red-500 rounded mr-2"></div>
-                          <span className="text-sm font-medium text-gray-700">Chi</span>
-                        </div>
                       </div>
                     </div>
                   ) : (
