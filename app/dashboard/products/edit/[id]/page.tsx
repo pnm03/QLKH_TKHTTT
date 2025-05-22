@@ -17,9 +17,12 @@ interface ProductFormData {
   color: string
   size: string
   price: number
+  cost_price: number
   stock_quantity: number
   image: File | null
   imageUrl: string | null
+  formattedPrice?: string
+  formattedCostPrice?: string
 }
 
 export default function EditProductPage({ params }: { params: { id: string } }) {
@@ -48,9 +51,12 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
     color: '',
     size: '',
     price: 0,
+    cost_price: 0,
     stock_quantity: 0,
     image: null,
-    imageUrl: null
+    imageUrl: null,
+    formattedPrice: '0',
+    formattedCostPrice: '0'
   })
 
   // Set mounted = true sau khi component được render ở client
@@ -109,6 +115,11 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
     }
   }, [mounted, themeContext.currentTheme])
 
+  // Thêm hàm định dạng số với dấu phân cách
+  const formatNumber = (value: number) => {
+    return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  }
+
   // Fetch product data when component mounts
   useEffect(() => {
     if (mounted && hasProductId) {
@@ -146,9 +157,12 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
         color: data.color || '',
         size: data.size || '',
         price: data.price || 0,
+        cost_price: data.cost_price || 0,
         stock_quantity: data.stock_quantity || 0,
         image: null,
-        imageUrl: data.image || null
+        imageUrl: data.image || null,
+        formattedPrice: formatNumber(data.price || 0),
+        formattedCostPrice: formatNumber(data.cost_price || 0)
       })
 
       // Cập nhật preview URL nếu có ảnh
@@ -167,16 +181,36 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
 
-    if (name === 'price' || name === 'stock_quantity') {
-      setFormData({
-        ...formData,
-        [name]: parseFloat(value) || 0
-      })
+    if (name === 'price' || name === 'stock_quantity' || name === 'cost_price') {
+      // Loại bỏ dấu phân cách nếu có
+      const cleanValue = value.replace(/\./g, '')
+      // Chỉ cho phép nhập số
+      const numericValue = cleanValue.replace(/[^0-9]/g, '')
+      const numberValue = numericValue ? parseInt(numericValue) : 0
+
+      if (name === 'price') {
+        setFormData(prev => ({
+          ...prev,
+          price: numberValue,
+          formattedPrice: formatNumber(numberValue)
+        }))
+      } else if (name === 'cost_price') {
+        setFormData(prev => ({
+          ...prev,
+          cost_price: numberValue,
+          formattedCostPrice: formatNumber(numberValue)
+        }))
+      } else {
+        setFormData(prev => ({
+          ...prev,
+          [name]: numberValue
+        }))
+      }
     } else {
-      setFormData({
-        ...formData,
+      setFormData(prev => ({
+        ...prev,
         [name]: value
-      })
+      }))
     }
   }
 
@@ -227,6 +261,10 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
         throw new Error('Giá sản phẩm không thể là số âm')
       }
 
+      if (formData.cost_price < 0) {
+        throw new Error('Giá nhập không thể là số âm')
+      }
+
       if (formData.stock_quantity < 0) {
         throw new Error('Số lượng tồn kho không thể là số âm')
       }
@@ -250,6 +288,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
           color: formData.color,
           size: formData.size,
           price: formData.price,
+          cost_price: formData.cost_price,
           stock_quantity: formData.stock_quantity,
           image: imageUrl,
           updated_at: now
@@ -276,6 +315,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
         color: formData.color,
         size: formData.size,
         price: formData.price,
+        cost_price: formData.cost_price,
         stock_quantity: formData.stock_quantity,
         image: imageUrl,
         updated_at: now
@@ -297,9 +337,12 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
         color: originalData.color || '',
         size: originalData.size || '',
         price: originalData.price || 0,
+        cost_price: originalData.cost_price || 0,
         stock_quantity: originalData.stock_quantity || 0,
         image: null,
-        imageUrl: originalData.image || null
+        imageUrl: originalData.image || null,
+        formattedPrice: formatNumber(originalData.price || 0),
+        formattedCostPrice: formatNumber(originalData.cost_price || 0)
       })
 
       setPreviewUrl(originalData.image || null)
@@ -455,39 +498,80 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
               </div>
             </div>
 
-            {/* Giá và số lượng */}
+            {/* Giá nhập và Giá bán */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Giá nhập */}
+              <div>
+                <label htmlFor="cost_price" className="block text-sm font-medium text-gray-700 mb-1">
+                  Giá nhập <span className="text-red-500">*</span>
+                </label>
+                <div className="relative rounded-md">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <span className="text-gray-500 sm:text-sm">₫</span>
+                  </div>
+                  <input
+                    type="text"
+                    id="cost_price"
+                    name="cost_price"
+                    value={formData.formattedCostPrice}
+                    onChange={handleInputChange}
+                    className={`block w-full pl-7 pr-12 rounded-md focus:ring-${themeColor}-500 focus:border-${themeColor}-500 sm:text-sm h-10 border border-gray-300`}
+                    required
+                  />
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    <span className="text-gray-500 sm:text-sm">VND</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Giá bán */}
               <div>
                 <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">
-                  Giá (VNĐ) <span className="text-red-500">*</span>
+                  Giá bán <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="number"
-                  id="price"
-                  name="price"
-                  value={formData.price}
-                  onChange={handleInputChange}
-                  min="0"
-                  step="1000"
-                  className={`block w-full rounded-md focus:ring-${themeColor}-500 focus:border-${themeColor}-500 sm:text-sm h-10 border border-gray-300`}
-                  required
-                />
+                <div className="relative rounded-md">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <span className="text-gray-500 sm:text-sm">₫</span>
+                  </div>
+                  <input
+                    type="text"
+                    id="price"
+                    name="price"
+                    value={formData.formattedPrice}
+                    onChange={handleInputChange}
+                    className={`block w-full pl-7 pr-12 rounded-md focus:ring-${themeColor}-500 focus:border-${themeColor}-500 sm:text-sm h-10 border border-gray-300`}
+                    required
+                  />
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    <span className="text-gray-500 sm:text-sm">VND</span>
+                  </div>
+                </div>
+                {formData.cost_price > formData.price && formData.price > 0 && (
+                  <div className="mt-1 text-yellow-600 text-sm flex items-center">
+                    <svg className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    Cảnh báo: Giá nhập đang cao hơn giá bán, hãy nâng giá để phù hợp
+                  </div>
+                )}
               </div>
-              <div>
-                <label htmlFor="stock_quantity" className="block text-sm font-medium text-gray-700 mb-1">
-                  Số lượng tồn kho <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  id="stock_quantity"
-                  name="stock_quantity"
-                  value={formData.stock_quantity}
-                  onChange={handleInputChange}
-                  min="0"
-                  className={`block w-full rounded-md focus:ring-${themeColor}-500 focus:border-${themeColor}-500 sm:text-sm h-10 border border-gray-300`}
-                  required
-                />
-              </div>
+            </div>
+
+            {/* Số lượng tồn kho */}
+            <div>
+              <label htmlFor="stock_quantity" className="block text-sm font-medium text-gray-700 mb-1">
+                Số lượng tồn kho <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                id="stock_quantity"
+                name="stock_quantity"
+                value={formData.stock_quantity}
+                onChange={handleInputChange}
+                min="0"
+                className={`block w-full rounded-md focus:ring-${themeColor}-500 focus:border-${themeColor}-500 sm:text-sm h-10 border border-gray-300`}
+                required
+              />
             </div>
 
             {/* Hình ảnh */}
