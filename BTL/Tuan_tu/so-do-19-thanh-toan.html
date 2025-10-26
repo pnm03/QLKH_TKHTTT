@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sơ đồ tuần tự - Thanh toán</title>
+    <script src="https://cdn.jsdelivr.net/npm/plantuml-encoder@1.4.0/dist/plantuml-encoder.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 15px;
+        }
+        .diagram-container {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #fafafa;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        .description {
+            background-color: #e8f4fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #3498db;
+        }
+        .description h3 {
+            color: #2980b9;
+            margin-top: 0;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sơ đồ tuần tự - Thanh toán</h1>
+        
+        <div class="description">
+            <h3>Mô tả chức năng</h3>
+            <p>Sơ đồ này mô tả quy trình thanh toán đơn hàng trong hệ thống QLBH, bao gồm: xem danh sách đơn hàng chưa thanh toán, tìm kiếm đơn hàng, chọn phương thức thanh toán và xác nhận thanh toán hoàn tất.</p>
+        </div>
+
+        <div class="diagram-container">
+            <img id="diagram" src="" alt="Đang tạo sơ đồ...">
+        </div>
+    </div>
+
+    <script>
+        const plantUMLCode = `
+@startuml
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam sequenceParticipant underline
+
+actor "User" as user
+participant "Payment Page" as page
+participant "Payment Controller" as controller
+participant "Supabase DB" as db
+participant "Order Details Modal" as detail_modal
+participant "Payment Method Modal" as method_modal
+participant "Confirmation Modal" as confirm_modal
+
+== 1. Truy cập trang thanh toán ==
+user -> page: Truy cập /dashboard/payment
+activate page
+page -> controller: Tải danh sách đơn hàng chưa thanh toán
+controller -> db: SELECT orders WHERE status = 'Chưa thanh toán'
+note right: JOIN với customers\\nđể lấy tên khách hàng
+db --> controller: Danh sách orders chưa thanh toán
+controller -> db: SELECT payment methods available
+db --> controller: Danh sách phương thức thanh toán
+controller --> page: Dữ liệu orders + payment methods
+page --> user: Hiển thị danh sách đơn hàng chưa thanh toán
+deactivate page
+
+== 2. Tìm kiếm đơn hàng ==
+user -> page: Nhập từ khóa tìm kiếm
+activate page
+page -> controller: Tìm kiếm theo order_id hoặc customer_name
+controller -> db: SELECT với điều kiện LIKE
+note right: Tìm kiếm theo:\\norder_id\\ncustomer full_name
+db --> controller: Kết quả tìm kiếm
+controller --> page: Danh sách đã lọc
+page --> user: Hiển thị kết quả tìm kiếm với pagination
+deactivate page
+
+== 3. Xem chi tiết đơn hàng ==
+user -> page: Click vào đơn hàng để xem chi tiết
+activate page
+page -> controller: Lấy thông tin chi tiết order_id
+controller -> db: SELECT orderdetails WHERE order_id
+db --> controller: Chi tiết sản phẩm trong đơn hàng
+controller -> detail_modal: Hiển thị popup chi tiết
+activate detail_modal
+detail_modal --> user: Popup với thông tin đầy đủ
+note right: Thông tin đơn hàng:\\nMã đơn hàng\\nKhách hàng\\nNgày đặt hàng\\nDanh sách sản phẩm\\nTổng tiền
+user -> detail_modal: Xem thông tin và nhấn "Thanh toán"
+detail_modal -> controller: Chuyển sang chọn phương thức thanh toán
+deactivate detail_modal
+deactivate page
+
+== 4. Chọn phương thức thanh toán ==
+controller -> method_modal: Hiển thị popup chọn phương thức
+activate method_modal
+method_modal -> db: Lấy danh sách payment methods
+db --> method_modal: Available payment methods
+method_modal --> user: Hiển thị grid phương thức thanh toán
+note right: Hiển thị:\\nTiền mặt\\nChuyển khoản\\nThẻ tín dụng\\nVí điện tử\\nvới icon và mô tả
+user -> method_modal: Chọn phương thức thanh toán
+method_modal -> controller: Gửi payment_method_id được chọn
+deactivate method_modal
+
+== 5. Xác nhận thanh toán ==
+controller -> confirm_modal: Hiển thị popup xác nhận
+activate confirm_modal
+confirm_modal --> user: Popup xác nhận với thông tin tổng hợp
+note right: Thông tin xác nhận:\\nMã đơn hàng\\nTổng tiền\\nPhương thức thanh toán\\nButton "Xác nhận"
+user -> confirm_modal: Nhấn "Xác nhận thanh toán"
+confirm_modal -> controller: Gửi yêu cầu xử lý thanh toán
+activate controller
+controller -> controller: Validate thông tin thanh toán
+controller -> db: BEGIN TRANSACTION
+controller -> db: UPDATE orders SET status = 'Đã thanh toán', payment_method
+note right: Cập nhật trạng thái\\nvà phương thức thanh toán
+db --> controller: Xác nhận update thành công
+controller -> db: COMMIT TRANSACTION
+controller --> confirm_modal: Thanh toán thành công
+deactivate controller
+confirm_modal --> user: Hiển thị thông báo thành công
+deactivate confirm_modal
+
+== 6. Cập nhật danh sách ==
+controller -> page: Làm mới danh sách đơn hàng
+activate page
+page -> db: SELECT orders WHERE status = 'Chưa thanh toán'
+db --> page: Danh sách mới sau khi thanh toán
+page --> user: Cập nhật UI loại bỏ đơn hàng đã thanh toán
+deactivate page
+
+== 7. In hóa đơn thanh toán ==
+user -> page: Nhấn "In hóa đơn" cho đơn hàng đã thanh toán
+activate page
+page -> controller: Tạo invoice PDF
+controller -> db: SELECT order với orderdetails và customer
+db --> controller: Dữ liệu đầy đủ cho hóa đơn
+controller -> controller: Tạo PDF layout hóa đơn thanh toán
+note right: Hóa đơn bao gồm:\\nThông tin công ty\\nThông tin khách hàng\\nChi tiết sản phẩm\\nPhương thức thanh toán\\nTổng thanh toán
+controller --> page: File PDF hóa đơn
+page --> user: Download hóa đơn PDF
+deactivate page
+
+== 8. Refresh danh sách ==
+user -> page: Nhấn nút "Làm mới"
+activate page
+page -> controller: Reload danh sách đơn hàng chưa thanh toán
+controller -> db: SELECT orders mới nhất WHERE status = 'Chưa thanh toán'
+db --> controller: Danh sách cập nhật
+controller --> page: Dữ liệu mới
+page --> user: Hiển thị danh sách đã cập nhật
+deactivate page
+
+@enduml
+        `;
+
+        // Encode PlantUML và tạo URL
+        const encoded = plantumlEncoder.encode(plantUMLCode);
+        const diagramUrl = `https://www.plantuml.com/plantuml/png/${encoded}`;
+        
+        // Hiển thị sơ đồ
+        document.getElementById('diagram').src = diagramUrl;
+    </script>
+</body>
+</html> 

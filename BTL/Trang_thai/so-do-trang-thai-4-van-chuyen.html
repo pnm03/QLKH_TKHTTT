@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sơ đồ trạng thái - Vận chuyển</title>
+    <script src="https://cdn.jsdelivr.net/npm/plantuml-encoder@1.4.0/dist/plantuml-encoder.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #9b59b6;
+            padding-bottom: 15px;
+        }
+        .diagram-container {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #fafafa;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        .description {
+            background-color: #f4f1f8;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #9b59b6;
+        }
+        .description h3 {
+            color: #7d3c98;
+            margin-top: 0;
+        }
+        .status-list {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .status-list h4 {
+            color: #495057;
+            margin-top: 0;
+        }
+        .status-list ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .status-list li {
+            margin: 5px 0;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sơ đồ trạng thái - Quản lý Vận chuyển</h1>
+        
+        <div class="description">
+            <h3>Mô tả chung</h3>
+            <p>Sơ đồ này mô tả các trạng thái vận chuyển trong hệ thống QLBH dựa trên logic thực tế trong code. Hệ thống sử dụng 6 trạng thái tiếng Việt với mapping sang tiếng Anh khi lưu database, và có logic tự động cập nhật trạng thái đơn hàng khi COD giao thành công.</p>
+        </div>
+
+        <div class="status-list">
+            <h4>Các trạng thái vận chuyển (theo database schema):</h4>
+            <ul>
+                <li><strong>Chưa giao hàng:</strong> Vận đơn mới tạo (pending)</li>
+                <li><strong>Đang chuẩn bị:</strong> Kho đang chuẩn bị hàng (pending)</li>
+                <li><strong>Đang giao hàng:</strong> Đã bàn giao cho đơn vị vận chuyển (shipped)</li>
+                <li><strong>Đã giao hàng:</strong> Giao thành công cho khách hàng (delivered)</li>
+                <li><strong>Đang hoàn về:</strong> Giao thất bại, đang hoàn về kho (returning)</li>
+                <li><strong>Đã hủy:</strong> Vận đơn bị hủy bỏ (cancelled)</li>
+            </ul>
+        </div>
+
+        <div class="diagram-container">
+            <img id="diagram" src="" alt="Đang tạo sơ đồ...">
+        </div>
+
+        <div class="status-list">
+            <h4>Logic nghiệp vụ (từ code shipping page):</h4>
+            <ul>
+                <li><strong>Tạo vận đơn:</strong> Chỉ đơn hàng "Đã thanh toán" mới được tạo shipping</li>
+                <li><strong>COD Auto-payment:</strong> Khi chuyển sang "Đã giao hàng", tự động cập nhật đơn hàng COD thành "Đã thanh toán"</li>
+                <li><strong>COD Rollback:</strong> Khi COD ship fail (về "Chưa giao", "Đang chuẩn bị", "Đang giao"), đơn hàng về "Chưa thanh toán"</li>
+                <li><strong>Status Mapping:</strong> UI hiển thị tiếng Việt, database lưu tiếng Anh</li>
+                <li><strong>Tracking Update:</strong> Có thể cập nhật tracking number và carrier info</li>
+            </ul>
+        </div>
+
+        <div class="status-list">
+            <h4>Mapping trạng thái (Tiếng Việt ↔ Tiếng Anh):</h4>
+            <ul>
+                <li><strong>Chưa giao hàng/Đang chuẩn bị</strong> ↔ pending</li>
+                <li><strong>Đang giao hàng</strong> ↔ shipped</li>
+                <li><strong>Đã giao hàng</strong> ↔ delivered</li>
+                <li><strong>Đang hoàn về</strong> ↔ returning</li>
+                <li><strong>Đã hủy</strong> ↔ cancelled</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const plantUMLCode = `
+@startuml
+skinparam backgroundColor white
+skinparam state {
+  BackgroundColor lightcyan
+  BorderColor purple
+  FontColor black
+}
+skinparam stereotypeI {
+  BackgroundColor white
+  BorderColor black
+}
+
+[*] --> ChuaGiao : "Tạo vận đơn<br/>(CreateShipping)<br/>Chỉ từ đơn Đã thanh toán"
+
+state "Chưa giao hàng" as ChuaGiao {
+  ChuaGiao : Chưa giao hàng
+  ChuaGiao : DB: status = pending
+  ChuaGiao : Vận đơn mới tạo
+  ChuaGiao : Có tracking_number
+  ChuaGiao : Chờ xử lý từ kho
+}
+
+state "Đang chuẩn bị" as DangChuanBi {
+  DangChuanBi : Đang chuẩn bị  
+  DangChuanBi : DB: status = pending
+  DangChuanBi : Kho đang chuẩn bị hàng
+  DangChuanBi : Kiểm tra và đóng gói
+  DangChuanBi : Chuẩn bị bàn giao carrier
+}
+
+state "Đang giao hàng" as DangGiao {
+  DangGiao : Đang giao hàng
+  DangGiao : DB: status = shipped
+  DangGiao : Đã bàn giao carrier
+  DangGiao : Có thể tracking realtime
+  DangGiao : Đang trên đường giao
+}
+
+state "Đã giao hàng" as DaGiao {
+  DaGiao : Đã giao hàng
+  DaGiao : DB: status = delivered
+  DaGiao : Giao thành công
+  DaGiao : Khách hàng đã nhận
+  DaGiao : COD: Auto update order status
+  DaGiao : Hoàn thành vận đơn
+}
+
+state "Đang hoàn về" as DangHoan {
+  DangHoan : Đang hoàn về
+  DangHoan : DB: status = returning
+  DangHoan : Giao thất bại
+  DangHoan : Đang hoàn về kho
+  DangHoan : Cần liên hệ khách hàng
+}
+
+state "Đã hủy" as DaHuy {
+  DaHuy : Đã hủy
+  DaHuy : DB: status = cancelled
+  DaHuy : Hủy bởi khách hàng/hệ thống
+  DaHuy : Hoàn tồn kho nếu cần
+  DaHuy : Xử lý hoàn tiền
+}
+
+ChuaGiao --> DangChuanBi : "Bắt đầu chuẩn bị<br/>(StartPreparing)"
+DangChuanBi --> DangGiao : "Bàn giao carrier<br/>(HandoverToCarrier)"
+DangGiao --> DaGiao : "Giao thành công<br/>(SuccessfulDelivery)<br/><br/>COD: Auto update<br/>order to Đã thanh toán"
+DangGiao --> DangHoan : "Giao thất bại<br/>(FailedDelivery)"
+
+DangHoan --> DangChuanBi : "Chuẩn bị giao lại<br/>(RetryDelivery)"
+DangHoan --> DaHuy : "Không thể giao<br/>(CannotDeliver)"
+
+ChuaGiao --> DaHuy : "Hủy sớm<br/>(EarlyCancel)"
+DangChuanBi --> DaHuy : "Hủy trong chuẩn bị<br/>(CancelDuringPrep)"
+DangGiao --> DaHuy : "Hủy trong vận chuyển<br/>(CancelDuringShip)"
+
+DaGiao --> [*] : "Hoàn thành<br/>(CompleteShipping)"
+DaHuy --> [*] : "Đóng vận đơn<br/>(CloseShipping)"
+
+ChuaGiao --> ChuaGiao : "Cập nhật thông tin<br/>(UpdateShippingInfo)"
+DangChuanBi --> DangChuanBi : "Cập nhật tiến độ<br/>(UpdateProgress)"
+DangGiao --> DangGiao : "Tracking update<br/>(TrackingUpdate)"
+DangHoan --> DangHoan : "Theo dõi hoàn về<br/>(TrackReturn)"
+
+note right of ChuaGiao
+  Trạng thái ban đầu
+  Mapping: pending (DB)
+  
+  Constraint: Chỉ tạo từ
+  order "Đã thanh toán"
+end note
+
+note top of DaGiao
+  Trạng thái thành công
+  
+  COD Logic: Tự động cập nhật
+  order status to "Đã thanh toán"
+  + assign payment_method
+end note
+
+note bottom of DangHoan
+  COD Rollback: Nếu đơn COD
+  chuyển về ChuaGiao/DangChuanBi/DangGiao
+  order status = "Chưa thanh toán"
+end note
+
+note left of DaHuy
+  Trạng thái kết thúc
+  Hoàn tồn kho, xử lý refund
+end note
+
+@enduml
+        `;
+
+        // Encode PlantUML và tạo URL
+        const encoded = plantumlEncoder.encode(plantUMLCode);
+        const diagramUrl = `https://www.plantuml.com/plantuml/png/${encoded}`;
+        
+        // Hiển thị sơ đồ
+        document.getElementById('diagram').src = diagramUrl;
+    </script>
+</body>
+</html> 

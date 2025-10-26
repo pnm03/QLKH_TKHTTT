@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sơ đồ tuần tự - Quản lý Khách hàng</title>
+    <script src="https://cdn.jsdelivr.net/npm/plantuml-encoder@1.4.0/dist/plantuml-encoder.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 15px;
+        }
+        .diagram-container {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #fafafa;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        .description {
+            background-color: #e8f4fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #3498db;
+        }
+        .description h3 {
+            color: #2980b9;
+            margin-top: 0;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sơ đồ tuần tự - Quản lý Khách hàng</h1>
+        
+        <div class="description">
+            <h3>Mô tả chức năng</h3>
+            <p>Sơ đồ này mô tả quy trình quản lý khách hàng trong hệ thống QLBH, bao gồm các chức năng chính: hiển thị danh sách, tìm kiếm, thêm mới, xem chi tiết, chỉnh sửa và xóa khách hàng. Module này tự động chuyển hướng từ /dashboard/partners đến /dashboard/partners/customers.</p>
+        </div>
+
+        <div class="diagram-container">
+            <img id="diagram" src="" alt="Đang tạo sơ đồ...">
+        </div>
+    </div>
+
+    <script>
+        const plantUMLCode = `
+@startuml
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam sequenceParticipant underline
+
+actor "User" as user
+participant "Customers Page" as page
+participant "Customer Controller" as controller
+participant "Supabase DB" as db
+participant "Notification" as notify
+
+== 1. Hiển thị danh sách khách hàng ==
+user -> page: Truy cập /dashboard/partners/customers
+activate page
+page -> controller: Tải danh sách khách hàng
+controller -> db: SELECT * FROM customers ORDER BY created_at
+db --> controller: Danh sách khách hàng
+controller --> page: Dữ liệu khách hàng
+page --> user: Hiển thị bảng danh sách
+deactivate page
+
+== 2. Tìm kiếm khách hàng ==
+user -> page: Nhập từ khóa tìm kiếm
+activate page
+page -> controller: Lọc dữ liệu theo từ khóa
+note right: Tìm theo tên, email,\\nsố điện thoại, quê quán
+controller --> page: Danh sách đã lọc
+page --> user: Hiển thị kết quả tìm kiếm
+deactivate page
+
+== 3. Thêm khách hàng mới ==
+user -> page: Nhấn "Thêm khách hàng"
+activate page
+page --> user: Hiển thị popup form
+user -> page: Điền thông tin (tên, SĐT, email, quê quán)
+user -> page: Nhấn "Thêm mới"
+page -> controller: Gửi dữ liệu mới
+controller -> db: Kiểm tra SĐT và email trùng lặp
+alt SĐT hoặc email đã tồn tại
+    db --> controller: Tìm thấy khách hàng tương tự
+    controller --> page: Hiển thị cảnh báo trùng lặp
+    page --> user: Popup cảnh báo với thông tin khách hàng tồn tại
+else Không trùng lặp
+    controller -> db: INSERT INTO customers
+    db --> controller: Khách hàng đã tạo
+    controller --> page: Kết quả thành công
+    page -> notify: Hiển thị thông báo thành công
+    page --> user: Đóng popup, cập nhật danh sách
+end
+deactivate page
+
+== 4. Xem chi tiết khách hàng ==
+user -> page: Nhấp vào hàng khách hàng
+activate page
+page -> controller: Lấy thông tin chi tiết customer_id
+controller -> db: SELECT FROM customers WHERE customer_id
+db --> controller: Thông tin đầy đủ khách hàng
+controller --> page: Chi tiết khách hàng
+page --> user: Popup chi tiết với avatar và thông tin
+deactivate page
+
+== 5. Chỉnh sửa khách hàng ==
+user -> page: Trong popup chi tiết, nhấn "Sửa"
+activate page
+page --> user: Chuyển sang form chỉnh sửa
+user -> page: Thay đổi thông tin
+user -> page: Nhấn "Cập nhật"
+page -> controller: Gửi dữ liệu cập nhật
+controller -> db: Kiểm tra trùng lặp (trừ khách hàng hiện tại)
+alt Không có trùng lặp
+    controller -> db: UPDATE customers SET ... WHERE customer_id
+    db --> controller: Cập nhật thành công
+    controller --> page: Kết quả thành công
+    page -> notify: Hiển thị thông báo thành công
+    page --> user: Đóng popup, cập nhật danh sách
+else Có trùng lặp
+    db --> controller: Lỗi trùng lặp
+    controller --> page: Thông báo lỗi
+    page -> notify: Hiển thị lỗi
+end
+deactivate page
+
+== 6. Xóa khách hàng ==
+user -> page: Trong popup chi tiết, nhấn "Xóa"
+activate page
+page --> user: Hiển thị hộp thoại xác nhận
+user -> page: Xác nhận xóa
+page -> controller: Yêu cầu xóa customer_id
+controller -> db: DELETE FROM customers WHERE customer_id
+alt Xóa thành công
+    db --> controller: Khách hàng đã xóa
+    controller --> page: Kết quả thành công
+    page -> notify: Hiển thị thông báo thành công
+    page --> user: Đóng popup, cập nhật danh sách
+else Lỗi ràng buộc
+    db --> controller: Lỗi (có đơn hàng liên kết)
+    controller --> page: Thông báo lỗi
+    page -> notify: Hiển thị lỗi ràng buộc
+end
+deactivate page
+
+== 7. Làm mới danh sách ==
+user -> page: Nhấn nút "Tải lại"
+activate page
+page -> controller: Yêu cầu tải lại dữ liệu
+controller -> db: SELECT * FROM customers ORDER BY created_at
+db --> controller: Danh sách mới nhất
+controller --> page: Dữ liệu đã cập nhật
+page -> notify: Hiển thị thông báo đã tải lại
+page --> user: Danh sách được làm mới
+deactivate page
+
+@enduml
+        `;
+
+        // Encode PlantUML và tạo URL
+        const encoded = plantumlEncoder.encode(plantUMLCode);
+        const diagramUrl = `https://www.plantuml.com/plantuml/png/${encoded}`;
+        
+        // Hiển thị sơ đồ
+        document.getElementById('diagram').src = diagramUrl;
+    </script>
+</body>
+</html> 

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sơ đồ tuần tự - Quản lý Chi nhánh</title>
+    <script src="https://cdn.jsdelivr.net/npm/plantuml-encoder@1.4.0/dist/plantuml-encoder.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 15px;
+        }
+        .diagram-container {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #fafafa;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        .description {
+            background-color: #e8f4fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #3498db;
+        }
+        .description h3 {
+            color: #2980b9;
+            margin-top: 0;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sơ đồ tuần tự - Quản lý Chi nhánh</h1>
+        
+        <div class="description">
+            <h3>Mô tả chức năng</h3>
+            <p>Sơ đồ này mô tả quy trình quản lý chi nhánh trong hệ thống QLBH, bao gồm các chức năng chính: hiển thị danh sách, thêm mới, xem chi tiết, chỉnh sửa và xóa chi nhánh. Chỉ admin mới có quyền truy cập.</p>
+        </div>
+
+        <div class="diagram-container">
+            <img id="diagram" src="" alt="Đang tạo sơ đồ...">
+        </div>
+    </div>
+
+    <script>
+        const plantUMLCode = `
+@startuml
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam sequenceParticipant underline
+
+actor "Admin" as admin
+participant "Branches Page" as page
+participant "Branch Controller" as controller
+participant "Supabase DB" as db
+participant "Notification" as notify
+
+== 1. Hiển thị danh sách chi nhánh ==
+admin -> page: Truy cập /dashboard/business/branches
+activate page
+page -> controller: Kiểm tra quyền admin
+controller -> db: SELECT * FROM branches
+db --> controller: Danh sách chi nhánh
+controller -> db: SELECT * FROM users (quản lý)
+db --> controller: Danh sách users
+controller --> page: Dữ liệu chi nhánh + users
+page --> admin: Hiển thị bảng danh sách
+deactivate page
+
+== 2. Thêm chi nhánh mới ==
+admin -> page: Nhấn "Thêm chi nhánh"
+activate page
+page --> admin: Hiển thị popup form
+admin -> page: Điền thông tin (tên, địa chỉ, quản lý)
+admin -> page: Nhấn "Thêm mới"
+page -> controller: Gửi dữ liệu mới
+controller -> db: INSERT INTO branches
+alt Thành công
+    db --> controller: Chi nhánh đã tạo
+    controller --> page: Kết quả thành công
+    page -> notify: Hiển thị thông báo thành công
+    page --> admin: Đóng popup, cập nhật danh sách
+else Lỗi
+    db --> controller: Lỗi validation
+    controller --> page: Thông báo lỗi
+    page -> notify: Hiển thị lỗi
+    page --> admin: Giữ popup mở
+end
+deactivate page
+
+== 3. Xem chi tiết chi nhánh ==
+admin -> page: Nhấp vào hàng chi nhánh
+activate page
+page -> controller: Lấy chi tiết branch_id
+controller -> db: SELECT FROM branches WHERE branch_id
+db --> controller: Thông tin chi nhánh
+controller -> db: SELECT FROM users WHERE branch_id
+db --> controller: Danh sách nhân viên
+controller -> db: SELECT FROM staff (trạng thái nhân viên)
+db --> controller: Trạng thái làm việc
+controller --> page: Chi tiết + nhân viên + thống kê
+page --> admin: Popup chi tiết với thông tin đầy đủ
+deactivate page
+
+== 4. Chỉnh sửa chi nhánh ==
+admin -> page: Trong popup chi tiết, nhấn "Chỉnh sửa"
+activate page
+page --> admin: Chuyển sang form chỉnh sửa
+admin -> page: Thay đổi thông tin
+admin -> page: Nhấn "Cập nhật"
+page -> controller: Gửi dữ liệu cập nhật
+controller -> db: UPDATE branches SET ... WHERE branch_id
+alt Thành công
+    db --> controller: Cập nhật thành công
+    controller --> page: Kết quả thành công
+    page -> notify: Hiển thị thông báo thành công
+    page --> admin: Đóng popup, cập nhật danh sách
+else Lỗi
+    db --> controller: Lỗi validation
+    controller --> page: Thông báo lỗi
+    page -> notify: Hiển thị lỗi
+end
+deactivate page
+
+== 5. Xóa chi nhánh ==
+admin -> page: Trong popup chi tiết, nhấn "Xóa"
+activate page
+page --> admin: Hiển thị hộp thoại xác nhận
+admin -> page: Xác nhận xóa
+page -> controller: Yêu cầu xóa branch_id
+controller -> db: SELECT FROM users WHERE branch_id
+alt Có nhân viên trong chi nhánh
+    db --> controller: Danh sách nhân viên
+    controller --> page: Lỗi "Không thể xóa"
+    page -> notify: Hiển thị lỗi ràng buộc
+    page --> admin: Giữ popup mở
+else Không có nhân viên
+    db --> controller: Rỗng
+    controller -> db: DELETE FROM branches WHERE branch_id
+    db --> controller: Xóa thành công
+    controller --> page: Kết quả thành công
+    page -> notify: Hiển thị thông báo thành công
+    page --> admin: Đóng popup, cập nhật danh sách
+end
+deactivate page
+
+@enduml
+        `;
+
+        // Encode PlantUML và tạo URL
+        const encoded = plantumlEncoder.encode(plantUMLCode);
+        const diagramUrl = `https://www.plantuml.com/plantuml/png/${encoded}`;
+        
+        // Hiển thị sơ đồ
+        document.getElementById('diagram').src = diagramUrl;
+    </script>
+</body>
+</html> 

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sơ đồ tuần tự - Đơn vận chuyển</title>
+    <script src="https://cdn.jsdelivr.net/npm/plantuml-encoder@1.4.0/dist/plantuml-encoder.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 15px;
+        }
+        .diagram-container {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #fafafa;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        .description {
+            background-color: #e8f4fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #3498db;
+        }
+        .description h3 {
+            color: #2980b9;
+            margin-top: 0;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sơ đồ tuần tự - Đơn vận chuyển</h1>
+        
+        <div class="description">
+            <h3>Mô tả chức năng</h3>
+            <p>Sơ đồ này mô tả quy trình quản lý đơn vận chuyển trong hệ thống QLBH, bao gồm: xem danh sách đơn vận chuyển, cập nhật thông tin và trạng thái vận chuyển, tạo mã vận đơn tự động và in phiếu giao hàng.</p>
+        </div>
+
+        <div class="diagram-container">
+            <img id="diagram" src="" alt="Đang tạo sơ đồ...">
+        </div>
+    </div>
+
+    <script>
+        const plantUMLCode = `
+@startuml
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam sequenceParticipant underline
+
+actor "User" as user
+participant "Shipping Page" as page
+participant "Shipping Controller" as controller
+participant "Supabase DB" as db
+participant "Edit Modal" as modal
+participant "Print Service" as print
+
+== 1. Truy cập trang đơn vận chuyển ==
+user -> page: Truy cập /dashboard/orders/shipping
+activate page
+page -> controller: Tải danh sách đơn vận chuyển
+controller -> db: SELECT shippings JOIN orders LEFT JOIN customers
+note right: Lấy thông tin shipping\\nvới đơn hàng và khách hàng\\ntương ứng
+db --> controller: Danh sách shipping với thông tin liên quan
+controller --> page: Dữ liệu shipping + order status
+page --> user: Hiển thị danh sách với status màu
+deactivate page
+
+== 2. Lọc theo trạng thái vận chuyển ==
+user -> page: Chọn bộ lọc trạng thái
+activate page
+page -> controller: Filter theo shipping status
+note right: Trạng thái:\\nChưa giao hàng\\nĐang chuẩn bị\\nĐang giao hàng\\nĐã giao hàng\\nĐang hoàn về\\nĐã hủy
+controller --> page: Danh sách đã lọc
+page --> user: Hiển thị kết quả phù hợp
+deactivate page
+
+== 3. Xem chi tiết đơn vận chuyển ==
+user -> page: Click vào đơn vận chuyển
+activate page
+page -> controller: Lấy thông tin chi tiết shipping_id
+controller -> db: SELECT shipping với order và orderdetails
+db --> controller: Thông tin đầy đủ shipping
+controller -> modal: Hiển thị popup chi tiết
+activate modal
+modal --> user: Popup với thông tin đầy đủ
+note right: Thông tin bao gồm:\\nĐơn vị vận chuyển\\nMã vận đơn\\nĐịa chỉ giao hàng\\nPhí vận chuyển\\nTrạng thái vận chuyển\\nThông tin kiện hàng\\nCOD (nếu có)
+user -> modal: Xem thông tin chi tiết
+deactivate modal
+deactivate page
+
+== 4. Chỉnh sửa thông tin vận chuyển ==
+user -> modal: Click nút "Chỉnh sửa"
+activate modal
+modal -> modal: Chuyển sang chế độ edit
+modal --> user: Form edit với các field
+user -> modal: Cập nhật thông tin vận chuyển
+modal -> controller: Gửi dữ liệu cập nhật
+activate controller
+controller -> controller: Validate dữ liệu input
+controller -> db: UPDATE shippings SET fields WHERE shipping_id
+note right: Cập nhật:\\ncarrier, tracking_number\\nshipping_cost, status\\ndelivery_date\\nweight, dimensions
+db --> controller: Kết quả update
+controller --> modal: Thông báo kết quả
+modal --> user: Hiển thị thông báo thành công
+deactivate controller
+deactivate modal
+
+== 5. Tạo mã vận đơn tự động ==
+user -> modal: Click "Tạo mã vận đơn"
+activate modal
+modal -> controller: Yêu cầu tạo tracking number
+activate controller
+controller -> controller: Tạo tracking_num (TRK-YYYYMMDD-XXXXX)
+controller -> db: UPDATE shippings SET tracking_number
+db --> controller: Xác nhận cập nhật
+controller --> modal: Mã vận đơn mới
+modal --> user: Hiển thị mã vận đơn được tạo
+deactivate controller
+deactivate modal
+
+== 6. In phiếu giao hàng ==
+user -> modal: Click "In phiếu giao hàng"
+activate modal
+modal -> print: Tạo shipping label PDF
+activate print
+print -> controller: Lấy thông tin đầy đủ để in
+controller -> db: SELECT shipping + order + orderdetails
+db --> controller: Dữ liệu đầy đủ
+controller --> print: Thông tin in phiếu
+print -> print: Tạo PDF layout với thông tin vận chuyển
+note right: Phiếu giao hàng bao gồm:\\nMã vận đơn barcode\\nThông tin người gửi/nhận\\nDanh sách sản phẩm\\nKích thước, cân nặng\\nTiền COD (nếu có)
+print --> modal: File PDF phiếu giao hàng
+deactivate print
+modal --> user: Download PDF phiếu giao hàng
+deactivate modal
+
+== 7. Cập nhật trạng thái nhanh ==
+user -> page: Thay đổi status trong dropdown
+activate page
+page -> controller: Update status của shipping
+activate controller
+controller -> db: UPDATE shippings SET status WHERE shipping_id
+db --> controller: Xác nhận update
+controller -> controller: Cập nhật last_updated timestamp
+controller --> page: Xác nhận thành công
+page --> user: Cập nhật UI với status mới
+deactivate controller
+deactivate page
+
+== 8. In hóa đơn VAT ==
+user -> modal: Click "In hóa đơn VAT"
+activate modal
+modal -> print: Tạo VAT invoice PDF
+activate print
+print -> controller: Lấy thông tin đơn hàng gốc
+controller -> db: SELECT order + orderdetails + customer
+db --> controller: Dữ liệu hóa đơn VAT
+controller --> print: Thông tin cho hóa đơn VAT
+print -> print: Tạo PDF hóa đơn VAT chuẩn
+note right: Hóa đơn VAT:\\nThông tin công ty\\nThông tin khách hàng\\nChi tiết sản phẩm\\nThuế VAT\\nTổng thanh toán
+print --> modal: File PDF hóa đơn VAT
+deactivate print
+modal --> user: Download hóa đơn VAT
+deactivate modal
+
+@enduml
+        `;
+
+        // Encode PlantUML và tạo URL
+        const encoded = plantumlEncoder.encode(plantUMLCode);
+        const diagramUrl = `https://www.plantuml.com/plantuml/png/${encoded}`;
+        
+        // Hiển thị sơ đồ
+        document.getElementById('diagram').src = diagramUrl;
+    </script>
+</body>
+</html> 

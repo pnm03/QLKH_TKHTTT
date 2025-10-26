@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sơ đồ tuần tự - Chăm sóc Khách hàng</title>
+    <script src="https://cdn.jsdelivr.net/npm/plantuml-encoder@1.4.0/dist/plantuml-encoder.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 15px;
+        }
+        .diagram-container {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #fafafa;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        .description {
+            background-color: #e8f4fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #3498db;
+        }
+        .description h3 {
+            color: #2980b9;
+            margin-top: 0;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sơ đồ tuần tự - Chăm sóc Khách hàng</h1>
+        
+        <div class="description">
+            <h3>Mô tả chức năng</h3>
+            <p>Sơ đồ này mô tả quy trình chăm sóc khách hàng trong hệ thống QLBH, tập trung vào quản lý các yêu cầu đổi/trả hàng. Bao gồm: hiển thị danh sách yêu cầu, thêm yêu cầu mới với tìm kiếm đơn hàng, xem chi tiết, chỉnh sửa trạng thái và in phiếu yêu cầu.</p>
+        </div>
+
+        <div class="diagram-container">
+            <img id="diagram" src="" alt="Đang tạo sơ đồ...">
+        </div>
+    </div>
+
+    <script>
+        const plantUMLCode = `
+@startuml
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam sequenceParticipant underline
+
+actor "User" as user
+participant "Customer Care Page" as page
+participant "Return Controller" as controller
+participant "Supabase DB" as db
+participant "Notification" as notify
+participant "Print Service" as print
+
+== 1. Hiển thị danh sách yêu cầu đổi/trả ==
+user -> page: Truy cập /dashboard/partners/customer-care
+activate page
+page -> controller: Tải danh sách yêu cầu
+controller -> db: SELECT * FROM returns JOIN orders
+db --> controller: Danh sách yêu cầu + thông tin đơn hàng
+controller --> page: Dữ liệu yêu cầu đổi/trả
+page --> user: Hiển thị bảng danh sách
+deactivate page
+
+== 2. Thêm yêu cầu đổi/trả mới ==
+user -> page: Nhấn "Thêm yêu cầu đổi/trả"
+activate page
+page --> user: Hiển thị popup form
+user -> page: Nhập mã đơn hàng gốc
+page -> controller: Tìm kiếm đơn hàng
+controller -> db: SELECT FROM orders WHERE order_id LIKE
+db --> controller: Gợi ý danh sách đơn hàng
+controller --> page: Dropdown gợi ý
+page --> user: Hiển thị gợi ý đơn hàng
+user -> page: Chọn đơn hàng và điền thông tin
+note right: Tên yêu cầu, lý do đổi/trả,\\nsố tiền hoàn lại, trạng thái
+user -> page: Nhấn "Thêm mới"
+page -> controller: Gửi dữ liệu yêu cầu
+controller -> db: INSERT INTO returns
+alt Thành công
+    db --> controller: Yêu cầu đã tạo
+    controller --> page: Kết quả thành công
+    page -> notify: Hiển thị thông báo thành công
+    page --> user: Đóng popup, cập nhật danh sách
+else Lỗi
+    db --> controller: Lỗi validation
+    controller --> page: Thông báo lỗi
+    page -> notify: Hiển thị lỗi
+end
+deactivate page
+
+== 3. Xem chi tiết yêu cầu ==
+user -> page: Nhấp vào hàng yêu cầu
+activate page
+page -> controller: Lấy chi tiết return_id
+controller -> db: SELECT FROM returns WHERE return_id
+db --> controller: Thông tin yêu cầu
+controller -> db: SELECT FROM orders + customers + orderdetails
+db --> controller: Thông tin đơn hàng + khách hàng + sản phẩm
+controller --> page: Dữ liệu đầy đủ
+page --> user: Popup chi tiết với 2 cột thông tin
+deactivate page
+
+== 4. Chỉnh sửa yêu cầu ==
+user -> page: Trong popup chi tiết, nhấn "Chỉnh sửa"
+activate page
+page --> user: Chuyển sang chế độ chỉnh sửa
+user -> page: Thay đổi thông tin
+note right: Tên yêu cầu, lý do,\\nsố tiền hoàn lại, trạng thái
+user -> page: Nhấn "Lưu thay đổi"
+page -> controller: Gửi dữ liệu cập nhật
+controller -> db: UPDATE returns SET ... WHERE return_id
+alt Thành công
+    db --> controller: Cập nhật thành công
+    controller --> page: Kết quả thành công
+    page -> notify: Hiển thị thông báo thành công
+    page --> user: Cập nhật hiển thị
+else Lỗi
+    db --> controller: Lỗi validation
+    controller --> page: Thông báo lỗi
+    page -> notify: Hiển thị lỗi
+end
+deactivate page
+
+== 5. In phiếu yêu cầu ==
+user -> page: Trong popup chi tiết, nhấn "In"
+activate page
+page -> controller: Tạo nội dung in
+controller -> controller: Định dạng HTML cho in
+controller -> print: Tạo cửa sổ in với CSS tối ưu
+note right: Bao gồm thông tin:\\nyêu cầu, đơn hàng,\\nkhách hàng, sản phẩm
+print --> user: Hiển thị dialog in của trình duyệt
+user -> print: Xác nhận in
+print --> user: In phiếu yêu cầu đổi/trả
+deactivate page
+
+== 6. Làm mới danh sách ==
+user -> page: Nhấn nút "Tải lại"
+activate page
+page -> controller: Yêu cầu tải lại dữ liệu
+controller -> db: SELECT * FROM returns ORDER BY return_date
+db --> controller: Danh sách mới nhất
+controller --> page: Dữ liệu đã cập nhật
+page -> notify: Hiển thị thông báo đã tải lại
+page --> user: Danh sách được làm mới
+deactivate page
+
+@enduml
+        `;
+
+        // Encode PlantUML và tạo URL
+        const encoded = plantumlEncoder.encode(plantUMLCode);
+        const diagramUrl = `https://www.plantuml.com/plantuml/png/${encoded}`;
+        
+        // Hiển thị sơ đồ
+        document.getElementById('diagram').src = diagramUrl;
+    </script>
+</body>
+</html> 

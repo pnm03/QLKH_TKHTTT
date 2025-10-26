@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sơ đồ tuần tự - Báo cáo tài chính</title>
+    <script src="https://cdn.jsdelivr.net/npm/plantuml-encoder@1.4.0/dist/plantuml-encoder.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 15px;
+        }
+        .diagram-container {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #fafafa;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        .description {
+            background-color: #e8f4fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #3498db;
+        }
+        .description h3 {
+            color: #2980b9;
+            margin-top: 0;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sơ đồ tuần tự - Báo cáo tài chính</h1>
+        
+        <div class="description">
+            <h3>Mô tả chức năng</h3>
+            <p>Sơ đồ này mô tả quy trình tạo báo cáo tài chính trong hệ thống QLBH, bao gồm: tính toán dòng tiền từ đơn hàng và hoàn trả, phân tích thu chi theo thời gian, biểu đồ dòng tiền và xuất báo cáo CSV/PDF.</p>
+        </div>
+
+        <div class="diagram-container">
+            <img id="diagram" src="" alt="Đang tạo sơ đồ...">
+        </div>
+    </div>
+
+    <script>
+        const plantUMLCode = `
+@startuml
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam sequenceParticipant underline
+
+actor "User" as user
+participant "Financial Page" as page
+participant "Financial Controller" as controller
+participant "Supabase DB" as db
+participant "Chart Component" as chart
+participant "Export Service" as export
+
+== 1. Truy cập báo cáo tài chính ==
+user -> page: Truy cập /dashboard/reports/financial
+activate page
+page -> controller: Tải dữ liệu tài chính ban đầu
+controller -> db: SELECT orders WHERE status = 'Đã thanh toán'
+note right: Lấy dữ liệu thu nhập\\ntừ đơn hàng đã thanh toán
+db --> controller: Orders data (income transactions)
+controller -> db: SELECT returns với refund_amount
+db --> controller: Returns data (expense transactions)
+controller -> controller: Tổng hợp financial transactions
+controller --> page: Combined financial data
+page --> user: Hiển thị báo cáo tài chính
+deactivate page
+
+== 2. Áp dụng bộ lọc thời gian ==
+user -> page: Thiết lập bộ lọc (từ ngày - đến ngày)
+activate page
+page -> controller: Gửi date range filter
+controller -> controller: Tự động chọn chế độ xem
+note right: Tự động chọn:\\n> 60 ngày: xem theo tháng\\n> 30 ngày: xem theo tuần\\n≤ 30 ngày: xem theo ngày
+controller -> db: SELECT với WHERE date conditions
+db --> controller: Filtered financial data
+controller -> controller: Tính toán lại summary metrics
+controller --> page: Updated data với time grouping
+page --> user: Cập nhật báo cáo theo khoảng thời gian
+deactivate page
+
+== 3. Xem tổng quan tài chính ==
+user -> page: Xem tab "Tổng quan"
+activate page
+page -> controller: Tính toán financial summary
+controller -> controller: Calculate financial metrics
+note right: Tính toán:\\nTổng thu (orders)\\nTổng chi (returns)\\nTổng vốn (cost_price)\\nDòng tiền ròng\\nSố giao dịch
+controller -> chart: Tạo cashflow chart
+chart -> chart: Render biểu đồ dòng tiền theo thời gian
+chart --> controller: Cashflow chart ready
+controller --> page: Financial summary + chart
+page --> user: Hiển thị dashboard tài chính
+deactivate page
+
+== 4. Phân tích theo phương thức thanh toán ==
+user -> page: Xem phân tích payment methods
+activate page
+page -> controller: Group transactions by payment method
+controller -> db: SELECT orders JOIN payments
+db --> controller: Payment method data
+controller -> controller: Tính tổng thu chi theo từng phương thức
+note right: Phân tích:\\nTiền mặt\\nChuyển khoản\\nThẻ tín dụng\\nVí điện tử
+controller --> page: Payment method summary
+page --> user: Hiển thị bảng phân tích phương thức
+deactivate page
+
+== 5. Xem chi tiết giao dịch ==
+user -> page: Chuyển sang tab "Chi tiết giao dịch"
+activate page
+page -> controller: Hiển thị transaction details
+controller -> controller: Format transaction data
+note right: Chi tiết giao dịch:\\nNgày\\nLoại (Thu/Chi)\\nNguồn (Order/Return)\\nMô tả\\nGiá trị\\nPhương thức
+controller -> controller: Áp dụng pagination
+controller --> page: Paginated transaction list
+page --> user: Bảng chi tiết giao dịch
+deactivate page
+
+== 6. Lọc theo loại giao dịch ==
+user -> page: Chọn filter "Thu" hoặc "Chi"
+activate page
+page -> controller: Filter by transaction type
+controller -> controller: Filter transactions data
+controller -> controller: Recalculate filtered summary
+controller --> page: Filtered data + updated summary
+page --> user: Hiển thị kết quả đã lọc
+deactivate page
+
+== 7. Xuất báo cáo CSV ==
+user -> page: Nhấn "Xuất CSV"
+activate page
+page -> export: Tạo CSV file
+activate export
+export -> controller: Lấy all transaction data
+controller --> export: Complete transaction dataset
+export -> export: Format data thành CSV
+note right: CSV bao gồm:\\nTiêu đề cột\\nDữ liệu giao dịch\\nTổng kết cuối file
+export --> page: CSV file ready
+deactivate export
+page --> user: Download CSV file
+deactivate page
+
+== 8. Xuất báo cáo PDF ==
+user -> page: Nhấn "Xuất PDF"
+activate page
+page -> export: Tạo PDF financial report
+activate export
+export -> controller: Lấy complete financial data
+controller -> db: SELECT all relevant data for PDF
+db --> controller: Complete dataset
+controller --> export: Data ready for PDF
+export -> chart: Capture charts as images
+chart --> export: Chart images
+export -> export: Tạo PDF layout với charts và tables
+note right: PDF bao gồm:\\nHeader tài chính\\nTổng quan metrics\\nBiểu đồ dòng tiền\\nBảng chi tiết\\nPhân tích phương thức
+export --> page: PDF file generated
+deactivate export
+page --> user: Download PDF báo cáo tài chính
+deactivate page
+
+== 9. Thay đổi chế độ xem thời gian ==
+user -> page: Chọn xem theo ngày/tuần/tháng
+activate page
+page -> controller: Change time grouping
+controller -> controller: Regroup cashflow data
+controller -> chart: Update chart với time grouping mới
+chart -> chart: Re-render chart với labels mới
+chart --> controller: Updated chart
+controller --> page: Updated financial view
+page --> user: Hiển thị dữ liệu theo chế độ xem mới
+deactivate page
+
+@enduml
+        `;
+
+        // Encode PlantUML và tạo URL
+        const encoded = plantumlEncoder.encode(plantUMLCode);
+        const diagramUrl = `https://www.plantuml.com/plantuml/png/${encoded}`;
+        
+        // Hiển thị sơ đồ
+        document.getElementById('diagram').src = diagramUrl;
+    </script>
+</body>
+</html> 

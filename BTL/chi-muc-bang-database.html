@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chỉ mục các bảng trong Database QLBH System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        h2 {
+            color: #0066cc;
+            border-bottom: 2px solid #0066cc;
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>CHỈ MỤC CÁC BẢNG TRONG DATABASE QLBH SYSTEM</h1>
+
+    <h2>2.3.1 BẢNG USERS</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Tên Chỉ mục</th>
+                <th>Cột(s)</th>
+                <th>Loại Chỉ mục</th>
+                <th>Mục đích</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>idx_users_email</td>
+                <td>email</td>
+                <td>UNIQUE (đã được tạo tự động bởi UNIQUE constraint)</td>
+                <td>Tăng tốc tìm kiếm người dùng theo email, đảm bảo tính duy nhất.</td>
+            </tr>
+            <tr>
+                <td>idx_users_phone</td>
+                <td>phone</td>
+                <td>INDEX (được đề xuất)</td>
+                <td>Tăng tốc tìm kiếm người dùng theo số điện thoại.</td>
+            </tr>
+            <tr>
+                <td>idx_users_branch_id</td>
+                <td>branch_id</td>
+                <td>INDEX (được đề xuất)</td>
+                <td>Tăng tốc JOIN với bảng Branches, lọc theo chi nhánh.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>2.3.2 BẢNG ACCOUNTS</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Tên Chỉ mục</th>
+                <th>Cột(s)</th>
+                <th>Loại Chỉ mục</th>
+                <th>Mục đích</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>idx_accounts_user_name</td>
+                <td>user_name</td>
+                <td>UNIQUE (đã được tạo tự động bởi UNIQUE constraint)</td>
+                <td>Tăng tốc quá trình đăng nhập, đảm bảo tên đăng nhập duy nhất.</td>
+            </tr>
+            <tr>
+                <td>idx_accounts_user_id</td>
+                <td>user_id</td>
+                <td>UNIQUE (đã được tạo tự động bởi UNIQUE constraint)</td>
+                <td>Tăng tốc JOIN với bảng Users, đảm bảo mỗi user chỉ có một tài khoản.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>2.3.3 BẢNG CUSTOMERS</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Tên Chỉ mục</th>
+                <th>Cột(s)</th>
+                <th>Loại Chỉ mục</th>
+                <th>Mục đích</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>idx_customers_email</td>
+                <td>email</td>
+                <td>UNIQUE (đã được tạo tự động bởi UNIQUE constraint)</td>
+                <td>Tăng tốc tìm kiếm khách hàng theo email, đảm bảo email duy nhất.</td>
+            </tr>
+            <tr>
+                <td>idx_customers_phone</td>
+                <td>phone</td>
+                <td>UNIQUE (đã được tạo tự động bởi UNIQUE constraint)</td>
+                <td>Tăng tốc tìm kiếm khách hàng theo số điện thoại, đảm bảo SĐT duy nhất.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>2.3.4 BẢNG STAFF</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Tên Chỉ mục</th>
+                <th>Cột(s)</th>
+                <th>Loại Chỉ mục</th>
+                <th>Mục đích</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>idx_staff_user_id</td>
+                <td>user_id</td>
+                <td>UNIQUE (đã được tạo tự động bởi UNIQUE constraint)</td>
+                <td>Tăng tốc JOIN với bảng Users, đảm bảo mỗi user chỉ có một bản ghi staff.</td>
+            </tr>
+            <tr>
+                <td>idx_staff_reports_to</td>
+                <td>reports_to_user_id</td>
+                <td>INDEX (được đề xuất)</td>
+                <td>Tăng tốc tìm kiếm danh sách cấp dưới của một quản lý.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>2.3.5 BẢNG CATEGORY</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Tên Chỉ mục</th>
+                <th>Cột(s)</th>
+                <th>Loại Chỉ mục</th>
+                <th>Mục đích</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>idx_category_name</td>
+                <td>name_category</td>
+                <td>UNIQUE (đã được tạo tự động bởi UNIQUE constraint)</td>
+                <td>Tăng tốc tìm kiếm danh mục theo tên, đảm bảo tên danh mục duy nhất.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>2.3.6 BẢNG PRODUCTS</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Tên Chỉ mục</th>
+                <th>Cột(s)</th>
+                <th>Loại Chỉ mục</th>
+                <th>Mục đích</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>idx_products_category_id</td>
+                <td>category_id</td>
+                <td>INDEX (được đề xuất)</td>
+                <td>Tăng tốc JOIN với bảng Category, lọc sản phẩm theo danh mục.</td>
+            </tr>
+            <tr>
+                <td>idx_products_product_name</td>
+                <td>product_name</td>
+                <td>INDEX (được đề xuất)</td>
+                <td>Tăng tốc tìm kiếm sản phẩm theo tên.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>2.3.7 BẢNG PAYMENTS</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Tên Chỉ mục</th>
+                <th>Cột(s)</th>
+                <th>Loại Chỉ mục</th>
+                <th>Mục đích</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td colspan="4" style="text-align: center; font-style: italic;">Không có index bổ sung được đề xuất cho bảng này</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>2.3.8 BẢNG ORDERS</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Tên Chỉ mục</th>
+                <th>Cột(s)</th>
+                <th>Loại Chỉ mục</th>
+                <th>Mục đích</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>idx_orders_customer_id</td>
+                <td>customer_id</td>
+                <td>INDEX (được đề xuất)</td>
+                <td>Tăng tốc tìm kiếm đơn hàng theo khách hàng, JOIN với bảng Customers.</td>
+            </tr>
+            <tr>
+                <td>idx_orders_user_id</td>
+                <td>user_id</td>
+                <td>INDEX (được đề xuất)</td>
+                <td>Tăng tốc tìm kiếm đơn hàng theo nhân viên xử lý.</td>
+            </tr>
+            <tr>
+                <td>idx_orders_order_date</td>
+                <td>order_date</td>
+                <td>INDEX (được đề xuất)</td>
+                <td>Tăng tốc tìm kiếm và sắp xếp đơn hàng theo ngày đặt hàng.</td>
+            </tr>
+            <tr>
+                <td>idx_orders_status</td>
+                <td>status</td>
+                <td>INDEX (được đề xuất)</td>
+                <td>Tăng tốc lọc đơn hàng theo trạng thái (đã thanh toán/chưa thanh toán).</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>2.3.9 BẢNG ORDERDETAILS</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Tên Chỉ mục</th>
+                <th>Cột(s)</th>
+                <th>Loại Chỉ mục</th>
+                <th>Mục đích</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>idx_orderdetails_order_id</td>
+                <td>order_id</td>
+                <td>INDEX (được đề xuất)</td>
+                <td>Tăng tốc JOIN với bảng Orders, tìm chi tiết của một đơn hàng.</td>
+            </tr>
+            <tr>
+                <td>idx_orderdetails_product_id</td>
+                <td>product_id</td>
+                <td>INDEX (được đề xuất)</td>
+                <td>Tăng tốc JOIN với bảng Products, thống kê sản phẩm bán chạy.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>2.3.10 BẢNG SHIPPINGS</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Tên Chỉ mục</th>
+                <th>Cột(s)</th>
+                <th>Loại Chỉ mục</th>
+                <th>Mục đích</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>idx_shippings_order_id</td>
+                <td>order_id</td>
+                <td>UNIQUE (đã được tạo tự động bởi UNIQUE constraint)</td>
+                <td>Tăng tốc JOIN với bảng Orders, đảm bảo mỗi đơn hàng chỉ có một thông tin vận chuyển.</td>
+            </tr>
+            <tr>
+                <td>idx_shippings_tracking_num</td>
+                <td>tracking_num</td>
+                <td>UNIQUE (đã được tạo tự động bởi UNIQUE constraint)</td>
+                <td>Tăng tốc tìm kiếm theo mã vận đơn, đảm bảo mã vận đơn duy nhất.</td>
+            </tr>
+            <tr>
+                <td>idx_shippings_status</td>
+                <td>status</td>
+                <td>INDEX (được đề xuất)</td>
+                <td>Tăng tốc lọc đơn vận chuyển theo trạng thái.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>2.3.11 BẢNG RETURNS</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Tên Chỉ mục</th>
+                <th>Cột(s)</th>
+                <th>Loại Chỉ mục</th>
+                <th>Mục đích</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>idx_returns_order_id</td>
+                <td>order_id</td>
+                <td>INDEX (được đề xuất)</td>
+                <td>Tăng tốc tìm kiếm yêu cầu đổi/trả theo đơn hàng gốc.</td>
+            </tr>
+            <tr>
+                <td>idx_returns_status</td>
+                <td>status</td>
+                <td>INDEX (được đề xuất)</td>
+                <td>Tăng tốc lọc yêu cầu đổi/trả theo trạng thái xử lý.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>2.3.12 BẢNG BRANCHES</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Tên Chỉ mục</th>
+                <th>Cột(s)</th>
+                <th>Loại Chỉ mục</th>
+                <th>Mục đích</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>idx_branches_name</td>
+                <td>branch_name</td>
+                <td>UNIQUE (đã được tạo tự động bởi UNIQUE constraint)</td>
+                <td>Tăng tốc tìm kiếm chi nhánh theo tên, đảm bảo tên chi nhánh duy nhất.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p><strong>Ghi chú:</strong></p>
+    <ul>
+        <li>Các index có ghi "đã được tạo tự động" là những index được PostgreSQL tự động tạo khi có PRIMARY KEY hoặc UNIQUE constraint.</li>
+        <li>Các index có ghi "được đề xuất" hiện đang được comment trong file SQL và có thể được tạo để tối ưu hiệu suất.</li>
+        <li>Việc tạo index cần cân nhắc dựa trên pattern sử dụng thực tế của ứng dụng.</li>
+    </ul>
+</body>
+</html>

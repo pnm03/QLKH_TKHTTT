@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sơ đồ trạng thái - Đổi trả</title>
+    <script src="https://cdn.jsdelivr.net/npm/plantuml-encoder@1.4.0/dist/plantuml-encoder.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #f39c12;
+            padding-bottom: 15px;
+        }
+        .diagram-container {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #fafafa;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        .description {
+            background-color: #fef9e7;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #f39c12;
+        }
+        .description h3 {
+            color: #d68910;
+            margin-top: 0;
+        }
+        .status-list {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .status-list h4 {
+            color: #495057;
+            margin-top: 0;
+        }
+        .status-list ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .status-list li {
+            margin: 5px 0;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sơ đồ trạng thái - Quản lý Đổi trả</h1>
+        
+        <div class="description">
+            <h3>Mô tả chung</h3>
+            <p>Sơ đồ này mô tả quy trình xử lý yêu cầu đổi trả trong hệ thống QLBH dựa trên logic thực tế trong customer care page. Hệ thống quản lý 3 trạng thái chính với validation nghiêm ngặt và chỉ cho phép chuyển đổi từ trạng thái "đang xử lý".</p>
+        </div>
+
+        <div class="status-list">
+            <h4>Các trạng thái đổi trả (theo database schema):</h4>
+            <ul>
+                <li><strong>đang xử lý:</strong> Yêu cầu đổi trả mới được tạo, đang chờ Manager/Admin xem xét</li>
+                <li><strong>đã chấp nhận:</strong> Yêu cầu được phê duyệt, xử lý hoàn tiền/đổi hàng</li>
+                <li><strong>đã từ chối:</strong> Yêu cầu bị từ chối do không đủ điều kiện hoặc lý do khác</li>
+            </ul>
+        </div>
+
+        <div class="diagram-container">
+            <img id="diagram" src="" alt="Đang tạo sơ đồ...">
+        </div>
+
+        <div class="status-list">
+            <h4>Logic nghiệp vụ (từ code customer care):</h4>
+            <ul>
+                <li><strong>Validation Status:</strong> Chỉ cho phép 3 trạng thái: ['đang xử lý', 'đã chấp nhận', 'đã từ chối']</li>
+                <li><strong>One-way Transition:</strong> Chỉ có thể chuyển từ "đang xử lý" sang 2 trạng thái kia</li>
+                <li><strong>Final State:</strong> "đã chấp nhận" và "đã từ chối" là trạng thái cuối, không thể thay đổi</li>
+                <li><strong>Order Constraint:</strong> Chỉ tạo được từ đơn hàng đã tồn tại trong hệ thống</li>
+                <li><strong>Auto Refresh:</strong> Tự động làm mới danh sách sau khi cập nhật trạng thái</li>
+            </ul>
+        </div>
+
+        <div class="status-list">
+            <h4>Quy trình xử lý yêu cầu:</h4>
+            <ul>
+                <li><strong>Bước 1:</strong> Nhân viên/Customer tạo yêu cầu → trạng thái "đang xử lý"</li>
+                <li><strong>Bước 2:</strong> Manager/Admin xem xét yêu cầu và đưa ra quyết định</li>
+                <li><strong>Bước 3a:</strong> Nếu OK → "đã chấp nhận" → Xử lý hoàn tiền/đổi hàng</li>
+                <li><strong>Bước 3b:</strong> Nếu không OK → "đã từ chối" → Ghi lý do và đóng case</li>
+                <li><strong>Notification:</strong> Gửi thông báo cho khách hàng về kết quả</li>
+            </ul>
+        </div>
+
+        <div class="status-list">
+            <h4>Dữ liệu và ràng buộc:</h4>
+            <ul>
+                <li><strong>Required Fields:</strong> name_return, order_id, return_reason, status</li>
+                <li><strong>Optional:</strong> refund_amount (có thể NULL)</li>
+                <li><strong>Timestamps:</strong> return_date tự động gán khi tạo</li>
+                <li><strong>Foreign Key:</strong> order_id phải tồn tại trong bảng orders</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const plantUMLCode = `
+@startuml
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam state {
+  BackgroundColor lightyellow
+  BorderColor orange
+  FontColor black
+}
+
+[*] --> "đang xử lý" : Tạo yêu cầu đổi trả\\n(CreateReturnRequest)\\nStatus validation OK
+
+state "đang xử lý" as processing {
+  processing : Đang xử lý
+  processing : - status = "đang xử lý"
+  processing : - Yêu cầu mới được tạo
+  processing : - Chờ Manager/Admin xem xét
+  processing : - Có thể cập nhật thông tin
+  processing : - Kiểm tra điều kiện đổi trả
+  processing : - Thu thập evidence/photos
+}
+
+state "đã chấp nhận" as approved {
+  approved : Đã chấp nhận
+  approved : - status = "đã chấp nhận"
+  approved : - Yêu cầu được phê duyệt
+  approved : - Xử lý hoàn tiền nếu có
+  approved : - Chuẩn bị nhận hàng trả
+  approved : - Cập nhật inventory
+  approved : - FINAL STATE - không thay đổi
+}
+
+state "đã từ chối" as rejected {
+  rejected : Đã từ chối
+  rejected : - status = "đã từ chối"
+  rejected : - Yêu cầu bị từ chối
+  rejected : - Ghi lý do từ chối
+  rejected : - Thông báo khách hàng
+  rejected : - Đóng case
+  rejected : - FINAL STATE - không thay đổi
+}
+
+processing --> approved : Manager/Admin phê duyệt\\n(ApproveReturn)\\n\\nValidation: status in allowed list\\nAuto refresh list
+processing --> rejected : Manager/Admin từ chối\\n(RejectReturn)\\n\\nValidation: status in allowed list\\nRecord rejection reason
+
+processing --> processing : Cập nhật thông tin\\n(UpdateReturnInfo)\\nEdit name_return, reason\\nUpdate refund_amount
+processing --> processing : Yêu cầu thêm tài liệu\\n(RequestMoreDocuments)\\nAsk for photos/proof
+
+approved --> [*] : Hoàn thành đổi trả\\n(CompleteReturn)\\nProcess refund success\\nInventory updated
+rejected --> [*] : Đóng yêu cầu\\n(CloseRejectedRequest)\\nNotify customer\\nCase closed
+
+note right of processing
+  Trạng thái duy nhất cho phép
+  thay đổi sang trạng thái khác
+  
+  Code validation:
+  if (!['đang xử lý', 'đã chấp nhận', 
+        'đã từ chối'].includes(newStatus))
+    return error
+end note
+
+note top of approved
+  FINAL STATE
+  Không thể thay đổi
+  
+  Trigger: Auto process refund
+  Update inventory if needed
+  Send success notification
+end note
+
+note bottom of rejected
+  FINAL STATE  
+  Không thể thay đổi
+  
+  Required: rejection reason
+  Auto close case
+  Send rejection notification
+end note
+
+note left of processing
+  Validation checks:
+  - order_id exists in orders table
+  - return_reason not empty
+  - refund_amount >= 0 (if provided)
+  - name_return not empty
+end note
+
+@enduml
+        `;
+
+        // Encode PlantUML và tạo URL
+        const encoded = plantumlEncoder.encode(plantUMLCode);
+        const diagramUrl = `https://www.plantuml.com/plantuml/png/${encoded}`;
+        
+        // Hiển thị sơ đồ
+        document.getElementById('diagram').src = diagramUrl;
+    </script>
+</body>
+</html> 

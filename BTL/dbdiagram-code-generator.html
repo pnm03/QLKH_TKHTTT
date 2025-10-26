@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DBDiagram Code Generator - Hệ thống QLBH</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #4a6741 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .info-section {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .info-section h3 {
+            color: #1976d2;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .info-section ul {
+            margin-left: 20px;
+            color: #0d47a1;
+        }
+
+        .info-section li {
+            margin-bottom: 8px;
+        }
+
+        .code-section {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .code-header {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .code-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+
+        .copy-btn {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .copy-btn:hover {
+            background: linear-gradient(135deg, #0056b3 0%, #007bff 100%);
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0,123,255,0.3);
+        }
+
+        .copy-btn.copied {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .code-content {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 25px;
+            overflow-x: auto;
+            font-family: 'Fira Code', 'Consolas', 'Monaco', monospace;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            max-height: 600px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        .code-content::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        .code-content::-webkit-scrollbar-thumb {
+            background: #4a5568;
+            border-radius: 5px;
+        }
+
+        .code-content::-webkit-scrollbar-track {
+            background: #2d3748;
+        }
+
+        .instructions {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .instructions h3 {
+            color: #856404;
+            margin-bottom: 15px;
+        }
+
+        .instructions ol {
+            margin-left: 20px;
+            color: #856404;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+        }
+
+        .footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            font-weight: 600;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .code-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🗄️ DBDiagram Code Generator</h1>
+            <p>Tạo sơ đồ cơ sở dữ liệu cho Hệ thống Quản lý Bán hàng (QLBH)</p>
+        </div>
+
+        <div class="content">
+            <div class="info-section">
+                <h3>📋 Thông tin Database Schema</h3>
+                <ul>
+                    <li><strong>Tổng số bảng:</strong> 12 bảng chính</li>
+                    <li><strong>Các bảng chính:</strong> Users, Accounts, Customers, Staff, Products, Orders, Orderdetails, Shippings, Returns, Branches, Category, Payments</li>
+                    <li><strong>Tính năng:</strong> Hỗ trợ UUID, Timestamp, Triggers, Constraints</li>
+                    <li><strong>Mối quan hệ:</strong> Foreign Key với referential integrity</li>
+                    <li><strong>Cập nhật:</strong> Đã thêm cost_price và cost_price_at_sale (19.05.2025)</li>
+                </ul>
+            </div>
+
+            <div class="instructions">
+                <h3>🚀 Hướng dẫn sử dụng</h3>
+                <ol>
+                    <li>Nhấn nút <strong>"📋 Copy DBDiagram Code"</strong> để copy toàn bộ code</li>
+                    <li>Truy cập <strong>dbdiagram.io</strong> trên trình duyệt</li>
+                    <li>Tạo tài khoản hoặc đăng nhập (nếu chưa có)</li>
+                    <li>Nhấn <strong>"Create new diagram"</strong></li>
+                    <li>Paste code đã copy vào editor</li>
+                    <li>Nhấn <strong>"Save"</strong> để lưu sơ đồ</li>
+                </ol>
+            </div>
+
+            <div class="code-section">
+                <div class="code-header">
+                    <div class="code-title">🎯 DBDiagram Code - Hệ thống QLBH</div>
+                    <button class="copy-btn" onclick="copyToClipboard('dbdiagramCode', this)">
+                        📋 Copy DBDiagram Code
+                    </button>
+                </div>
+                <div class="code-content" id="dbdiagramCode">// DBDiagram Code for QLBH System Database
+// Generated from database.txt structure
+// Date: 2025-01-19
+
+Project QLBH_System {
+  database_type: 'PostgreSQL'
+  Note: '''
+    Hệ thống Quản lý Bán hàng (QLBH System)
+    12 bảng chính với đầy đủ constraints và relationships
+    Hỗ trợ UUID, Triggers, và Real-time updates
+  '''
+}
+
+// ============ BẢNG USERS ============
+Table Users {
+  user_id UUID [primary key]
+  branch_id INT [ref: > Branches.branch_id]
+  full_name VARCHAR(255) [not null]
+  email VARCHAR(255) [unique, not null]
+  phone VARCHAR(11)
+  birth_date DATE
+  hometown VARCHAR(255)
+  created_at TIMESTAMP [default: `CURRENT_TIMESTAMP`]
+  updated_at TIMESTAMP [default: `CURRENT_TIMESTAMP`]
+  
+  Note: 'Bảng quản lý thông tin người dùng hệ thống'
+}
+
+// ============ BẢNG ACCOUNTS ============
+Table Accounts {
+  id UUID [primary key]
+  user_id UUID [ref: - Users.user_id, unique, not null]
+  user_name VARCHAR(50) [unique, not null]
+  password_hash VARCHAR(255) [not null]
+  role VARCHAR(20) [not null, note: 'admin, NVBH, NVK']
+  status VARCHAR(20) [not null, note: 'active, inactive, locked']
+  last_login TIMESTAMP
+  create_at TIMESTAMP [default: `CURRENT_TIMESTAMP`]
+  update_at TIMESTAMP [default: `CURRENT_TIMESTAMP`]
+  
+  Note: 'Bảng tài khoản đăng nhập và phân quyền'
+}
+
+// ============ BẢNG CUSTOMERS ============
+Table Customers {
+  customer_id UUID [primary key]
+  full_name VARCHAR(255) [not null]
+  phone VARCHAR(11) [unique]
+  email VARCHAR(255) [unique, not null]
+  hometown VARCHAR(255)
+  created_at TIMESTAMP [default: `CURRENT_TIMESTAMP`]
+  updated_at TIMESTAMP [default: `CURRENT_TIMESTAMP`]
+  
+  Note: 'Bảng quản lý thông tin khách hàng'
+}
+
+// ============ BẢNG STAFF ============
+Table Staff {
+  staff_id INT [primary key, increment]
+  user_id UUID [ref: > Users.user_id]
+  start_date DATE [not null]
+  end_date DATE
+  work_shift VARCHAR(100) [not null]
+  salary DECIMAL(15,2) [not null, default: 0]
+  contract_type VARCHAR(100) [note: 'full-time, part-time, contract']
+  employment_status VARCHAR(100) [note: 'active, on-leave, terminated']
+  reports_to_user_id UUID [ref: > Users.user_id]
+  
+  Note: 'Bảng quản lý thông tin nhân viên'
+}
+
+// ============ BẢNG BRANCHES ============
+Table Branches {
+  branch_id INT [primary key, increment]
+  branch_name VARCHAR(255) [not null, unique]
+  branch_address VARCHAR(255) [not null]
+  manager_id UUID [ref: > Users.user_id]
+  
+  Note: 'Bảng quản lý chi nhánh công ty'
+}
+
+// ============ BẢNG CATEGORY ============
+Table Category {
+  category_id INT [primary key, increment]
+  name_category VARCHAR(255) [not null, unique]
+  description_category TEXT [not null]
+  image_category TEXT [note: 'BASE64 encoded image']
+  
+  Note: 'Bảng danh mục sản phẩm'
+}
+
+// ============ BẢNG PRODUCTS ============
+Table Products {
+  product_id INT [primary key, increment]
+  category_id INT [ref: > Category.category_id, not null]
+  product_name VARCHAR(255) [not null]
+  description TEXT
+  color VARCHAR(50)
+  size VARCHAR(50)
+  price DECIMAL(15,2) [not null, default: 0]
+  stock_quantity INT [not null, default: 0]
+  created_at TIMESTAMPTZ [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at TIMESTAMPTZ [not null, default: `CURRENT_TIMESTAMP`]
+  image TEXT [not null, note: 'BASE64 encoded']
+  cost_price DECIMAL(15,2) [not null, default: 0, note: 'Thêm 19.05.2025']
+  
+  Note: 'Bảng sản phẩm với giá nhập và giá bán'
+}
+
+// ============ BẢNG PAYMENTS ============
+Table Payments {
+  payment_id INT [primary key, increment]
+  payment_method_name VARCHAR(100) [not null]
+  description TEXT
+  image TEXT [note: 'BASE64 encoded QR/Logo']
+  created_at TIMESTAMPTZ [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at TIMESTAMPTZ [not null, default: `CURRENT_TIMESTAMP`]
+  
+  Note: 'Bảng phương thức thanh toán'
+}
+
+// ============ BẢNG ORDERS ============
+Table Orders {
+  order_id TEXT [primary key, note: 'Tự sinh ORD-YYYYMMDD-XXXXX']
+  user_id UUID [ref: > Users.user_id, note: 'NULL nếu khách vãng lai']
+  customer_id UUID [ref: > Customers.customer_id]
+  order_date TIMESTAMPTZ [not null, default: `CURRENT_TIMESTAMP`]
+  price DECIMAL(15,2) [not null]
+  status VARCHAR(50) [not null, note: 'Đã thanh toán, Chưa thanh toán']
+  payment_method INT [ref: > Payments.payment_id, note: 'NULL khi chưa thanh toán']
+  is_shipping BOOLEAN [not null, default: false]
+  
+  Note: 'Bảng đơn hàng chính'
+}
+
+// ============ BẢNG ORDERDETAILS ============
+Table Orderdetails {
+  orderdetail_id TEXT [primary key, note: 'Tự sinh UUID']
+  order_id TEXT [ref: > Orders.order_id, not null]
+  product_id INT [ref: > Products.product_id, not null]
+  name_product VARCHAR(255) [not null]
+  name_check VARCHAR(255) [not null, note: 'Tên hóa đơn']
+  quantity INT [not null]
+  unit_price DECIMAL(15,2) [not null]
+  subtotal DECIMAL(15,2) [not null, note: 'Auto: quantity * unit_price']
+  cost_price_at_sale DECIMAL(15,2) [not null, default: 0, note: 'Thêm 19.05.2025']
+  
+  Note: 'Bảng chi tiết đơn hàng với trigger tự động tính subtotal'
+}
+
+// ============ BẢNG SHIPPINGS ============
+Table Shippings {
+  shipping_id TEXT [primary key, note: 'Tự sinh']
+  order_id TEXT [ref: - Orders.order_id, not null, unique]
+  carrier VARCHAR(255) [note: 'GHN, ViettelPost, etc']
+  tracking_num VARCHAR(255) [unique, note: 'Tự sinh']
+  shipping_address TEXT [not null]
+  shipping_cost DECIMAL(10,2) [not null, default: 0]
+  actual_delivery_date TIMESTAMPTZ
+  delivery_date TIMESTAMPTZ [note: 'Dự kiến']
+  status VARCHAR(50) [not null, note: 'Chưa giao hàng, Đang chuẩn bị, Đang giao hàng, Đã giao hàng, Đang hoàn về, Đã hủy']
+  created_at TIMESTAMPTZ [not null, default: `CURRENT_TIMESTAMP`]
+  weight DECIMAL(10,3)
+  unit_weight VARCHAR(10) [note: 'kg, g']
+  long DECIMAL(10,2)
+  wide DECIMAL(10,2)
+  hight DECIMAL(10,2) [note: 'height in DB']
+  
+  Note: 'Bảng vận chuyển với tracking'
+}
+
+// ============ BẢNG RETURNS ============
+Table Returns {
+  return_id INT [primary key, increment]
+  order_id TEXT [ref: > Orders.order_id, not null]
+  name_return TEXT
+  return_date TIMESTAMPTZ [not null, default: `CURRENT_TIMESTAMP`]
+  return_reason TEXT [not null]
+  refund_amount DECIMAL(15,2)
+  status VARCHAR(50) [not null, note: 'đang xử lý, đã chấp nhận, đã từ chối']
+  
+  Note: 'Bảng yêu cầu đổi trả hàng'
+}
+
+// ============ INDEXES ============
+// Các index quan trọng để tối ưu performance
+Table "Database Indexes" {
+  Note: '''
+    Recommended Indexes:
+    - idx_users_email (email)
+    - idx_users_phone (phone) 
+    - idx_users_branch_id (branch_id)
+    - idx_products_category_id (category_id)
+    - idx_products_name (product_name)
+    - idx_orders_customer_id (customer_id)
+    - idx_orders_user_id (user_id)
+    - idx_orders_date (order_date)
+    - idx_orders_status (status)
+    - idx_orderdetails_order_id (order_id)
+    - idx_orderdetails_product_id (product_id)
+    - idx_shippings_status (status)
+    - idx_returns_order_id (order_id)
+    - idx_returns_status (status)
+  '''
+}
+
+// ============ TRIGGERS ============
+Table "Database Triggers" {
+  Note: '''
+    Current Triggers:
+    1. trigger_orderdetails_subtotal
+       - Auto calculate: subtotal = quantity * unit_price
+       - Fires on INSERT/UPDATE orderdetails
+    
+    2. trigger_update_stock_on_order
+       - Auto update: products.stock_quantity -= orderdetails.quantity
+       - Fires on INSERT orderdetails
+       - Prevents overselling
+    
+    3. trigger_cascade_delete_orderdetails
+       - Auto delete orderdetails when order is deleted
+       - Maintains referential integrity
+       
+    4. trigger_update_cost_price_at_sale
+       - Auto copy products.cost_price to orderdetails.cost_price_at_sale
+       - Preserves cost price at time of sale
+  '''
+}
+
+// ============ RELATIONSHIPS SUMMARY ============
+/*
+Key Relationships:
+- Users 1:1 Accounts (user_id)
+- Users 1:N Staff (user_id)
+- Users 1:N Orders (user_id) 
+- Branches 1:N Users (branch_id)
+- Customers 1:N Orders (customer_id)
+- Category 1:N Products (category_id)
+- Products 1:N Orderdetails (product_id)
+- Orders 1:N Orderdetails (order_id)
+- Orders 1:1 Shippings (order_id)
+- Orders 1:N Returns (order_id)
+- Payments 1:N Orders (payment_id)
+- Users 1:N Branches (manager_id)
+- Users 1:N Staff (reports_to_user_id)
+*/</div>
+            </div>
+
+            <div class="info-section">
+                <h3>🔗 Các mối quan hệ chính</h3>
+                <ul>
+                    <li><strong>Users ↔ Accounts:</strong> 1:1 - Mỗi user có một tài khoản duy nhất</li>
+                    <li><strong>Users ↔ Branches:</strong> N:1 - Nhiều user thuộc về một chi nhánh</li>
+                    <li><strong>Orders ↔ Orderdetails:</strong> 1:N - Một đơn hàng có nhiều chi tiết</li>
+                    <li><strong>Products ↔ Category:</strong> N:1 - Nhiều sản phẩm thuộc một danh mục</li>
+                    <li><strong>Orders ↔ Shippings:</strong> 1:1 - Một đơn hàng có một thông tin vận chuyển</li>
+                    <li><strong>Orders ↔ Returns:</strong> 1:N - Một đơn hàng có thể có nhiều yêu cầu đổi trả</li>
+                </ul>
+            </div>
+
+            <div class="info-section">
+                <h3>⚡ Tính năng đặc biệt</h3>
+                <ul>
+                    <li><strong>Database Triggers:</strong> Tự động tính subtotal, cập nhật tồn kho, cascade delete</li>
+                    <li><strong>UUID Support:</strong> user_id, customer_id, account_id</li>
+                    <li><strong>Timestamp with Timezone:</strong> Hỗ trợ múi giờ cho orders, products</li>
+                    <li><strong>Cost Price Tracking:</strong> Lưu giá nhập tại thời điểm bán (cost_price_at_sale)</li>
+                    <li><strong>Flexible Shipping:</strong> Hỗ trợ COD, tracking number, dimensions</li>
+                    <li><strong>Constraints:</strong> Check constraints cho price >= 0, stock >= 0, quantity > 0</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>🔧 Generated by QLBH Database Schema Converter | 📅 2025</p>
+            <p>🌐 Sử dụng tại: <strong>dbdiagram.io</strong></p>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        ✅ Đã copy DBDiagram code vào clipboard!
+    </div>
+
+    <script>
+        function copyToClipboard(elementId, button) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+            
+            navigator.clipboard.writeText(text).then(function() {
+                // Show notification
+                const notification = document.getElementById('notification');
+                notification.classList.add('show');
+                
+                // Change button state
+                button.innerHTML = '✅ Copied to Clipboard!';
+                button.classList.add('copied');
+                
+                // Hide notification and reset button after 3 seconds
+                setTimeout(function() {
+                    notification.classList.remove('show');
+                    button.innerHTML = '📋 Copy DBDiagram Code';
+                    button.classList.remove('copied');
+                }, 3000);
+            }).catch(function(err) {
+                console.error('Could not copy text: ', err);
+                
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                textArea.style.position = 'fixed';
+                textArea.style.left = '-999999px';
+                textArea.style.top = '-999999px';
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                
+                try {
+                    document.execCommand('copy');
+                    const notification = document.getElementById('notification');
+                    notification.classList.add('show');
+                    
+                    button.innerHTML = '✅ Copied to Clipboard!';
+                    button.classList.add('copied');
+                    
+                    setTimeout(function() {
+                        notification.classList.remove('show');
+                        button.innerHTML = '📋 Copy DBDiagram Code';
+                        button.classList.remove('copied');
+                    }, 3000);
+                } catch (err) {
+                    console.error('Fallback: Could not copy text: ', err);
+                    alert('Không thể copy tự động. Vui lòng chọn và copy thủ công.');
+                }
+                
+                document.body.removeChild(textArea);
+            });
+        }
+
+        // Add smooth animations on load
+        document.addEventListener('DOMContentLoaded', function() {
+            const sections = document.querySelectorAll('.info-section, .code-section, .instructions');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, {
+                threshold: 0.1
+            });
+
+            sections.forEach(section => {
+                section.style.opacity = '0';
+                section.style.transform = 'translateY(30px)';
+                section.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(section);
+            });
+        });
+    </script>
+</body>
+</html> 

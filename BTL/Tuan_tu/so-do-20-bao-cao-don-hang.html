@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sơ đồ tuần tự - Báo cáo đơn hàng</title>
+    <script src="https://cdn.jsdelivr.net/npm/plantuml-encoder@1.4.0/dist/plantuml-encoder.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 15px;
+        }
+        .diagram-container {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #fafafa;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        .description {
+            background-color: #e8f4fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #3498db;
+        }
+        .description h3 {
+            color: #2980b9;
+            margin-top: 0;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sơ đồ tuần tự - Báo cáo đơn hàng</h1>
+        
+        <div class="description">
+            <h3>Mô tả chức năng</h3>
+            <p>Sơ đồ này mô tả quy trình tạo báo cáo đơn hàng trong hệ thống QLBH, bao gồm: áp dụng bộ lọc theo nhiều tiêu chí, hiển thị thống kê tổng quan, xem biểu đồ phân tích và xuất báo cáo PDF/Excel.</p>
+        </div>
+
+        <div class="diagram-container">
+            <img id="diagram" src="" alt="Đang tạo sơ đồ...">
+        </div>
+    </div>
+
+    <script>
+        const plantUMLCode = `
+@startuml
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam sequenceParticipant underline
+
+actor "User" as user
+participant "Reports Page" as page
+participant "Report Controller" as controller
+participant "Supabase DB" as db
+participant "Chart Component" as chart
+participant "PDF Generator" as pdf
+
+== 1. Truy cập báo cáo đơn hàng ==
+user -> page: Truy cập /dashboard/reports/orders
+activate page
+page -> controller: Tải dữ liệu báo cáo ban đầu
+controller -> db: SELECT orders với JOIN customers, users, payments
+note right: Lấy dữ liệu đầy đủ\\nđơn hàng với thông tin\\nliên quan
+db --> controller: Dữ liệu orders với thông tin mở rộng
+controller -> controller: Tính toán thống kê tổng quan
+controller --> page: Summary + orders data
+page --> user: Hiển thị trang báo cáo với thống kê
+deactivate page
+
+== 2. Áp dụng bộ lọc ==
+user -> page: Thiết lập bộ lọc (ngày, trạng thái, giá trị)
+activate page
+page -> controller: Gửi filter criteria
+controller -> db: SELECT orders với WHERE conditions
+note right: Lọc theo:\\ndate range\\nstatus (Đã/Chưa thanh toán)\\nis_shipping\\nmin/max amount
+db --> controller: Dữ liệu đã lọc
+controller -> controller: Tính toán lại summary statistics
+controller --> page: Filtered data + new summary
+page --> user: Cập nhật thống kê và danh sách
+deactivate page
+
+== 3. Xem thống kê tổng quan ==
+user -> page: Xem tab "Tổng quan"
+activate page
+page -> controller: Hiển thị summary cards
+controller -> controller: Tính toán KPIs
+note right: Tổng đơn hàng\\nTổng doanh thu\\nGiá trị trung bình\\nĐơn vận chuyển\\nTỷ lệ thanh toán
+controller -> chart: Tạo biểu đồ doanh thu theo ngày
+chart -> chart: Render line chart with revenue data
+chart --> controller: Chart component ready
+controller --> page: Summary metrics + chart
+page --> user: Hiển thị dashboard với KPIs và biểu đồ
+deactivate page
+
+== 4. Xem biểu đồ phân tích ==
+user -> page: Chuyển đổi loại biểu đồ
+activate page
+page -> chart: Yêu cầu render biểu đồ khác
+chart -> controller: Lấy dữ liệu cho chart mới
+controller -> controller: Chuẩn bị data cho biểu đồ
+note right: Biểu đồ:\\nDoanh thu theo ngày\\nĐơn hàng theo trạng thái\\nPhương thức thanh toán\\nTop khách hàng
+controller --> chart: Chart data ready
+chart -> chart: Render new chart type
+chart --> page: Updated chart component
+page --> user: Hiển thị biểu đồ mới
+deactivate page
+
+== 5. Xem chi tiết đơn hàng ==
+user -> page: Chuyển sang tab "Chi tiết"
+activate page
+page -> controller: Hiển thị bảng chi tiết đơn hàng
+controller -> controller: Phân trang dữ liệu
+controller --> page: Paginated order details
+page --> user: Bảng chi tiết với thông tin đầy đủ
+note right: Thông tin bao gồm:\\nMã đơn hàng\\nKhách hàng\\nNgày đặt\\nTổng tiền\\nTrạng thái\\nVận chuyển
+deactivate page
+
+== 6. Xuất báo cáo PDF ==
+user -> page: Nhấn "Xuất PDF"
+activate page
+page -> pdf: Tạo PDF từ dữ liệu báo cáo
+activate pdf
+pdf -> controller: Lấy dữ liệu đầy đủ cho PDF
+controller -> db: SELECT all filtered data
+db --> controller: Complete dataset
+controller --> pdf: Data ready for PDF
+pdf -> pdf: Tạo PDF layout với charts và tables
+note right: PDF bao gồm:\\nHeader với logo\\nThống kê tổng quan\\nBiểu đồ doanh thu\\nBảng chi tiết đơn hàng\\nTổng kết
+pdf --> page: File PDF đã tạo
+deactivate pdf
+page --> user: Download PDF file
+deactivate page
+
+== 7. Xem xu hướng đơn hàng ==
+user -> page: Chuyển sang tab "Xu hướng"
+activate page
+page -> controller: Tính toán xu hướng theo thời gian
+controller -> controller: Phân tích trend data
+note right: Xu hướng:\\nSố lượng đơn hàng\\nDoanh thu\\nGiá trị trung bình\\nTăng trưởng %
+controller -> chart: Tạo trend charts
+chart -> chart: Render trend analysis charts
+chart --> controller: Trend charts ready
+controller --> page: Trend data + charts
+page --> user: Hiển thị phân tích xu hướng
+deactivate page
+
+== 8. Xem thông tin khách hàng top ==
+user -> page: Chuyển sang tab "Khách hàng"
+activate page
+page -> controller: Tính toán top customers
+controller -> db: SELECT customers với ORDER BY total spent
+db --> controller: Top customer data
+controller -> controller: Tính toán metrics cho từng khách hàng
+note right: Thông tin:\\nTên khách hàng\\nSố đơn hàng\\nTổng chi tiêu\\nĐơn hàng trung bình\\nLần mua cuối
+controller --> page: Top customers data
+page --> user: Hiển thị bảng top khách hàng
+deactivate page
+
+@enduml
+        `;
+
+        // Encode PlantUML và tạo URL
+        const encoded = plantumlEncoder.encode(plantUMLCode);
+        const diagramUrl = `https://www.plantuml.com/plantuml/png/${encoded}`;
+        
+        // Hiển thị sơ đồ
+        document.getElementById('diagram').src = diagramUrl;
+    </script>
+</body>
+</html> 

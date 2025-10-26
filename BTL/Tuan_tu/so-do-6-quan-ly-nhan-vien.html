@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sơ đồ tuần tự - Quản lý Nhân viên</title>
+    <script src="https://cdn.jsdelivr.net/npm/plantuml-encoder@1.4.0/dist/plantuml-encoder.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 15px;
+        }
+        .diagram-container {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #fafafa;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        .description {
+            background-color: #e8f4fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #3498db;
+        }
+        .description h3 {
+            color: #2980b9;
+            margin-top: 0;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sơ đồ tuần tự - Quản lý Nhân viên</h1>
+        
+        <div class="description">
+            <h3>Mô tả chức năng</h3>
+            <p>Sơ đồ này mô tả quy trình quản lý nhân viên trong hệ thống QLBH, bao gồm các chức năng chính: hiển thị danh sách, thêm hồ sơ nhân viên mới, xem chi tiết, chỉnh sửa thông tin và vô hiệu hóa nhân viên. Chỉ admin mới có quyền truy cập.</p>
+        </div>
+
+        <div class="diagram-container">
+            <img id="diagram" src="" alt="Đang tạo sơ đồ...">
+        </div>
+    </div>
+
+    <script>
+        const plantUMLCode = `
+@startuml
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam sequenceParticipant underline
+
+actor "Admin" as admin
+participant "Staff Page" as page
+participant "Staff Controller" as controller
+participant "Supabase DB" as db
+participant "Notification" as notify
+
+== 1. Hiển thị danh sách nhân viên ==
+admin -> page: Truy cập /dashboard/business/staff
+activate page
+page -> controller: Kiểm tra quyền admin
+controller -> db: SELECT * FROM staff
+db --> controller: Danh sách nhân viên
+controller -> db: SELECT * FROM users (thông tin cá nhân)
+db --> controller: Thông tin users
+controller -> db: SELECT * FROM branches (chi nhánh)
+db --> controller: Thông tin chi nhánh
+controller --> page: Dữ liệu nhân viên kết hợp
+page --> admin: Hiển thị bảng danh sách
+deactivate page
+
+== 2. Thêm hồ sơ nhân viên mới ==
+admin -> page: Nhấn "Thêm nhân viên"
+activate page
+page --> admin: Hiển thị popup form
+admin -> page: Chọn user và điền thông tin
+note right: Ngày bắt đầu, ca làm việc,\\nlương, loại hợp đồng,\\ntrạng thái, quản lý trực tiếp
+admin -> page: Nhấn "Thêm mới"
+page -> controller: Gửi dữ liệu mới
+controller -> db: Kiểm tra user đã có hồ sơ chưa
+alt User chưa có hồ sơ
+    controller -> db: INSERT INTO staff
+    controller -> db: UPDATE users SET branch_id
+    db --> controller: Hồ sơ đã tạo
+    controller --> page: Kết quả thành công
+    page -> notify: Hiển thị thông báo thành công
+    page --> admin: Đóng popup, cập nhật danh sách
+else User đã có hồ sơ
+    db --> controller: Lỗi trùng lặp
+    controller --> page: Thông báo lỗi
+    page -> notify: Hiển thị lỗi
+    page --> admin: Giữ popup mở
+end
+deactivate page
+
+== 3. Xem chi tiết nhân viên ==
+admin -> page: Nhấp vào hàng nhân viên
+activate page
+page -> controller: Lấy chi tiết staff_id
+controller -> db: SELECT FROM staff WHERE staff_id
+db --> controller: Thông tin hồ sơ
+controller -> db: SELECT FROM users WHERE user_id
+db --> controller: Thông tin cá nhân
+controller -> db: SELECT FROM branches (chi nhánh)
+db --> controller: Thông tin chi nhánh
+controller --> page: Dữ liệu đầy đủ nhân viên
+page --> admin: Popup chi tiết với thông tin
+deactivate page
+
+== 4. Chỉnh sửa thông tin nhân viên ==
+admin -> page: Trong popup chi tiết, nhấn "Chỉnh sửa"
+activate page
+page --> admin: Chuyển sang form chỉnh sửa
+admin -> page: Thay đổi thông tin công việc
+note right: Ngày bắt đầu/kết thúc,\\nca làm việc, lương,\\nloại hợp đồng, trạng thái
+admin -> page: Nhấn "Cập nhật"
+page -> controller: Gửi dữ liệu cập nhật
+controller -> db: UPDATE staff SET ... WHERE staff_id
+controller -> db: UPDATE users SET branch_id
+alt Thành công
+    db --> controller: Cập nhật thành công
+    controller --> page: Kết quả thành công
+    page -> notify: Hiển thị thông báo thành công
+    page --> admin: Đóng popup, cập nhật danh sách
+else Lỗi
+    db --> controller: Lỗi validation
+    controller --> page: Thông báo lỗi
+    page -> notify: Hiển thị lỗi
+end
+deactivate page
+
+== 5. Vô hiệu hóa nhân viên ==
+admin -> page: Trong popup chi tiết, nhấn "Xóa"
+activate page
+page --> admin: Hiển thị hộp thoại xác nhận
+admin -> page: Xác nhận vô hiệu hóa
+page -> controller: Yêu cầu vô hiệu hóa staff_id
+controller -> db: UPDATE staff SET employment_status = 'terminated'
+controller -> db: UPDATE staff SET end_date = CURRENT_DATE
+controller -> controller: Gọi API xóa tài khoản đăng nhập
+controller -> db: DELETE FROM accounts WHERE user_id
+alt Thành công
+    db --> controller: Vô hiệu hóa thành công
+    controller --> page: Kết quả thành công
+    page -> notify: Hiển thị thông báo thành công
+    page --> admin: Đóng popup, cập nhật danh sách
+else Lỗi
+    db --> controller: Lỗi trong quá trình
+    controller --> page: Thông báo lỗi
+    page -> notify: Hiển thị lỗi
+end
+deactivate page
+
+@enduml
+        `;
+
+        // Encode PlantUML và tạo URL
+        const encoded = plantumlEncoder.encode(plantUMLCode);
+        const diagramUrl = `https://www.plantuml.com/plantuml/png/${encoded}`;
+        
+        // Hiển thị sơ đồ
+        document.getElementById('diagram').src = diagramUrl;
+    </script>
+</body>
+</html> 

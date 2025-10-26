@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giải thích Chi tiết các Thực thể - Sơ đồ Tuần tự QLBH</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .entity-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            border-left: 5px solid;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .entity-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+
+        .entity-card.actor {
+            border-left-color: #e74c3c;
+        }
+
+        .entity-card.system {
+            border-left-color: #3498db;
+        }
+
+        .entity-card.service {
+            border-left-color: #2ecc71;
+        }
+
+        .entity-card.database {
+            border-left-color: #f39c12;
+        }
+
+        .entity-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .entity-icon {
+            font-size: 2.5rem;
+            margin-right: 15px;
+        }
+
+        .entity-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .entity-subtitle {
+            color: #7f8c8d;
+            font-size: 1rem;
+            font-style: italic;
+        }
+
+        .entity-description {
+            color: #34495e;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            line-height: 1.7;
+        }
+
+        .details-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .details-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .details-title::before {
+            content: "▶";
+            margin-right: 8px;
+            color: #3498db;
+        }
+
+        .details-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .details-list li {
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+            color: #555;
+        }
+
+        .details-list li:before {
+            content: "•";
+            color: #3498db;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        .code-section {
+            background: #1e1e1e;
+            color: #e6e6e6;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Fira Code', 'Monaco', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+
+        .code-title {
+            color: #61dafb;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .highlight {
+            background: rgba(255, 235, 59, 0.3);
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+
+        .relationship-diagram {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .relationship-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .flow-diagram {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .flow-item {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .flow-arrow {
+            font-size: 1.5rem;
+            color: #3498db;
+        }
+
+        .toc {
+            background: #e8f4fd;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 5px solid #3498db;
+        }
+
+        .toc h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .toc-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .toc-list li {
+            margin-bottom: 8px;
+        }
+
+        .toc-list a {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .toc-list a:hover {
+            color: #2980b9;
+            text-decoration: underline;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .entity-card {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .entity-card {
+                padding: 20px;
+            }
+            
+            .flow-diagram {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Giải thích Chi tiết các Thực thể</h1>
+            <p>Sơ đồ Tuần tự - Chuẩn bị Bán hàng QLBH System</p>
+        </div>
+
+        <div class="content">
+            <!-- Mục lục -->
+            <div class="toc">
+                <h3>📋 Mục lục</h3>
+                <ul class="toc-list">
+                    <li><a href="#actor">👤 Actor - Nhân viên Bán hàng</a></li>
+                    <li><a href="#auth-system">🔐 Auth System - Hệ thống Xác thực</a></li>
+                    <li><a href="#dashboard">📊 Dashboard Controller - Bộ điều khiển Trang chủ</a></li>
+                    <li><a href="#sales">🛒 Sales Controller - Bộ điều khiển Bán hàng</a></li>
+                    <li><a href="#product">📦 Product Service - Dịch vụ Sản phẩm</a></li>
+                    <li><a href="#customer">👥 Customer Service - Dịch vụ Khách hàng</a></li>
+                    <li><a href="#database">🗄️ Database - Cơ sở dữ liệu</a></li>
+                    <li><a href="#relationships">🔄 Mối quan hệ giữa các thực thể</a></li>
+                </ul>
+            </div>
+
+            <!-- Sơ đồ mối quan hệ tổng quan -->
+            <div class="relationship-diagram">
+                <div class="relationship-title">🔄 Luồng tương tác chính</div>
+                <div class="flow-diagram">
+                    <div class="flow-item">👤 Nhân viên</div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-item">🔐 Auth System</div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-item">📊 Dashboard</div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-item">🛒 Sales Controller</div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-item">📦 Product Service</div>
+                    <div class="flow-arrow">+</div>
+                    <div class="flow-item">👥 Customer Service</div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-item">🗄️ Database</div>
+                </div>
+            </div>
+
+            <!-- Actor - Nhân viên Bán hàng -->
+            <div id="actor" class="entity-card actor">
+                <div class="entity-header">
+                    <div class="entity-icon">👤</div>
+                    <div>
+                        <div class="entity-title">Nhân viên Bán hàng (Actor)</div>
+                        <div class="entity-subtitle">Người dùng cuối thực hiện quy trình bán hàng</div>
+                    </div>
+                </div>
+                
+                <div class="entity-description">
+                    <strong>Actor</strong> là người dùng thực tế trong hệ thống - đại diện cho nhân viên bán hàng, nhân viên kho, hoặc quản trị viên có quyền truy cập module bán hàng.
+                </div>
+
+                <div class="details-section">
+                    <div class="details-title">Vai trò và Quyền hạn</div>
+                    <ul class="details-list">
+                        <li><span class="highlight">NVBH (Nhân viên Bán hàng)</span>: Quyền tạo đơn hàng, quản lý khách hàng</li>
+                        <li><span class="highlight">NVK (Nhân viên Kho)</span>: Quyền xem tồn kho, cập nhật sản phẩm</li>
+                        <li><span class="highlight">Admin</span>: Toàn quyền truy cập tất cả chức năng</li>
+                    </ul>
+                </div>
+
+                <div class="details-section">
+                    <div class="details-title">Hành động thực hiện</div>
+                    <ul class="details-list">
+                        <li>Đăng nhập vào hệ thống bằng username/password</li>
+                        <li>Điều hướng qua các menu Dashboard</li>
+                        <li>Tìm kiếm và chọn sản phẩm</li>
+                        <li>Điều chỉnh số lượng sản phẩm</li>
+                        <li>Tìm kiếm và chọn khách hàng</li>
+                        <li>Quyết định phương thức bán hàng (nhanh/gửi đi)</li>
+                    </ul>
+                </div>
+
+                <div class="code-section">
+                    <div class="code-title">🔍 Trong code thực tế:</div>
+                    <pre>// Không có class cụ thể - đại diện cho user session
+// Thông tin lưu trong:
+- Supabase Auth Session
+- localStorage: user preferences
+- sessionStorage: current state</pre>
+                </div>
+            </div>
+
+            <!-- Auth System -->
+            <div id="auth-system" class="entity-card system">
+                <div class="entity-header">
+                    <div class="entity-icon">🔐</div>
+                    <div>
+                        <div class="entity-title">Auth System - Hệ thống Xác thực</div>
+                        <div class="entity-subtitle">Quản lý đăng nhập, phiên làm việc và phân quyền</div>
+                    </div>
+                </div>
+                
+                <div class="entity-description">
+                    <strong>Auth System</strong> là hệ thống xác thực tập trung, sử dụng <span class="highlight">Supabase Auth</span> để quản lý đăng nhập, session và phân quyền người dùng.
+                </div>
+
+                <div class="details-section">
+                    <div class="details-title">Chức năng chính</div>
+                    <ul class="details-list">
+                        <li><span class="highlight">Authentication</span>: Xác thực username/password</li>
+                        <li><span class="highlight">Session Management</span>: Quản lý phiên đăng nhập</li>
+                        <li><span class="highlight">Role Validation</span>: Kiểm tra quyền truy cập</li>
+                        <li><span class="highlight">Token Refresh</span>: Gia hạn token tự động</li>
+                    </ul>
+                </div>
+
+                <div class="details-section">
+                    <div class="details-title">Thực thể liên quan trong Database</div>
+                    <ul class="details-list">
+                        <li><strong>accounts</strong>: Lưu thông tin tài khoản (username, role, status)</li>
+                        <li><strong>users</strong>: Thông tin cá nhân người dùng</li>
+                        <li><strong>auth.users</strong>: Bảng Supabase Auth (email, password hash)</li>
+                    </ul>
+                </div>
+
+                <div class="code-section">
+                    <div class="code-title">📁 Trong code thực tế:</div>
+                    <pre>// File: utils/supabase/client.ts
+export const createClient = () => {
+  return createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+}
+
+// File: app/auth/signin/page.tsx
+const { data: sessionData, error } = await supabase.auth.signInWithPassword({
+  email: data.email,
+  password: data.password,
+});
+
+// API Route: app/api/auth/signout/route.ts
+export async function POST() {
+  const supabase = createClient()
+  await supabase.auth.signOut()
+}</pre>
+                </div>
+            </div>
+
+            <!-- Dashboard Controller -->
+            <div id="dashboard" class="entity-card system">
+                <div class="entity-header">
+                    <div class="entity-icon">📊</div>
+                    <div>
+                        <div class="entity-title">Dashboard Controller - Bộ điều khiển Trang chủ</div>
+                        <div class="entity-subtitle">Quản lý giao diện chính và điều hướng</div>
+                    </div>
+                </div>
+                
+                <div class="entity-description">
+                    <strong>Dashboard Controller</strong> là thành phần quản lý giao diện chính sau khi đăng nhập, xử lý điều hướng menu và kiểm tra quyền truy cập các module.
+                </div>
+
+                <div class="details-section">
+                    <div class="details-title">Trách nhiệm chính</div>
+                    <ul class="details-list">
+                        <li><span class="highlight">Session Verification</span>: Kiểm tra phiên đăng nhập hợp lệ</li>
+                        <li><span class="highlight">Menu Rendering</span>: Hiển thị menu theo quyền của user</li>
+                        <li><span class="highlight">Navigation Control</span>: Điều hướng giữa các module</li>
+                        <li><span class="highlight">Layout Management</span>: Quản lý layout chung của ứng dụng</li>
+                    </ul>
+                </div>
+
+                <div class="details-section">
+                    <div class="details-title">Tương tác với các thành phần</div>
+                    <ul class="details-list">
+                        <li>Gọi <strong>Auth System</strong> để verify session</li>
+                        <li>Render menu dựa trên role của user</li>
+                        <li>Chuyển hướng đến <strong>Sales Controller</strong> khi click "Bán hàng"</li>
+                    </ul>
+                </div>
+
+                <div class="code-section">
+                    <div class="code-title">📁 Trong code thực tế:</div>
+                    <pre>// File: app/dashboard/layout.tsx
+export default function DashboardLayout({ children }) {
+  const [user, setUser] = useState(null)
+  
+  // Kiểm tra session
+  const fetchUserData = async () => {
+    const supabase = createClient()
+    const { data: { session } } = await supabase.auth.getSession()
+    
+    if (session?.user) {
+      setUser(session.user)
+    }
+  }
+  
+  // Navigation menu
+  const navigation = [
+    { name: 'Tổng quan', href: '/dashboard', icon: HomeIcon },
+    { name: 'Bán hàng', href: '/dashboard/sales', icon: ShoppingCartIcon },
+    // ... other menu items
+  ]
+}</pre>
+                </div>
+            </div>
+
+            <!-- Sales Controller -->
+            <div id="sales" class="entity-card system">
+                <div class="entity-header">
+                    <div class="entity-icon">🛒</div>
+                    <div>
+                        <div class="entity-title">Sales Controller - Bộ điều khiển Bán hàng</div>
+                        <div class="entity-subtitle">Xử lý logic nghiệp vụ bán hàng và tạo đơn hàng</div>
+                    </div>
+                </div>
+                
+                <div class="entity-description">
+                    <strong>Sales Controller</strong> là thành phần trung tâm xử lý toàn bộ quy trình bán hàng, từ tạo đơn hàng, quản lý giỏ hàng đến tính toán tổng tiền.
+                </div>
+
+                <div class="details-section">
+                    <div class="details-title">Chức năng core</div>
+                    <ul class="details-list">
+                        <li><span class="highlight">Order Management</span>: Tạo, cập nhật, xóa đơn hàng</li>
+                        <li><span class="highlight">Cart Operations</span>: Thêm/xóa sản phẩm, cập nhật số lượng</li>
+                        <li><span class="highlight">Price Calculation</span>: Tính tổng tiền, thuế, giảm giá</li>
+                        <li><span class="highlight">Stock Validation</span>: Kiểm tra tồn kho trước khi thêm</li>
+                        <li><span class="highlight">Customer Assignment</span>: Gán khách hàng cho đơn hàng</li>
+                    </ul>
+                </div>
+
+                <div class="details-section">
+                    <div class="details-title">Methods chính</div>
+                    <ul class="details-list">
+                        <li><strong>addProductToOrder(product)</strong>: Thêm sản phẩm vào đơn</li>
+                        <li><strong>updateQuantity(index, quantity)</strong>: Cập nhật số lượng</li>
+                        <li><strong>calculateTotal()</strong>: Tính tổng tiền</li>
+                        <li><strong>selectCustomer(customer)</strong>: Chọn khách hàng</li>
+                        <li><strong>validateStock(productId, quantity)</strong>: Kiểm tra tồn kho</li>
+                    </ul>
+                </div>
+
+                <div class="code-section">
+                    <div class="code-title">📁 Trong code thực tế:</div>
+                    <pre>// File: app/dashboard/sales/create/page.tsx
+const addProductToOrder = (product) => {
+  const existingIndex = selectedProducts.findIndex(p => p.product_id === product.product_id)
+  
+  if (existingIndex >= 0) {
+    // Tăng quantity nếu đã có
+    updateQuantity(existingIndex, selectedProducts[existingIndex].quantity + 1)
+  } else {
+    // Thêm mới với quantity = 1
+    setSelectedProducts([...selectedProducts, { ...product, quantity: 1 }])
+  }
+  calculateTotal()
+}
+
+const calculateTotal = () => {
+  const total = selectedProducts.reduce((sum, product) => {
+    return sum + (product.price * product.quantity)
+  }, 0)
+  setTotalAmount(total)
+}</pre>
+                </div>
+            </div>
+
+            <!-- Product Service -->
+            <div id="product" class="entity-card service">
+                <div class="entity-header">
+                    <div class="entity-icon">📦</div>
+                    <div>
+                        <div class="entity-title">Product Service - Dịch vụ Sản phẩm</div>
+                        <div class="entity-subtitle">Quản lý dữ liệu và logic nghiệp vụ sản phẩm</div>
+                    </div>
+                </div>
+                
+                <div class="entity-description">
+                    <strong>Product Service</strong> là lớp dịch vụ chuyên xử lý các thao tác liên quan đến sản phẩm như tìm kiếm, lọc, kiểm tra tồn kho.
+                </div>
+
+                <div class="details-section">
+                    <div class="details-title">Chức năng chính</div>
+                    <ul class="details-list">
+                        <li><span class="highlight">Product Search</span>: Tìm kiếm sản phẩm theo tên, mã</li>
+                        <li><span class="highlight">Category Filtering</span>: Lọc theo danh mục</li>
+                        <li><span class="highlight">Stock Checking</span>: Kiểm tra số lượng tồn kho</li>
+                        <li><span class="highlight">Price Management</span>: Quản lý giá bán, giá nhập</li>
+                        <li><span class="highlight">Product Validation</span>: Validate dữ liệu sản phẩm</li>
+                    </ul>
+                </div>
+
+                <div class="details-section">
+                    <div class="details-title">API Methods</div>
+                    <ul class="details-list">
+                        <li><strong>searchProducts(searchTerm)</strong>: Tìm kiếm với ILIKE</li>
+                        <li><strong>getProductById(id)</strong>: Lấy chi tiết sản phẩm</li>
+                        <li><strong>checkStock(productId)</strong>: Kiểm tra tồn kho</li>
+                        <li><strong>getProductsByCategory(categoryId)</strong>: Lọc theo danh mục</li>
+                    </ul>
+                </div>
+
+                <div class="details-section">
+                    <div class="details-title">Database Tables liên quan</div>
+                    <ul class="details-list">
+                        <li><strong>products</strong>: Thông tin cơ bản sản phẩm</li>
+                        <li><strong>categories</strong>: Danh mục sản phẩm</li>
+                        <li><strong>inventory</strong>: Quản lý tồn kho</li>
+                    </ul>
+                </div>
+
+                <div class="code-section">
+                    <div class="code-title">📁 Trong code thực tế:</div>
+                    <pre>// File: app/dashboard/sales/create/page.tsx
+const searchProducts = async (searchTerm) => {
+  const supabase = createClient()
+  
+  const { data, error } = await supabase
+    .from('products')
+    .select(`
+      product_id, name, price, stock_quantity,
+      categories(category_id, name)
+    `)
+    .ilike('name', `%${searchTerm}%`)
+    .eq('status', 'active')
+    .limit(10)
+    
+  if (error) {
+    console.error('Lỗi tìm kiếm sản phẩm:', error)
+    return []
+  }
+  
+  return data || []
+}</pre>
+                </div>
+            </div>
+
+            <!-- Customer Service -->
+            <div id="customer" class="entity-card service">
+                <div class="entity-header">
+                    <div class="entity-icon">👥</div>
+                    <div>
+                        <div class="entity-title">Customer Service - Dịch vụ Khách hàng</div>
+                        <div class="entity-subtitle">Quản lý thông tin và tương tác với khách hàng</div>
+                    </div>
+                </div>
+                
+                <div class="entity-description">
+                    <strong>Customer Service</strong> là lớp dịch vụ xử lý các thao tác liên quan đến khách hàng như tìm kiếm, tạo mới, cập nhật thông tin.
+                </div>
+
+                <div class="details-section">
+                    <div class="details-title">Chức năng chính</div>
+                    <ul class="details-list">
+                        <li><span class="highlight">Customer Search</span>: Tìm kiếm đa trường (tên, SĐT, email)</li>
+                        <li><span class="highlight">Customer Creation</span>: Tạo khách hàng mới nhanh</li>
+                        <li><span class="highlight">Profile Management</span>: Cập nhật thông tin khách hàng</li>
+                        <li><span class="highlight">Order History</span>: Xem lịch sử mua hàng</li>
+                        <li><span class="highlight">Loyalty Points</span>: Quản lý điểm tích lũy</li>
+                    </ul>
+                </div>
+
+                <div class="details-section">
+                    <div class="details-title">API Methods</div>
+                    <ul class="details-list">
+                        <li><strong>searchCustomers(searchTerm)</strong>: Tìm kiếm khách hàng</li>
+                        <li><strong>getCustomerById(id)</strong>: Lấy chi tiết khách hàng</li>
+                        <li><strong>createCustomer(data)</strong>: Tạo khách hàng mới</li>
+                        <li><strong>updateCustomer(id, data)</strong>: Cập nhật thông tin</li>
+                    </ul>
+                </div>
+
+                <div class="details-section">
+                    <div class="details-title">Database Tables liên quan</div>
+                    <ul class="details-list">
+                        <li><strong>customers</strong>: Thông tin cơ bản khách hàng</li>
+                        <li><strong>customer_addresses</strong>: Địa chỉ giao hàng</li>
+                        <li><strong>orders</strong>: Lịch sử đơn hàng</li>
+                    </ul>
+                </div>
+
+                <div class="code-section">
+                    <div class="code-title">📁 Trong code thực tế:</div>
+                    <pre>// File: app/dashboard/sales/create/page.tsx
+const searchCustomers = async (searchTerm) => {
+  const supabase = createClient()
+  
+  const { data, error } = await supabase
+    .from('customers')
+    .select('customer_id, full_name, phone, email')
+    .or(`full_name.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`)
+    .limit(5)
+    
+  if (error) {
+    console.error('Lỗi tìm kiếm khách hàng:', error)
+    return []
+  }
+  
+  return data || []
+}</pre>
+                </div>
+            </div>
+
+            <!-- Database -->
+            <div id="database" class="entity-card database">
+                <div class="entity-header">
+                    <div class="entity-icon">🗄️</div>
+                    <div>
+                        <div class="entity-title">Database (Supabase) - Cơ sở dữ liệu</div>
+                        <div class="entity-subtitle">PostgreSQL database với Supabase backend</div>
+                    </div>
+                </div>
+                
+                <div class="entity-description">
+                    <strong>Database</strong> là cơ sở dữ liệu PostgreSQL được quản lý bởi Supabase, lưu trữ toàn bộ dữ liệu của hệ thống QLBH.
+                </div>
+
+                <div class="details-section">
+                    <div class="details-title">12 Bảng chính trong hệ thống</div>
+                    <ul class="details-list">
+                        <li><strong>users</strong>: Thông tin cá nhân người dùng</li>
+                        <li><strong>accounts</strong>: Tài khoản đăng nhập và phân quyền</li>
+                        <li><strong>branches</strong>: Thông tin chi nhánh</li>
+                        <li><strong>categories</strong>: Danh mục sản phẩm</li>
+                        <li><strong>products</strong>: Sản phẩm và thông tin</li>
+                        <li><strong>customers</strong>: Khách hàng</li>
+                        <li><strong>orders</strong>: Đơn hàng</li>
+                        <li><strong>order_items</strong>: Chi tiết sản phẩm trong đơn</li>
+                        <li><strong>shipments</strong>: Thông tin vận chuyển</li>
+                        <li><strong>payments</strong>: Thanh toán</li>
+                        <li><strong>payment_methods</strong>: Phương thức thanh toán</li>
+                        <li><strong>returns</strong>: Đổi trả hàng</li>
+                    </ul>
+                </div>
+
+                <div class="details-section">
+                    <div class="details-title">Tính năng Supabase được sử dụng</div>
+                    <ul class="details-list">
+                        <li><span class="highlight">Supabase Auth</span>: Xác thực và phân quyền</li>
+                        <li><span class="highlight">Row Level Security</span>: Bảo mật cấp dòng</li>
+                        <li><span class="highlight">Real-time</span>: Cập nhật thời gian thực</li>
+                        <li><span class="highlight">PostgreSQL Functions</span>: Stored procedures</li>
+                        <li><span class="highlight">Triggers</span>: Tự động cập nhật dữ liệu</li>
+                    </ul>
+                </div>
+
+                <div class="code-section">
+                    <div class="code-title">📁 Cấu hình Database:</div>
+                    <pre>// File: .env.local
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+
+// File: utils/supabase/client.ts
+import { createBrowserClient } from '@supabase/ssr'
+
+export const createClient = () => {
+  return createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+}</pre>
+                </div>
+            </div>
+
+            <!-- Mối quan hệ giữa các thực thể -->
+            <div id="relationships" class="relationship-diagram">
+                <div class="relationship-title">🔄 Mối quan hệ và Tương tác giữa các Thực thể</div>
+                
+                <div style="text-align: left; max-width: 800px; margin: 0 auto;">
+                    <div class="details-section">
+                        <div class="details-title">Luồng tương tác chính</div>
+                        <ul class="details-list">
+                            <li><strong>1. Authentication Flow:</strong><br>
+                                👤 Nhân viên → 🔐 Auth System → 🗄️ Database (accounts, users)</li>
+                            <li><strong>2. Dashboard Navigation:</strong><br>
+                                👤 Nhân viên → 📊 Dashboard Controller → 🔐 Auth System (verify session)</li>
+                            <li><strong>3. Sales Module Access:</strong><br>
+                                👤 Nhân viên → 🛒 Sales Controller → 🔐 Auth System (check role)</li>
+                            <li><strong>4. Product Operations:</strong><br>
+                                🛒 Sales Controller → 📦 Product Service → 🗄️ Database (products, categories)</li>
+                            <li><strong>5. Customer Operations:</strong><br>
+                                🛒 Sales Controller → 👥 Customer Service → 🗄️ Database (customers)</li>
+                        </ul>
+                    </div>
+
+                    <div class="details-section">
+                        <div class="details-title">Dependency và Coupling</div>
+                        <ul class="details-list">
+                            <li><strong>High Coupling:</strong> Sales Controller ↔ Product/Customer Services</li>
+                            <li><strong>Medium Coupling:</strong> Dashboard Controller ↔ Auth System</li>
+                            <li><strong>Low Coupling:</strong> Services ↔ Database (chỉ qua API calls)</li>
+                        </ul>
+                    </div>
+
+                    <div class="details-section">
+                        <div class="details-title">Pattern Architecture được áp dụng</div>
+                        <ul class="details-list">
+                            <li><strong>MVC Pattern:</strong> Controller (Sales) - Model (Services) - View (React Components)</li>
+                            <li><strong>Service Layer:</strong> Product Service, Customer Service tách biệt logic</li>
+                            <li><strong>Repository Pattern:</strong> Database access được abstract qua Supabase client</li>
+                            <li><strong>Authentication Middleware:</strong> Auth System kiểm tra mọi request</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tổng kết -->
+            <div class="entity-card" style="border-left-color: #9b59b6;">
+                <div class="entity-header">
+                    <div class="entity-icon">📝</div>
+                    <div>
+                        <div class="entity-title">Tổng kết</div>
+                        <div class="entity-subtitle">Hiểu rõ vai trò từng thực thể trong hệ thống</div>
+                    </div>
+                </div>
+                
+                <div class="entity-description">
+                    Sơ đồ tuần tự <strong>"Chuẩn bị Bán hàng"</strong> thể hiện một quy trình hoàn chỉnh từ đăng nhập đến chuẩn bị tạo đơn hàng. Mỗi thực thể đều có vai trò rõ ràng và tương tác chặt chẽ với nhau.
+                </div>
+
+                <div class="details-section">
+                    <div class="details-title">Điểm mạnh của kiến trúc</div>
+                    <ul class="details-list">
+                        <li><strong>Separation of Concerns:</strong> Mỗi thành phần có trách nhiệm riêng biệt</li>
+                        <li><strong>Scalability:</strong> Dễ mở rộng thêm tính năng mới</li>
+                        <li><strong>Maintainability:</strong> Code dễ bảo trì và debug</li>
+                        <li><strong>Security:</strong> Kiểm tra quyền ở nhiều lớp</li>
+                    </ul>
+                </div>
+
+                <div class="details-section">
+                    <div class="details-title">Có thể cải thiện</div>
+                    <ul class="details-list">
+                        <li>Thêm <strong>Caching Layer</strong> để tối ưu performance</li>
+                        <li>Implement <strong>Error Boundary</strong> cho error handling tốt hơn</li>
+                        <li>Áp dụng <strong>State Management</strong> (Redux/Zustand) cho complex state</li>
+                        <li>Thêm <strong>Logging Service</strong> để track user actions</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Smooth scrolling for TOC links
+        document.querySelectorAll('.toc-list a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                const targetElement = document.getElementById(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Add animation delay for cards
+        document.querySelectorAll('.entity-card').forEach((card, index) => {
+            card.style.animationDelay = `${index * 0.1}s`;
+        });
+    </script>
+</body>
+</html>

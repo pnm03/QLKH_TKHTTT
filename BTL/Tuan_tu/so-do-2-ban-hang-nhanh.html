@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sơ đồ Tuần tự - Bán hàng Nhanh - QLBH System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .info-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 5px solid #28a745;
+        }
+
+        .info-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .info-section ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info-section li {
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .info-section li:before {
+            content: "✓";
+            color: #28a745;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        .code-container {
+            background: #1e1e1e;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .code-header {
+            background: #2d2d2d;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #404040;
+        }
+
+        .code-title {
+            color: #e6e6e6;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .copy-btn {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .copy-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+        }
+
+        .plantuml-code {
+            background: #1e1e1e;
+            color: #e6e6e6;
+            padding: 25px;
+            font-family: 'Fira Code', 'Monaco', 'Cascadia Code', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .plantuml-code::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .plantuml-code::-webkit-scrollbar-track {
+            background: #2d2d2d;
+        }
+
+        .plantuml-code::-webkit-scrollbar-thumb {
+            background: #555;
+            border-radius: 4px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .usage-guide {
+            background: #e3f2fd;
+            padding: 25px;
+            border-radius: 10px;
+            border-left: 5px solid #2196f3;
+            margin-top: 30px;
+        }
+
+        .usage-guide h3 {
+            color: #1976d2;
+            margin-bottom: 15px;
+        }
+
+        .usage-guide ol {
+            color: #424242;
+            padding-left: 20px;
+        }
+
+        .usage-guide li {
+            margin-bottom: 8px;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .container {
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .plantuml-code {
+                font-size: 12px;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚡ Sơ đồ Tuần tự - Bán hàng Nhanh</h1>
+            <p>Quy trình thanh toán tại chỗ với in hóa đơn</p>
+        </div>
+
+        <div class="content">
+            <div class="info-section">
+                <h3>🎯 Mô tả quy trình Bán hàng Nhanh</h3>
+                <ul>
+                    <li><strong>Điều kiện tiên quyết:</strong> Đã hoàn thành quy trình chuẩn bị (chọn sản phẩm, khách hàng)</li>
+                    <li><strong>Validation đơn hàng:</strong> Kiểm tra tồn kho và tính hợp lệ</li>
+                    <li><strong>Chọn phương thức thanh toán:</strong> Tiền mặt, thẻ, chuyển khoản</li>
+                    <li><strong>Tính toán tiền thối:</strong> Nhập số tiền khách trả, tính tiền thối</li>
+                    <li><strong>Xác nhận thanh toán:</strong> Xử lý thanh toán và tạo đơn hàng</li>
+                    <li><strong>Cập nhật database:</strong> Tạo order, orderdetails, cập nhật tồn kho</li>
+                    <li><strong>In hóa đơn:</strong> Hiển thị preview và in hóa đơn bán hàng</li>
+                    <li><strong>Reset giao diện:</strong> Làm sạch form cho đơn hàng tiếp theo</li>
+                </ul>
+            </div>
+
+            <div class="code-container">
+                <div class="code-header">
+                    <div class="code-title">⚡ PlantUML Sequence Diagram - Bán hàng Nhanh</div>
+                    <button class="copy-btn" onclick="copyCode()">📋 Copy Code</button>
+                </div>
+                <pre class="plantuml-code" id="plantumlCode">@startuml Bán hàng Nhanh - QLBH System
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam actorBorderColor #2C3E50
+skinparam participantBorderColor #28A745
+skinparam sequenceArrowColor #E74C3C
+skinparam sequenceLifeLineBorderColor #95A5A6
+
+title **QUY TRÌNH BÁN HÀNG NHANH**\n//Thanh toán tại chỗ với in hóa đơn//
+
+actor "👤 Nhân viên\nBán hàng" as Staff
+participant "🛒 Sales\nController" as Sales
+participant "💳 Payment\nService" as Payment
+participant "📊 Order\nService" as Order
+participant "📦 Stock\nService" as Stock
+participant "🖨️ Invoice\nService" as Invoice
+database "🗄️ Database\n(Supabase)" as DB
+
+note over Staff, DB : **ĐIỀU KIỆN TIÊN QUYẾT:**\n• Đã chọn sản phẩm với số lượng\n• Đã chọn khách hàng (hoặc khách vãng lai)\n• Hiển thị tổng tiền cần thanh toán
+
+== KHỞI TẠO BÁN HÀNG NHANH ==
+
+Staff -> Sales : 1. Click "Bán hàng nhanh"
+activate Sales
+Sales -> Sales : 1.1 validateOrder() - Kiểm tra đơn hàng
+note right : Validation:\n• Có sản phẩm trong đơn\n• Số lượng không vượt tồn kho\n• Tính toán lại tổng tiền
+
+alt **Validation thành công**
+    Sales -> Sales : 1.2 Tính tổng tiền tất cả hóa đơn
+    Sales -> Payment : 1.3 Load payment methods
+    activate Payment
+    Payment -> DB : 1.3.1 Query payment methods
+    activate DB
+    DB --> Payment : 1.3.2 Return payment methods list
+    deactivate DB
+    Payment --> Sales : 1.3.3 Payment methods data
+    deactivate Payment
+    
+    Sales --> Staff : 1.4 Hiển thị popup thanh toán nhanh
+else **Validation thất bại**
+    Sales --> Staff : ❌ Thông báo lỗi validation
+end
+deactivate Sales
+
+== CHỌN PHƯƠNG THỨC THANH TOÁN ==
+
+Staff -> Sales : 2. Chọn phương thức thanh toán
+activate Sales
+Sales -> Sales : 2.1 setSelectedPaymentMethod(paymentId)
+Sales --> Staff : 2.2 Hiển thị phương thức đã chọn
+deactivate Sales
+
+Staff -> Sales : 3. Nhập số tiền khách trả
+activate Sales
+Sales -> Sales : 3.1 setCustomerPaid(amount)
+Sales -> Sales : 3.2 Tính toán tiền thối
+Sales --> Staff : 3.3 Hiển thị tiền thối (real-time)
+deactivate Sales
+
+opt **Nhập giảm giá (nếu có)**
+    Staff -> Sales : 4. Nhập số tiền giảm giá
+    activate Sales
+    Sales -> Sales : 4.1 setDiscount(discountAmount)
+    Sales -> Sales : 4.2 Tính lại tổng tiền sau giảm giá
+    Sales --> Staff : 4.3 Cập nhật hiển thị tổng tiền
+    deactivate Sales
+end
+
+== XÁC NHẬN THANH TOÁN ==
+
+Staff -> Sales : 5. Click "Xác nhận thanh toán"
+activate Sales
+Sales -> Sales : 5.1 Validation thanh toán
+note right : Kiểm tra:\n• Đã chọn phương thức thanh toán\n• Số tiền khách trả ≥ tổng tiền\n• Thông tin hợp lệ
+
+alt **Validation thanh toán OK**
+    Sales --> Staff : 5.2 Hiển thị popup xác nhận chi tiết
+    note right : Popup xác nhận:\n• Chi tiết sản phẩm\n• Thông tin thanh toán\n• Số tiền khách trả\n• Tiền thối
+    deactivate Sales
+    
+    Staff -> Sales : 6. Click "Xác nhận" trong popup
+    activate Sales
+    Sales -> Order : 6.1 Bắt đầu tạo đơn hàng
+    activate Order
+    
+    == TẠO ĐƠN HÀNG VÀ CẬP NHẬT DATABASE ==
+    
+    Order -> Order : 6.2 Tạo order_id ngẫu nhiên
+    note right : Format: ORD-YYYYMMDD-XXXXX
+    
+    Order -> DB : 6.3 Tạo bản ghi Orders
+    activate DB
+    DB --> Order : 6.4 Confirm order created
+    
+    Order -> Order : 6.5 Tạo order details
+    loop **Cho mỗi sản phẩm trong đơn**
+        Order -> Order : 6.5.1 Tạo orderdetail_id
+        Order -> DB : 6.5.2 INSERT orderdetails
+        activate DB
+        DB -> DB : 6.5.3 🔥 TRIGGER: Cập nhật stock_quantity
+        DB --> Order : 6.5.4 Confirm orderdetail created
+        deactivate DB
+    end
+    
+    deactivate DB
+    Order --> Sales : 6.6 Đơn hàng tạo thành công
+    deactivate Order
+    
+    Sales --> Staff : 6.7 Thông báo "Thanh toán thành công"
+    
+else **Validation thanh toán thất bại**
+    Sales --> Staff : ❌ Thông báo lỗi
+    deactivate Sales
+end
+
+== IN HÓA ĐƠN ==
+
+Staff -> Sales : 7. Click "In hóa đơn" trong popup
+activate Sales
+Sales -> Invoice : 7.1 Tạo dữ liệu hóa đơn
+activate Invoice
+Invoice -> Invoice : 7.2 Format invoice data
+Invoice --> Sales : 7.3 Invoice data prepared
+deactivate Invoice
+Sales --> Staff : 7.4 Hiển thị preview hóa đơn
+deactivate Sales
+
+Staff -> Sales : 8. Click "In" trong preview
+activate Sales
+Sales -> Invoice : 8.1 Gọi chức năng in
+activate Invoice
+Invoice -> Invoice : 8.2 Thêm CSS cho print
+Invoice -> Invoice : 8.3 window.print()
+Invoice --> Staff : 8.4 Mở dialog in của browser
+deactivate Invoice
+deactivate Sales
+
+== RESET VÀ CHUẨN BỊ ĐƠN TIẾP THEO ==
+
+Staff -> Sales : 9. Đóng popup (sau khi in)
+activate Sales
+Sales -> Sales : 9.1 Reset hóa đơn hiện tại
+note right : Reset state:\n• Xóa sản phẩm khỏi hóa đơn\n• Clear thông tin khách hàng\n• Reset tổng tiền = 0\n• Clear selected customer
+
+Sales -> Stock : 9.2 Refresh product data
+activate Stock
+Stock -> DB : 9.2.1 Reload products với stock mới
+activate DB
+DB --> Stock : 9.2.2 Updated product data
+deactivate DB
+Stock --> Sales : 9.2.3 Cập nhật tồn kho hiện tại
+deactivate Stock
+
+Sales --> Staff : 9.3 Hiển thị giao diện sạch
+note right : Sẵn sàng cho đơn hàng tiếp theo:\n• Form trống\n• Tồn kho đã cập nhật\n• Thông báo "Giao dịch hoàn tất"
+deactivate Sales
+
+note over Staff, DB : **KẾT QUẢ:**\n• Đơn hàng đã được tạo và thanh toán\n• Tồn kho đã được cập nhật\n• Hóa đơn đã được in\n• Sẵn sàng cho giao dịch tiếp theo
+
+@enduml</pre>
+            </div>
+
+            <div class="info-section">
+                <h3>🔍 Chi tiết kỹ thuật</h3>
+                <ul>
+                    <li><strong>Order ID Generation:</strong> Format ORD-YYYYMMDD-XXXXX với 5 ký tự ngẫu nhiên</li>
+                    <li><strong>Database Triggers:</strong> Tự động cập nhật stock_quantity khi tạo orderdetails</li>
+                    <li><strong>Transaction Safety:</strong> Sử dụng try-catch để rollback nếu có lỗi</li>
+                    <li><strong>Real-time Calculation:</strong> Tính tiền thối tức thì khi nhập số tiền</li>
+                    <li><strong>Print Functionality:</strong> CSS @media print tối ưu hóa cho in ấn</li>
+                    <li><strong>State Management:</strong> Reset toàn bộ state sau khi hoàn thành giao dịch</li>
+                    <li><strong>Stock Refresh:</strong> Reload dữ liệu sản phẩm để cập nhật tồn kho mới</li>
+                </ul>
+            </div>
+
+            <div class="info-section">
+                <h3>💡 Lưu ý quan trọng</h3>
+                <ul>
+                    <li><strong>Validation 2 lớp:</strong> Kiểm tra ở frontend và backend</li>
+                    <li><strong>Customer optional:</strong> Có thể bỏ trống khách hàng cho khách vãng lai</li>
+                    <li><strong>Payment methods:</strong> Load động từ database, có thể cấu hình</li>
+                    <li><strong>Error handling:</strong> Hiển thị thông báo lỗi rõ ràng cho user</li>
+                    <li><strong>Print preview:</strong> Cho phép xem trước trước khi in</li>
+                    <li><strong>Multi-invoice:</strong> Có thể xử lý nhiều hóa đơn cùng lúc</li>
+                </ul>
+            </div>
+
+            <div class="usage-guide">
+                <h3>📖 Hướng dẫn sử dụng</h3>
+                <ol>
+                    <li>Copy mã PlantUML bằng nút <strong>"📋 Copy Code"</strong></li>
+                    <li>Truy cập <strong>PlantUML Online</strong>: <a href="http://www.plantuml.com/plantuml/uml/" target="_blank">plantuml.com</a></li>
+                    <li>Paste mã vào editor và nhấn <strong>"Submit"</strong></li>
+                    <li>Tải về dưới dạng PNG, SVG hoặc PDF để sử dụng</li>
+                    <li>Có thể tùy chỉnh theme và style theo yêu cầu</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification">
+        ✅ Đã copy thành công vào clipboard!
+    </div>
+
+    <script>
+        function copyCode() {
+            const code = document.getElementById('plantumlCode').textContent;
+            
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(code).then(function() {
+                    showNotification();
+                }).catch(function(err) {
+                    console.error('Could not copy text: ', err);
+                    fallbackCopyTextToClipboard(code);
+                });
+            } else {
+                fallbackCopyTextToClipboard(code);
+            }
+        }
+
+        function fallbackCopyTextToClipboard(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.position = "fixed";
+
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showNotification();
+                } else {
+                    console.error('Fallback: Could not copy text');
+                }
+            } catch (err) {
+                console.error('Fallback: Could not copy text', err);
+            }
+
+            document.body.removeChild(textArea);
+        }
+
+        function showNotification() {
+            const notification = document.getElementById('notification');
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html> 

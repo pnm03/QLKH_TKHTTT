@@ -87,37 +87,54 @@ export default function UsersPage() {
           
           const supabase = createClient();
           
-          // Join bảng users và accounts để lấy thông tin đầy đủ
-          const { data, error } = await supabase
+          // Lấy dữ liệu users trước
+          const { data: usersData, error: usersError } = await supabase
             .from('users')
-            .select(`
-              user_id,
-              email,
-              full_name,
-              avatar_url,
-              created_at,
-              accounts:user_id (
-                role,
-                status
-              )
-            `)
+            .select('user_id, email, full_name, avatar_url, created_at')
             .order('created_at', { ascending: false });
           
-          if (error) {
-            throw error;
+          if (usersError) {
+            throw usersError;
           }
           
-          if (data) {
-            // Chuyển đổi dữ liệu trả về thành định dạng phù hợp
-            const formattedUsers: User[] = data.map((item: any) => ({
-              id: item.user_id,
-              name: item.full_name || 'Chưa cập nhật',
-              email: item.email,
-              role: item.accounts?.role || 'Không có quyền',
-              status: item.accounts?.status || 'inactive',
-              avatar_url: item.avatar_url,
-              created_at: item.created_at
-            }));
+          if (usersData && usersData.length > 0) {
+            // Lấy user_ids để query accounts
+            const userIds = usersData.map((u: any) => u.user_id);
+            
+            // Lấy dữ liệu accounts
+            const { data: accountsData, error: accountsError } = await supabase
+              .from('accounts')
+              .select('user_id, role, status')
+              .in('user_id', userIds);
+            
+            if (accountsError) {
+              console.error('Lỗi khi lấy accounts:', accountsError);
+            }
+            
+            // Tạo map user_id -> account info
+            const accountsMap = new Map();
+            if (accountsData) {
+              accountsData.forEach((account: any) => {
+                accountsMap.set(account.user_id, {
+                  role: account.role,
+                  status: account.status
+                });
+              });
+            }
+            
+            // Merge dữ liệu
+            const formattedUsers: User[] = usersData.map((item: any) => {
+              const account = accountsMap.get(item.user_id);
+              return {
+                id: item.user_id,
+                name: item.full_name || 'Chưa cập nhật',
+                email: item.email,
+                role: account?.role || 'Không có quyền',
+                status: account?.status || 'inactive',
+                avatar_url: item.avatar_url,
+                created_at: item.created_at
+              };
+            });
             
             setUsers(formattedUsers);
           }

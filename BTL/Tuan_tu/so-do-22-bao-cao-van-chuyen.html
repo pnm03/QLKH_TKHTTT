@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sơ đồ tuần tự - Báo cáo vận chuyển</title>
+    <script src="https://cdn.jsdelivr.net/npm/plantuml-encoder@1.4.0/dist/plantuml-encoder.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 15px;
+        }
+        .diagram-container {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #fafafa;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        .description {
+            background-color: #e8f4fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #3498db;
+        }
+        .description h3 {
+            color: #2980b9;
+            margin-top: 0;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sơ đồ tuần tự - Báo cáo vận chuyển</h1>
+        
+        <div class="description">
+            <h3>Mô tả chức năng</h3>
+            <p>Sơ đồ này mô tả quy trình tạo báo cáo vận chuyển trong hệ thống QLBH, bao gồm: thống kê tổng quan về vận chuyển, phân tích hiệu suất giao hàng, sản phẩm được vận chuyển nhiều nhất và xuất báo cáo PDF.</p>
+        </div>
+
+        <div class="diagram-container">
+            <img id="diagram" src="" alt="Đang tạo sơ đồ...">
+        </div>
+    </div>
+
+    <script>
+        const plantUMLCode = `
+@startuml
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam sequenceParticipant underline
+
+actor "User" as user
+participant "Shipping Report Page" as page
+participant "Report Controller" as controller
+participant "Supabase DB" as db
+participant "Chart Component" as chart
+participant "PDF Generator" as pdf
+
+== 1. Truy cập báo cáo vận chuyển ==
+user -> page: Truy cập /dashboard/reports/shipping
+activate page
+page -> controller: Tải dữ liệu báo cáo vận chuyển
+controller -> db: SELECT orders WHERE is_shipping = true
+note right: Lấy đơn hàng có vận chuyển
+db --> controller: Orders with shipping data
+controller -> db: SELECT shippings LEFT JOIN orders
+db --> controller: Shipping details với order info
+controller -> controller: Tính toán thống kê tổng quan
+controller --> page: Shipping summary + data
+page --> user: Hiển thị dashboard báo cáo vận chuyển
+deactivate page
+
+== 2. Tính toán thống kê vận chuyển ==
+user -> page: Xem thống kê tổng quan
+activate page
+page -> controller: Calculate shipping metrics
+controller -> controller: Tính toán key metrics
+note right: Thống kê:\\nTổng đơn vận chuyển\\nĐơn đã thanh toán\\nTỷ lệ thanh toán\\nĐơn đã giao hàng\\nTỷ lệ giao thành công
+controller -> db: Count by shipping status
+db --> controller: Status distribution data
+controller --> page: Shipping KPIs
+page --> user: Hiển thị cards thống kê
+deactivate page
+
+== 3. Phân tích hiệu suất giao hàng ==
+user -> page: Xem phân tích hiệu suất
+activate page
+page -> controller: Analyze delivery performance
+controller -> db: SELECT shippings với delivery dates
+db --> controller: Delivery timeline data
+controller -> controller: Tính toán delivery metrics
+note right: Phân tích:\\nThời gian giao hàng trung bình\\nTỷ lệ giao đúng hạn\\nĐơn bị delay\\nTrạng thái vận chuyển
+controller -> chart: Tạo delivery performance chart
+chart -> chart: Render biểu đồ hiệu suất
+chart --> controller: Performance chart ready
+controller --> page: Delivery metrics + chart
+page --> user: Hiển thị phân tích hiệu suất giao hàng
+deactivate page
+
+== 4. Top sản phẩm vận chuyển ==
+user -> page: Xem sản phẩm được vận chuyển nhiều
+activate page
+page -> controller: Calculate top shipped products
+controller -> db: SELECT orderdetails WHERE order có shipping
+note right: JOIN với orders\\nWHERE is_shipping = true\\nGROUP BY product_name
+db --> controller: Product shipping frequency data
+controller -> controller: Rank products by shipping count
+controller --> page: Top products list
+page --> user: Hiển thị bảng top sản phẩm
+deactivate page
+
+== 5. Phân tích theo đơn vị vận chuyển ==
+user -> page: Xem phân tích theo carrier
+activate page
+page -> controller: Group by shipping carriers
+controller -> db: SELECT shippings GROUP BY carrier
+db --> controller: Carrier performance data
+controller -> controller: Tính metrics cho từng carrier
+note right: Phân tích carrier:\\nSố lượng đơn\\nTỷ lệ thành công\\nThời gian giao TB\\nChi phí vận chuyển TB
+controller -> chart: Tạo carrier comparison chart
+chart -> chart: Render biểu đồ so sánh carriers
+chart --> controller: Carrier chart ready
+controller --> page: Carrier analysis
+page --> user: Hiển thị phân tích theo đơn vị VC
+deactivate page
+
+== 6. Lọc theo khoảng thời gian ==
+user -> page: Thiết lập bộ lọc thời gian
+activate page
+page -> controller: Apply date range filter
+controller -> db: SELECT với WHERE date conditions
+db --> controller: Filtered shipping data
+controller -> controller: Recalculate all metrics
+controller -> chart: Update all charts
+chart -> chart: Re-render với filtered data
+chart --> controller: Updated charts
+controller --> page: Filtered report data
+page --> user: Cập nhật báo cáo theo thời gian
+deactivate page
+
+== 7. Phân tích COD và chi phí ==
+user -> page: Xem phân tích COD và chi phí
+activate page
+page -> controller: Analyze COD and shipping costs
+controller -> db: SELECT shippings với shipping_cost, COD data
+db --> controller: Cost and COD data
+controller -> controller: Tính toán cost metrics
+note right: Phân tích chi phí:\\nTổng phí vận chuyển\\nĐơn COD\\nTiền thu hộ\\nChi phí trung bình
+controller -> chart: Tạo cost analysis chart
+chart -> chart: Render biểu đồ phân tích chi phí
+chart --> controller: Cost chart ready
+controller --> page: Cost analysis data
+page --> user: Hiển thị phân tích chi phí và COD
+deactivate page
+
+== 8. Xuất báo cáo PDF ==
+user -> page: Nhấn "Xuất PDF"
+activate page
+page -> pdf: Tạo shipping report PDF
+activate pdf
+pdf -> controller: Lấy complete shipping data
+controller -> db: SELECT all relevant shipping data
+db --> controller: Complete dataset
+controller --> pdf: Data ready for PDF
+pdf -> chart: Capture all charts as images
+chart --> pdf: Chart images
+pdf -> pdf: Tạo PDF layout với shipping report
+note right: PDF bao gồm:\\nHeader báo cáo VC\\nThống kê tổng quan\\nBiểu đồ hiệu suất\\nTop sản phẩm\\nPhân tích carriers\\nChi phí và COD
+pdf --> page: PDF file generated
+deactivate pdf
+page --> user: Download PDF báo cáo vận chuyển
+deactivate page
+
+== 9. Refresh dữ liệu ==
+user -> page: Nhấn "Làm mới dữ liệu"
+activate page
+page -> controller: Reload shipping report data
+controller -> db: SELECT latest shipping data
+db --> controller: Updated shipping data
+controller -> controller: Recalculate all metrics
+controller -> chart: Refresh all charts
+chart -> chart: Re-render với dữ liệu mới
+chart --> controller: Refreshed charts
+controller --> page: Updated report
+page --> user: Hiển thị báo cáo với dữ liệu mới nhất
+deactivate page
+
+@enduml
+        `;
+
+        // Encode PlantUML và tạo URL
+        const encoded = plantumlEncoder.encode(plantUMLCode);
+        const diagramUrl = `https://www.plantuml.com/plantuml/png/${encoded}`;
+        
+        // Hiển thị sơ đồ
+        document.getElementById('diagram').src = diagramUrl;
+    </script>
+</body>
+</html> 

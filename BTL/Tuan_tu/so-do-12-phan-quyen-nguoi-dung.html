@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sơ đồ tuần tự - Phân quyền Người dùng</title>
+    <script src="https://cdn.jsdelivr.net/npm/plantuml-encoder@1.4.0/dist/plantuml-encoder.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 15px;
+        }
+        .diagram-container {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #fafafa;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        .description {
+            background-color: #e8f4fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #3498db;
+        }
+        .description h3 {
+            color: #2980b9;
+            margin-top: 0;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sơ đồ tuần tự - Phân quyền Người dùng</h1>
+        
+        <div class="description">
+            <h3>Mô tả chức năng</h3>
+            <p>Sơ đồ này mô tả quy trình phân quyền người dùng trong hệ thống QLBH, bao gồm: kiểm tra quyền admin, tải thông tin người dùng, hiển thị form phân quyền với các ràng buộc bảo mật và cập nhật role/status trong database.</p>
+        </div>
+
+        <div class="diagram-container">
+            <img id="diagram" src="" alt="Đang tạo sơ đồ...">
+        </div>
+    </div>
+
+    <script>
+        const plantUMLCode = `
+@startuml
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam sequenceParticipant underline
+
+actor "Admin" as admin
+participant "Permissions Page" as page
+participant "User Controller" as controller
+participant "Supabase DB" as db
+
+== 1. Truy cập trang phân quyền ==
+admin -> page: Truy cập /dashboard/users/permissions/[id]
+activate page
+page -> controller: Kiểm tra quyền admin hiện tại
+alt Không phải admin
+    controller --> page: Access denied
+    page --> admin: Thông báo từ chối truy cập
+else Là admin
+    page -> controller: Tải thông tin user target
+    controller -> db: SELECT users WHERE user_id/id
+    db --> controller: Thông tin cơ bản user
+    controller -> db: SELECT accounts WHERE user_id
+    db --> controller: Role và status hiện tại
+    controller --> page: Dữ liệu user đầy đủ
+    page --> admin: Hiển thị form phân quyền
+end
+deactivate page
+
+== 2. Kiểm tra ràng buộc phân quyền ==
+admin -> page: Xem thông tin người dùng target
+activate page
+page -> controller: Phân tích quyền và ràng buộc
+alt Target user là admin khác
+    controller --> page: Cảnh báo không thể chỉnh sửa admin
+    page --> admin: Thông báo "Không thể chỉnh sửa admin khác"
+    note right: Form ở chế độ readonly
+else Target user là chính admin hiện tại
+    controller --> page: Cảnh báo không thể tự chỉnh sửa
+    page --> admin: Thông báo "Không thể thay đổi quyền của chính mình"
+    note right: Form ở chế độ readonly
+else Target user là nhân viên
+    controller --> page: Cho phép chỉnh sửa
+    page --> admin: Form có thể chỉnh sửa role và status
+    note right: Select box cho:\\nrole: admin, NVBH, NVK\\nstatus: active, inactive, locked
+end
+deactivate page
+
+== 3. Cập nhật phân quyền ==
+admin -> page: Thay đổi role/status và submit
+activate page
+page -> controller: Validate form data
+alt Validation failed
+    controller --> page: Lỗi validation
+    page --> admin: Hiển thị lỗi form
+else Validation passed
+    page -> controller: Kiểm tra lại ràng buộc
+    alt Target vẫn là admin
+        controller --> page: Từ chối cập nhật
+        page --> admin: Thông báo lỗi bảo mật
+    else Target là nhân viên
+        controller -> db: UPDATE accounts SET role, status
+        note right: Cập nhật trong bảng accounts\\nWHERE user_id = target_id
+        alt Cập nhật thành công
+            db --> controller: Success
+            controller --> page: Thông báo thành công
+            page --> admin: "Cập nhật phân quyền thành công"
+        else Cập nhật thất bại
+            db --> controller: Error
+            controller --> page: Thông báo lỗi database
+            page --> admin: Hiển thị lỗi cập nhật
+        end
+    end
+end
+deactivate page
+
+== 4. Hiển thị thông tin quyền ==
+admin -> page: Xem mô tả quyền của role
+activate page
+page -> controller: Lấy mô tả quyền theo role
+note right: Admin: Toàn quyền hệ thống\\nNVBH: Quản lý bán hàng\\nNVK: Quản lý kho
+controller --> page: Thông tin chi tiết quyền
+page --> admin: Hiển thị mô tả quyền tương ứng
+deactivate page
+
+== 5. Quay lại trang trước ==
+admin -> page: Nhấn "Quay lại"
+activate page
+page --> admin: Redirect to previous page
+deactivate page
+
+@enduml
+        `;
+
+        // Encode PlantUML và tạo URL
+        const encoded = plantumlEncoder.encode(plantUMLCode);
+        const diagramUrl = `https://www.plantuml.com/plantuml/png/${encoded}`;
+        
+        // Hiển thị sơ đồ
+        document.getElementById('diagram').src = diagramUrl;
+    </script>
+</body>
+</html> 

@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sequence Diagrams - Hệ thống QLBH</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #4a6741 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .diagram-grid {
+            display: grid;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .diagram-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .diagram-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .diagram-header {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .diagram-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+
+        .diagram-number {
+            background: rgba(255,255,255,0.2);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .diagram-description {
+            padding: 20px;
+            background: white;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .actors-section {
+            padding: 15px 20px;
+            background: #f1f3f4;
+        }
+
+        .actors-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .actors-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .actor-tag {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .code-section {
+            position: relative;
+        }
+
+        .code-header {
+            background: #2c3e50;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .code-title {
+            font-weight: 600;
+        }
+
+        .copy-btn {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .copy-btn:hover {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            transform: scale(1.05);
+        }
+
+        .copy-btn.copied {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+
+        .code-content {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            overflow-x: auto;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .code-content::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .code-content::-webkit-scrollbar-thumb {
+            background: #4a5568;
+            border-radius: 4px;
+        }
+
+        .code-content::-webkit-scrollbar-track {
+            background: #2d3748;
+        }
+
+        .plantuml-keyword {
+            color: #569cd6;
+        }
+
+        .plantuml-string {
+            color: #ce9178;
+        }
+
+        .plantuml-comment {
+            color: #6a9955;
+        }
+
+        .usage-section {
+            padding: 20px;
+            background: #f8f9fc;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .usage-title {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        .usage-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .usage-item {
+            background: white;
+            margin-bottom: 8px;
+            padding: 12px 15px;
+            border-radius: 6px;
+            border-left: 4px solid #3498db;
+            font-size: 0.95rem;
+        }
+
+        .footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: 30px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .diagram-header {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+            
+            .actors-list {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔄 Sequence Diagrams</h1>
+            <p>Sơ đồ tuần tự cho các chức năng chính của Hệ thống Quản lý Bán hàng (QLBH)</p>
+        </div>        <div class="content">
+            <div class="diagram-grid">
+                <!-- Diagram 1: Quick Sale -->
+                <div class="diagram-card">
+                    <div class="diagram-header">
+                        <div class="diagram-title">Bán hàng nhanh (Quick Sale)</div>
+                        <div class="diagram-number">01</div>
+                    </div>
+                    <div class="diagram-description">
+                        <p>Sơ đồ mô tả quy trình tạo đơn hàng bán nhanh, từ việc thêm sản phẩm vào giỏ hàng đến xác nhận thanh toán và cập nhật tồn kho.</p>
+                    </div>
+                    <div class="actors-section">
+                        <div class="actors-title">👥 Actors:</div>
+                        <div class="actors-list">
+                            <span class="actor-tag">Nhân viên bán hàng</span>
+                            <span class="actor-tag">Hệ thống bán hàng</span>
+                            <span class="actor-tag">Cơ sở dữ liệu</span>
+                            <span class="actor-tag">Hệ thống tồn kho</span>
+                        </div>
+                    </div>
+                    <div class="code-section">
+                        <div class="code-header">
+                            <div class="code-title">📋 PlantUML Code</div>
+                            <button class="copy-btn" onclick="copyToClipboard('quickSaleCode', this)">
+                                📋 Copy Code
+                            </button>
+                        </div>
+                        <div class="code-content" id="quickSaleCode">@startuml Quick_Sale_Sequence_Diagram
+!theme aws-orange
+title Sơ đồ Tuần tự: Tạo Đơn hàng Bán nhanh (Quick Sale)
+
+actor "Nhân viên\nBán hàng" as Staff
+participant "Giao diện\nTạo đơn hàng" as UI
+participant "Sales System" as System
+participant "Inventory\nSystem" as Inventory
+database "Database" as DB
+
+== Khởi tạo và Thêm sản phẩm ==
+Staff -> UI: Truy cập trang tạo đơn hàng\n(/dashboard/sales/create)
+UI -> System: Khởi tạo hóa đơn mới
+System -> DB: Lấy danh sách sản phẩm mặc định\n(fetchDefaultProducts)
+DB --> System: Trả về 5 sản phẩm đầu tiên
+System --> UI: Hiển thị sản phẩm
+
+Staff -> UI: Tìm kiếm sản phẩm (searchTerm)
+UI -> DB: Truy vấn sản phẩm theo từ khóa
+DB --> UI: Trả về kết quả tìm kiếm
+
+Staff -> UI: Chọn sản phẩm và số lượng
+UI -> System: addProductToInvoice(product, quantity)
+System -> Inventory: Kiểm tra tồn kho (validateStock)
+Inventory --> System: Xác nhận đủ hàng
+System -> UI: Thêm vào currentInvoice.products
+UI -> System: calculateTotals()
+System --> UI: Cập nhật totalAmount, amountToPay
+
+== Xử lý Thanh toán ==
+Staff -> UI: Nhấn "Bán hàng nhanh"
+UI -> System: openQuickSalePopup()
+System -> Inventory: validateStockBeforeCheckout()
+
+note right of Inventory
+  Kiểm tra tồn kho cho tất cả 
+  sản phẩm trong tất cả hóa đơn
+  Tính tổng số lượng cần mua
+  cho mỗi sản phẩm
+end note
+
+Inventory --> System: Xác nhận đủ tồn kho
+System --> UI: Hiển thị popup thanh toán
+
+Staff -> UI: Chọn phương thức thanh toán
+UI -> DB: Lấy danh sách phương thức thanh toán\n(fetchPaymentMethods)
+DB --> UI: Trả về payment methods
+
+Staff -> UI: Nhập số tiền khách trả
+Staff -> UI: Nhấn "Thanh toán"
+UI -> System: handleQuickSale()
+System -> System: Kiểm tra số tiền >= tổng tiền
+
+== Xác nhận Thanh toán ==
+System --> UI: Hiển thị popup xác nhận
+Staff -> UI: Nhấn "Xác nhận thanh toán"
+UI -> System: confirmPayment()
+
+== Tạo Đơn hàng trong Database ==
+System -> System: fetchCurrentUser() - Lấy thông tin người tạo
+System -> System: generateOrderId() - Tạo mã đơn hàng
+System -> DB: INSERT vào bảng orders
+note right of DB
+  orderData: {
+    order_id: "ORD-YYYYMMDD-XXXXX",
+    customer_id: customer?.customer_id,
+    user_id: creatorUserId,
+    order_date: ISO timestamp,
+    price: totalOrderAmount,
+    status: "Đã thanh toán",
+    is_shipping: false,
+    payment_method: selectedPaymentMethod
+  }
+end note
+DB --> System: Xác nhận tạo đơn hàng
+
+== Tạo Chi tiết Đơn hàng ==
+System -> System: processOrderDetails("orderdetails")
+loop Cho mỗi sản phẩm trong hóa đơn hiện tại
+    System -> System: generateOrderDetailId()
+    System -> DB: INSERT vào bảng orderdetails
+    note right of DB
+      orderDetail: {
+        orderdetail_id: UUID,
+        order_id: orderId,
+        product_id: product.product_id,
+        name_product: product.product_name,
+        name_check: invoice.name,
+        quantity: quantity,
+        unit_price: price,
+        subtotal: quantity * price
+      }
+    end note
+    DB --> System: Xác nhận thêm chi tiết
+end
+
+== Cập nhật Tồn kho (Database Trigger) ==
+note over DB
+  Database trigger tự động cập nhật
+  tồn kho khi INSERT orderdetails
+  
+  TRIGGER: update_product_stock_on_order
+  - Giảm stock_quantity theo quantity
+  - Đảm bảo stock_quantity >= 0
+end note
+
+== Hoàn tất và Reset ==
+System -> UI: setSuccessMessage("Đơn hàng đã được tạo thành công!")
+System -> UI: setShowPrintInvoicePopup(true)
+System -> UI: Reset hóa đơn hiện tại
+note right of UI
+  Reset invoice:
+  - products: []
+  - totalAmount: 0
+  - amountToPay: 0
+  - customer: null
+end note
+
+System -> DB: fetchDefaultProducts() - Tải lại sản phẩm
+DB --> System: Cập nhật thông tin tồn kho mới
+
+Staff -> UI: In hóa đơn (tuỳ chọn)
+UI -> System: Tạo HTML hóa đơn
+System --> Staff: Mở cửa sổ in
+
+@enduml</div>
+                    </div>
+                    <div class="usage-section">
+                        <div class="usage-title">📌 Use Cases:</div>
+                        <ul class="usage-list">
+                            <li class="usage-item">Khởi tạo và thêm sản phẩm vào hóa đơn</li>
+                            <li class="usage-item">Xử lý thanh toán trực tiếp tại quầy</li>
+                            <li class="usage-item">Tạo đơn hàng không vận chuyển (is_shipping: false)</li>
+                            <li class="usage-item">Cập nhật tồn kho tự động qua database trigger</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Diagram 2: Shipping Order -->
+                <div class="diagram-card">
+                    <div class="diagram-header">
+                        <div class="diagram-title">Đơn hàng gửi đi (Shipping Order)</div>
+                        <div class="diagram-number">02</div>
+                    </div>
+                    <div class="diagram-description">
+                        <p>Sơ đồ mô tả quy trình tạo đơn hàng gửi đi, bao gồm thông tin người nhận, vận chuyển, và các tùy chọn thanh toán (trả trước hoặc COD).</p>
+                    </div>
+                    <div class="actors-section">
+                        <div class="actors-title">👥 Actors:</div>
+                        <div class="actors-list">
+                            <span class="actor-tag">Nhân viên bán hàng</span>
+                            <span class="actor-tag">Hệ thống bán hàng</span>
+                            <span class="actor-tag">Cơ sở dữ liệu</span>
+                            <span class="actor-tag">Hệ thống vận chuyển</span>
+                        </div>
+                    </div>
+                    <div class="code-section">
+                        <div class="code-header">
+                            <div class="code-title">📋 PlantUML Code</div>
+                            <button class="copy-btn" onclick="copyToClipboard('shippingOrderCode', this)">
+                                📋 Copy Code
+                            </button>
+                        </div>
+                        <div class="code-content" id="shippingOrderCode">@startuml Shipping_Order_Sequence_Diagram
+!theme aws-orange
+title Sơ đồ Tuần tự: Tạo Đơn hàng Gửi đi (Shipping Order)
+
+actor "Nhân viên\nBán hàng" as Staff
+participant "Giao diện\nTạo đơn hàng" as UI
+participant "Sales System" as System
+participant "Shipping\nSystem" as Shipping
+database "Database" as DB
+
+== Chuẩn bị Đơn hàng ==
+Staff -> UI: Thêm sản phẩm vào hóa đơn
+note right of Staff
+  Tương tự như Quick Sale:
+  - Tìm kiếm sản phẩm
+  - Thêm vào hóa đơn
+  - Kiểm tra tồn kho
+end note
+
+Staff -> UI: Nhấn "Tạo đơn gửi đi"
+UI -> System: handleCreateOrder()
+System -> System: validateStockBeforeCheckout()
+System -> System: validateOrder() - Kiểm tra có sản phẩm
+
+== Hiển thị Form Gửi hàng ==
+System --> UI: openShippingPopup()
+UI -> DB: fetchPaymentMethods()
+DB --> UI: Trả về danh sách phương thức thanh toán
+
+note over UI
+  Form thông tin gửi hàng:
+  - Thông tin người nhận
+  - Địa chỉ giao hàng  
+  - Thông tin gói hàng
+  - Tùy chọn thanh toán
+end note
+
+== Nhập Thông tin Người nhận ==
+Staff -> UI: Nhập tên người nhận (recipientName)
+Staff -> UI: Nhập số điện thoại (recipientPhone)
+Staff -> UI: Nhập địa chỉ (recipientAddress)
+Staff -> UI: Chọn phường/xã (recipientWard)
+Staff -> UI: Chọn quận/huyện (recipientDistrict)
+
+== Nhập Thông tin Gói hàng ==
+Staff -> UI: Nhập trọng lượng (shippingWeight)
+Staff -> UI: Chọn đơn vị trọng lượng (shippingUnit)
+Staff -> UI: Nhập kích thước gói hàng
+note right of Staff
+  Kích thước:
+  - packageLength (dài)
+  - packageWidth (rộng) 
+  - packageHeight (cao)
+  - dimensionUnit (đơn vị)
+end note
+
+== Chọn Phương thức Thanh toán ==
+alt Trả trước (có PTTT)
+    Staff -> UI: Chọn phương thức thanh toán
+    Staff -> UI: Nhập số tiền trả trước (customerPrepaid)
+    Staff -> UI: Bỏ tích "Thu hộ tiền (COD)"
+    
+    Staff -> UI: Nhấn "Gửi đơn hàng"
+    UI -> System: handleShipOrderConfirmation()
+    System -> System: Kiểm tra selectedPaymentMethod != null
+    System --> UI: Hiển thị popup xác nhận thanh toán
+    
+    Staff -> UI: Nhấn "Xác nhận thanh toán"
+    UI -> System: confirmPayment() → handleShipOrder()
+
+else COD (Thu hộ khi giao)
+    Staff -> UI: KHÔNG chọn phương thức thanh toán
+    Staff -> UI: Tích chọn "Thu hộ tiền (COD)"
+    
+    Staff -> UI: Nhấn "Gửi đơn hàng"
+    UI -> System: handleShipOrderConfirmation()
+    System -> System: Kiểm tra codAmount = true
+    System -> System: handleShipOrder() - Xử lý trực tiếp
+end
+
+== Tạo Đơn hàng Vận chuyển ==
+System -> System: fetchCurrentUser() - Lấy thông tin người tạo
+System -> System: generateOrderId() - Tạo mã đơn hàng
+System -> System: generateShippingId() - Tạo mã vận chuyển
+
+=== Tạo Order Record ===
+System -> DB: INSERT vào bảng orders
+note right of DB
+  orderObject: {
+    order_id: orderId,
+    customer_id: customerId,
+    user_id: creatorUserId,
+    order_date: ISO timestamp,
+    price: totalOrderAmount,
+    status: paymentStatus, // "Đã thanh toán" or "Chưa thanh toán"
+    is_shipping: true,
+    payment_method: selectedPaymentMethod
+  }
+end note
+DB --> System: Xác nhận tạo đơn hàng
+
+=== Tạo Order Details ===
+System -> System: Tạo chi tiết đơn hàng
+loop Cho mỗi sản phẩm trong hóa đơn
+    System -> System: generateOrderDetailId()
+    System -> DB: INSERT vào bảng orderdetails
+    note right of DB
+      orderDetails: {
+        orderdetail_id: UUID,
+        order_id: orderId,
+        product_id: product.product_id,
+        name_product: product.product_name,
+        name_check: invoice.name,
+        quantity: quantity,
+        unit_price: price,
+        subtotal: quantity * price
+      }
+    end note
+    DB --> System: Xác nhận thêm chi tiết
+end
+
+=== Cập nhật Tồn kho ===
+note over DB
+  Database trigger tự động
+  cập nhật tồn kho:
+  
+  UPDATE products SET 
+  stock_quantity = stock_quantity - quantity
+  WHERE product_id = orderdetail.product_id
+end note
+
+=== Tạo Shipping Record ===
+System -> Shipping: Tạo thông tin vận chuyển
+Shipping -> DB: INSERT vào bảng shippings
+note right of DB
+  shippingObject: {
+    shipping_id: shippingId,
+    order_id: orderId,
+    carrier: "Giao hàng tiêu chuẩn",
+    tracking_number: "TRK-timestamp",
+    shipping_address: fullAddress,
+    shipping_cost: 0,
+    status: "Chưa giao hàng",
+    name_customer: recipientName,
+    phone_customer: recipientPhone,
+    weight: shippingWeight,
+    unit_weight: shippingUnit,
+    long: packageLength,
+    wide: packageWidth,
+    hight: packageHeight,
+    unit_size: dimensionUnit,
+    cod_shipping: codAmount
+  }
+end note
+DB --> Shipping: Xác nhận tạo vận chuyển
+Shipping --> System: Hoàn tất tạo shipping
+
+== Hoàn tất và Thông báo ==
+System -> UI: setSuccessMessage("Đơn hàng đã được tạo thành công!")
+System -> UI: setShowShippingPopup(false) - Đóng popup
+System -> UI: setShowPrintInvoicePopup(true) - Hiển thị popup in
+
+== Chuẩn bị Hóa đơn ==
+System -> System: Tạo invoiceData
+note right of System
+  invoiceData: {
+    orderId: orderId,
+    orderDate: ngày tạo,
+    orderTime: giờ tạo,
+    customer: thông tin người nhận,
+    products: danh sách sản phẩm,
+    totalAmount: tổng tiền hàng,
+    amountToPay: số tiền cần thanh toán,
+    shippingInfo: thông tin vận chuyển,
+    paymentMethod: phương thức thanh toán
+  }
+end note
+
+== Reset và Reload ==
+System -> UI: Reset hóa đơn hiện tại
+System -> DB: fetchDefaultProducts() - Tải lại danh sách sản phẩm
+DB --> System: Cập nhật tồn kho mới
+
+Staff -> UI: In hóa đơn (tuỳ chọn)
+UI -> System: Tạo HTML hóa đơn vận chuyển
+System --> Staff: Mở cửa sổ in
+
+@enduml</div>
+                    </div>
+                    <div class="usage-section">
+                        <div class="usage-title">📌 Use Cases:</div>
+                        <ul class="usage-list">
+                            <li class="usage-item">Tạo đơn hàng có vận chuyển (is_shipping: true)</li>
+                            <li class="usage-item">Hỗ trợ thanh toán trả trước và COD</li>
+                            <li class="usage-item">Quản lý thông tin người nhận và địa chỉ giao hàng</li>
+                            <li class="usage-item">Tạo bản ghi vận chuyển với tracking number</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Diagram 3: Payment Processing -->
+                <div class="diagram-card">
+                    <div class="diagram-header">
+                        <div class="diagram-title">Xử lý thanh toán (Payment Processing)</div>
+                        <div class="diagram-number">03</div>
+                    </div>
+                    <div class="diagram-description">
+                        <p>Sơ đồ tuần tự mô tả quy trình xử lý thanh toán trong hệ thống QLBH, từ việc tìm kiếm đơn hàng đến xác nhận thanh toán thành công.</p>
+                    </div>
+                    <div class="actors-section">
+                        <div class="actors-title">👥 Actors:</div>
+                        <div class="actors-list">
+                            <span class="actor-tag">Nhân viên bán hàng</span>
+                            <span class="actor-tag">Hệ thống QLBH</span>
+                            <span class="actor-tag">Hệ thống thanh toán</span>
+                            <span class="actor-tag">Database</span>
+                        </div>
+                    </div>
+                    <div class="code-section">
+                        <div class="code-header">
+                            <div class="code-title">📋 PlantUML Code</div>
+                            <button class="copy-btn" onclick="copyToClipboard('paymentCode', this)">
+                                📋 Copy Code
+                            </button>
+                        </div>
+                        <div class="code-content" id="paymentCode">@startuml Payment Processing Sequence Diagram
+!theme aws-orange
+skinparam participant {
+    BackgroundColor lightblue
+    BorderColor darkblue
+}
+skinparam sequence {
+    ArrowColor darkblue
+    LifeLineBorderColor darkblue
+}
+
+actor "Nhân viên bán hàng" as Staff
+participant "Hệ thống QLBH" as System
+participant "Hệ thống thanh toán" as PaymentGateway
+database "Database" as DB
+
+== Tìm kiếm đơn hàng ==
+Staff -> System: Tìm kiếm đơn hàng theo mã/SĐT
+System -> DB: Query đơn hàng
+DB -> System: Trả về thông tin đơn hàng
+System -> Staff: Hiển thị danh sách đơn hàng
+
+== Chọn đơn hàng và phương thức thanh toán ==
+Staff -> System: Chọn đơn hàng cần thanh toán
+System -> DB: Lấy chi tiết đơn hàng
+DB -> System: Trả về chi tiết (products, amount, status)
+System -> Staff: Hiển thị form thanh toán
+
+Staff -> System: Chọn phương thức thanh toán\n(Cash/Card/Transfer)
+System -> System: Validate phương thức thanh toán
+
+== Xử lý thanh toán ==
+alt Thanh toán tiền mặt (Cash)
+    Staff -> System: Nhập số tiền khách đưa
+    System -> System: Tính tiền thừa
+    System -> Staff: Hiển thị tiền thừa
+    Staff -> System: Xác nhận thanh toán
+    System -> DB: Cập nhật trạng thái thanh toán
+    DB -> System: Xác nhận cập nhật
+    
+else Thanh toán thẻ/chuyển khoản
+    Staff -> System: Nhập thông tin thanh toán
+    System -> PaymentGateway: Gửi yêu cầu thanh toán
+    PaymentGateway -> PaymentGateway: Xử lý giao dịch
+    
+    alt Thanh toán thành công
+        PaymentGateway -> System: Trả về kết quả thành công
+        System -> DB: Lưu thông tin giao dịch
+        DB -> System: Xác nhận lưu
+        System -> Staff: Hiển thị thông báo thành công
+        
+    else Thanh toán thất bại
+        PaymentGateway -> System: Trả về lỗi
+        System -> Staff: Hiển thị thông báo lỗi
+        Staff -> System: Thử lại hoặc chọn phương thức khác
+    end
+end
+
+== Hoàn tất thanh toán ==
+System -> DB: Cập nhật trạng thái đơn hàng
+DB -> System: Xác nhận cập nhật
+System -> DB: Lưu lịch sử thanh toán
+DB -> System: Xác nhận lưu
+System -> Staff: Tạo hóa đơn/biên lai
+Staff -> System: In hóa đơn (nếu cần)
+
+@enduml</div>
+                    </div>
+                    <div class="usage-section">
+                        <div class="usage-title">📌 Use Cases:</div>
+                        <ul class="usage-list">
+                            <li class="usage-item">Thanh toán tiền mặt với tính tiền thừa</li>
+                            <li class="usage-item">Thanh toán thẻ tích hợp cổng thanh toán</li>
+                            <li class="usage-item">Thanh toán chuyển khoản với xác thực</li>
+                            <li class="usage-item">Xử lý lỗi và retry mechanism</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Diagram 4: Shipping Management -->
+                <div class="diagram-card">
+                    <div class="diagram-header">
+                        <div class="diagram-title">Quản lý vận chuyển (Shipping Management)</div>
+                        <div class="diagram-number">04</div>
+                    </div>
+                    <div class="diagram-description">
+                        <p>Sơ đồ tuần tự mô tả quy trình quản lý vận chuyển trong hệ thống QLBH, từ tạo phiếu gửi hàng đến theo dõi và cập nhật trạng thái giao hàng.</p>
+                    </div>
+                    <div class="actors-section">
+                        <div class="actors-title">👥 Actors:</div>
+                        <div class="actors-list">
+                            <span class="actor-tag">Nhân viên kho</span>
+                            <span class="actor-tag">Nhân viên bán hàng</span>
+                            <span class="actor-tag">Hệ thống QLBH</span>
+                            <span class="actor-tag">Hệ thống vận chuyển</span>
+                            <span class="actor-tag">Database</span>
+                        </div>
+                    </div>
+                    <div class="code-section">
+                        <div class="code-header">
+                            <div class="code-title">📋 PlantUML Code</div>
+                            <button class="copy-btn" onclick="copyToClipboard('shippingCode', this)">
+                                📋 Copy Code
+                            </button>
+                        </div>
+                        <div class="code-content" id="shippingCode">@startuml Shipping Management Sequence Diagram
+!theme aws-orange
+skinparam participant {
+    BackgroundColor lightgreen
+    BorderColor darkgreen
+}
+skinparam sequence {
+    ArrowColor darkgreen
+    LifeLineBorderColor darkgreen
+}
+
+actor "Nhân viên kho" as WarehouseStaff
+actor "Nhân viên bán hàng" as SalesStaff
+participant "Hệ thống QLBH" as System
+participant "Hệ thống vận chuyển" as ShippingProvider
+database "Database" as DB
+
+== Tạo phiếu gửi hàng ==
+WarehouseStaff -> System: Truy cập danh sách đơn hàng cần gửi
+System -> DB: Query đơn hàng có trạng thái "Đã thanh toán"
+DB -> System: Trả về danh sách đơn hàng
+System -> WarehouseStaff: Hiển thị danh sách đơn hàng
+
+WarehouseStaff -> System: Chọn đơn hàng để tạo phiếu gửi
+System -> DB: Lấy thông tin chi tiết đơn hàng
+DB -> System: Trả về thông tin (địa chỉ, sản phẩm, khối lượng)
+System -> WarehouseStaff: Hiển thị form tạo phiếu gửi
+
+WarehouseStaff -> System: Chọn đơn vị vận chuyển\nNhập thông tin gói hàng
+System -> System: Validate thông tin gửi hàng
+System -> ShippingProvider: Tạo đơn vận chuyển
+ShippingProvider -> ShippingProvider: Tạo mã vận đơn
+
+alt Tạo vận đơn thành công
+    ShippingProvider -> System: Trả về mã vận đơn và phí ship
+    System -> DB: Lưu thông tin vận chuyển
+    DB -> System: Xác nhận lưu
+    System -> DB: Cập nhật trạng thái đơn hàng = "Đang giao"
+    DB -> System: Xác nhận cập nhật
+    System -> WarehouseStaff: Hiển thị mã vận đơn và in phiếu gửi
+    
+else Tạo vận đơn thất bại
+    ShippingProvider -> System: Trả về lỗi
+    System -> WarehouseStaff: Hiển thị thông báo lỗi
+    WarehouseStaff -> System: Thử lại hoặc chọn đơn vị khác
+end
+
+== Theo dõi vận chuyển ==
+SalesStaff -> System: Truy cập trang theo dõi đơn hàng
+System -> DB: Query đơn hàng và thông tin vận chuyển
+DB -> System: Trả về danh sách đơn hàng đang giao
+
+loop Cập nhật trạng thái định kỳ
+    System -> ShippingProvider: Kiểm tra trạng thái vận đơn
+    ShippingProvider -> System: Trả về trạng thái hiện tại
+    
+    alt Trạng thái thay đổi
+        System -> DB: Cập nhật trạng thái mới
+        DB -> System: Xác nhận cập nhật
+        System -> System: Gửi thông báo cho khách hàng (SMS/Email)
+    end
+end
+
+System -> SalesStaff: Hiển thị danh sách với trạng thái cập nhật
+
+== Xác nhận giao hàng ==
+alt Giao hàng thành công
+    ShippingProvider -> System: Webhook thông báo giao thành công
+    System -> DB: Cập nhật trạng thái = "Đã giao hàng"
+    System -> DB: Cập nhật thời gian giao hàng
+    DB -> System: Xác nhận cập nhật
+    System -> System: Tính toán doanh thu và commission
+    System -> DB: Cập nhật báo cáo doanh thu
+    System -> System: Gửi thông báo giao hàng thành công
+    
+else Giao hàng thất bại
+    ShippingProvider -> System: Webhook thông báo giao thất bại
+    System -> DB: Cập nhật trạng thái = "Giao hàng thất bại"
+    System -> DB: Ghi log lý do thất bại
+    DB -> System: Xác nhận cập nhật
+    System -> SalesStaff: Thông báo cần xử lý đơn hàng
+    
+    SalesStaff -> System: Quyết định giao lại hoặc hoàn hàng
+    alt Giao lại
+        System -> ShippingProvider: Tạo đơn vận chuyển mới
+    else Hoàn hàng
+        System -> DB: Cập nhật trạng thái = "Đã hủy"
+        System -> System: Xử lý hoàn tiền (nếu có)
+    end
+end
+
+@enduml</div>
+                    </div>
+                    <div class="usage-section">
+                        <div class="usage-title">📌 Use Cases:</div>
+                        <ul class="usage-list">
+                            <li class="usage-item">Tạo phiếu gửi hàng tích hợp nhà cung cấp vận chuyển</li>
+                            <li class="usage-item">Theo dõi real-time qua webhook và API</li>
+                            <li class="usage-item">Xử lý giao hàng thất bại với workflow retry</li>
+                            <li class="usage-item">Báo cáo tracking performance và chi phí</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Diagram 5: Inventory Stock Management -->
+                <div class="diagram-card">
+                    <div class="diagram-header">
+                        <div class="diagram-title">Quản lý tồn kho (Inventory Management)</div>
+                        <div class="diagram-number">05</div>
+                    </div>
+                    <div class="diagram-description">
+                        <p>Sơ đồ tuần tự mô tả các quy trình quản lý tồn kho trong hệ thống QLBH, bao gồm nhập kho, xuất kho, kiểm kê và cảnh báo tồn kho thấp.</p>
+                    </div>
+                    <div class="actors-section">
+                        <div class="actors-title">👥 Actors:</div>
+                        <div class="actors-list">
+                            <span class="actor-tag">Nhân viên kho</span>
+                            <span class="actor-tag">Nhân viên bán hàng</span>
+                            <span class="actor-tag">Manager</span>
+                            <span class="actor-tag">Hệ thống QLBH</span>
+                            <span class="actor-tag">Nhà cung cấp</span>
+                            <span class="actor-tag">Database</span>
+                        </div>
+                    </div>
+                    <div class="code-section">
+                        <div class="code-header">
+                            <div class="code-title">📋 PlantUML Code</div>
+                            <button class="copy-btn" onclick="copyToClipboard('inventoryCode', this)">
+                                📋 Copy Code
+                            </button>
+                        </div>
+                        <div class="code-content" id="inventoryCode">@startuml Inventory Stock Management Sequence Diagram
+!theme aws-orange
+skinparam participant {
+    BackgroundColor lightyellow
+    BorderColor darkorange
+}
+skinparam sequence {
+    ArrowColor darkorange
+    LifeLineBorderColor darkorange
+}
+
+actor "Nhân viên kho" as WarehouseStaff
+actor "Nhân viên bán hàng" as SalesStaff  
+actor "Manager" as Manager
+participant "Hệ thống QLBH" as System
+actor "Nhà cung cấp" as Supplier
+database "Database" as DB
+
+== Nhập kho hàng hóa ==
+WarehouseStaff -> System: Tạo phiếu nhập kho
+System -> WarehouseStaff: Hiển thị form nhập kho
+
+WarehouseStaff -> System: Nhập thông tin sản phẩm\n(Mã SP, số lượng, giá nhập, nhà cung cấp)
+System -> System: Validate thông tin sản phẩm
+System -> DB: Kiểm tra sản phẩm có tồn tại
+DB -> System: Trả về thông tin sản phẩm
+
+alt Sản phẩm đã tồn tại
+    System -> DB: Cập nhật số lượng tồn kho
+    System -> DB: Thêm bản ghi lịch sử nhập kho
+else Sản phẩm mới
+    System -> DB: Tạo sản phẩm mới
+    System -> DB: Tạo bản ghi tồn kho ban đầu
+end
+
+DB -> System: Xác nhận cập nhật
+System -> WarehouseStaff: Hiển thị thông báo nhập kho thành công
+System -> System: Tự động cập nhật giá trung bình
+
+== Xuất kho (bán hàng) ==
+SalesStaff -> System: Tạo đơn hàng với sản phẩm
+System -> DB: Kiểm tra tồn kho sản phẩm
+DB -> System: Trả về số lượng tồn kho hiện tại
+
+alt Đủ hàng trong kho
+    System -> DB: Reserve số lượng cho đơn hàng
+    DB -> System: Xác nhận reserve
+    System -> SalesStaff: Cho phép tạo đơn hàng
+    
+    SalesStaff -> System: Xác nhận đơn hàng
+    System -> DB: Trừ số lượng tồn kho thực tế
+    System -> DB: Tạo bản ghi xuất kho
+    DB -> System: Xác nhận xuất kho
+    
+    System -> System: Kiểm tra ngưỡng tồn kho tối thiểu
+    alt Tồn kho dưới ngưỡng
+        System -> WarehouseStaff: Gửi cảnh báo tồn kho thấp
+        System -> Manager: Gửi báo cáo cần nhập hàng
+    end
+    
+else Không đủ hàng
+    System -> SalesStaff: Thông báo không đủ hàng
+    SalesStaff -> System: Chọn sản phẩm thay thế hoặc đặt hàng trước
+    
+    alt Đặt hàng trước (Pre-order)
+        System -> DB: Tạo đơn hàng với trạng thái "Chờ hàng"
+        System -> WarehouseStaff: Thông báo cần nhập hàng
+    end
+end
+
+== Kiểm kê tồn kho ==
+WarehouseStaff -> System: Bắt đầu kiểm kê định kỳ
+System -> DB: Lấy danh sách sản phẩm cần kiểm kê
+DB -> System: Trả về danh sách với số lượng lý thuyết
+System -> WarehouseStaff: Hiển thị danh sách kiểm kê
+
+loop Kiểm kê từng sản phẩm
+    WarehouseStaff -> System: Nhập số lượng thực tế đếm được
+    System -> System: So sánh với số lượng lý thuyết
+    
+    alt Có chênh lệch
+        System -> System: Tính toán chênh lệch (+/-)
+        System -> WarehouseStaff: Hiển thị cảnh báo chênh lệch
+        WarehouseStaff -> System: Xác nhận số lượng sau kiểm tra lại
+    end
+    
+    System -> DB: Cập nhật số lượng tồn kho thực tế
+    System -> DB: Ghi log chênh lệch kiểm kê
+end
+
+System -> DB: Hoàn thành phiếu kiểm kê
+DB -> System: Xác nhận hoàn thành
+System -> Manager: Gửi báo cáo kết quả kiểm kê
+
+== Cảnh báo tồn kho thấp ==
+loop Kiểm tra định kỳ (Daily)
+    System -> DB: Query sản phẩm có tồn kho < ngưỡng tối thiểu
+    DB -> System: Trả về danh sách sản phẩm cần nhập
+    
+    alt Có sản phẩm cần nhập
+        System -> WarehouseStaff: Gửi email/notification cảnh báo
+        System -> Manager: Gửi báo cáo tồn kho tuần
+        
+        Manager -> System: Xem chi tiết báo cáo
+        System -> DB: Lấy lịch sử bán hàng và dự báo
+        DB -> System: Trả về dữ liệu phân tích
+        System -> Manager: Hiển thị đề xuất số lượng nhập
+        
+        Manager -> System: Phê duyệt đặt hàng nhà cung cấp
+        System -> Supplier: Gửi đơn đặt hàng tự động
+        Supplier -> System: Xác nhận đơn hàng và thời gian giao
+    end
+end
+
+== Báo cáo tồn kho ==
+Manager -> System: Truy cập báo cáo tồn kho
+System -> DB: Query dữ liệu tồn kho theo kỳ
+DB -> System: Trả về dữ liệu thống kê
+
+System -> System: Tính toán các chỉ số:\n- Vòng quay kho\n- Giá trị tồn kho\n- Top sản phẩm bán chạy\n- Sản phẩm ế ẩm
+
+System -> Manager: Hiển thị dashboard báo cáo
+Manager -> System: Export báo cáo Excel/PDF
+System -> Manager: Tạo file báo cáo
+
+@enduml</div>
+                    </div>
+                    <div class="usage-section">
+                        <div class="usage-title">📌 Use Cases:</div>
+                        <ul class="usage-list">
+                            <li class="usage-item">Nhập kho và cập nhật giá trung bình</li>
+                            <li class="usage-item">Xuất kho với availability check và pre-order</li>
+                            <li class="usage-item">Kiểm kê định kỳ và điều chỉnh chênh lệch</li>
+                            <li class="usage-item">Cảnh báo tự động và đặt hàng nhà cung cấp</li>
+                            <li class="usage-item">Dashboard báo cáo và phân tích hiệu quả</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>🔧 Được tạo bởi GitHub Copilot | 📅 Cập nhật: <%= new Date().getFullYear() %></p>
+            <p>💡 Sử dụng PlantUML để render các sơ đồ tuần tự</p>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        ✓ Đã copy code vào clipboard!
+    </div>
+
+    <script>
+        function copyToClipboard(elementId, button) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+            
+            navigator.clipboard.writeText(text).then(function() {
+                // Show notification
+                const notification = document.getElementById('notification');
+                notification.classList.add('show');
+                
+                // Change button state
+                button.innerHTML = '✓ Copied!';
+                button.classList.add('copied');
+                
+                // Hide notification and reset button after 2 seconds
+                setTimeout(function() {
+                    notification.classList.remove('show');
+                    button.innerHTML = '📋 Copy Code';
+                    button.classList.remove('copied');
+                }, 2000);
+            }).catch(function(err) {
+                console.error('Could not copy text: ', err);
+                
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                
+                try {
+                    document.execCommand('copy');
+                    const notification = document.getElementById('notification');
+                    notification.classList.add('show');
+                    
+                    setTimeout(function() {
+                        notification.classList.remove('show');
+                    }, 2000);
+                } catch (err) {
+                    console.error('Fallback: Could not copy text: ', err);
+                }
+                
+                document.body.removeChild(textArea);
+            });
+        }
+
+        // Add smooth scrolling to sections
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.diagram-card');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, {
+                threshold: 0.1
+            });
+
+            cards.forEach(card => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px)';
+                card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(card);
+            });
+        });
+    </script>
+</body>
+</html>

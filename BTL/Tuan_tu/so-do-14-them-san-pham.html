@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sơ đồ tuần tự - Thêm Sản phẩm</title>
+    <script src="https://cdn.jsdelivr.net/npm/plantuml-encoder@1.4.0/dist/plantuml-encoder.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 15px;
+        }
+        .diagram-container {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #fafafa;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        .description {
+            background-color: #e8f4fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #3498db;
+        }
+        .description h3 {
+            color: #2980b9;
+            margin-top: 0;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sơ đồ tuần tự - Thêm Sản phẩm</h1>
+        
+        <div class="description">
+            <h3>Mô tả chức năng</h3>
+            <p>Sơ đồ này mô tả quy trình thêm sản phẩm mới trong hệ thống QLBH, bao gồm: tải danh mục, upload và xử lý ảnh Base64, validation form với các ràng buộc và lưu vào database.</p>
+        </div>
+
+        <div class="diagram-container">
+            <img id="diagram" src="" alt="Đang tạo sơ đồ...">
+        </div>
+    </div>
+
+    <script>
+        const plantUMLCode = `
+@startuml
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam sequenceParticipant underline
+
+actor "User" as user
+participant "Add Product Page" as page
+participant "Product Controller" as controller
+participant "Supabase DB" as db
+participant "File Handler" as file
+
+== 1. Truy cập trang thêm sản phẩm ==
+user -> page: Truy cập /dashboard/products/add
+activate page
+page -> controller: Tải danh sách danh mục
+controller -> db: SELECT * FROM category ORDER BY name_category
+db --> controller: Danh sách categories
+controller --> page: Dữ liệu categories cho dropdown
+page --> user: Hiển thị form thêm sản phẩm
+deactivate page
+
+== 2. Upload và xử lý ảnh sản phẩm ==
+user -> page: Chọn file ảnh
+activate page
+page -> file: Kiểm tra file (type, size)
+note right: Chỉ cho phép:\\nimage/jpeg, image/jpg,\\nimage/png, image/webp\\nTối đa 5MB
+alt File không hợp lệ
+    file --> page: Lỗi validation file
+    page --> user: Thông báo lỗi file
+else File hợp lệ
+    file -> file: Chuyển đổi file thành Base64
+    file --> page: Base64 string
+    page --> user: Hiển thị preview ảnh
+end
+deactivate page
+
+== 3. Chọn danh mục sản phẩm ==
+user -> page: Click dropdown danh mục
+activate page
+page -> controller: Hiển thị danh sách categories
+controller --> page: Dropdown mở với ảnh + tên category
+user -> page: Chọn category
+page -> controller: Set category_id
+controller --> page: Cập nhật form
+page --> user: Hiển thị category đã chọn
+deactivate page
+
+== 4. Điền thông tin sản phẩm ==
+user -> page: Nhập thông tin (tên, giá, màu, size, mô tả, tồn kho)
+activate page
+page -> controller: Real-time validation
+note right: product_name: required\\nprice: number ≥ 0\\nstock_quantity: number ≥ 0\\ncategory_id: required
+controller --> page: Trạng thái validation
+page --> user: Hiển thị lỗi validation (nếu có)
+deactivate page
+
+== 5. Submit form tạo sản phẩm ==
+user -> page: Nhấn "Thêm sản phẩm"
+activate page
+page -> controller: Validate toàn bộ form
+alt Validation failed
+    controller --> page: Danh sách lỗi validation
+    page --> user: Hiển thị thông báo lỗi
+else Validation passed
+    controller -> db: INSERT INTO products
+    note right: category_id, product_name,\\ndescription, color, size,\\nprice, stock_quantity,\\nimage (Base64)
+    alt Thêm thành công
+        db --> controller: Success với product_id
+        controller --> page: Thông báo thành công
+        page --> user: "Sản phẩm đã được thêm thành công"
+        page -> controller: Reset form
+        controller --> page: Form trống
+        page --> user: Form sẵn sàng thêm sản phẩm mới
+    else Thêm thất bại
+        db --> controller: Error (constraint violation, etc.)
+        controller --> page: Thông báo lỗi database
+        page --> user: Hiển thị lỗi
+    end
+end
+deactivate page
+
+== 6. Xem trước ảnh và chỉnh sửa ==
+user -> page: Click vào ảnh preview
+activate page
+page -> controller: Hiển thị modal xem ảnh
+controller --> page: Modal với ảnh full size
+page --> user: Popup xem ảnh lớn
+user -> page: Thay đổi ảnh khác
+page -> file: Upload ảnh mới
+file --> page: Base64 mới
+page --> user: Cập nhật preview
+deactivate page
+
+== 7. Quay lại danh sách ==
+user -> page: Nhấn "Quay lại"
+activate page
+page --> user: Redirect to /dashboard/products
+deactivate page
+
+@enduml
+        `;
+
+        // Encode PlantUML và tạo URL
+        const encoded = plantumlEncoder.encode(plantUMLCode);
+        const diagramUrl = `https://www.plantuml.com/plantuml/png/${encoded}`;
+        
+        // Hiển thị sơ đồ
+        document.getElementById('diagram').src = diagramUrl;
+    </script>
+</body>
+</html> 

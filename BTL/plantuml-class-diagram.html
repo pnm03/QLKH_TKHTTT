@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlantUML Class Diagram - Hệ thống QLBH</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .info-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 5px solid #667eea;
+        }
+
+        .info-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .info-section ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info-section li {
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .info-section li:before {
+            content: "✓";
+            color: #28a745;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        .code-container {
+            background: #1e1e1e;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .code-header {
+            background: #2d2d2d;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #404040;
+        }
+
+        .code-title {
+            color: #e6e6e6;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .copy-btn {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .copy-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+        }
+
+        .copy-btn:active {
+            transform: translateY(0);
+        }
+
+        .plantuml-code {
+            background: #1e1e1e;
+            color: #e6e6e6;
+            padding: 25px;
+            font-family: 'Fira Code', 'Monaco', 'Cascadia Code', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .plantuml-code::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .plantuml-code::-webkit-scrollbar-track {
+            background: #2d2d2d;
+        }
+
+        .plantuml-code::-webkit-scrollbar-thumb {
+            background: #555;
+            border-radius: 4px;
+        }
+
+        .plantuml-code::-webkit-scrollbar-thumb:hover {
+            background: #777;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .usage-guide {
+            background: #e3f2fd;
+            padding: 25px;
+            border-radius: 10px;
+            border-left: 5px solid #2196f3;
+            margin-top: 30px;
+        }
+
+        .usage-guide h3 {
+            color: #1976d2;
+            margin-bottom: 15px;
+        }
+
+        .usage-guide ol {
+            color: #424242;
+            padding-left: 20px;
+        }
+
+        .usage-guide li {
+            margin-bottom: 8px;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .container {
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .plantuml-code {
+                font-size: 12px;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏗️ PlantUML Class Diagram</h1>
+            <p>Sơ đồ lớp chi tiết cho Hệ thống Quản lý Bán hàng (QLBH)</p>
+        </div>
+
+        <div class="content">
+            <div class="info-section">
+                <h3>📊 Tổng quan Database Entities</h3>
+                <ul>
+                    <li><strong>User Management:</strong> Users, Accounts, Customers, Staff, Branches</li>
+                    <li><strong>Product Management:</strong> Products, Category</li>
+                    <li><strong>Order Management:</strong> Orders, Orderdetails, Payments</li>
+                    <li><strong>Shipping & Returns:</strong> Shippings, Returns</li>
+                    <li><strong>Enums:</strong> Role, AccountStatus, OrderStatus, ShippingStatus, ReturnStatus</li>
+                </ul>
+            </div>
+
+            <div class="code-container">
+                <div class="code-header">
+                    <div class="code-title">📋 PlantUML Class Diagram Code</div>
+                    <button class="copy-btn" onclick="copyCode()">📋 Copy Code</button>
+                </div>
+                <pre class="plantuml-code" id="plantumlCode">@startuml Hệ thống QLBH Class Diagram
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam classBackgroundColor #F8F9FA
+skinparam classBorderColor #DEE2E6
+skinparam classArrowColor #6C757D
+
+' ============ USER MANAGEMENT ENTITIES ============
+class Users {
+  - user_id : UUID
+  - branch_id : int
+  - full_name : String
+  - email : String
+  - phone : String
+  - birth_date : Date
+  - hometown : String
+  - created_at : Timestamp
+  - updated_at : Timestamp
+  
+  + getUserDetails()
+  + updateProfile()
+}
+
+class Accounts {
+  - id : UUID
+  - user_id : UUID FK
+  - user_name : String
+  - password_hash : String
+  - role : Role
+  - status : AccountStatus
+  - last_login : Timestamp
+  - created_at : Timestamp
+  - updated_at : Timestamp
+  
+  + login()
+  + logout()
+  + changePassword()
+  + checkRoleAccess(requiredRole: Role) : boolean
+}
+
+class Customers {
+  - customer_id : UUID
+  - full_name : String
+  - email : String
+  - phone : String
+  - hometown : String
+  - created_at : Timestamp
+  - updated_at : Timestamp
+}
+
+class Staff {
+  - staff_id : int
+  - user_id : UUID FK
+  - start_date : Date
+  - end_date : Date
+  - work_shift : String
+  - salary : Decimal
+  - contract_type : String
+  - employment_status : String
+  - reports_to_user_id : UUID FK
+}
+
+class Branches {
+  - branch_id : int
+  - branch_name : String
+  - address : String
+  - manager_id : UUID FK
+}
+
+' ============ PRODUCT MANAGEMENT ENTITIES ============
+class Category {
+  - category_id : int
+  - name_category : String
+  - description_category : String
+  - image_category : String
+  
+  + getProductsInCategory()
+}
+
+class Products {
+  - product_id : int
+  - category_id : int FK
+  - product_name : String
+  - description : String
+  - color : String
+  - size : String
+  - price : Decimal
+  - stock_quantity : int
+  - created_at : Timestamp
+  - updated_at : Timestamp
+  - image : String
+  - cost_price : Decimal
+  
+  + updateStock(qty: int)
+  + getProductDetails()
+}
+
+' ============ ORDER MANAGEMENT ENTITIES ============
+class Orders {
+  - order_id : String
+  - user_id : UUID FK
+  - customer_id : UUID FK
+  - order_date : Timestamp
+  - total_price : Decimal
+  - status : OrderStatus
+  - payment_method_id : int FK
+  - is_shipping : boolean
+  
+  + calculateTotal()
+  + updateOrderStatus(newStatus: OrderStatus)
+  + addOrderDetail(prod: Product, qty: int)
+  + applyPayment(pm: PaymentMethod)
+}
+
+class Orderdetails {
+  - order_detail_id : String
+  - order_id : String FK
+  - product_id : int FK
+  - product_name_at_order : String
+  - name_check : String
+  - quantity : int
+  - unit_price_at_order : Decimal
+  - subtotal : Decimal
+  - cost_price_at_sale : Decimal
+  
+  + calculateSubtotal()
+}
+
+class Payments {
+  - payment_id : int
+  - payment_method_name : String
+  - description : String
+  - image : String
+  - created_at : Timestamp
+  - updated_at : Timestamp
+}
+
+' ============ SHIPPING & RETURN ENTITIES ============
+class Shippings {
+  - shipping_id : String
+  - order_id : String FK
+  - carrier : String
+  - tracking_number : String
+  - shipping_address : String
+  - shipping_cost : Decimal
+  - actual_delivery_date : Timestamp
+  - delivery_date : Timestamp
+  - status : ShippingStatus
+  - created_at : Timestamp
+  - weight : Decimal
+  - unit_weight : String
+  - length : Decimal
+  - width : Decimal
+  - height : Decimal
+  
+  + updateShippingStatus(newStatus: ShippingStatus)
+  + getTrackingInfo()
+}
+
+class Returns {
+  - return_id : int
+  - order_id : String FK
+  - name_return : String
+  - return_date : Timestamp
+  - return_reason : String
+  - refund_amount : Decimal
+  - status : ReturnStatus
+  
+  + approveReturn()
+  + rejectReturn()
+}
+
+' ============ ENUMS ============
+enum Role {
+  ADMIN
+  NVBH
+  NVK
+}
+
+enum AccountStatus {
+  ACTIVE
+  INACTIVE
+  LOCKED
+}
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PAID
+  PROCESSING
+  DELIVERED
+  CANCELLED
+  RETURNED
+}
+
+enum ShippingStatus {
+  PENDING
+  PICKUP
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+  FAILED_DELIVERY
+  RETURNING
+  RETURN_TO_SENDER
+  CANCELLED
+}
+
+enum ReturnStatus {
+  REQUESTED
+  PROCESSING
+  APPROVED
+  REJECTED
+  COMPLETED
+}
+
+' ============ RELATIONSHIPS ============
+' User Management Relationships
+Users ||--|| Accounts : "has"
+Users ||--o{ Staff : "employs"
+Users ||--o{ Orders : "creates"
+Branches ||--o{ Users : "employs"
+
+' Product Relationships
+Category ||--o{ Products : "contains"
+
+' Order Relationships
+Orders ||--o{ Orderdetails : "contains"
+Products ||--o{ Orderdetails : "refers to"
+Customers ||--o{ Orders : "places"
+Payments ||--o{ Orders : "uses"
+
+' Shipping & Return Relationships
+Orders ||--o| Shippings : "may have"
+Orders ||--o{ Returns : "may have"
+
+' Enum Relationships
+Accounts }o-- Role
+Accounts }o-- AccountStatus
+Orders }o-- OrderStatus
+Shippings }o-- ShippingStatus
+Returns }o-- ReturnStatus
+
+@enduml</pre>
+            </div>
+
+            <div class="info-section">
+                <h3>🔗 Mối quan hệ chính trong sơ đồ</h3>
+                <ul>
+                    <li><strong>Users ↔ Accounts:</strong> One-to-One relationship (mỗi user có 1 account)</li>
+                    <li><strong>Users ↔ Staff:</strong> One-to-Many (1 user có thể là nhiều staff records)</li>
+                    <li><strong>Users ↔ Orders:</strong> One-to-Many (1 user tạo nhiều orders)</li>
+                    <li><strong>Category ↔ Products:</strong> One-to-Many (1 category có nhiều products)</li>
+                    <li><strong>Orders ↔ Orderdetails:</strong> One-to-Many (1 order có nhiều chi tiết)</li>
+                    <li><strong>Orders ↔ Shippings:</strong> One-to-Zero-or-One (1 order có thể có shipping)</li>
+                    <li><strong>Cost Tracking:</strong> cost_price và cost_price_at_sale để theo dõi lợi nhuận</li>
+                </ul>
+            </div>
+
+            <div class="info-section">
+                <h3>⚡ Tính năng kiến trúc nổi bật</h3>
+                <ul>
+                    <li><strong>UUID Support:</strong> Users, Customers, Accounts sử dụng UUID</li>
+                    <li><strong>Timestamp with Timezone:</strong> Orders, Products, Payments, Shippings</li>
+                    <li><strong>Role-based Access:</strong> ADMIN, NVBH, NVK permissions</li>
+                    <li><strong>Order Status Tracking:</strong> Từ pending đến delivered/cancelled</li>
+                    <li><strong>Shipping Management:</strong> Full logistics tracking với carrier info</li>
+                    <li><strong>Return Processing:</strong> Complete return/refund workflow</li>
+                    <li><strong>Cost Analysis:</strong> Track cost price vs selling price for profit analysis</li>
+                    <li><strong>Branch Management:</strong> Multi-branch support với manager hierarchy</li>
+                </ul>
+            </div>
+
+            <div class="usage-guide">
+                <h3>📖 Hướng dẫn sử dụng</h3>
+                <ol>
+                    <li>Click nút <strong>"📋 Copy Code"</strong> để copy toàn bộ mã PlantUML</li>
+                    <li>Truy cập <strong>PlantUML Online Server</strong>: <a href="http://www.plantuml.com/plantuml/uml/" target="_blank">plantuml.com</a></li>
+                    <li>Paste mã vào editor và click <strong>"Submit"</strong></li>
+                    <li>Tải về file PNG/SVG hoặc chia sẻ URL diagram</li>
+                    <li>Có thể chỉnh sửa mã để tùy chỉnh giao diện và bố cục</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification">
+        ✅ Đã copy thành công vào clipboard!
+    </div>
+
+    <script>
+        function copyCode() {
+            const code = document.getElementById('plantumlCode').textContent;
+            
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(code).then(function() {
+                    showNotification();
+                }).catch(function(err) {
+                    console.error('Could not copy text: ', err);
+                    fallbackCopyTextToClipboard(code);
+                });
+            } else {
+                fallbackCopyTextToClipboard(code);
+            }
+        }
+
+        function fallbackCopyTextToClipboard(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.position = "fixed";
+
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showNotification();
+                } else {
+                    console.error('Fallback: Could not copy text');
+                }
+            } catch (err) {
+                console.error('Fallback: Could not copy text', err);
+            }
+
+            document.body.removeChild(textArea);
+        }
+
+        function showNotification() {
+            const notification = document.getElementById('notification');
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Add smooth scrolling for internal links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html> 

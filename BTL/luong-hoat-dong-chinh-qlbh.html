@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sơ đồ tổng quan - Hệ thống QLBH</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f8f9fa;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .chart-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            overflow-x: auto;
+        }
+        .chart-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #0066cc;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .description {
+            background-color: #e3f2fd;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-size: 15px;
+            line-height: 1.8;
+        }
+        .mermaid {
+            min-height: 600px;
+        }
+    </style>
+</head>
+<body>
+    <h1>SƠ ĐỒ TỔNG QUAN HỆ THỐNG QLBH</h1>
+
+    <div class="chart-container">
+        <div class="chart-title">LUỒNG HOẠT ĐỘNG CHÍNH - HỆ THỐNG QUẢN LÝ BÁN HÀNG</div>
+        <div class="mermaid">
+graph TD
+    START([Bắt đầu]) --> LOGIN[Trang đăng nhập<br/>email/password]
+    
+    LOGIN --> AUTH_CHECK{Xác thực thành công?}
+    AUTH_CHECK -->|Không| LOGIN_FAIL[Thông báo lỗi<br/>Thử lại đăng nhập]
+    LOGIN_FAIL --> LOGIN
+    
+    AUTH_CHECK -->|Có| ROLE_CHECK{Kiểm tra vai trò}
+    
+    ROLE_CHECK -->|Admin| ADMIN_DASH[Dashboard Admin<br/>Toàn quyền hệ thống]
+    ROLE_CHECK -->|NVBH| SALES_DASH[Dashboard Nhân viên bán hàng<br/>Bán hàng và chăm sóc KH]
+    ROLE_CHECK -->|NVK| WAREHOUSE_DASH[Dashboard Nhân viên kho<br/>Quản lý sản phẩm và kho]
+    
+    ADMIN_DASH --> MAIN_MENU{Chọn chức năng}
+    SALES_DASH --> MAIN_MENU
+    WAREHOUSE_DASH --> MAIN_MENU
+    
+    MAIN_MENU -->|Bán hàng| SALES_MODULE[Module Bán hàng<br/>- Tạo đơn hàng<br/>- Tích hợp thanh toán]
+    MAIN_MENU -->|Doanh nghiệp| BUSINESS_MODULE[Module Doanh nghiệp<br/>- Quản lý chi nhánh<br/>- Quản lý nhân viên]
+    MAIN_MENU -->|Đối tác| PARTNERS_MODULE[Module Đối tác<br/>- Quản lý khách hàng<br/>- Chăm sóc khách hàng]
+    MAIN_MENU -->|Người dùng| USERS_MODULE[Module Người dùng<br/>- Thêm người dùng<br/>- Tìm kiếm và chỉnh sửa<br/>- Phân quyền]
+    MAIN_MENU -->|Sản phẩm| PRODUCTS_MODULE[Module Sản phẩm<br/>- Thêm sản phẩm<br/>- Tìm kiếm và chỉnh sửa<br/>- Danh mục sản phẩm]
+    MAIN_MENU -->|Đơn hàng| ORDERS_MODULE[Module Đơn hàng & Thanh toán<br/>- Tìm và xem đơn hàng<br/>- Đơn vận chuyển<br/>- Thanh toán]
+    MAIN_MENU -->|Báo cáo| REPORTS_MODULE[Module Báo cáo<br/>- Báo cáo đơn hàng<br/>- Báo cáo tài chính<br/>- Báo cáo vận chuyển]
+    
+    SALES_MODULE --> SALES_ACTIONS[Thực hiện nghiệp vụ bán hàng<br/>Cập nhật database<br/>Tạo hóa đơn]
+    BUSINESS_MODULE --> BUSINESS_ADMIN_CHECK{Chỉ Admin?}
+    BUSINESS_ADMIN_CHECK -->|Không| ACCESS_DENIED[Từ chối truy cập]
+    BUSINESS_ADMIN_CHECK -->|Có| BUSINESS_ACTIONS[Quản lý tổ chức<br/>Cập nhật thông tin chi nhánh/nhân viên]
+    PARTNERS_MODULE --> PARTNERS_ACTIONS[Quản lý quan hệ khách hàng<br/>Xử lý chăm sóc và hỗ trợ]
+    USERS_MODULE --> USERS_ADMIN_CHECK{Chỉ Admin?}
+    USERS_ADMIN_CHECK -->|Không| ACCESS_DENIED[Từ chối truy cập]
+    USERS_ADMIN_CHECK -->|Có| USERS_ACTIONS[Quản lý tài khoản người dùng<br/>Phân quyền hệ thống]
+    PRODUCTS_MODULE --> PRODUCTS_ACTIONS[Quản lý kho và sản phẩm<br/>Cập nhật tồn kho]
+    ORDERS_MODULE --> ORDERS_ACTIONS[Xử lý đơn hàng<br/>Quản lý vận chuyển<br/>Xử lý thanh toán]
+    REPORTS_MODULE --> REPORTS_ADMIN_CHECK{Chỉ Admin?}
+    REPORTS_ADMIN_CHECK -->|Không| ACCESS_DENIED[Từ chối truy cập]
+    REPORTS_ADMIN_CHECK -->|Có| REPORTS_ACTIONS[Tạo báo cáo<br/>Xuất dữ liệu<br/>Phân tích kinh doanh]
+    
+    SALES_ACTIONS --> DATABASE[Cập nhật Database<br/>12 bảng chính<br/>Triggers tự động]
+    BUSINESS_ACTIONS --> DATABASE
+    PARTNERS_ACTIONS --> DATABASE
+    USERS_ACTIONS --> DATABASE
+    PRODUCTS_ACTIONS --> DATABASE
+    ORDERS_ACTIONS --> DATABASE
+    REPORTS_ACTIONS --> DATABASE
+    
+    DATABASE --> RESPONSE[Phản hồi kết quả<br/>Thông báo thành công/lỗi<br/>Cập nhật giao diện]
+    
+    RESPONSE --> CONTINUE{Tiếp tục làm việc?}
+    CONTINUE -->|Có| MAIN_MENU
+    CONTINUE -->|Không| LOGOUT[Đăng xuất<br/>Xóa session<br/>Về trang đăng nhập]
+    
+    ACCESS_DENIED --> MAIN_MENU
+    LOGOUT --> END([Kết thúc])
+    
+    classDef startEnd fill:#e1f5fe,stroke:#01579b,stroke-width:3px
+    classDef auth fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef dashboard fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
+    classDef module fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef action fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    classDef database fill:#e0f2f1,stroke:#00695c,stroke-width:2px
+    classDef decision fill:#f1f8e9,stroke:#33691e,stroke-width:2px
+    classDef error fill:#ffebee,stroke:#c62828,stroke-width:2px
+    
+    class START,END startEnd
+    class LOGIN,LOGIN_FAIL auth
+    class ADMIN_DASH,SALES_DASH,WAREHOUSE_DASH dashboard
+    class SALES_MODULE,BUSINESS_MODULE,PARTNERS_MODULE,USERS_MODULE,PRODUCTS_MODULE,ORDERS_MODULE,REPORTS_MODULE module
+    class SALES_ACTIONS,BUSINESS_ACTIONS,PARTNERS_ACTIONS,USERS_ACTIONS,PRODUCTS_ACTIONS,ORDERS_ACTIONS,REPORTS_ACTIONS action
+    class DATABASE,RESPONSE database
+    class AUTH_CHECK,ROLE_CHECK,MAIN_MENU,BUSINESS_ADMIN_CHECK,USERS_ADMIN_CHECK,REPORTS_ADMIN_CHECK,CONTINUE decision
+    class ACCESS_DENIED,LOGOUT error
+        </div>
+        <div class="description">
+            <strong>Mô tả hệ thống QLBH:</strong>
+            <br><br>
+            <strong>🔐 Xác thực:</strong> Đăng nhập bằng email/password, không có chức năng đăng ký (chỉ Admin tạo tài khoản)
+            <br><br>
+            <strong>👥 3 Vai trò chính:</strong>
+            <ul>
+                <li><strong>Admin:</strong> Toàn quyền hệ thống, quản lý người dùng</li>
+                <li><strong>NVBH (Nhân viên bán hàng):</strong> Bán hàng, chăm sóc khách hàng</li>
+                <li><strong>NVK (Nhân viên kho):</strong> Quản lý sản phẩm, tồn kho</li>
+            </ul>
+            
+            <strong>🏢 7 Module chính:</strong>
+            <ul>
+                <li><strong>Bán hàng:</strong> Tạo đơn hàng, tích hợp thanh toán</li>
+                <li><strong>Doanh nghiệp:</strong> Quản lý chi nhánh và nhân viên (Admin only)</li>
+                <li><strong>Đối tác:</strong> Quản lý và chăm sóc khách hàng</li>
+                <li><strong>Người dùng:</strong> Quản lý tài khoản, phân quyền (Admin only)</li>
+                <li><strong>Sản phẩm:</strong> Quản lý sản phẩm, danh mục, tồn kho</li>
+                <li><strong>Đơn hàng & Thanh toán:</strong> Xử lý đơn hàng, vận chuyển, thanh toán</li>
+                <li><strong>Báo cáo:</strong> Báo cáo đơn hàng, tài chính, vận chuyển (Admin only)</li>
+            </ul>
+            
+            <strong>🗄️ Công nghệ:</strong> Next.js 15, Supabase (PostgreSQL + Auth), TailwindCSS, TypeScript
+            <br><br>
+            <strong>📊 Database:</strong> 12 bảng chính với triggers tự động, real-time updates
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            }
+        });
+    </script>
+</body>
+</html>

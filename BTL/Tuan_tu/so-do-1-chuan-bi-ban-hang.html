@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sơ đồ Tuần tự - Chuẩn bị Bán hàng - QLBH System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .info-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 5px solid #667eea;
+        }
+
+        .info-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .info-section ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info-section li {
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .info-section li:before {
+            content: "✓";
+            color: #28a745;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        .code-container {
+            background: #1e1e1e;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .code-header {
+            background: #2d2d2d;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #404040;
+        }
+
+        .code-title {
+            color: #e6e6e6;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .copy-btn {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .copy-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+        }
+
+        .plantuml-code {
+            background: #1e1e1e;
+            color: #e6e6e6;
+            padding: 25px;
+            font-family: 'Fira Code', 'Monaco', 'Cascadia Code', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .plantuml-code::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .plantuml-code::-webkit-scrollbar-track {
+            background: #2d2d2d;
+        }
+
+        .plantuml-code::-webkit-scrollbar-thumb {
+            background: #555;
+            border-radius: 4px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .usage-guide {
+            background: #e3f2fd;
+            padding: 25px;
+            border-radius: 10px;
+            border-left: 5px solid #2196f3;
+            margin-top: 30px;
+        }
+
+        .usage-guide h3 {
+            color: #1976d2;
+            margin-bottom: 15px;
+        }
+
+        .usage-guide ol {
+            color: #424242;
+            padding-left: 20px;
+        }
+
+        .usage-guide li {
+            margin-bottom: 8px;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .container {
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .plantuml-code {
+                font-size: 12px;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Sơ đồ Tuần tự - Chuẩn bị Bán hàng</h1>
+            <p>Quy trình từ đăng nhập đến chọn sản phẩm và khách hàng</p>
+        </div>
+
+        <div class="content">
+            <div class="info-section">
+                <h3>🎯 Mô tả quy trình Chuẩn bị Bán hàng</h3>
+                <ul>
+                    <li><strong>Đăng nhập:</strong> Nhân viên đăng nhập bằng username/password</li>
+                    <li><strong>Xác thực vai trò:</strong> Kiểm tra quyền NVBH, NVK hoặc Admin</li>
+                    <li><strong>Truy cập module bán hàng:</strong> Vào Dashboard → Sales → Create Order</li>
+                    <li><strong>Tìm kiếm sản phẩm:</strong> Nhập tên/mã sản phẩm để tìm kiếm</li>
+                    <li><strong>Chọn sản phẩm:</strong> Chọn từ danh sách kết quả tìm kiếm</li>
+                    <li><strong>Nhập số lượng:</strong> Điều chỉnh số lượng theo yêu cầu</li>
+                    <li><strong>Tìm kiếm khách hàng:</strong> Tìm theo tên, SĐT, email</li>
+                    <li><strong>Chọn khách hàng:</strong> Chọn từ danh sách hoặc tạo mới</li>
+                </ul>
+            </div>
+
+            <div class="code-container">
+                <div class="code-header">
+                    <div class="code-title">🔄 PlantUML Sequence Diagram - Chuẩn bị Bán hàng</div>
+                    <button class="copy-btn" onclick="copyCode()">📋 Copy Code</button>
+                </div>
+                <pre class="plantuml-code" id="plantumlCode">@startuml Chuẩn bị Bán hàng - QLBH System
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam actorBorderColor #2C3E50
+skinparam participantBorderColor #3498DB
+skinparam sequenceArrowColor #E74C3C
+skinparam sequenceLifeLineBorderColor #95A5A6
+
+title **QUY TRÌNH CHUẨN BỊ BÁN HÀNG**\n//Từ đăng nhập đến chọn sản phẩm và khách hàng//
+
+actor "👤 Nhân viên\nBán hàng" as Staff
+participant "🔐 Auth\nSystem" as Auth
+participant "📊 Dashboard\nController" as Dashboard
+participant "🛒 Sales\nController" as Sales
+participant "📦 Product\nService" as Product
+participant "👥 Customer\nService" as Customer
+database "🗄️ Database\n(Supabase)" as DB
+
+== ĐĂNG NHẬP VÀ XÁC THỰC ==
+
+Staff -> Auth : 1. Nhập username/password
+activate Auth
+Auth -> DB : 1.1 Kiểm tra tài khoản
+activate DB
+DB --> Auth : 1.2 Trả về thông tin user + role
+deactivate DB
+
+alt **Đăng nhập thành công**
+    Auth --> Staff : 1.3 Redirect đến Dashboard
+    deactivate Auth
+    
+    Staff -> Dashboard : 2. Truy cập Dashboard
+    activate Dashboard
+    Dashboard -> Auth : 2.1 Verify session & role
+    activate Auth
+    Auth --> Dashboard : 2.2 Confirm NVBH/Admin role
+    deactivate Auth
+    Dashboard --> Staff : 2.3 Hiển thị Dashboard menu
+    deactivate Dashboard
+    
+else **Đăng nhập thất bại**
+    Auth --> Staff : ❌ Thông báo lỗi đăng nhập
+    deactivate Auth
+
+end
+
+== TRUY CẬP MODULE BÁN HÀNG ==
+
+Staff -> Sales : 3. Click "Bán hàng" → "Tạo đơn hàng"
+activate Sales
+Sales -> Auth : 3.1 Kiểm tra quyền truy cập
+activate Auth
+Auth --> Sales : 3.2 Xác nhận quyền NVBH/Admin
+deactivate Auth
+
+Sales -> DB : 3.3 Load dữ liệu khởi tạo
+activate DB
+DB --> Sales : 3.4 Trả về payment_methods, categories
+deactivate DB
+
+Sales --> Staff : 3.5 Hiển thị giao diện tạo đơn hàng
+deactivate Sales
+
+== TÌM KIẾM VÀ CHỌN SẢN PHẨM ==
+
+Staff -> Sales : 4. Nhập từ khóa tìm sản phẩm
+activate Sales
+Sales -> Product : 4.1 searchProducts(searchTerm)
+activate Product
+Product -> DB : 4.2 Query products với LIKE
+activate DB
+DB --> Product : 4.3 Trả về danh sách sản phẩm
+deactivate DB
+Product --> Sales : 4.4 Kết quả tìm kiếm
+deactivate Product
+Sales --> Staff : 4.5 Hiển thị dropdown kết quả
+deactivate Sales
+
+Staff -> Sales : 5. Click chọn sản phẩm
+activate Sales
+Sales -> Sales : 5.1 addProductToOrder(product)
+
+alt **Sản phẩm chưa có trong hóa đơn**
+    Sales -> Sales : 5.2 Thêm sản phẩm mới với quantity = 1
+else **Sản phẩm đã có**
+    Sales -> Sales : 5.3 Tăng quantity += 1
+end
+
+Sales -> Sales : 5.4 calculateTotal() - Tính lại tổng tiền
+Sales --> Staff : 5.5 Cập nhật giao diện hiển thị sản phẩm
+deactivate Sales
+
+== ĐIỀU CHỈNH SỐ LƯỢNG SẢN PHẨM ==
+
+Staff -> Sales : 6. Thay đổi số lượng sản phẩm
+activate Sales
+Sales -> Sales : 6.1 updateQuantity(index, newQuantity)
+Sales -> Sales : 6.2 Kiểm tra tồn kho
+alt **Số lượng hợp lệ (≤ stock_quantity)**
+    Sales -> Sales : 6.3 Cập nhật quantity
+    Sales -> Sales : 6.4 calculateTotal() - Tính lại tổng
+    Sales --> Staff : 6.5 Cập nhật hiển thị thành tiền
+else **Vượt quá tồn kho**
+    Sales --> Staff : ❌ Hiển thị lỗi màu đỏ
+end
+deactivate Sales
+
+== TÌM KIẾM VÀ CHỌN KHÁCH HÀNG ==
+
+Staff -> Sales : 7. Nhập từ khóa tìm khách hàng
+activate Sales
+Sales -> Customer : 7.1 searchCustomers(searchTerm)
+activate Customer
+Customer -> DB : 7.2 Query customers
+activate DB
+DB --> Customer : 7.3 Trả về danh sách khách hàng
+deactivate DB
+Customer --> Sales : 7.4 Kết quả tìm kiếm
+deactivate Customer
+Sales --> Staff : 7.5 Hiển thị dropdown khách hàng
+deactivate Sales
+
+Staff -> Sales : 8. Click chọn khách hàng
+activate Sales
+Sales -> Sales : 8.1 selectCustomer(customer)
+Sales -> Sales : 8.2 Cập nhật thông tin vào hóa đơn hiện tại
+Sales --> Staff : 8.3 Hiển thị thông tin khách hàng đã chọn
+deactivate Sales
+
+== HOÀN TẤT CHUẨN BỊ ==
+
+note over Staff, DB : **TRẠNG THÁI SAU KHI CHUẨN BỊ:** Sẵn sàng cho bước thanh toán
+
+Sales --> Staff : 9. Hiển thị 2 nút lựa chọn:\n• "Bán hàng nhanh" (thanh toán tại chỗ)\n• "Tạo đơn gửi đi" (có vận chuyển)
+
+@enduml</pre>
+            </div>
+
+            <div class="info-section">
+                <h3>🔍 Chi tiết quy trình</h3>
+                <ul>
+                    <li><strong>Authentication:</strong> Sử dụng Supabase Auth với session-based authentication</li>
+                    <li><strong>Role Validation:</strong> Kiểm tra role NVBH, NVK, hoặc Admin cho phép truy cập</li>
+                    <li><strong>Product Search:</strong> Real-time search với ILIKE operator trên PostgreSQL</li>
+                    <li><strong>Stock Validation:</strong> Kiểm tra tồn kho thời gian thực trước khi thêm</li>
+                    <li><strong>Customer Search:</strong> Tìm kiếm đa trường (tên, SĐT, email) với giới hạn 5 kết quả</li>
+                    <li><strong>Invoice Management:</strong> Hỗ trợ đa hóa đơn (tabs), mặc định tạo "Hóa đơn 1"</li>
+                    <li><strong>Real-time Updates:</strong> Cập nhật tức thì số lượng, giá tiền khi thay đổi</li>
+                </ul>
+            </div>
+
+            <div class="usage-guide">
+                <h3>📖 Hướng dẫn sử dụng</h3>
+                <ol>
+                    <li>Copy mã PlantUML bằng nút <strong>"📋 Copy Code"</strong></li>
+                    <li>Truy cập <strong>PlantUML Online</strong>: <a href="http://www.plantuml.com/plantuml/uml/" target="_blank">plantuml.com</a></li>
+                    <li>Paste mã vào editor và nhấn <strong>"Submit"</strong></li>
+                    <li>Tải về dưới dạng PNG, SVG hoặc PDF để sử dụng</li>
+                    <li>Có thể tùy chỉnh theme và style theo yêu cầu</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification">
+        ✅ Đã copy thành công vào clipboard!
+    </div>
+
+    <script>
+        function copyCode() {
+            const code = document.getElementById('plantumlCode').textContent;
+            
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(code).then(function() {
+                    showNotification();
+                }).catch(function(err) {
+                    console.error('Could not copy text: ', err);
+                    fallbackCopyTextToClipboard(code);
+                });
+            } else {
+                fallbackCopyTextToClipboard(code);
+            }
+        }
+
+        function fallbackCopyTextToClipboard(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.position = "fixed";
+
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showNotification();
+                } else {
+                    console.error('Fallback: Could not copy text');
+                }
+            } catch (err) {
+                console.error('Fallback: Could not copy text', err);
+            }
+
+            document.body.removeChild(textArea);
+        }
+
+        function showNotification() {
+            const notification = document.getElementById('notification');
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html> 

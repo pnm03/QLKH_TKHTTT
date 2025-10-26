@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sơ đồ tuần tự - Tìm kiếm & Xem đơn hàng</title>
+    <script src="https://cdn.jsdelivr.net/npm/plantuml-encoder@1.4.0/dist/plantuml-encoder.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 15px;
+        }
+        .diagram-container {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #fafafa;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        .description {
+            background-color: #e8f4fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #3498db;
+        }
+        .description h3 {
+            color: #2980b9;
+            margin-top: 0;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sơ đồ tuần tự - Tìm kiếm & Xem đơn hàng</h1>
+        
+        <div class="description">
+            <h3>Mô tả chức năng</h3>
+            <p>Sơ đồ này mô tả quy trình tìm kiếm và xem đơn hàng trong hệ thống QLBH, bao gồm: tìm kiếm đơn hàng với nhiều tiêu chí, bộ lọc theo trạng thái/ngày tháng, xem chi tiết đơn hàng và in hóa đơn PDF.</p>
+        </div>
+
+        <div class="diagram-container">
+            <img id="diagram" src="" alt="Đang tạo sơ đồ...">
+        </div>
+    </div>
+
+    <script>
+        const plantUMLCode = `
+@startuml
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam sequenceParticipant underline
+
+actor "User" as user
+participant "Search Orders Page" as page
+participant "Order Controller" as controller
+participant "Supabase DB" as db
+participant "Detail Modal" as modal
+participant "PDF Generator" as pdf
+
+== 1. Truy cập trang tìm kiếm đơn hàng ==
+user -> page: Truy cập /dashboard/orders/search
+activate page
+page -> controller: Tải danh sách đơn hàng ban đầu
+controller -> db: SELECT orders JOIN customers JOIN users
+note right: Lấy thông tin đơn hàng\\nvới tên khách hàng\\nvà người tạo đơn
+db --> controller: Danh sách orders với thông tin liên quan
+controller -> db: SELECT payment methods
+db --> controller: Danh sách phương thức thanh toán
+controller --> page: Dữ liệu orders + payment methods
+page --> user: Hiển thị bảng đơn hàng với bộ lọc
+deactivate page
+
+== 2. Tìm kiếm đơn hàng ==
+user -> page: Nhập từ khóa tìm kiếm
+activate page
+page -> controller: Lọc theo multiple criteria
+note right: Tìm kiếm theo:\\norder_id, customer_name,\\ncreator_name, customer_phone
+controller --> page: Kết quả tìm kiếm đã lọc
+page --> user: Hiển thị danh sách đơn hàng phù hợp
+deactivate page
+
+== 3. Áp dụng bộ lọc ==
+user -> page: Chọn bộ lọc (trạng thái, ngày, thanh toán)
+activate page
+page -> controller: Kết hợp filter với search
+note right: Filter theo:\\nstatus (Đã/Chưa thanh toán)\\ndate range\\npayment_method\\nis_shipping
+controller --> page: Kết quả sau khi áp dụng bộ lọc
+page --> user: Cập nhật danh sách với pagination
+deactivate page
+
+== 4. Xem chi tiết đơn hàng ==
+user -> page: Click vào đơn hàng
+activate page
+page -> controller: Lấy thông tin chi tiết order_id
+controller -> db: SELECT orderdetails WHERE order_id
+db --> controller: Chi tiết sản phẩm trong đơn hàng
+controller -> db: SELECT shipping info (nếu có)
+db --> controller: Thông tin vận chuyển
+controller -> modal: Hiển thị popup chi tiết
+activate modal
+modal --> user: Popup với thông tin đầy đủ
+note right: Thông tin đơn hàng:\\nKhách hàng, ngày đặt\\nDanh sách sản phẩm\\nTổng tiền, trạng thái\\nPhương thức thanh toán\\nThông tin vận chuyển
+user -> modal: Xem thông tin chi tiết
+deactivate modal
+deactivate page
+
+== 5. In hóa đơn PDF ==
+user -> page: Trong modal, nhấn "In hóa đơn"
+activate page
+page -> pdf: Tạo PDF từ thông tin đơn hàng
+activate pdf
+pdf -> pdf: Tạo layout hóa đơn với CSS
+note right: Header với logo\\nThông tin khách hàng\\nBảng chi tiết sản phẩm\\nTổng cộng\\nThông tin thanh toán
+pdf --> page: File PDF được tạo
+deactivate pdf
+page --> user: Download file PDF hóa đơn
+deactivate page
+
+== 6. Sắp xếp kết quả ==
+user -> page: Click tiêu đề cột để sắp xếp
+activate page
+page -> controller: Sort theo field được chọn
+note right: Sắp xếp theo:\\norder_date, price,\\nstatus, customer_name
+controller --> page: Danh sách đã sắp xếp
+page --> user: Hiển thị với indicator sắp xếp
+deactivate page
+
+== 7. Phân trang ==
+user -> page: Chuyển trang
+activate page
+page -> controller: Tính toán offset cho pagination
+controller --> page: Dữ liệu trang mới
+page --> user: Hiển thị trang kết quả tiếp theo
+deactivate page
+
+== 8. Export danh sách ==
+user -> page: Nhấn "Xuất Excel"
+activate page
+page -> controller: Tạo file Excel từ kết quả tìm kiếm
+controller --> page: File Excel
+page --> user: Download file Excel
+deactivate page
+
+@enduml
+        `;
+
+        // Encode PlantUML và tạo URL
+        const encoded = plantumlEncoder.encode(plantUMLCode);
+        const diagramUrl = `https://www.plantuml.com/plantuml/png/${encoded}`;
+        
+        // Hiển thị sơ đồ
+        document.getElementById('diagram').src = diagramUrl;
+    </script>
+</body>
+</html> 

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sơ đồ tuần tự - Hiển thị Danh sách Sản phẩm</title>
+    <script src="https://cdn.jsdelivr.net/npm/plantuml-encoder@1.4.0/dist/plantuml-encoder.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 15px;
+        }
+        .diagram-container {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #fafafa;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        .description {
+            background-color: #e8f4fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #3498db;
+        }
+        .description h3 {
+            color: #2980b9;
+            margin-top: 0;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sơ đồ tuần tự - Hiển thị Danh sách Sản phẩm</h1>
+        
+        <div class="description">
+            <h3>Mô tả chức năng</h3>
+            <p>Sơ đồ này mô tả quy trình hiển thị danh sách sản phẩm trong hệ thống QLBH, bao gồm: tải danh sách sản phẩm và danh mục, 2 chế độ xem (grid/danh mục), tìm kiếm, xem chi tiết và thống kê sản phẩm.</p>
+        </div>
+
+        <div class="diagram-container">
+            <img id="diagram" src="" alt="Đang tạo sơ đồ...">
+        </div>
+    </div>
+
+    <script>
+        const plantUMLCode = `
+@startuml
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam sequenceParticipant underline
+
+actor "User" as user
+participant "Products Page" as page
+participant "Product Controller" as controller
+participant "Supabase DB" as db
+participant "Detail Modal" as modal
+
+== 1. Tải danh sách sản phẩm và danh mục ==
+user -> page: Truy cập /dashboard/products
+activate page
+page -> controller: Tải dữ liệu ban đầu
+controller -> db: SELECT * FROM products ORDER BY created_at DESC
+db --> controller: Danh sách sản phẩm
+controller -> db: SELECT * FROM category ORDER BY name_category
+db --> controller: Danh sách danh mục
+controller --> page: Dữ liệu products + categories
+page --> user: Hiển thị giao diện với chế độ grid mặc định
+deactivate page
+
+== 2. Chuyển đổi chế độ xem ==
+user -> page: Click "Xem theo danh mục"
+activate page
+page -> controller: Thay đổi viewMode = 'category'
+controller --> page: Cập nhật giao diện
+page --> user: Hiển thị sản phẩm nhóm theo danh mục với trạng thái đóng
+deactivate page
+
+== 3. Mở rộng/thu gọn danh mục ==
+user -> page: Click vào tiêu đề danh mục
+activate page
+page -> controller: Toggle isExpanded cho category
+controller --> page: Cập nhật trạng thái danh mục
+alt Danh mục được mở rộng
+    page --> user: Hiển thị danh sách sản phẩm trong danh mục
+else Danh mục được thu gọn
+    page --> user: Ẩn danh sách sản phẩm
+end
+deactivate page
+
+== 4. Tìm kiếm sản phẩm ==
+user -> page: Nhập từ khóa tìm kiếm
+activate page
+page -> controller: Lọc sản phẩm theo searchTerm
+note right: Tìm kiếm trong:\\nproduct_name, description,\\ncolor, size
+controller --> page: Danh sách sản phẩm đã lọc
+page --> user: Hiển thị kết quả tìm kiếm
+deactivate page
+
+== 5. Xem chi tiết sản phẩm ==
+user -> page: Click vào sản phẩm
+activate page
+page -> controller: Lấy thông tin chi tiết product
+controller -> modal: Hiển thị modal chi tiết
+activate modal
+modal --> user: Popup với thông tin đầy đủ
+note right: Tên, giá, màu, size,\\ntồn kho, mô tả,\\nngày tạo/cập nhật
+user -> modal: Xem thông tin chi tiết
+modal -> modal: Đóng modal
+deactivate modal
+deactivate page
+
+== 6. Xem thống kê ==
+user -> page: Xem phần thống kê
+activate page
+page -> controller: Tính toán thống kê
+note right: Tổng sản phẩm\\nSản phẩm có sẵn\\nSản phẩm cần nhập thêm
+controller --> page: Dữ liệu thống kê
+page --> user: Hiển thị 3 card thống kê
+deactivate page
+
+== 7. Truy cập chức năng khác ==
+user -> page: Nhấn "Thêm sản phẩm"
+activate page
+page --> user: Redirect to /dashboard/products/add
+deactivate page
+
+@enduml
+        `;
+
+        // Encode PlantUML và tạo URL
+        const encoded = plantumlEncoder.encode(plantUMLCode);
+        const diagramUrl = `https://www.plantuml.com/plantuml/png/${encoded}`;
+        
+        // Hiển thị sơ đồ
+        document.getElementById('diagram').src = diagramUrl;
+    </script>
+</body>
+</html> 

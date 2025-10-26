@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sơ đồ Lớp CSDL - PlantUML - Hệ thống QLBH</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f8f9fa;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .chart-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            overflow-x: auto;
+        }
+        .mermaid { /* This div will now hold preformatted PlantUML code */
+            min-height: auto; /* Adjust height as it's now text */
+            text-align: left; /* Align code to the left */
+        }
+        .mermaid pre { /* New style for preformatted PlantUML code */
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+            white-space: pre; 
+            overflow-x: auto; 
+            font-family: "Courier New", Courier, monospace;
+            font-size: 0.9em;
+            margin: 0; /* Remove default pre margin */
+        }
+        .code-container {
+            background-color: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 30px;
+            position: relative; /* For positioning the copy button */
+        }
+        .code-container pre {
+            margin: 0;
+            white-space: pre-wrap; /* Wrap long lines */
+            word-wrap: break-word; /* Break words if necessary */
+        }
+        .copy-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #6272a4;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .copy-button:hover {
+            background-color: #44475a;
+        }
+    </style>
+</head>
+<body>
+    <h1>SƠ ĐỒ LỚP CSDL - PLANTUML - HỆ THỐNG QUẢN LÝ BÁN HÀNG</h1>
+
+    <div class="chart-container">        <div class="mermaid">
+            <pre><code id="plantUMLDiagram">@startuml
+hide empty members
+
+' Style all classes with a light purple background
+skinparam class {
+BackgroundColor #e3f2fd
+BorderColor #90caf9
+FontColor #000000
+BorderThickness 2
+}
+
+' If you really need a second style, you must use a stereotype,
+' e.g. <<highlight>>, and then annotate your classes accordingly.
+skinparam class<<highlight>> {
+BackgroundColor #fff8e1
+BorderColor #ff8f00
+FontColor #000000
+BorderThickness 2
+}
+
+' Class Definitions
+class Branch {
++branch_id : int
++branch_name : String
++address : String
+}
+class UserEntity {
++user_id : UUID
++full_name : String
++email : String
++phone : String
++birth_date : Date
++hometown : String
++created_at : Timestamp
++updated_at : Timestamp
++branch_id : int FK
++account : Account
++orders_created : Order[]
++getUserDetails()
++updateProfile()
+}
+class Account {
++id : UUID
++user_id : UUID FK
++username : String
++password_hash : String
++role : Role
++status : AccountStatus
++last_login : Timestamp
++created_at : Timestamp
++updated_at : Timestamp
++login()
++logout()
++changePassword()
++checkRoleAccess(requiredRole: Role) : boolean
+}
+enum Role {
+ADMIN
+NVBH
+NVK
+NVQLDH
+}
+enum AccountStatus {
+ACTIVE
+INACTIVE
+LOCKED
+}
+class OrderEntity {
++order_id : String
++user_id : UUID FK
++customer_id : UUID FK
++order_date : Timestamp
++total_price : Decimal
++status : OrderStatus
++payment_method_id : int FK
++is_shipping : boolean
++calculateTotalPrice()
++updateStatus(newStatus: OrderStatus)
++addOrderDetail(prod: Product, qty: int)
++applyPayment(pm: PaymentMethod)
+}
+enum OrderStatus {
+PENDING_PAYMENT
+PAID
+PROCESSING
+SHIPPED
+DELIVERED
+CANCELLED
+RETURNED
+}
+class OrderDetail {
++order_detail_id : String
++order_id : String FK
++product_id : int FK
++product_name_at_order : String
++quantity : int
++unit_price_at_order : Decimal
++subtotal : Decimal
++calculateSubtotal()
+}
+class Product {
++product_id : int
++product_name : String
++description : String
++color : String
++size : String
++price : Decimal
++stock_quantity : int
++image_base64 : String
++created_at : Timestamp
++updated_at : Timestamp
++category_id : int FK
++updateStock(qty: int)
++getProductDetails()
+}
+class Category {
++category_id : int
++category_name : String
++description : String
++getProductsInCategory()
+}
+class PaymentMethod {
++payment_id : int
++payment_method_name : String
++description : String
++image_base64 : String
++created_at : Timestamp
++updated_at : Timestamp
+}
+class Shipping {
++shipping_id : String
++order_id : String FK
++carrier : String
++tracking_number : String
++shipping_address : String
++shipping_cost : Decimal
++estimated_delivery_date : Timestamp
++actual_delivery_date : Timestamp
++status : ShippingStatus
++weight : Decimal
++unit_weight : String
++length : Decimal
++width : Decimal
++height : Decimal
++unit_size : String
++customer_phone : String
++customer_name : String
++cod_shipping : boolean
++updateShippingStatus(newStatus: ShippingStatus)
++getTrackingInfo()
+}
+enum ShippingStatus {
+PENDING_PICKUP
+IN_TRANSIT
+OUT_FOR_DELIVERY
+DELIVERED
+FAILED_DELIVERY
+RETURNING
+RETURNED_TO_SENDER
+CANCELLED
+}
+class ReturnEntity {
++return_id : int
++order_id : String FK
++return_date : Timestamp
++return_reason : String
++refund_amount : Decimal
++status : ReturnStatus
++name_return : String
++processReturn()
++approveReturn()
++rejectReturn()
+}
+enum ReturnStatus {
+REQUESTED
+PROCESSING
+APPROVED
+REJECTED
+COMPLETED
+}
+class Customer {
++customer_id : UUID
++full_name : String
++email : String
++phone : String
++address : String
+}
+
+' Relationships
+UserEntity "1" -- "1" Account : has
+Branch "1" -- "*" UserEntity : employs
+UserEntity "0..1" -- "*" OrderEntity : creates
+Customer "1" -- "*" OrderEntity : places
+OrderEntity "1" -- "1..*" OrderDetail : contains
+OrderDetail "*" -- "1" Product : refers to
+Product "*" -- "1" Category : belongs to
+OrderEntity "1" -- "0..1" PaymentMethod : uses
+OrderEntity "1" -- "0..1" Shipping : has
+OrderEntity "1" -- "0..*" ReturnEntity : may have
+
+Account -- Role
+Account -- AccountStatus
+OrderEntity -- OrderStatus
+Shipping -- ShippingStatus
+ReturnEntity -- ReturnStatus
+@enduml</code></pre>
+        </div>
+    </div>
+
+    <div class="code-container">
+        <button class="copy-button" onclick="copyPlantUMLCode()">Sao chép PlantUML</button>        <pre><code id="plantUMLCode">@startuml
+hide empty members
+
+' Style all classes with a light purple background
+skinparam class {
+BackgroundColor #e3f2fd
+BorderColor #90caf9
+FontColor #000000
+BorderThickness 2
+}
+
+' If you really need a second style, you must use a stereotype,
+' e.g. <<highlight>>, and then annotate your classes accordingly.
+skinparam class<<highlight>> {
+BackgroundColor #fff8e1
+BorderColor #ff8f00
+FontColor #000000
+BorderThickness 2
+}
+
+' Class Definitions
+class Branch {
++branch_id : int
++branch_name : String
++address : String
+}
+class UserEntity {
++user_id : UUID
++full_name : String
++email : String
++phone : String
++birth_date : Date
++hometown : String
++created_at : Timestamp
++updated_at : Timestamp
++branch_id : int FK
++account : Account
++orders_created : Order[]
++getUserDetails()
++updateProfile()
+}
+class Account {
++id : UUID
++user_id : UUID FK
++username : String
++password_hash : String
++role : Role
++status : AccountStatus
++last_login : Timestamp
++created_at : Timestamp
++updated_at : Timestamp
++login()
++logout()
++changePassword()
++checkRoleAccess(requiredRole: Role) : boolean
+}
+enum Role {
+ADMIN
+NVBH
+NVK
+NVQLDH
+}
+enum AccountStatus {
+ACTIVE
+INACTIVE
+LOCKED
+}
+class OrderEntity {
++order_id : String
++user_id : UUID FK
++customer_id : UUID FK
++order_date : Timestamp
++total_price : Decimal
++status : OrderStatus
++payment_method_id : int FK
++is_shipping : boolean
++calculateTotalPrice()
++updateStatus(newStatus: OrderStatus)
++addOrderDetail(prod: Product, qty: int)
++applyPayment(pm: PaymentMethod)
+}
+enum OrderStatus {
+PENDING_PAYMENT
+PAID
+PROCESSING
+SHIPPED
+DELIVERED
+CANCELLED
+RETURNED
+}
+class OrderDetail {
++order_detail_id : String
++order_id : String FK
++product_id : int FK
++product_name_at_order : String
++quantity : int
++unit_price_at_order : Decimal
++subtotal : Decimal
++calculateSubtotal()
+}
+class Product {
++product_id : int
++product_name : String
++description : String
++color : String
++size : String
++price : Decimal
++stock_quantity : int
++image_base64 : String
++created_at : Timestamp
++updated_at : Timestamp
++category_id : int FK
++updateStock(qty: int)
++getProductDetails()
+}
+class Category {
++category_id : int
++category_name : String
++description : String
++getProductsInCategory()
+}
+class PaymentMethod {
++payment_id : int
++payment_method_name : String
++description : String
++image_base64 : String
++created_at : Timestamp
++updated_at : Timestamp
+}
+class Shipping {
++shipping_id : String
++order_id : String FK
++carrier : String
++tracking_number : String
++shipping_address : String
++shipping_cost : Decimal
++estimated_delivery_date : Timestamp
++actual_delivery_date : Timestamp
++status : ShippingStatus
++weight : Decimal
++unit_weight : String
++length : Decimal
++width : Decimal
++height : Decimal
++unit_size : String
++customer_phone : String
++customer_name : String
++cod_shipping : boolean
++updateShippingStatus(newStatus: ShippingStatus)
++getTrackingInfo()
+}
+enum ShippingStatus {
+PENDING_PICKUP
+IN_TRANSIT
+OUT_FOR_DELIVERY
+DELIVERED
+FAILED_DELIVERY
+RETURNING
+RETURNED_TO_SENDER
+CANCELLED
+}
+class ReturnEntity {
++return_id : int
++order_id : String FK
++return_date : Timestamp
++return_reason : String
++refund_amount : Decimal
++status : ReturnStatus
++name_return : String
++processReturn()
++approveReturn()
++rejectReturn()
+}
+enum ReturnStatus {
+REQUESTED
+PROCESSING
+APPROVED
+REJECTED
+COMPLETED
+}
+class Customer {
++customer_id : UUID
++full_name : String
++email : String
++phone : String
++address : String
+}
+
+' Relationships
+UserEntity "1" -- "1" Account : has
+Branch "1" -- "*" UserEntity : employs
+UserEntity "0..1" -- "*" OrderEntity : creates
+Customer "1" -- "*" OrderEntity : places
+OrderEntity "1" -- "1..*" OrderDetail : contains
+OrderDetail "*" -- "1" Product : refers to
+Product "*" -- "1" Category : belongs to
+OrderEntity "1" -- "0..1" PaymentMethod : uses
+OrderEntity "1" -- "0..1" Shipping : has
+OrderEntity "1" -- "0..*" ReturnEntity : may have
+
+Account -- Role
+Account -- AccountStatus
+OrderEntity -- OrderStatus
+Shipping -- ShippingStatus
+ReturnEntity -- ReturnStatus
+@enduml</code></pre>
+    </div>
+
+    <script>
+        function copyPlantUMLCode() { // Renamed from copyMermaidCode
+            const codeElement = document.getElementById('plantUMLCode'); // Changed ID from mermaidCode
+            const textToCopy = codeElement.innerText;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                alert('Đã sao chép mã PlantUML!'); // Changed alert message
+            }).catch(err => {
+                console.error('Không thể sao chép: ', err);
+                alert('Lỗi khi sao chép mã.');
+            });
+        }
+    </script>
+</body>
+</html>

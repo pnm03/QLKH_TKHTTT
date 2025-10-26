@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sơ đồ 4A - Thêm Phương thức Thanh toán - QLBH System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="50" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="30" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .diagram-container {
+            background: #f8fafc;
+            border: 2px dashed #e2e8f0;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .diagram-container::before {
+            content: '➕';
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 2rem;
+            opacity: 0.3;
+        }
+
+        .copy-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .copy-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .plantuml-code {
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 25px;
+            border-radius: 10px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            margin-top: 50px;
+            border: 1px solid #334155;
+        }
+
+        .info-section {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border-left: 4px solid #0ea5e9;
+        }
+
+        .info-section h3 {
+            color: #0c4a6e;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-section ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info-section li {
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+            color: #075985;
+            line-height: 1.6;
+        }
+
+        .info-section li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #059669;
+            font-weight: bold;
+        }
+
+        .usage-guide {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 4px solid #22c55e;
+        }
+
+        .usage-guide h3 {
+            color: #15803d;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .usage-guide ol {
+            color: #166534;
+            padding-left: 20px;
+        }
+
+        .usage-guide li {
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+
+        .usage-guide a {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .usage-guide a:hover {
+            text-decoration: underline;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            font-weight: 500;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 25px;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-card h4 {
+            color: #1e293b;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .feature-card p {
+            color: #64748b;
+            line-height: 1.5;
+            font-size: 0.95rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .plantuml-code {
+                font-size: 12px;
+            }
+            
+            .copy-btn {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin-bottom: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>➕ Sơ đồ tuần tự - Thêm Phương thức Thanh toán</h1>
+            <p>Quy trình thêm phương thức thanh toán mới vào hệ thống QLBH</p>
+        </div>
+
+        <div class="content">
+            <div class="diagram-container">
+                <div style="margin-bottom: 20px;">
+                    <h2 style="color: #1e293b; margin-bottom: 10px;">🔄 Sơ đồ tuần tự PlantUML</h2>
+                    <p style="color: #64748b;">Mô tả chi tiết quy trình thêm phương thức thanh toán từ nhập form đến lưu database</p>
+                    <button class="copy-btn" onclick="copyCode()">📋 Copy Code</button>
+                </div>
+                <pre class="plantuml-code" id="plantumlCode">@startuml Thêm Phương thức Thanh toán - QLBH System
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam actorBorderColor #2C3E50
+skinparam participantBorderColor #3498DB
+skinparam sequenceArrowColor #E74C3C
+skinparam sequenceLifeLineBorderColor #95A5A6
+
+title **QUY TRÌNH THÊM PHƯƠNG THỨC THANH TOÁN**\n//Từ truy cập trang quản lý đến hoàn tất thêm mới//
+
+actor "👤 Admin/\nNhân viên" as Admin
+participant "🖥️ PaymentForm\nComponent" as PaymentForm
+participant "📁 File\nUploader" as FileUploader
+participant "🔍 Validation\nService" as Validator
+participant "💾 Supabase\nClient" as Supabase
+participant "📢 Toast\nNotification" as Toast
+database "🗄️ Payments\nTable" as DB
+
+== TRUY CẬP TRANG QUẢN LÝ ==
+
+Admin -> PaymentForm : 1. Truy cập /dashboard/sales/payment
+activate PaymentForm
+PaymentForm -> PaymentForm : 1.1 Khởi tạo state components
+PaymentForm -> Supabase : 1.2 fetchPaymentMethods()
+activate Supabase
+Supabase -> DB : 1.3 SELECT * FROM payments ORDER BY payment_method_name
+activate DB
+DB --> Supabase : 1.4 Danh sách phương thức hiện có
+deactivate DB
+Supabase --> PaymentForm : 1.5 PaymentMethods[]
+deactivate Supabase
+PaymentForm --> Admin : 1.6 Hiển thị giao diện quản lý
+deactivate PaymentForm
+
+== NHẬP THÔNG TIN PHƯƠNG THỨC MỚI ==
+
+Admin -> PaymentForm : 2. Nhập tên phương thức thanh toán
+activate PaymentForm
+PaymentForm -> PaymentForm : 2.1 Cập nhật state form
+PaymentForm --> Admin : 2.2 Hiển thị text đã nhập
+deactivate PaymentForm
+
+Admin -> PaymentForm : 3. Nhập mô tả chi tiết
+activate PaymentForm
+PaymentForm -> PaymentForm : 3.1 Cập nhật textarea
+PaymentForm --> Admin : 3.2 Hiển thị mô tả
+deactivate PaymentForm
+
+== UPLOAD HÌNH ẢNH MINH HỌA ==
+
+Admin -> FileUploader : 4. Chọn file ảnh
+activate FileUploader
+FileUploader -> Validator : 4.1 validateFileSize(file)
+activate Validator
+
+alt **File size > 1MB**
+    Validator --> FileUploader : ❌ File quá lớn
+    FileUploader -> Toast : 4.2 showError("Kích thước ảnh quá lớn")
+    activate Toast
+    Toast --> Admin : 4.3 Thông báo lỗi
+    deactivate Toast
+    deactivate Validator
+    deactivate FileUploader
+else **File size hợp lệ**
+    Validator --> FileUploader : ✅ File valid
+    deactivate Validator
+    
+    FileUploader -> FileUploader : 4.4 FileReader.readAsDataURL()
+    FileUploader -> PaymentForm : 4.5 setImagePreview(base64String)
+    activate PaymentForm
+    PaymentForm -> PaymentForm : 4.6 setImageFile(file)
+    PaymentForm --> Admin : 4.7 Hiển thị preview ảnh
+    deactivate PaymentForm
+    deactivate FileUploader
+end
+
+== SUBMIT FORM ==
+
+Admin -> PaymentForm : 5. Click "Thêm phương thức thanh toán"
+activate PaymentForm
+PaymentForm -> PaymentForm : 5.1 handleSubmit(e)
+PaymentForm -> PaymentForm : 5.2 setLoading(true)
+
+PaymentForm -> Validator : 5.3 validateForm()
+activate Validator
+
+alt **Form không hợp lệ**
+    Validator --> PaymentForm : ❌ Validation failed
+    PaymentForm -> Toast : 5.4 showError("Vui lòng chọn ảnh minh họa")
+    activate Toast
+    Toast --> Admin : 5.5 Thông báo thiếu ảnh
+    deactivate Toast
+    PaymentForm -> PaymentForm : 5.6 setLoading(false)
+    deactivate Validator
+    deactivate PaymentForm
+else **Form hợp lệ**
+    Validator --> PaymentForm : ✅ Validation passed
+    deactivate Validator
+    
+    == LUU VÀO DATABASE ==
+    
+    PaymentForm -> Supabase : 5.7 INSERT INTO payments
+    activate Supabase
+    Supabase -> DB : 5.8 INSERT với payment_method_name, description, image
+    activate DB
+    
+    alt **Lưu thành công**
+        DB --> Supabase : ✅ Insert successful
+        deactivate DB
+        Supabase --> PaymentForm : 5.9 Success response
+        deactivate Supabase
+        
+        == HOÀN TẤT VÀ LÀM MỚI ==
+        
+        PaymentForm -> Toast : 5.10 showSuccess("Thêm phương thức thanh toán thành công")
+        activate Toast
+        Toast --> Admin : 5.11 Thông báo thành công
+        deactivate Toast
+        
+        PaymentForm -> PaymentForm : 5.12 setFormKey(Date.now()) - Reset form
+        PaymentForm -> PaymentForm : 5.13 setImagePreview(null)
+        PaymentForm -> PaymentForm : 5.14 setImageFile(null)
+        
+        PaymentForm -> Supabase : 5.15 fetchPaymentMethods() - Reload danh sách
+        activate Supabase
+        Supabase -> DB : 5.16 SELECT * FROM payments ORDER BY payment_method_name
+        activate DB
+        DB --> Supabase : 5.17 Updated payment methods list
+        deactivate DB
+        Supabase --> PaymentForm : 5.18 New payment methods
+        deactivate Supabase
+        
+        PaymentForm --> Admin : 5.19 Hiển thị danh sách đã cập nhật
+        PaymentForm -> PaymentForm : 5.20 setLoading(false)
+        deactivate PaymentForm
+        
+    else **Lỗi database**
+        DB --> Supabase : ❌ Database error
+        deactivate DB
+        Supabase --> PaymentForm : 5.21 Error response
+        deactivate Supabase
+        
+        PaymentForm -> Validator : 5.22 handleDatabaseError(error)
+        activate Validator
+        
+        alt **Bảng không tồn tại (42P01)**
+            Validator -> Toast : 5.23 showWarning("Bảng payments chưa được tạo")
+            activate Toast
+            Toast --> Admin : 5.24 Thông báo thiếu bảng
+            deactivate Toast
+        else **Trùng lặp dữ liệu (23505)**
+            Validator -> Toast : 5.25 showWarning("Phương thức thanh toán đã tồn tại")
+            activate Toast
+            Toast --> Admin : 5.26 Thông báo trùng lặp
+            deactivate Toast
+        else **Lỗi quyền truy cập (42501)**
+            Validator -> Toast : 5.27 showWarning("Không có quyền thêm phương thức thanh toán")
+            activate Toast
+            Toast --> Admin : 5.28 Thông báo thiếu quyền
+            deactivate Toast
+        else **Lỗi khác**
+            Validator -> Toast : 5.29 showError("Lỗi database: " + error.message)
+            activate Toast
+            Toast --> Admin : 5.30 Thông báo lỗi chi tiết
+            deactivate Toast
+        end
+        
+        deactivate Validator
+        PaymentForm -> PaymentForm : 5.31 setLoading(false)
+        deactivate PaymentForm
+    end
+end
+
+note over Admin, DB : **TRẠNG THÁI SAU KHI THÊM:**\nPhương thức thanh toán mới đã được lưu\nDanh sách đã được làm mới\nForm đã được reset để thêm tiếp
+
+@enduml</pre>
+            </div>
+
+            <div class="info-section">
+                <h3>🔍 Chi tiết quy trình</h3>
+                <ul>
+                    <li><strong>Form Validation:</strong> Kiểm tra tên phương thức, mô tả và ảnh minh họa</li>
+                    <li><strong>File Upload:</strong> Giới hạn kích thước 1MB, chuyển đổi thành Base64</li>
+                    <li><strong>Database Insert:</strong> Lưu vào bảng payments với payment_method_name, description, image</li>
+                    <li><strong>Error Handling:</strong> Xử lý các lỗi: thiếu bảng, trùng lặp, quyền truy cập</li>
+                    <li><strong>State Management:</strong> Reset form và reload danh sách sau khi thêm thành công</li>
+                    <li><strong>Toast Notifications:</strong> Thông báo trạng thái với UI thân thiện</li>
+                    <li><strong>Preview Image:</strong> Hiển thị preview ảnh trước khi upload</li>
+                </ul>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h4>📁 Upload ảnh</h4>
+                    <p>Hỗ trợ upload ảnh với giới hạn 1MB, chuyển đổi sang Base64 để lưu trực tiếp trong database.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🔍 Validation đầy đủ</h4>
+                    <p>Kiểm tra tính hợp lệ của form, kích thước file và xử lý các trường hợp lỗi database.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🔄 Auto refresh</h4>
+                    <p>Tự động làm mới danh sách phương thức thanh toán và reset form sau khi thêm thành công.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📢 Thông báo realtime</h4>
+                    <p>Sử dụng React Toastify để hiển thị thông báo thành công, cảnh báo và lỗi.</p>
+                </div>
+            </div>
+
+            <div class="usage-guide">
+                <h3>📖 Hướng dẫn sử dụng</h3>
+                <ol>
+                    <li>Copy mã PlantUML bằng nút <strong>"📋 Copy Code"</strong></li>
+                    <li>Truy cập <strong>PlantUML Online</strong>: <a href="http://www.plantuml.com/plantuml/uml/" target="_blank">plantuml.com</a></li>
+                    <li>Paste mã vào editor và nhấn <strong>"Submit"</strong></li>
+                    <li>Tải về dưới dạng PNG, SVG hoặc PDF để sử dụng</li>
+                    <li>Có thể tùy chỉnh theme và style theo yêu cầu</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification">
+        ✅ Đã copy thành công vào clipboard!
+    </div>
+
+    <script>
+        function copyCode() {
+            const code = document.getElementById('plantumlCode').textContent;
+            
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(code).then(function() {
+                    showNotification();
+                }).catch(function(err) {
+                    console.error('Could not copy text: ', err);
+                    fallbackCopyTextToClipboard(code);
+                });
+            } else {
+                fallbackCopyTextToClipboard(code);
+            }
+        }
+
+        function fallbackCopyTextToClipboard(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.position = "fixed";
+
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showNotification();
+                }
+            } catch (err) {
+                console.error('Fallback: Oops, unable to copy', err);
+            }
+
+            document.body.removeChild(textArea);
+        }
+
+        function showNotification() {
+            const notification = document.getElementById('notification');
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Thêm hiệu ứng smooth scroll
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animation cho các element khi page load
+            const elements = document.querySelectorAll('.feature-card, .info-section, .usage-guide');
+            elements.forEach((el, index) => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    el.style.transition = 'all 0.6s ease';
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+</html> 

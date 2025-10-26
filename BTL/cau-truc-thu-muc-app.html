@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cấu trúc thư mục App - Hệ thống QLBH</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            margin: 20px;
+            line-height: 1.6;
+            background-color: #f8f9fa;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            font-family: Arial, sans-serif;
+        }
+        .tree {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+        .folder {
+            color: #0066cc;
+            font-weight: bold;
+        }
+        .file {
+            color: #333;
+        }
+        .comment {
+            color: #666;
+            font-style: italic;
+        }
+        .api {
+            color: #ff6b35;
+        }
+        .auth {
+            color: #6f42c1;
+        }
+        .dashboard {
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <h1>CẤU TRÚC THƯ MỤC APP/ - HỆ THỐNG QLBH (THỰC TẾ)</h1>
+    
+    <div class="tree">
+<pre>
+app/
+├── <span class="file">favicon.ico</span>                      <span class="comment"># Icon của ứng dụng</span>
+├── <span class="file">globals.css</span>                      <span class="comment"># CSS toàn cục</span>
+├── <span class="file">layout.tsx</span>                       <span class="comment"># Layout gốc của toàn bộ ứng dụng</span>
+├── <span class="file">page.tsx</span>                         <span class="comment"># Trang chủ (redirect về dashboard hoặc auth)</span>
+├── <span class="file">not-found.tsx</span>                    <span class="comment"># Trang 404 tùy chỉnh</span>
+│
+├── <span class="folder api">api/</span>                              <span class="comment"># API Routes (Backend endpoints)</span>
+│   ├── <span class="folder auth">auth/</span>                        <span class="comment"># API xác thực</span>
+│   │   ├── <span class="folder">callback/</span>
+│   │   │   └── <span class="file">route.ts</span>             <span class="comment"># Callback sau khi đăng nhập OAuth</span>
+│   │   ├── <span class="folder">check-session/</span>
+│   │   │   └── <span class="file">route.ts</span>             <span class="comment"># Kiểm tra session hiện tại</span>
+│   │   ├── <span class="folder">refresh/</span>
+│   │   │   └── <span class="file">route.ts</span>             <span class="comment"># Refresh token</span>
+│   │   ├── <span class="folder">signout/</span>
+│   │   │   └── <span class="file">route.ts</span>             <span class="comment"># Đăng xuất</span>
+│   │   └── <span class="folder">preserve-session/</span>
+│   │       └── <span class="file">route.ts</span>             <span class="comment"># Bảo toàn session</span>
+│   │
+│   ├── <span class="folder">admin/</span>                        <span class="comment"># API dành cho Admin</span>
+│   │   ├── <span class="folder">users/</span>
+│   │   │   └── <span class="folder">delete/</span>
+│   │   │       └── <span class="file">route.ts</span>         <span class="comment"># Xóa người dùng</span>
+│   │   ├── <span class="folder">create-user/</span>
+│   │   │   └── <span class="file">route.ts</span>             <span class="comment"># Tạo người dùng mới</span>
+│   │   ├── <span class="folder">direct-delete/</span>
+│   │   │   └── <span class="file">route.ts</span>             <span class="comment"># Xóa trực tiếp</span>
+│   │   ├── <span class="folder">inline-delete/</span>
+│   │   │   └── <span class="file">route.ts</span>             <span class="comment"># Xóa inline</span>
+│   │   ├── <span class="folder">simple-delete/</span>
+│   │   │   └── <span class="file">route.ts</span>             <span class="comment"># Xóa đơn giản</span>
+│   │   └── <span class="folder">sql-delete/</span>
+│   │       └── <span class="file">route.ts</span>             <span class="comment"># Xóa bằng SQL</span>
+│   │
+│   ├── <span class="folder">categories/</span>                   <span class="comment"># API danh mục sản phẩm</span>
+│   │   └── <span class="file">route.ts</span>                 <span class="comment"># CRUD danh mục</span>
+│   │
+│   ├── <span class="folder">create-category/</span>              <span class="comment"># API tạo danh mục</span>
+│   │   └── <span class="file">route.ts</span>                 <span class="comment"># Tạo danh mục mới</span>
+│   │
+│   ├── <span class="folder">chat/</span>                         <span class="comment"># API chat/hỗ trợ khách hàng</span>
+│   │   └── <span class="folder">create-conversation/</span>
+│   │       └── <span class="file">route.ts</span>             <span class="comment"># Tạo cuộc trò chuyện</span>
+│   │
+│   ├── <span class="folder">partners/</span>                     <span class="comment"># API đối tác</span>
+│   │   └── <span class="folder">returns/</span>
+│   │       └── <span class="file">route.ts</span>             <span class="comment"># Xử lý trả hàng</span>
+│   │
+│   ├── <span class="folder">seed-orders/</span>                  <span class="comment"># API tạo dữ liệu mẫu đơn hàng</span>
+│   │   └── <span class="file">route.ts</span>                 <span class="comment"># Seed dữ liệu đơn hàng</span>
+│   │
+│   ├── <span class="folder">seed-oorders/</span>                 <span class="comment"># API tạo dữ liệu mẫu (typo)</span>
+│   │   └── <span class="file">route.ts</span>                 <span class="comment"># Seed dữ liệu</span>
+│   │
+│   ├── <span class="folder">delete-user/</span>                  <span class="comment"># API xóa người dùng</span>
+│   │   └── <span class="file">route.ts</span>                 <span class="comment"># Xóa người dùng</span>
+│   │
+│   ├── <span class="folder">delete-user-full/</span>             <span class="comment"># API xóa người dùng hoàn toàn</span>
+│   │   └── <span class="file">route.ts</span>                 <span class="comment"># Xóa người dùng và dữ liệu liên quan</span>
+│   │
+│   ├── <span class="folder">delete-user-only/</span>             <span class="comment"># API xóa chỉ người dùng</span>
+│   │   └── <span class="file">route.ts</span>                 <span class="comment"># Xóa chỉ bản ghi người dùng</span>
+│   │
+│   ├── <span class="folder">debug/</span>                        <span class="comment"># API debug và kiểm tra</span>
+│   │   ├── <span class="file">route.ts</span>                 <span class="comment"># Debug chung</span>
+│   │   └── <span class="file">verify-test.ts</span>           <span class="comment"># Kiểm tra hệ thống</span>
+│   │
+│   └── <span class="folder">check-tables/</span>                 <span class="comment"># API kiểm tra database</span>
+│       └── <span class="file">route.ts</span>                 <span class="comment"># Kiểm tra bảng database</span>
+│
+├── <span class="folder auth">auth/</span>                            <span class="comment"># Nhóm các trang xác thực</span>
+│   ├── <span class="folder">signin/</span>
+│   │   └── <span class="file">page.tsx</span>                 <span class="comment"># Trang Đăng nhập</span>
+│   ├── <span class="folder">signup/</span>
+│   │   └── <span class="file">page.tsx</span>                 <span class="comment"># Trang Đăng ký</span>
+│   ├── <span class="folder">register-simple/</span>
+│   │   └── <span class="file">page.tsx</span>                 <span class="comment"># Đăng ký đơn giản</span>
+│   ├── <span class="folder">forgot-password/</span>
+│   │   └── <span class="file">page.tsx</span>                 <span class="comment"># Trang Quên mật khẩu</span>
+│   ├── <span class="folder">reset-password/</span>
+│   │   └── <span class="file">page.tsx</span>                 <span class="comment"># Trang Đặt lại mật khẩu</span>
+│   ├── <span class="folder">change-password/</span>
+│   │   └── <span class="file">page.tsx</span>                 <span class="comment"># Trang Đổi mật khẩu</span>
+│   ├── <span class="folder">verify/</span>
+│   │   └── <span class="file">page.tsx</span>                 <span class="comment"># Trang Xác minh tài khoản</span>
+│   ├── <span class="folder">resend-confirmation/</span>
+│   │   └── <span class="file">page.tsx</span>                 <span class="comment"># Gửi lại email xác nhận</span>
+│   └── <span class="folder">signout/</span>
+│       └── <span class="file">page.tsx</span>                 <span class="comment"># Trang Đăng xuất</span>
+│
+├── <span class="folder dashboard">dashboard/</span>                       <span class="comment"># Nhóm các trang quản trị nội bộ</span>
+│   ├── <span class="file">layout.tsx</span>                   <span class="comment"># Layout chung cho toàn bộ dashboard</span>
+│   ├── <span class="file">page.tsx</span>                     <span class="comment"># Trang Tổng quan Dashboard chính</span>
+│   │
+│   ├── <span class="folder">profile/</span>                      <span class="comment"># Hồ sơ cá nhân</span>
+│   │   └── <span class="file">page.tsx</span>                 <span class="comment"># Trang Hồ sơ cá nhân</span>
+│   │
+│   ├── <span class="folder">admin/</span>                         <span class="comment"># Các chức năng dành cho Admin</span>
+│   │   └── <span class="folder">users/</span>
+│   │       └── <span class="file">page.tsx</span>             <span class="comment"># Quản lý người dùng (Admin)</span>
+│   │
+│   ├── <span class="folder">users/</span>                         <span class="comment"># Quản lý người dùng chi tiết</span>
+│   │   ├── <span class="file">page.tsx</span>                 <span class="comment"># Danh sách người dùng</span>
+│   │   ├── <span class="folder">add/</span>
+│   │   │   └── <span class="file">page.tsx</span>             <span class="comment"># Thêm người dùng mới</span>
+│   │   ├── <span class="folder">search/</span>
+│   │   │   ├── <span class="file">page.tsx</span>             <span class="comment"># Tìm kiếm người dùng</span>
+│   │   │   └── <span class="file">page.tsx.bak</span>         <span class="comment"># Backup file tìm kiếm</span>
+│   │   ├── <span class="folder">detail/</span>
+│   │   │   └── <span class="folder">[id]/</span>
+│   │   │       └── <span class="file">page.tsx</span>         <span class="comment"># Chi tiết người dùng</span>
+│   │   ├── <span class="folder">edit/</span>
+│   │   │   └── <span class="folder">[id]/</span>
+│   │   │       └── <span class="file">page.tsx</span>         <span class="comment"># Chỉnh sửa người dùng</span>
+│   │   └── <span class="folder">permissions/</span>
+│   │       └── <span class="folder">[id]/</span>
+│   │           └── <span class="file">page.tsx</span>         <span class="comment"># Phân quyền người dùng</span>
+│   │
+│   ├── <span class="folder">business/</span>                      <span class="comment"># Quản lý kinh doanh</span>
+│   │   ├── <span class="file">page.tsx</span>                 <span class="comment"># Tổng quan kinh doanh</span>
+│   │   ├── <span class="folder">branches/</span>
+│   │   │   ├── <span class="file">page.tsx</span>             <span class="comment"># Quản lý chi nhánh</span>
+│   │   │   └── <span class="file">leaflet.css</span>          <span class="comment"># CSS cho bản đồ Leaflet</span>
+│   │   └── <span class="folder">staff/</span>
+│   │       └── <span class="file">page.tsx</span>             <span class="comment"># Quản lý nhân viên</span>
+│   │
+│   ├── <span class="folder">products/</span>                      <span class="comment"># Quản lý sản phẩm</span>
+│   │   ├── <span class="file">page.tsx</span>                 <span class="comment"># Danh sách sản phẩm</span>
+│   │   ├── <span class="folder">add/</span>
+│   │   │   ├── <span class="file">page.tsx</span>             <span class="comment"># Thêm sản phẩm mới</span>
+│   │   │   └── <span class="file">page.tsx.new</span>         <span class="comment"># File backup thêm sản phẩm</span>
+│   │   ├── <span class="folder">search/</span>
+│   │   │   └── <span class="file">page.tsx</span>             <span class="comment"># Tìm kiếm sản phẩm</span>
+│   │   ├── <span class="folder">categories/</span>
+│   │   │   └── <span class="file">page.tsx</span>             <span class="comment"># Quản lý danh mục sản phẩm</span>
+│   │   ├── <span class="folder">edit/</span>
+│   │   │   ├── <span class="file">page.tsx</span>             <span class="comment"># Chỉnh sửa sản phẩm (danh sách)</span>
+│   │   │   └── <span class="folder">[id]/</span>
+│   │   │       └── <span class="file">page.tsx</span>         <span class="comment"># Chỉnh sửa sản phẩm cụ thể</span>
+│   │
+│   ├── <span class="folder">orders/</span>                        <span class="comment"># Quản lý đơn hàng</span>
+│   │   ├── <span class="file">page.tsx</span>                 <span class="comment"># Danh sách đơn hàng</span>
+│   │   ├── <span class="folder">create/</span>
+│   │   │   └── <span class="file">page.tsx</span>             <span class="comment"># Tạo đơn hàng mới</span>
+│   │   ├── <span class="folder">search/</span>
+│   │   │   └── <span class="file">page.tsx</span>             <span class="comment"># Tìm kiếm đơn hàng</span>
+│   │   └── <span class="folder">shipping/</span>
+│   │       └── <span class="file">page.tsx</span>             <span class="comment"># Quản lý vận chuyển đơn hàng</span>
+│   │
+│   ├── <span class="folder">partners/</span>                      <span class="comment"># Quản lý đối tác</span>
+│   │   ├── <span class="file">page.tsx</span>                 <span class="comment"># Tổng quan đối tác</span>
+│   │   ├── <span class="folder">customers/</span>
+│   │   │   └── <span class="file">page.tsx</span>             <span class="comment"># Quản lý khách hàng</span>
+│   │   └── <span class="folder">customer-care/</span>
+│   │       └── <span class="file">page.tsx</span>             <span class="comment"># Chăm sóc khách hàng</span>
+│   │
+│   ├── <span class="folder">sales/</span>                         <span class="comment"># Chức năng bán hàng</span>
+│   │   ├── <span class="file">page.tsx</span>                 <span class="comment"># Giao diện bán hàng chính</span>
+│   │   ├── <span class="folder">create/</span>
+│   │   │   └── <span class="file">page.tsx</span>             <span class="comment"># Tạo đơn bán hàng</span>
+│   │   └── <span class="folder">payment/</span>
+│   │       └── <span class="file">page.tsx</span>             <span class="comment"># Xử lý thanh toán bán hàng</span>
+│   │
+│   ├── <span class="folder">payment/</span>                       <span class="comment"># Quản lý thanh toán</span>
+│   │   └── <span class="file">page.tsx</span>                 <span class="comment"># Tổng quan thanh toán</span>
+│   │
+│   └── <span class="folder">reports/</span>                       <span class="comment"># Module Báo cáo</span>
+│       ├── <span class="file">page.tsx</span>                 <span class="comment"># Trang tổng quan báo cáo</span>
+│       ├── <span class="folder">financial/</span>
+│       │   └── <span class="file">page.tsx</span>             <span class="comment"># Báo cáo tài chính</span>
+│       ├── <span class="folder">orders/</span>
+│       │   └── <span class="file">page.tsx</span>             <span class="comment"># Báo cáo đơn hàng</span>
+│       └── <span class="folder">shipping/</span>
+│           ├── <span class="file">page.tsx</span>             <span class="comment"># Báo cáo vận chuyển</span>
+│           └── <span class="file">ShippingReportClient.tsx</span> <span class="comment"># Component báo cáo vận chuyển</span>
+│
+├── <span class="folder">components/</span>                       <span class="comment"># Shared Components</span>
+│   ├── <span class="file">AuthRefreshScript.tsx</span>        <span class="comment"># Script refresh authentication</span>
+│   └── <span class="file">FormInput.tsx</span>               <span class="comment"># Component input form</span>
+│
+├── <span class="folder">context/</span>                          <span class="comment"># React Context</span>
+│   └── <span class="file">ThemeContext.tsx</span>             <span class="comment"># Context quản lý theme</span>
+│
+├── <span class="folder">utils/</span>                            <span class="comment"># Utilities</span>
+│   ├── <span class="file">dateUtils.js</span>                 <span class="comment"># Tiện ích xử lý ngày tháng</span>
+│   └── <span class="file">imageUtils.js</span>                <span class="comment"># Tiện ích xử lý hình ảnh</span>
+│
+├── <span class="folder">debug/</span>                            <span class="comment"># Debug pages</span>
+│   ├── <span class="file">page.tsx</span>                     <span class="comment"># Trang debug chính</span>
+│   └── <span class="folder">category/</span>
+│       └── <span class="file">page.tsx</span>                 <span class="comment"># Debug danh mục sản phẩm</span>
+│
+├── <span class="folder">profile/</span>                          <span class="comment"># Profile pages (legacy)</span>
+│   └── <span class="file">page.tsx</span>                     <span class="comment"># Trang profile cá nhân</span>
+│
+├── <span class="folder">payment/</span>                          <span class="comment"># Payment pages (legacy)</span>
+│   └── <span class="file">page.tsx</span>                     <span class="comment"># Trang thanh toán</span>
+│
+├── <span class="folder">sales/</span>                            <span class="comment"># Sales pages (legacy)</span>
+│   ├── <span class="file">layout.tsx</span>                   <span class="comment"># Layout cho module bán hàng</span>
+│   ├── <span class="folder">orders/</span>
+│   │   └── <span class="file">page.tsx</span>                 <span class="comment"># Quản lý đơn hàng bán</span>
+│   └── <span class="folder">payment/</span>
+│       └── <span class="file">page.tsx</span>                 <span class="comment"># Thanh toán bán hàng</span>
+│
+├── <span class="folder">todo-example/</span>                     <span class="comment"># Example/Demo pages</span>
+│   └── <span class="file">page.tsx</span>                     <span class="comment"># Ví dụ todo list</span>
+│
+└── <span class="folder">not-found/</span>                        <span class="comment"># 404 Error pages</span>
+    ├── <span class="file">page.tsx</span>                     <span class="comment"># Trang 404 tùy chỉnh</span>
+    └── <span class="file">styles.css</span>                   <span class="comment"># CSS cho trang 404</span>
+</pre>
+    </div>
+
+    <h2>CÁC MODULE CHÍNH THỰC TẾ:</h2>
+    <ul>
+        <li><strong>API Routes (/api):</strong> Xử lý backend logic cho xác thực, quản lý users, danh mục, chat, trả hàng và debug</li>
+        <li><strong>Authentication (/auth):</strong> Đăng nhập, đăng ký, quên mật khẩu, xác minh tài khoản</li>
+        <li><strong>Dashboard (/dashboard):</strong> Giao diện quản trị chính với các module:</li>
+        <ul>
+            <li><strong>Profile:</strong> Quản lý hồ sơ cá nhân</li>
+            <li><strong>Admin:</strong> Quản lý người dùng cấp cao</li>
+            <li><strong>Users:</strong> CRUD người dùng, phân quyền, tìm kiếm</li>
+            <li><strong>Business:</strong> Quản lý chi nhánh (với bản đồ) và nhân viên</li>
+            <li><strong>Products:</strong> Quản lý sản phẩm, danh mục, tìm kiếm, chỉnh sửa</li>
+            <li><strong>Orders:</strong> Quản lý đơn hàng, tạo mới, tìm kiếm, vận chuyển</li>
+            <li><strong>Partners:</strong> Quản lý khách hàng và chăm sóc khách hàng</li>
+            <li><strong>Sales:</strong> Giao diện bán hàng và xử lý thanh toán</li>
+            <li><strong>Payment:</strong> Quản lý thanh toán</li>
+            <li><strong>Reports:</strong> Báo cáo tài chính, đơn hàng, vận chuyển</li>
+        </ul>
+        <li><strong>Components & Utils:</strong> Shared components, context, utilities</li>
+        <li><strong>Debug:</strong> Công cụ debug và kiểm tra hệ thống</li>
+    </ul>
+
+    <h2>TÍNH NĂNG CHÍNH:</h2>
+    <ul>
+        <li>🔐 <strong>Xác thực và phân quyền:</strong> Đăng nhập, phân quyền theo vai trò (Admin, NVBH, NVK)</li>
+        <li>📊 <strong>Dashboard tổng quan:</strong> Hiển thị thống kê và KPI</li>
+        <li>👥 <strong>Quản lý người dùng:</strong> CRUD, phân quyền, tìm kiếm chi tiết</li>
+        <li>🏢 <strong>Quản lý kinh doanh:</strong> Chi nhánh với bản đồ, nhân viên</li>
+        <li>📦 <strong>Quản lý sản phẩm:</strong> CRUD sản phẩm, danh mục, tìm kiếm</li>
+        <li>🛒 <strong>Quản lý đơn hàng:</strong> Tạo, tìm kiếm, theo dõi vận chuyển</li>
+        <li>🤝 <strong>Quản lý đối tác:</strong> Khách hàng, chăm sóc khách hàng</li>
+        <li>💰 <strong>Bán hàng và thanh toán:</strong> Giao diện bán hàng, xử lý thanh toán</li>
+        <li>📈 <strong>Báo cáo:</strong> Tài chính, đơn hàng, vận chuyển với biểu đồ</li>
+        <li>💬 <strong>Hỗ trợ khách hàng:</strong> Chat và xử lý trả hàng</li>
+    </ul>
+
+    <h2>CÔNG NGHỆ:</h2>
+    <ul>
+        <li><strong>Frontend:</strong> Next.js 15, React 19, TypeScript, TailwindCSS 4</li>
+        <li><strong>Backend:</strong> Next.js API Routes, Supabase</li>
+        <li><strong>Database:</strong> PostgreSQL (Supabase)</li>
+        <li><strong>Authentication:</strong> Supabase Auth</li>
+        <li><strong>Maps:</strong> Leaflet.js cho bản đồ chi nhánh</li>
+        <li><strong>Real-time:</strong> Supabase Realtime</li>
+    </ul>
+
+    <p><strong>Ghi chú:</strong> Cấu trúc này phản ánh chính xác hệ thống QLBH hiện tại, tập trung vào quản lý bán hàng, đơn hàng, sản phẩm và đối tác mà không có module quản lý kho riêng biệt.</p>
+</body>
+</html>

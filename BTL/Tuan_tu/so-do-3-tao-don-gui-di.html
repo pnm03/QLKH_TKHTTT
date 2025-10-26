@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sơ đồ Tuần tự - Tạo đơn gửi đi - QLBH System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .info-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 5px solid #007bff;
+        }
+
+        .info-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .info-section ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info-section li {
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .info-section li:before {
+            content: "✓";
+            color: #007bff;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        .code-container {
+            background: #1e1e1e;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .code-header {
+            background: #2d2d2d;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #404040;
+        }
+
+        .code-title {
+            color: #e6e6e6;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .copy-btn {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+        }
+
+        .copy-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+        }
+
+        .plantuml-code {
+            background: #1e1e1e;
+            color: #e6e6e6;
+            padding: 25px;
+            font-family: 'Fira Code', 'Monaco', 'Cascadia Code', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .plantuml-code::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .plantuml-code::-webkit-scrollbar-track {
+            background: #2d2d2d;
+        }
+
+        .plantuml-code::-webkit-scrollbar-thumb {
+            background: #555;
+            border-radius: 4px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #007bff;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .usage-guide {
+            background: #e3f2fd;
+            padding: 25px;
+            border-radius: 10px;
+            border-left: 5px solid #2196f3;
+            margin-top: 30px;
+        }
+
+        .usage-guide h3 {
+            color: #1976d2;
+            margin-bottom: 15px;
+        }
+
+        .usage-guide ol {
+            color: #424242;
+            padding-left: 20px;
+        }
+
+        .usage-guide li {
+            margin-bottom: 8px;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .container {
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .plantuml-code {
+                font-size: 12px;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📦 Sơ đồ Tuần tự - Tạo đơn gửi đi</h1>
+            <p>Quy trình tạo đơn hàng có vận chuyển với COD</p>
+        </div>
+
+        <div class="content">
+            <div class="info-section">
+                <h3>🎯 Mô tả quy trình Tạo đơn gửi đi</h3>
+                <ul>
+                    <li><strong>Điều kiện tiên quyết:</strong> Đã hoàn thành quy trình chuẩn bị (chọn sản phẩm, khách hàng)</li>
+                    <li><strong>Nhập thông tin người nhận:</strong> Tên, SĐT, địa chỉ giao hàng chi tiết</li>
+                    <li><strong>Cấu hình vận chuyển:</strong> Nhà vận chuyển, thông tin kiện hàng</li>
+                    <li><strong>Chọn thanh toán:</strong> Trả trước hoặc COD (thu hộ)</li>
+                    <li><strong>Tạo đơn hàng:</strong> Lưu đơn hàng với trạng thái phù hợp</li>
+                    <li><strong>Tạo thông tin vận chuyển:</strong> Mã vận đơn, địa chỉ, phí ship</li>
+                    <li><strong>Cập nhật tồn kho:</strong> Sử dụng database triggers tự động</li>
+                    <li><strong>Thông báo thành công:</strong> Hiển thị mã đơn hàng và vận đơn</li>
+                </ul>
+            </div>
+
+            <div class="code-container">
+                <div class="code-header">
+                    <div class="code-title">📦 PlantUML Sequence Diagram - Tạo đơn gửi đi</div>
+                    <button class="copy-btn" onclick="copyCode()">📋 Copy Code</button>
+                </div>
+                <pre class="plantuml-code" id="plantumlCode">@startuml Tạo đơn gửi đi - QLBH System
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam actorBorderColor #2C3E50
+skinparam participantBorderColor #007BFF
+skinparam sequenceArrowColor #E74C3C
+skinparam sequenceLifeLineBorderColor #95A5A6
+
+title **QUY TRÌNH TẠO ĐƠN GỬI ĐI**\n//Đơn hàng có vận chuyển với COD//
+
+actor "👤 Nhân viên\nBán hàng" as Staff
+participant "🛒 Sales\nController" as Sales
+participant "📦 Shipping\nService" as Shipping
+participant "💳 Payment\nService" as Payment
+participant "📊 Order\nService" as Order
+participant "📍 Address\nValidator" as Address
+database "🗄️ Database\n(Supabase)" as DB
+
+note over Staff, DB : **ĐIỀU KIỆN TIÊN QUYẾT:**\n• Đã chọn sản phẩm với số lượng\n• Đã chọn khách hàng (hoặc khách vãng lai)\n• Hiển thị tổng tiền cần thanh toán
+
+== KHỞI TẠO TẠO ĐƠN GỬI ĐI ==
+
+Staff -> Sales : 1. Click "Tạo đơn gửi đi"
+activate Sales
+Sales -> Sales : 1.1 validateOrder() - Kiểm tra đơn hàng
+note right : Validation:\n• Có sản phẩm trong đơn\n• Số lượng không vượt tồn kho\n• Tính toán lại tổng tiền
+
+alt **Validation thành công**
+    Sales -> Sales : 1.2 Khởi tạo shipping form
+    note right : Nếu đã chọn khách hàng:\n• Auto-fill tên, SĐT từ customer\n• Auto-fill địa chỉ từ hometown
+    
+    Sales -> Payment : 1.3 Load payment methods
+    activate Payment
+    Payment -> DB : 1.3.1 Query payment methods
+    activate DB
+    DB --> Payment : 1.3.2 Return payment methods list
+    deactivate DB
+    Payment --> Sales : 1.3.3 Payment methods data
+    deactivate Payment
+    
+    Sales --> Staff : 1.4 Hiển thị popup thông tin vận chuyển
+else **Validation thất bại**
+    Sales --> Staff : ❌ Thông báo lỗi validation
+end
+deactivate Sales
+
+== NHẬP THÔNG TIN NGƯỜI NHẬN ==
+
+Staff -> Sales : 2. Nhập tên người nhận
+activate Sales
+Sales -> Sales : 2.1 setRecipientName(name)
+Sales --> Staff : 2.2 Cập nhật form
+deactivate Sales
+
+Staff -> Sales : 3. Nhập số điện thoại người nhận
+activate Sales
+Sales -> Sales : 3.1 setRecipientPhone(phone)
+Sales -> Sales : 3.2 Validate phone format
+alt **Phone hợp lệ**
+    Sales --> Staff : 3.3 Hiển thị valid
+else **Phone không hợp lệ**
+    Sales --> Staff : ❌ Hiển thị lỗi format
+end
+deactivate Sales
+
+Staff -> Sales : 4. Nhập địa chỉ giao hàng
+activate Sales
+Sales -> Sales : 4.1 setRecipientAddress(address)
+Sales -> Address : 4.2 validateAddress(address)
+activate Address
+Address -> Address : 4.2.1 Kiểm tra độ dài và format
+Address --> Sales : 4.2.2 Validation result
+deactivate Address
+Sales --> Staff : 4.3 Cập nhật validation status
+deactivate Sales
+
+opt **Nhập thông tin kiện hàng chi tiết**
+    Staff -> Sales : 5. Nhập thông tin kiện hàng
+    activate Sales
+    Sales -> Sales : 5.1 setPackageInfo(weight, dimensions)
+    Sales --> Staff : 5.2 Cập nhật form
+    deactivate Sales
+end
+
+== CHỌN PHƯƠNG THỨC THANH TOÁN ==
+
+alt **Chọn thanh toán trước**
+    Staff -> Sales : 6a. Chọn phương thức thanh toán
+    activate Sales
+    Sales -> Sales : 6a.1 setSelectedPaymentMethod(paymentId)
+    Sales -> Sales : 6a.2 setCustomerPrepaid(amount)
+    Sales --> Staff : 6a.3 Hiển thị thông tin thanh toán
+    deactivate Sales
+    
+else **Chọn COD (Thu hộ)**
+    Staff -> Sales : 6b. Tick checkbox COD
+    activate Sales
+    Sales -> Sales : 6b.1 setCodShipping(true)
+    Sales -> Sales : 6b.2 setCodAmount(totalAmount)
+    Sales --> Staff : 6b.3 Hiển thị COD amount
+    deactivate Sales
+end
+
+== XÁC NHẬN VÀ TẠO ĐƠN HÀNG ==
+
+Staff -> Sales : 7. Click "Xác nhận tạo đơn"
+activate Sales
+Sales -> Sales : 7.1 Final validation
+note right : Kiểm tra cuối:\n• Thông tin người nhận đầy đủ\n• Địa chỉ hợp lệ\n• Phương thức thanh toán hoặc COD\n• Thông tin kiện hàng
+
+alt **Final validation OK**
+    Sales -> Order : 7.2 Bắt đầu tạo đơn hàng
+    activate Order
+    
+    == TẠO ĐƠN HÀNG VÀ THÔNG TIN VẬN CHUYỂN ==
+    
+    Order -> Order : 7.3 Tạo order_id và shipping_id
+    note right : Generate IDs:\n• order_id: ORD-YYYYMMDD-XXXXX\n• shipping_id: SHIP-YYYYMMDD-XXXXX
+    
+    Order -> DB : 7.4 Tạo bản ghi Orders
+    activate DB
+    DB --> Order : 7.5 Confirm order created
+    
+    Order -> Order : 7.6 Tạo order details
+    loop **Cho mỗi sản phẩm trong đơn**
+        Order -> Order : 7.6.1 Tạo orderdetail_id
+        Order -> DB : 7.6.2 INSERT orderdetails
+        activate DB
+        DB -> DB : 7.6.3 🔥 TRIGGER: Cập nhật stock_quantity
+        DB --> Order : 7.6.4 Confirm orderdetail created
+        deactivate DB
+    end
+    
+    Order -> Shipping : 7.7 Tạo thông tin vận chuyển
+    activate Shipping
+    Shipping -> Shipping : 7.7.1 Tạo tracking number
+    note right : Generate tracking:\nTRK-YYYYMMDD-XXXXX
+    
+    Shipping -> DB : 7.7.2 INSERT shipping record
+    activate DB
+    DB --> Shipping : 7.7.3 Confirm shipping created
+    deactivate DB
+    Shipping --> Order : 7.7.4 Shipping info created
+    deactivate Shipping
+    
+    deactivate DB
+    Order --> Sales : 7.8 Đơn hàng + vận chuyển tạo thành công
+    deactivate Order
+    
+    Sales --> Staff : 7.9 Thông báo thành công
+    
+else **Final validation thất bại**
+    Sales --> Staff : ❌ Thông báo lỗi chi tiết
+    deactivate Sales
+end
+
+== RESET VÀ CHUẨN BỊ ĐƠN TIẾP THEO ==
+
+Staff -> Sales : 8. Đóng popup thành công
+activate Sales
+Sales -> Sales : 8.1 Reset form tạo đơn
+note right : Reset state:\n• Xóa sản phẩm khỏi hóa đơn\n• Clear thông tin khách hàng\n• Clear thông tin vận chuyển\n• Reset tổng tiền = 0
+
+Sales -> Sales : 8.2 Refresh product data
+Sales -> DB : 8.2.1 Reload products với stock mới
+activate DB
+DB --> Sales : 8.2.2 Updated product data với tồn kho mới
+deactivate DB
+
+Sales --> Staff : 8.3 Hiển thị giao diện sạch
+note right : Sẵn sàng cho đơn hàng tiếp theo:\n• Form trống\n• Tồn kho đã cập nhật\n• Thông báo "Đơn hàng đã tạo"
+deactivate Sales
+
+== THEO DÕI ĐƠN HÀNG (Optional) ==
+
+opt **Nhân viên muốn xem chi tiết đơn vừa tạo**
+    Staff -> Sales : 9. Click "Xem chi tiết đơn"
+    activate Sales
+    Sales -> Order : 9.1 getOrderDetails(orderId)
+    activate Order
+    Order -> DB : 9.1.1 Query order + shipping info
+    activate DB
+    DB --> Order : 9.1.2 Complete order data
+    deactivate DB
+    Order --> Sales : 9.1.3 Order details
+    deactivate Order
+    Sales --> Staff : 9.2 Hiển thị popup chi tiết đơn
+    note right : Popup chi tiết:\n• Thông tin đơn hàng\n• Trạng thái vận chuyển\n• Link tracking\n• Lịch sử cập nhật
+    deactivate Sales
+end
+
+note over Staff, DB : **KẾT QUẢ:**\n• Đơn hàng có vận chuyển đã được tạo\n• Thông tin vận chuyển đã được lưu\n• Tồn kho đã được cập nhật\n• Tracking number đã được tạo\n• Sẵn sàng cho xử lý vận chuyển
+
+@enduml</pre>
+            </div>
+
+            <div class="info-section">
+                <h3>🔍 Chi tiết kỹ thuật</h3>
+                <ul>
+                    <li><strong>Shipping ID Generation:</strong> Format SHIP-YYYYMMDD-XXXXX với 5 ký tự ngẫu nhiên</li>
+                    <li><strong>Tracking Number:</strong> Format TRK-YYYYMMDD-XXXXX tự động tạo</li>
+                    <li><strong>Address Validation:</strong> Kiểm tra độ dài tối thiểu và format địa chỉ</li>
+                    <li><strong>Phone Validation:</strong> Bắt đầu bằng 0, có 10-11 số</li>
+                    <li><strong>COD Support:</strong> Thu hộ tiền với trạng thái "Chưa thanh toán"</li>
+                    <li><strong>Prepaid Option:</strong> Thanh toán trước với trạng thái "Đã thanh toán"</li>
+                    <li><strong>Package Info:</strong> Lưu thông tin kích thước và cân nặng kiện hàng</li>
+                    <li><strong>Unique Constraint:</strong> Mỗi order chỉ có 1 shipping record (UNIQUE order_id)</li>
+                </ul>
+            </div>
+
+            <div class="info-section">
+                <h3>📋 Luồng dữ liệu</h3>
+                <ul>
+                    <li><strong>Orders Table:</strong> Lưu thông tin đơn hàng với is_shipping = true</li>
+                    <li><strong>Orderdetails Table:</strong> Chi tiết sản phẩm với trigger cập nhật tồn kho</li>
+                    <li><strong>Shippings Table:</strong> Thông tin vận chuyển với foreign key đến Orders</li>
+                    <li><strong>Status Flow:</strong> Chưa giao hàng → Đang chuẩn bị → Đang giao hàng → Đã giao hàng</li>
+                    <li><strong>Payment Status:</strong> Phụ thuộc vào COD hay thanh toán trước</li>
+                    <li><strong>Tracking:</strong> Mã vận đơn duy nhất cho theo dõi</li>
+                </ul>
+            </div>
+
+            <div class="info-section">
+                <h3>💡 Tính năng đặc biệt</h3>
+                <ul>
+                    <li><strong>Auto-fill Customer Info:</strong> Tự động điền thông tin nếu đã chọn khách hàng</li>
+                    <li><strong>Multiple Payment Options:</strong> COD hoặc thanh toán trước</li>
+                    <li><strong>Package Dimensions:</strong> Lưu thông tin chi tiết kiện hàng</li>
+                    <li><strong>Delivery Date Estimation:</strong> Tự động tính ngày giao dự kiến</li>
+                    <li><strong>Carrier Selection:</strong> Hỗ trợ nhiều nhà vận chuyển (GHN, ViettelPost, etc.)</li>
+                    <li><strong>Real-time Validation:</strong> Kiểm tra thông tin nhập liệu tức thì</li>
+                </ul>
+            </div>
+
+            <div class="usage-guide">
+                <h3>📖 Hướng dẫn sử dụng</h3>
+                <ol>
+                    <li>Copy mã PlantUML bằng nút <strong>"📋 Copy Code"</strong></li>
+                    <li>Truy cập <strong>PlantUML Online</strong>: <a href="http://www.plantuml.com/plantuml/uml/" target="_blank">plantuml.com</a></li>
+                    <li>Paste mã vào editor và nhấn <strong>"Submit"</strong></li>
+                    <li>Tải về dưới dạng PNG, SVG hoặc PDF để sử dụng</li>
+                    <li>Có thể tùy chỉnh theme và style theo yêu cầu</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification">
+        ✅ Đã copy thành công vào clipboard!
+    </div>
+
+    <script>
+        function copyCode() {
+            const code = document.getElementById('plantumlCode').textContent;
+            
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(code).then(function() {
+                    showNotification();
+                }).catch(function(err) {
+                    console.error('Could not copy text: ', err);
+                    fallbackCopyTextToClipboard(code);
+                });
+            } else {
+                fallbackCopyTextToClipboard(code);
+            }
+        }
+
+        function fallbackCopyTextToClipboard(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.position = "fixed";
+
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showNotification();
+                } else {
+                    console.error('Fallback: Could not copy text');
+                }
+            } catch (err) {
+                console.error('Fallback: Could not copy text', err);
+            }
+
+            document.body.removeChild(textArea);
+        }
+
+        function showNotification() {
+            const notification = document.getElementById('notification');
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
