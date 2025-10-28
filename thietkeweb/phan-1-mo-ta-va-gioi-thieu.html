@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài Thảo Luận: Phân Tích và Thiết Kế Website QLBH</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Times New Roman', serif;
+            line-height: 1.8;
+            color: #000;
+            background: #fff;
+            padding: 40px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .document {
+            background: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            padding: 60px;
+            border-radius: 5px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 20px;
+        }
+        
+        .header h1 {
+            font-size: 18pt;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .header .subtitle {
+            font-size: 14pt;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+        
+        .header .info {
+            font-size: 12pt;
+            line-height: 1.6;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-size: 14pt;
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding: 10px 0;
+            border-bottom: 1px solid #ccc;
+            text-transform: uppercase;
+        }
+        
+        .subsection-title {
+            font-size: 13pt;
+            font-weight: bold;
+            margin: 20px 0 10px 0;
+        }
+        
+        p {
+            font-size: 12pt;
+            text-align: justify;
+            margin-bottom: 15px;
+            text-indent: 30px;
+        }
+        
+        .no-indent {
+            text-indent: 0;
+        }
+        
+        ul, ol {
+            margin-left: 40px;
+            margin-bottom: 15px;
+        }
+        
+        li {
+            font-size: 12pt;
+            margin-bottom: 8px;
+            text-align: justify;
+        }
+        
+        .highlight {
+            background-color: #ffffcc;
+            padding: 15px;
+            border-left: 4px solid #ffa500;
+            margin: 20px 0;
+        }
+        
+        .quote {
+            font-style: italic;
+            margin: 20px 40px;
+            padding: 15px;
+            border-left: 3px solid #ccc;
+            background-color: #f9f9f9;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 11pt;
+        }
+        
+        th, td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+        }
+        
+        .center {
+            text-align: center;
+        }
+        
+        .bold {
+            font-weight: bold;
+        }
+        
+        .italic {
+            font-style: italic;
+        }
+        
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 11pt;
+            color: #666;
+            border-top: 1px solid #ccc;
+            padding-top: 20px;
+        }
+        
+        @media print {
+            body {
+                padding: 0;
+            }
+            .document {
+                box-shadow: none;
+                padding: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏢 HỆ THỐNG QUẢN LÝ BÁN HÀNG (QLBH)</h1>
+            <p>Phần I: Phân Tích Website - Mô Tả Bài Toán & Giới Thiệu</p>
+        </div>
+        
+        <div class="content">
+            <!-- Section 1: Mô tả bài toán -->
+            <div class="section">
+                <div class="section-title">
+                    <div class="section-number">1</div>
+                    <h2>🎯 MÔ TẢ BÀI TOÁN</h2>
+                </div>
+                
+                <div class="highlight-box">
+                    <h3>Bài toán thực tế trong doanh nghiệp</h3>
+                    <p>Các doanh nghiệp vừa và nhỏ hiện tại đang gặp phải nhiều khó khăn trong việc quản lý quy trình bán hàng một cách hiệu quả và tổng thể.</p>
+                </div>
+                
+                <div class="problem-grid">
+                    <div class="problem-card">
+                        <h3>🚨 VẤN ĐỀ HIỆN TẠI</h3>
+                        <ul class="problem-list">
+                            <li>Quản lý thủ công bằng Excel, giấy tờ</li>
+                            <li>Thông tin bị phân tán, không đồng bộ</li>
+                            <li>Khó khăn trong theo dõi tồn kho</li>
+                            <li>Không có báo cáo tự động</li>
+                            <li>Thiếu kiểm soát quy trình bán hàng</li>
+                            <li>Không thể quản lý đa chi nhánh</li>
+                            <li>Chăm sóc khách hàng kém hiệu quả</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="problem-card">
+                        <h3>💡 GIẢI PHÁP ĐỀ XUẤT</h3>
+                        <ul class="solution-list">
+                            <li>Hệ thống web tập trung, real-time</li>
+                            <li>Database thống nhất toàn hệ thống</li>
+                            <li>Quản lý tồn kho tự động</li>
+                            <li>Báo cáo và thống kê chi tiết</li>
+                            <li>Quy trình bán hàng chuẩn hóa</li>
+                            <li>Hỗ trợ quản lý đa chi nhánh</li>
+                            <li>CRM tích hợp chăm sóc khách hàng</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">85%</div>
+                        <div class="stat-label">Doanh nghiệp gặp khó khăn quản lý thủ công</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">60%</div>
+                        <div class="stat-label">Thời gian tiết kiệm khi số hóa</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">3x</div>
+                        <div class="stat-label">Tăng hiệu suất bán hàng</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">24/7</div>
+                        <div class="stat-label">Hoạt động liên tục</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Section 2: Giới thiệu website -->
+            <div class="section">
+                <div class="section-title">
+                    <div class="section-number">2</div>
+                    <h2>🌐 GIỚI THIỆU WEBSITE</h2>
+                </div>
+                
+                <div class="highlight-box">
+                    <h3>Hệ thống QLBH - Sales Management System</h3>
+                    <p><strong>Website:</strong> <a href="https://qlkh-tkhttt.vercel.app/" target="_blank" style="color: #4f46e5; text-decoration: none;">https://qlkh-tkhttt.vercel.app/</a></p>
+                    <p>Một ứng dụng web quản lý bán hàng toàn diện, được thiết kế dành riêng cho các doanh nghiệp vừa và nhỏ tại Việt Nam.</p>
+                </div>
+                
+                <h3 style="color: #4f46e5; margin: 2rem 0 1rem 0;">🏗️ KIẾN TRÚC HỒ THỐNG</h3>
+                <div class="problem-grid">
+                    <div class="problem-card">
+                        <h3>Frontend (Giao diện người dùng)</h3>
+                        <div class="tech-stack">
+                            <span class="tech-item">Next.js 15</span>
+                            <span class="tech-item">React 19</span>
+                            <span class="tech-item">TypeScript</span>
+                            <span class="tech-item">Tailwind CSS 4</span>
+                        </div>
+                        <p>Giao diện hiện đại, responsive, hỗ trợ đa thiết bị</p>
+                    </div>
+                    
+                    <div class="problem-card">
+                        <h3>Backend (Xử lý dữ liệu)</h3>
+                        <div class="tech-stack">
+                            <span class="tech-item">Supabase</span>
+                            <span class="tech-item">PostgreSQL</span>
+                            <span class="tech-item">REST API</span>
+                            <span class="tech-item">Real-time</span>
+                        </div>
+                        <p>Database mạnh mẽ, bảo mật cao, cập nhật theo thời gian thực</p>
+                    </div>
+                </div>
+                
+                <h3 style="color: #4f46e5; margin: 2rem 0 1rem 0;">🔑 TÍNH NĂNG NỔI BẬT</h3>
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <div class="feature-icon">👥</div>
+                        <h4>Phân quyền đa cấp</h4>
+                        <p>Admin, Nhân viên bán hàng, Nhân viên kho</p>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">📊</div>
+                        <h4>Dashboard trực quan</h4>
+                        <p>Biểu đồ, thống kê real-time</p>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🛒</div>
+                        <h4>Bán hàng nhanh</h4>
+                        <p>Tạo đơn hàng, thanh toán tức thì</p>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">📦</div>
+                        <h4>Quản lý kho</h4>
+                        <p>Theo dõi tồn kho, nhập xuất</p>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">👨‍💼</div>
+                        <h4>CRM tích hợp</h4>
+                        <p>Quản lý khách hàng, chăm sóc</p>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">📈</div>
+                        <h4>Báo cáo chi tiết</h4>
+                        <p>Doanh số, tài chính, vận chuyển</p>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🏢</div>
+                        <h4>Đa chi nhánh</h4>
+                        <p>Quản lý nhiều cửa hàng</p>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🔒</div>
+                        <h4>Bảo mật cao</h4>
+                        <p>Mã hóa, xác thực 2FA</p>
+                    </div>
+                </div>
+                
+                <h3 style="color: #4f46e5; margin: 2rem 0 1rem 0;">📱 THỐNG KÊ HỆ THỐNG</h3>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">80+</div>
+                        <div class="stat-label">Trang/Chức năng</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">12</div>
+                        <div class="stat-label">Module chính</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">20+</div>
+                        <div class="stat-label">API Endpoints</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">3</div>
+                        <div class="stat-label">Vai trò người dùng</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Section 3: Mục đích của website -->
+            <div class="section">
+                <div class="section-title">
+                    <div class="section-number">3</div>
+                    <h2>🎯 MỤC ĐÍCH CỦA WEBSITE</h2>
+                </div>
+                
+                <div class="problem-grid">
+                    <div class="problem-card">
+                        <h3>🏆 MỤC TIÊU CHÍNH</h3>
+                        <p><strong>Số hóa quy trình bán hàng</strong> - Chuyển đổi từ quản lý thủ công sang hệ thống tự động, hiện đại.</p>
+                        <ul class="solution-list">
+                            <li>Tăng hiệu quả kinh doanh</li>
+                            <li>Giảm chi phí vận hành</li>
+                            <li>Cải thiện trải nghiệm khách hàng</li>
+                            <li>Tăng cường kiểm soát quản lý</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="problem-card">
+                        <h3>🎯 ĐỐI TƯỢNG PHỤC VỤ</h3>
+                        <p><strong>Doanh nghiệp vừa và nhỏ</strong> - Cửa hàng bán lẻ, siêu thị mini, chuỗi cửa hàng.</p>
+                        <ul class="solution-list">
+                            <li>Chủ doanh nghiệp (Admin)</li>
+                            <li>Nhân viên bán hàng</li>
+                            <li>Nhân viên kho</li>
+                            <li>Quản lý chi nhánh</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <h3 style="color: #4f46e5; margin: 2rem 0 1rem 0;">🚀 GIÁ TRỊ MANG LẠI</h3>
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <div class="feature-icon">⚡</div>
+                        <h4>Tốc độ xử lý</h4>
+                        <p>Giảm 70% thời gian tạo đơn hàng</p>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">💰</div>
+                        <h4>Tiết kiệm chi phí</h4>
+                        <p>Giảm 50% chi phí nhân sự quản lý</p>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">📊</div>
+                        <h4>Dữ liệu chính xác</h4>
+                        <p>99.9% độ chính xác báo cáo</p>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🌟</div>
+                        <h4>Trải nghiệm tốt</h4>
+                        <p>Giao diện thân thiện, dễ sử dụng</p>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🔄</div>
+                        <h4>Cập nhật real-time</h4>
+                        <p>Đồng bộ dữ liệu tức thì</p>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">📈</div>
+                        <h4>Tăng trưởng bền vững</h4>
+                        <p>Hỗ trợ mở rộng kinh doanh</p>
+                    </div>
+                </div>
+                
+                <div class="highlight-box">
+                    <h3>💡 TẦM NHÌN DÀI HẠN</h3>
+                    <p>Trở thành <strong>giải pháp quản lý bán hàng hàng đầu</strong> cho các doanh nghiệp vừa và nhỏ tại Việt Nam, góp phần thúc đẩy quá trình <strong>chuyển đổi số</strong> trong lĩnh vực bán lẻ.</p>
+                    <br>
+                    <p><strong>Mục tiêu 2025:</strong> Hỗ trợ 1000+ doanh nghiệp số hóa quy trình bán hàng</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>🚀 <strong>Hệ thống QLBH</strong> - Giải pháp quản lý bán hàng thông minh</p>
+            <p style="opacity: 0.7; margin-top: 0.5rem;">Thiết kế bởi Nhóm Sinh viên TKHTTT</p>
+            <a href="#" class="btn-next">➡️ Tiếp tục: Phần II - Thiết kế Ứng dụng</a>
+        </div>
+    </div>
+    
+    <script>
+        // Smooth scroll animation
+        document.addEventListener('DOMContentLoaded', function() {
+            const sections = document.querySelectorAll('.section');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.animationPlayState = 'running';
+                    }
+                });
+            });
+            
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+        });
+        
+        // Add click animation for cards
+        document.querySelectorAll('.problem-card, .feature-item').forEach(card => {
+            card.addEventListener('click', function() {
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 150);
+            });
+        });
+    </script>
+</body>
+</html>

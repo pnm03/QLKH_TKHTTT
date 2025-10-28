@@ -87,6 +87,7 @@ export default function CreateOrderPage() {
   const [codAmount, setCodAmount] = useState(true)
   const [customerPrepaid, setCustomerPrepaid] = useState('0') // Số tiền khách trả trước
   const [currentUser, setCurrentUser] = useState<any>(null) // Thông tin người tạo đơn hàng
+  const [isCreatingShippingOrder, setIsCreatingShippingOrder] = useState(false) // Flag để nhớ loại đơn hàng
   const [orderCreationTime, setOrderCreationTime] = useState(new Date()) // Thời gian tạo đơn hàng
 
   // State cho tìm kiếm khách hàng
@@ -1056,8 +1057,8 @@ export default function CreateOrderPage() {
     // Đóng popup xác nhận thanh toán
     setShowConfirmPaymentPopup(false);
 
-    // Kiểm tra nếu đang trong quá trình tạo đơn gửi đi
-    if (showShippingPopup) {
+    // Kiểm tra nếu đang trong quá trình tạo đơn gửi đi (sử dụng flag thay vì showShippingPopup)
+    if (isCreatingShippingOrder) {
       // Xử lý đơn gửi đi
       await handleShipOrder();
       return;
@@ -1401,6 +1402,7 @@ export default function CreateOrderPage() {
       // Hiển thị popup in hóa đơn
       setShowPrintInvoicePopup(true);
       setPaymentData(null);
+      setIsCreatingShippingOrder(false); // Reset flag sau khi tạo đơn thành công
       setLoading(false);
 
       // Chỉ reset hóa đơn hiện tại sau khi thanh toán
@@ -1429,6 +1431,7 @@ export default function CreateOrderPage() {
     } catch (error) {
       console.error('Lỗi khi thanh toán:', error);
       alert('Có lỗi xảy ra khi thanh toán: ' + (error instanceof Error ? error.message : 'Lỗi không xác định'));
+      setIsCreatingShippingOrder(false); // Reset flag khi có lỗi
       setLoading(false);
     }
   };
@@ -1479,12 +1482,14 @@ export default function CreateOrderPage() {
       setRecipientAddress('');
     }
 
+    setIsCreatingShippingOrder(true); // Đánh dấu đang tạo đơn vận chuyển
     setShowShippingPopup(true);
   };
 
   // Đóng popup gửi đơn hàng
   const closeShippingPopup = () => {
     setShowShippingPopup(false);
+    setIsCreatingShippingOrder(false); // Reset flag khi đóng popup
     setSelectedPaymentMethod(null); // Reset phương thức thanh toán khi đóng popup
   };
 
@@ -1712,28 +1717,24 @@ export default function CreateOrderPage() {
       // 4. Cuối cùng, tạo thông tin vận chuyển
       console.log('Bắt đầu tạo thông tin vận chuyển...');
 
-      // Tạo đối tượng vận chuyển
+      // Tạo đối tượng vận chuyển (theo schema gốc database.txt)
       const shippingObject = {
         shipping_id: shippingId, // Sử dụng ID vận chuyển đã tạo
         order_id: orderId, // Liên kết với đơn hàng đã tạo
         carrier: 'Giao hàng tiêu chuẩn',
-        tracking_number: `TRK-${Date.now()}`,
+        tracking_num: `TRK-${Date.now()}`,
         shipping_address: `${recipientAddress}, ${recipientWard}, ${recipientDistrict}`,
         shipping_cost: 0, // Có thể tính phí vận chuyển sau
         actual_delivery_date: null,
         delivery_date: null,
         status: 'Chưa giao hàng', // Trạng thái mặc định khi tạo đơn hàng
         created_at: new Date().toISOString(),
-        // Thêm các trường mới
-        name_customer: recipientName,
-        phone_customer: recipientPhone,
+        // Chỉ có các cột trong schema gốc
         weight: parseFloat(shippingWeight) || 0,
         unit_weight: shippingUnit,
         long: parseFloat(packageLength) || 0,
         wide: parseFloat(packageWidth) || 0,
-        hight: parseFloat(packageHeight) || 0,
-        unit_size: dimensionUnit,
-        cod_shipping: codAmount
+        hight: parseFloat(packageHeight) || 0
       };
 
       console.log('Thông tin vận chuyển:', shippingObject);
@@ -1782,6 +1783,7 @@ export default function CreateOrderPage() {
 
       // Hiển thị popup in hóa đơn
       setShowPrintInvoicePopup(true);
+      setIsCreatingShippingOrder(false); // Reset flag sau khi tạo đơn gửi đi thành công
 
       // Reset thông tin hóa đơn hiện tại
       let updatedInvoices = [...invoices]
@@ -1805,6 +1807,7 @@ export default function CreateOrderPage() {
     } catch (error) {
       console.error('Lỗi khi tạo đơn hàng:', error);
       alert('Có lỗi xảy ra khi tạo đơn hàng: ' + (error instanceof Error ? error.message : 'Lỗi không xác định'));
+      setIsCreatingShippingOrder(false); // Reset flag khi có lỗi
     } finally {
       setLoading(false);
     }

@@ -1,170 +1,141 @@
 # 📚 THƯ MỤC TÀI LIỆU SQL - DỰ ÁN QLBH
 
-> **Cập nhật:** 24/10/2025
+> **Cập nhật:** 28/10/2025  
+> **Trạng thái:** Database đã được tạo lại theo schema gốc ổn định
 
 ---
 
-## 🎯 BẠN Ở ĐÂU?
+## 🎯 QUICK START
 
-### ✅ **Mới bắt đầu / Mất database cũ**
-👉 **ĐỌC FILE:** `START_HERE.md`
+### ✅ **Tạo lại database từ đầu**
+👉 **CHẠY FILE:** `RECREATE_DATABASE_FROM_ORIGINAL.sql`  
+👉 **ĐỌC HƯỚNG DẪN:** `HUONG_DAN_TAO_LAI_DATABASE.md`
 
-### ✅ **Đã setup xong, đang gặp vấn đề**
-👉 **ĐỌC FILE:** `CHECK_TRIGGER_HIEN_TAI.sql` (chạy để kiểm tra)
+### ✅ **Đồng bộ user từ auth.users**
+👉 **CHẠY FILE:** `DONG_BO_USER.sql`
 
-### ✅ **User không tự động đồng bộ**
-👉 **CHẠY FILE:** `FIX_USER_SYNC_TRIGGER.sql`
+### ✅ **Kiểm tra database**
+👉 **CHẠY FILE:** `CHECK_DATABASE.sql` hoặc `CHECK_TRIGGER_HIEN_TAI.sql`
 
 ---
 
-## 📂 DANH SÁCH FILE
+## 📂 DANH SÁCH FILE (ĐÃ DỌN DẸP)
 
 ### **🚀 SETUP DATABASE**
 
 | File | Mô tả | Khi nào dùng |
 |------|-------|--------------|
-| **START_HERE.md** | 🎯 **BẮT ĐẦU TẠI ĐÂY** | Setup lần đầu hoặc setup lại |
-| **FULL_DATABASE_SETUP.sql** | File SQL tạo toàn bộ database | Chạy đầu tiên (bước 1) |
-| **FIX_TABLE_NAMES_LOWERCASE.sql** | 🔧 Đổi tên bảng về chữ thường | Chạy sau bước 1 (bước 2) ⭐ |
-| **ALL_TRIGGERS_COMPLETE.sql** | ⚡ 12 triggers hoàn chỉnh | Chạy sau bước 2 (bước 3) |
-| **HUONG_DAN_SETUP_DATABASE.md** | Hướng dẫn chi tiết từng bước | Đọc để hiểu rõ hơn |
+| **RECREATE_DATABASE_FROM_ORIGINAL.sql** | 🎯 **FILE CHÍNH** - Tạo lại toàn bộ database | Setup lần đầu hoặc reset database |
+| **DISABLE_RLS.sql** | 🔓 **TẮT RLS** - Tắt hết Row Level Security | Khi gặp lỗi permission trong dev |
+| **HUONG_DAN_TAO_LAI_DATABASE.md** | 📖 Hướng dẫn chi tiết từng bước | Đọc trước khi chạy SQL |
+| **DONG_BO_USER.sql** | 👥 Đồng bộ user từ auth.users | Khi cần sync lại users |
+| **database.txt** | 📋 Schema gốc đã hoạt động ổn định | Tham khảo cấu trúc database |
+| **tao_sql.sql** | 💾 Backup schema cũ | Tham khảo |
 
-### **🔧 FIX & TROUBLESHOOT**
+### **🔧 KIỂM TRA & DEBUG**
 
 | File | Mô tả | Khi nào dùng |
 |------|-------|--------------|
-| **CHECK_TRIGGER_HIEN_TAI.sql** | Kiểm tra trigger có hoạt động không | Khi nghi ngờ trigger bị lỗi |
-| **FIX_USER_SYNC_TRIGGER.sql** | Sửa trigger đồng bộ user | Khi user không tự động vào Users/Accounts |
-| **HUONG_DAN_FIX_SYNC.md** | Hướng dẫn fix đồng bộ user | Đọc trước khi chạy FIX |
+| **CHECK_DATABASE.sql** | Kiểm tra số lượng users, tables | Khi cần xem tổng quan database |
+| **CHECK_TRIGGER_HIEN_TAI.sql** | Kiểm tra triggers có hoạt động không | Khi nghi ngờ trigger bị lỗi |
 
-### **📖 TÀI LIỆU THAM KHẢO**
+### **📖 TÀI LIỆU**
 
 | File | Mô tả |
 |------|-------|
-| **00_README_SETUP.md** | Tổng quan toàn bộ dự án |
 | **SETUP_ENV.md** | Hướng dẫn cấu hình .env.local |
-| **CHECK_SETUP.md** | Checklist kiểm tra setup |
-| **database.txt** | Mô tả cấu trúc database |
-| **tao_sql.sql** | File SQL backup (cũ) |
+| **README.md** | File này - Tổng quan thư mục |
 
 ---
 
-## 🔄 QUY TRÌNH SETUP CHUẨN
+## 🚀 QUY TRÌNH SETUP ĐƠN GIẢN
 
 ```
-1. Đọc START_HERE.md
+1. Tạo project Supabase mới
    ↓
-2. Tạo project Supabase
+2. Cập nhật .env.local (xem SETUP_ENV.md)
    ↓
-3. Cập nhật .env.local
+3. Chạy RECREATE_DATABASE_FROM_ORIGINAL.sql
    ↓
-4. Chạy FULL_DATABASE_SETUP.sql (tạo bảng, indexes)
+4. Chạy DONG_BO_USER.sql (nếu đã có users trong auth)
    ↓
-5. Chạy FIX_TABLE_NAMES_LOWERCASE.sql 🔧 (đổi tên về chữ thường)
+5. Restart dev server: npm run dev
    ↓
-6. Chạy ALL_TRIGGERS_COMPLETE.sql ⚡ (12 triggers)
-   ↓
-7. Test tìm kiếm user (phải hiển thị được danh sách)
-   ↓
-8. Done! 🎉
-   
-   Nếu lỗi → Chạy CHECK_TRIGGER_HIEN_TAI.sql để kiểm tra
+6. Done! 🎉
 ```
 
----
-
-## ⚡ QUICK COMMANDS
-
-### **Tạo database lần đầu:**
-```
-Bước 1: Tạo cấu trúc
-1. Copy FULL_DATABASE_SETUP.sql
-2. Paste vào Supabase SQL Editor
-3. Run (đợi 1-2 phút)
-
-Bước 2: Đổi tên bảng 🔧
-1. Copy FIX_TABLE_NAMES_LOWERCASE.sql
-2. Paste vào SQL Editor (query mới)
-3. Run (đợi 10 giây)
-
-Bước 3: Thêm triggers ⚡
-1. Copy ALL_TRIGGERS_COMPLETE.sql
-2. Paste vào SQL Editor (query mới)
-3. Run (đợi 30 giây)
-```
-
-### **Kiểm tra trigger:**
-```sql
--- Copy và chạy CHECK_TRIGGER_HIEN_TAI.sql
-```
-
-### **Fix đồng bộ user:**
-```sql
--- Copy và chạy FIX_USER_SYNC_TRIGGER.sql
-```
+**Thời gian:** ~5 phút
 
 ---
 
 ## 🗄️ CẤU TRÚC DATABASE
 
 ### **Bảng chính (12 bảng):**
-- ✅ Branches (Chi nhánh)
-- ✅ Users (Người dùng)
-- ✅ Accounts (Tài khoản)
-- ✅ Customers (Khách hàng)
-- ✅ Staff (Nhân viên)
-- ✅ Category (Danh mục)
-- ✅ Products (Sản phẩm)
-- ✅ Payments (Thanh toán)
-- ✅ Orders (Đơn hàng)
-- ✅ Orderdetails (Chi tiết đơn)
-- ✅ Shippings (Vận chuyển)
-- ✅ Returns (Đổi/trả)
+- ✅ **branches** - Chi nhánh
+- ✅ **users** - Người dùng
+- ✅ **accounts** - Tài khoản
+- ✅ **customers** - Khách hàng
+- ✅ **staff** - Nhân viên
+- ✅ **category** - Danh mục
+- ✅ **products** - Sản phẩm
+- ✅ **payments** - Thanh toán
+- ✅ **orders** - Đơn hàng
+- ✅ **orderdetails** - Chi tiết đơn
+- ✅ **shippings** - Vận chuyển
+- ✅ **returns** - Đổi/trả
 
-### **Bảng chat (4 bảng):**
-- ✅ chat_conversations
-- ✅ chat_participants
-- ✅ chat_messages
-- ✅ chat_message_status
+### **Triggers tự động (theo database.txt gốc):**
+1. ✅ **trigger_calculate_subtotal** - Tự động tính `subtotal = quantity × unit_price`
+2. ✅ **trigger_update_stock** - Tự động giảm tồn kho khi bán
+3. ✅ **CASCADE DELETE** - Tự động xóa orderdetails khi xóa order
 
-### **Triggers quan trọng:**
-- ✅ `on_auth_user_created` - Tự động tạo Users/Accounts khi đăng ký
-- ✅ `trg_calculate_orderdetail_subtotal` - Tự động tính tổng tiền
-- ✅ `trg_update_product_stock` - Tự động cập nhật tồn kho
-
-### **Functions hữu ích:**
-- ✅ `get_top_shipped_products_v2(limit)` - Top sản phẩm bán chạy
-- ✅ `admin_delete_user(uuid)` - Xóa user (admin)
-- ✅ `handle_new_user()` - Đồng bộ user mới
+### **RLS Policies:**
+- ✅ Authenticated users có thể xem/thêm dữ liệu
+- ✅ Admin có quyền cao hơn
 
 ---
 
-## 🐛 TROUBLESHOOTING NHANH
+## 🐛 TROUBLESHOOTING
 
 | Vấn đề | Giải pháp |
 |--------|-----------|
-| User không tự động vào Users/Accounts | Chạy `FIX_USER_SYNC_TRIGGER.sql` |
-| Lỗi "relation does not exist" | Chạy lại `FULL_DATABASE_SETUP.sql` |
-| Lỗi "permission denied" | Kiểm tra RLS policies |
-| Không kết nối được Supabase | Kiểm tra `.env.local` |
+| Lỗi "relation does not exist" | Chạy `RECREATE_DATABASE_FROM_ORIGINAL.sql` |
+| User không có trong users/accounts | Chạy `DONG_BO_USER.sql` |
+| Lỗi permission/RLS khi insert/update | Chạy `DISABLE_RLS.sql` 🔥 |
+| Lỗi "hight column not found" | Schema đã đúng (`hight` không phải `height`) |
+| Không kết nối được Supabase | Kiểm tra `.env.local` (xem `SETUP_ENV.md`) |
+
+---
+
+## 📊 THỐNG KÊ
+
+- **Total files:** 8 files (đã dọn dẹp từ 20+ files)
+- **Tables:** 12 bảng chính
+- **Triggers:** 2 triggers + cascade delete
+- **RLS Policies:** Đầy đủ cho tất cả tables
+
+---
+
+## 🎓 LƯU Ý QUAN TRỌNG
+
+1. ⚠️ **Schema GỐC** trong `database.txt` sử dụng `hight` (không phải `height`)
+2. ⚠️ Bảng `shippings` **KHÔNG CÓ** các cột: `name_customer`, `phone_customer`, `unit_size`, `cod_shipping`
+3. ⚠️ Tất cả tables dùng **chữ thường** (lowercase)
+4. ✅ File `RECREATE_DATABASE_FROM_ORIGINAL.sql` đã bao gồm:
+   - Drop all tables
+   - Tạo lại theo schema gốc
+   - Triggers
+   - RLS policies
 
 ---
 
 ## 📞 CẦN TRỢ GIÚP?
 
-1. **Đọc lại START_HERE.md** - Hướng dẫn rõ nhất
+1. **Đọc `HUONG_DAN_TAO_LAI_DATABASE.md`** - Hướng dẫn chi tiết
 2. **Check logs** trong Supabase Dashboard → Logs
-3. **Xem HUONG_DAN_SETUP_DATABASE.md** - Chi tiết đầy đủ
+3. **Chạy `CHECK_DATABASE.sql`** - Xem tổng quan database
 
 ---
 
-## 🎓 LINK THAM KHẢO
-
-- [Supabase Docs](https://supabase.com/docs)
-- [Next.js Docs](https://nextjs.org/docs)
-- [PostgreSQL Triggers](https://www.postgresql.org/docs/current/sql-createtrigger.html)
-
----
-
-**🚀 Bắt đầu với START_HERE.md ngay!**
+**🚀 Bắt đầu với `RECREATE_DATABASE_FROM_ORIGINAL.sql` ngay!**
 

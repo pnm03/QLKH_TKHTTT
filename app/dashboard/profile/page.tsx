@@ -4,13 +4,11 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { useTheme, themeColors } from '@/app/context/ThemeContext'
 
-// Định nghĩa các loại vai trò
+// Định nghĩa các loại vai trò (theo schema gốc database.txt)
 const USER_ROLES = {
   admin: 'Quản trị viên',
-  sales: 'Nhân viên bán hàng',
-  warehouse: 'Nhân viên kho',
-  accounting: 'Kế toán',
-  customer: 'Khách hàng',
+  NVBH: 'Nhân viên bán hàng', // Sửa: sales → NVBH
+  NVK: 'Nhân viên kho', // Sửa: warehouse → NVK
 }
 
 type UserRole = keyof typeof USER_ROLES
@@ -31,7 +29,7 @@ interface UserData {
 interface AccountData {
   account_id: string
   user_id: string
-  username: string
+  user_name: string // Sửa: username → user_name (theo schema gốc)
   role: UserRole
   status: 'active' | 'locked'
   last_login: string
@@ -202,9 +200,9 @@ export default function ProfilePage() {
                   {
                     user_id: authUser.id,
                     email: authUser.email,
-                    full_name: authUser.user_metadata?.full_name || authUser.user_metadata?.name || '',
-                    phone: authUser.user_metadata?.phone || '',
-                    hometown: authUser.user_metadata?.hometown || '',
+                    full_name: authUser.user_metadata?.full_name || authUser.user_metadata?.name || authUser.email || 'User', // Đảm bảo có ít nhất 2 ký tự
+                    phone: authUser.user_metadata?.phone || null, // Sửa: '' → null
+                    hometown: authUser.user_metadata?.hometown || null, // Sửa: '' → null (CHECK >= 2 chars)
                     birth_date: authUser.user_metadata?.birth_date || null
                   }
                 ])
@@ -212,7 +210,7 @@ export default function ProfilePage() {
               
               // Xử lý kết quả tạo user mới
               if (createError) {
-                console.error('[Profile] Lỗi khi tạo hồ sơ người dùng mới:', createError);
+                console.error('[Profile] Lỗi khi tạo hồ sơ người dùng mới:', JSON.stringify(createError, null, 2));
               } else if (newUser && newUser.length > 0) {
                 console.log('[Profile] Đã tạo hồ sơ người dùng mới thành công:', newUser[0]);
                 if (isMounted) {
@@ -269,15 +267,16 @@ export default function ProfilePage() {
                 .insert([
                   {
                     user_id: authUser.id,
-                    username: authUser.email,
-                    role: 'customer',
+                    user_name: authUser.email, // Sửa: username → user_name
+                    password_hash: '', // Bắt buộc có (Supabase Auth đã quản lý password)
+                    role: 'NVBH', // Sửa: customer → NVBH (theo schema gốc)
                     status: 'active',
                   }
                 ])
                 .select();
               
               if (createAccountError) {
-                console.error('[Profile] Lỗi khi tạo tài khoản mới:', createAccountError);
+                console.error('[Profile] Lỗi khi tạo tài khoản mới:', JSON.stringify(createAccountError, null, 2));
               } else if (newAccount && newAccount.length > 0) {
                 console.log('[Profile] Đã tạo tài khoản mới thành công:', newAccount[0]);
                 if (isMounted) {

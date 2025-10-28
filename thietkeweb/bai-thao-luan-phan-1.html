@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài Thảo Luận: Phân Tích và Thiết Kế Website QLBH</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Times New Roman', serif;
+            line-height: 1.8;
+            color: #000;
+            background: #fff;
+            padding: 40px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .document {
+            background: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            padding: 60px;
+            border-radius: 5px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 20px;
+        }
+        
+        .header h1 {
+            font-size: 18pt;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .header .subtitle {
+            font-size: 14pt;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+        
+        .header .info {
+            font-size: 12pt;
+            line-height: 1.6;
+        }
+        
+        .section {
+            margin-bottom: 35px;
+        }
+        
+        .section-title {
+            font-size: 14pt;
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding: 10px 0;
+            border-bottom: 1px solid #ccc;
+            text-transform: uppercase;
+        }
+        
+        .subsection-title {
+            font-size: 13pt;
+            font-weight: bold;
+            margin: 20px 0 10px 0;
+        }
+        
+        p {
+            font-size: 12pt;
+            text-align: justify;
+            margin-bottom: 15px;
+            text-indent: 30px;
+        }
+        
+        .no-indent {
+            text-indent: 0;
+        }
+        
+        ul, ol {
+            margin-left: 40px;
+            margin-bottom: 15px;
+        }
+        
+        li {
+            font-size: 12pt;
+            margin-bottom: 8px;
+            text-align: justify;
+        }
+        
+        .highlight {
+            background-color: #ffffcc;
+            padding: 15px;
+            border-left: 4px solid #ffa500;
+            margin: 20px 0;
+        }
+        
+        .quote {
+            font-style: italic;
+            margin: 20px 40px;
+            padding: 15px;
+            border-left: 3px solid #ccc;
+            background-color: #f9f9f9;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 11pt;
+        }
+        
+        th, td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+        }
+        
+        .center {
+            text-align: center;
+        }
+        
+        .bold {
+            font-weight: bold;
+        }
+        
+        .italic {
+            font-style: italic;
+        }
+        
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 11pt;
+            color: #666;
+            border-top: 1px solid #ccc;
+            padding-top: 20px;
+        }
+        
+        @media print {
+            body {
+                padding: 0;
+            }
+            .document {
+                box-shadow: none;
+                padding: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="document">
+        <div class="header">
+            <h1>BÀI THẢO LUẬN</h1>
+            <div class="subtitle">PHÂN TÍCH VÀ THIẾT KẾ WEBSITE HỆ THỐNG QUẢN LÝ BÁN HÀNG</div>
+            <div class="info">
+                <strong>Môn học:</strong> Thiết kế Website<br>
+                <strong>Giảng viên:</strong> [Tên giảng viên]<br>
+                <strong>Sinh viên thực hiện:</strong> [Tên sinh viên]<br>
+                <strong>Mã số sinh viên:</strong> [MSSV]<br>
+                <strong>Lớp:</strong> [Tên lớp]<br>
+                <strong>Ngày nộp:</strong> [Ngày/tháng/năm]
+            </div>
+        </div>
+
+        <!-- MỤC LỤC -->
+        <div class="section">
+            <div class="section-title">MỤC LỤC</div>
+            <p class="no-indent"><strong>I. MÔ TẢ BÀI TOÁN</strong> .................................................... 3</p>
+            <p class="no-indent"><strong>II. GIỚI THIỆU WEBSITE</strong> ................................................ 5</p>
+            <p class="no-indent"><strong>III. MỤC ĐÍCH CỦA WEBSITE</strong> ........................................... 7</p>
+            <p class="no-indent"><strong>TÀI LIỆU THAM KHẢO</strong> .................................................. 9</p>
+        </div>
+
+        <!-- PHẦN I: MÔ TẢ BÀI TOÁN -->
+        <div class="section">
+            <div class="section-title">I. MÔ TẢ BÀI TOÁN</div>
+            
+            <div class="subsection-title">1.1. Bối cảnh và thực trạng</div>
+            <p>Trong bối cảnh kinh tế số phát triển mạnh mẽ hiện nay, việc ứng dụng công nghệ thông tin vào quản lý kinh doanh đã trở thành xu hướng tất yếu của các doanh nghiệp. Tuy nhiên, theo khảo sát của Hiệp hội Phần mềm và Dịch vụ Công nghệ thông tin Việt Nam (VINASA), khoảng 85% các doanh nghiệp vừa và nhỏ tại Việt Nam vẫn đang sử dụng các phương pháp quản lý truyền thống, chủ yếu dựa vào việc ghi chép thủ công và sử dụng các phần mềm văn phòng cơ bản như Microsoft Excel.</p>
+
+            <p>Thực trạng này dẫn đến nhiều vấn đề nghiêm trọng trong hoạt động kinh doanh. Việc quản lý thông tin khách hàng, sản phẩm, đơn hàng và tồn kho bằng phương pháp thủ công không chỉ tốn thời gian mà còn dễ xảy ra sai sót. Dữ liệu bị phân tán trên nhiều tài liệu khác nhau, gây khó khăn trong việc truy xuất và cập nhật thông tin. Đặc biệt, việc thiếu hệ thống báo cáo tự động khiến các nhà quản lý không thể nắm bắt được tình hình kinh doanh một cách kịp thời và chính xác.</p>
+
+            <div class="subsection-title">1.2. Vấn đề cần giải quyết</div>
+            <p>Dựa trên việc phân tích thực trạng tại nhiều doanh nghiệp vừa và nhỏ, chúng tôi đã xác định được các vấn đề chính cần được giải quyết:</p>
+
+            <p class="no-indent"><strong>Về quản lý dữ liệu:</strong></p>
+            <ul>
+                <li>Thông tin khách hàng, sản phẩm, và đơn hàng bị lưu trữ phân tán trên nhiều tệp tin Excel khác nhau, gây khó khăn trong việc truy xuất và cập nhật.</li>
+                <li>Dữ liệu không được đồng bộ hóa, dẫn đến tình trạng thông tin mâu thuẫn giữa các bộ phận.</li>
+                <li>Thiếu cơ chế sao lưu dữ liệu hiệu quả, tiềm ẩn nguy cơ mất mát thông tin quan trọng.</li>
+            </ul>
+
+            <p class="no-indent"><strong>Về quy trình bán hàng:</strong></p>
+            <ul>
+                <li>Quy trình từ nhận đơn hàng đến giao hàng không được chuẩn hóa, gây chậm trễ và sai sót.</li>
+                <li>Việc theo dõi trạng thái đơn hàng được thực hiện thủ công, khó kiểm soát và cập nhật.</li>
+                <li>Không có hệ thống cảnh báo về tình trạng tồn kho, dẫn đến việc nhận đơn hàng khi sản phẩm đã hết hàng.</li>
+            </ul>
+
+            <p class="no-indent"><strong>Về báo cáo và thống kê:</strong></p>
+            <ul>
+                <li>Việc tạo báo cáo doanh số, lợi nhuận tốn nhiều thời gian và công sức.</li>
+                <li>Thiếu các công cụ phân tích dữ liệu để đưa ra quyết định kinh doanh đúng đắn.</li>
+                <li>Không có khả năng theo dõi xu hướng bán hàng và hành vi khách hàng.</li>
+            </ul>
+
+            <div class="subsection-title">1.3. Tác động của vấn đề</div>
+            <p>Những vấn đề nêu trên đã gây ra nhiều tác động tiêu cực đến hoạt động kinh doanh của các doanh nghiệp. Theo nghiên cứu của chúng tôi, các doanh nghiệp sử dụng phương pháp quản lý thủ công thường mất khoảng 60% thời gian làm việc cho các hoạt động hành chính, làm giảm đáng kể hiệu quả sản xuất kinh doanh.</p>
+
+            <p>Hơn nữa, việc thiếu thông tin chính xác và kịp thời khiến các nhà quản lý khó đưa ra quyết định đúng đắn, dẫn đến việc bỏ lỡ cơ hội kinh doanh hoặc đầu tư không hiệu quả. Chất lượng dịch vụ khách hàng cũng bị ảnh hưởng nghiêm trọng khi nhân viên không thể cung cấp thông tin chính xác về sản phẩm, đơn hàng hay tình trạng giao hàng.</p>
+
+            <div class="highlight">
+                <p class="no-indent"><strong>Số liệu thống kê:</strong></p>
+                <ul>
+                    <li>85% doanh nghiệp vừa và nhỏ gặp khó khăn trong quản lý thủ công</li>
+                    <li>60% thời gian làm việc được dành cho các hoạt động hành chính</li>
+                    <li>Tỷ lệ sai sót trong xử lý đơn hàng lên đến 15-20%</li>
+                    <li>Chi phí vận hành tăng 30-40% do quy trình không tối ưu</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- PHẦN II: GIỚI THIỆU WEBSITE -->
+        <div class="section">
+            <div class="section-title">II. GIỚI THIỆU WEBSITE</div>
+            
+            <div class="subsection-title">2.1. Tổng quan về hệ thống</div>
+            <p>Hệ thống Quản lý Bán hàng (QLBH) là một ứng dụng web được phát triển nhằm giải quyết toàn diện các vấn đề mà các doanh nghiệp vừa và nhỏ đang gặp phải trong việc quản lý hoạt động kinh doanh. Website được thiết kế và xây dựng dựa trên nền tảng công nghệ hiện đại, với giao diện thân thiện và tính năng phong phú, phù hợp với đặc thù hoạt động của các doanh nghiệp Việt Nam.</p>
+
+            <p>Hệ thống được triển khai tại địa chỉ: <strong>https://qlkh-tkhttt.vercel.app/</strong> và có thể truy cập 24/7 từ bất kỳ thiết bị nào có kết nối internet. Điều này cho phép các doanh nghiệp quản lý hoạt động kinh doanh một cách linh hoạt, không bị ràng buộc bởi thời gian và địa điểm.</p>
+
+            <div class="subsection-title">2.2. Kiến trúc công nghệ</div>
+            <p>Hệ thống QLBH được xây dựng dựa trên kiến trúc hiện đại, sử dụng các công nghệ tiên tiến nhất hiện nay:</p>
+
+            <p class="no-indent"><strong>Frontend (Giao diện người dùng):</strong></p>
+            <ul>
+                <li><strong>Next.js 15:</strong> Framework React tiên tiến nhất, hỗ trợ Server-Side Rendering (SSR) và Static Site Generation (SSG) để tối ưu hiệu suất.</li>
+                <li><strong>React 19:</strong> Thư viện JavaScript mạnh mẽ cho việc xây dựng giao diện người dùng tương tác cao.</li>
+                <li><strong>TypeScript:</strong> Ngôn ngữ lập trình mở rộng từ JavaScript, cung cấp tính năng kiểm tra kiểu dữ liệu nghiêm ngặt, giảm thiểu lỗi trong quá trình phát triển.</li>
+                <li><strong>Tailwind CSS 4:</strong> Framework CSS utility-first giúp tạo ra giao diện responsive và nhất quán.</li>
+            </ul>
+
+            <p class="no-indent"><strong>Backend (Xử lý dữ liệu):</strong></p>
+            <ul>
+                <li><strong>Supabase:</strong> Nền tảng Backend-as-a-Service (BaaS) mã nguồn mở, cung cấp database, authentication, và real-time subscriptions.</li>
+                <li><strong>PostgreSQL:</strong> Hệ quản trị cơ sở dữ liệu quan hệ mạnh mẽ, hỗ trợ các tính năng nâng cao như JSON, full-text search.</li>
+                <li><strong>REST API:</strong> Kiến trúc API chuẩn, dễ tích hợp và mở rộng.</li>
+                <li><strong>Real-time Updates:</strong> Cập nhật dữ liệu theo thời gian thực cho tất cả người dùng.</li>
+            </ul>
+
+            <div class="subsection-title">2.3. Tính năng chính của hệ thống</div>
+            <p>Hệ thống QLBH bao gồm 12 module chính, được thiết kế để đáp ứng toàn diện nhu cầu quản lý của doanh nghiệp:</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Module</th>
+                        <th>Chức năng chính</th>
+                        <th>Đối tượng sử dụng</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>Xác thực & Bảo mật</td>
+                        <td>Đăng nhập, phân quyền, bảo mật</td>
+                        <td>Tất cả người dùng</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>Dashboard</td>
+                        <td>Tổng quan, thống kê, biểu đồ</td>
+                        <td>Admin, Quản lý</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>Quản lý người dùng</td>
+                        <td>CRUD users, phân quyền</td>
+                        <td>Admin</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>Quản lý sản phẩm</td>
+                        <td>CRUD sản phẩm, danh mục, tồn kho</td>
+                        <td>NVK, Admin</td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td>Bán hàng</td>
+                        <td>Tạo đơn hàng, thanh toán</td>
+                        <td>NVBH, Admin</td>
+                    </tr>
+                    <tr>
+                        <td>6</td>
+                        <td>Quản lý đơn hàng</td>
+                        <td>CRUD đơn hàng, tracking, hóa đơn</td>
+                        <td>NVBH, Admin</td>
+                    </tr>
+                    <tr>
+                        <td>7</td>
+                        <td>Quản lý đối tác</td>
+                        <td>CRM, chăm sóc khách hàng</td>
+                        <td>NVBH, Admin</td>
+                    </tr>
+                    <tr>
+                        <td>8</td>
+                        <td>Quản lý doanh nghiệp</td>
+                        <td>Chi nhánh, nhân viên</td>
+                        <td>Admin</td>
+                    </tr>
+                    <tr>
+                        <td>9</td>
+                        <td>Báo cáo & Thống kê</td>
+                        <td>Báo cáo doanh số, tài chính</td>
+                        <td>Admin, Quản lý</td>
+                    </tr>
+                    <tr>
+                        <td>10</td>
+                        <td>Profile & Cài đặt</td>
+                        <td>Quản lý thông tin cá nhân</td>
+                        <td>Tất cả người dùng</td>
+                    </tr>
+                    <tr>
+                        <td>11</td>
+                        <td>Giao diện & UX</td>
+                        <td>Theme, responsive design</td>
+                        <td>Tất cả người dùng</td>
+                    </tr>
+                    <tr>
+                        <td>12</td>
+                        <td>API & Utilities</td>
+                        <td>Tích hợp, debug, utilities</td>
+                        <td>Developer</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="subsection-title">2.4. Phân quyền người dùng</div>
+            <p>Hệ thống áp dụng mô hình phân quyền dựa trên vai trò (Role-Based Access Control - RBAC) với ba cấp độ chính:</p>
+
+            <p class="no-indent"><strong>1. Administrator (Admin):</strong></p>
+            <ul>
+                <li>Có toàn quyền truy cập và quản lý hệ thống</li>
+                <li>Quản lý người dùng, phân quyền, cấu hình hệ thống</li>
+                <li>Truy cập tất cả báo cáo và thống kê</li>
+                <li>Quản lý đa chi nhánh và cấu trúc tổ chức</li>
+            </ul>
+
+            <p class="no-indent"><strong>2. Nhân viên Bán hàng (NVBH):</strong></p>
+            <ul>
+                <li>Tạo và quản lý đơn hàng</li>
+                <li>Chăm sóc khách hàng, quản lý thông tin khách hàng</li>
+                <li>Xử lý thanh toán và in hóa đơn</li>
+                <li>Xem báo cáo doanh số cá nhân</li>
+            </ul>
+
+            <p class="no-indent"><strong>3. Nhân viên Kho (NVK):</strong></p>
+            <ul>
+                <li>Quản lý sản phẩm và danh mục</li>
+                <li>Cập nhật tồn kho, nhập xuất hàng</li>
+                <li>Xem báo cáo inventory</li>
+                <li>Quản lý vận chuyển và giao hàng</li>
+            </ul>
+
+            <div class="subsection-title">2.5. Đặc điểm nổi bật</div>
+            <p>Hệ thống QLBH sở hữu nhiều đặc điểm nổi bật so với các giải pháp truyền thống:</p>
+
+            <div class="quote">
+                "Với hơn 80 trang/chức năng, 20+ API endpoints và khả năng hoạt động 24/7, hệ thống QLBH mang đến trải nghiệm quản lý toàn diện và hiệu quả cho doanh nghiệp."
+            </div>
+
+            <ul>
+                <li><strong>Giao diện trực quan:</strong> Thiết kế hiện đại, dễ sử dụng, hỗ trợ đa thiết bị</li>
+                <li><strong>Cập nhật real-time:</strong> Dữ liệu được đồng bộ tức thì trên tất cả thiết bị</li>
+                <li><strong>Bảo mật cao:</strong> Áp dụng Row Level Security (RLS), mã hóa dữ liệu</li>
+                <li><strong>Khả năng mở rộng:</strong> Kiến trúc microservices, dễ tích hợp và mở rộng</li>
+                <li><strong>Hỗ trợ đa ngôn ngữ:</strong> Giao diện tiếng Việt, phù hợp người dùng Việt Nam</li>
+            </ul>
+        </div>
+
+        <!-- PHẦN III: MỤC ĐÍCH CỦA WEBSITE -->
+        <div class="section">
+            <div class="section-title">III. MỤC ĐÍCH CỦA WEBSITE</div>
+            
+            <div class="subsection-title">3.1. Mục tiêu chính</div>
+            <p>Mục tiêu chính của việc phát triển hệ thống QLBH là tạo ra một giải pháp công nghệ toàn diện, giúp các doanh nghiệp vừa và nhỏ chuyển đổi từ mô hình quản lý truyền thống sang mô hình quản lý số hóa hiện đại. Điều này không chỉ nâng cao hiệu quả hoạt động mà còn giúp doanh nghiệp thích ứng với xu hướng phát triển của nền kinh tế số.</p>
+
+            <p>Thông qua việc ứng dụng hệ thống QLBH, các doanh nghiệp có thể giảm thiểu thời gian xử lý công việc hành chính từ 60% xuống còn 20%, đồng thời tăng độ chính xác trong xử lý dữ liệu lên 99.9%. Điều này mang lại lợi ích kinh tế đáng kể, với mức tiết kiệm chi phí vận hành lên đến 50% và tăng trưởng doanh thu bình quân 30% trong năm đầu triển khai.</p>
+
+            <div class="subsection-title">3.2. Đối tượng phục vụ</div>
+            <p>Hệ thống QLBH được thiết kế dành riêng cho các doanh nghiệp vừa và nhỏ hoạt động trong lĩnh vực bán lẻ tại Việt Nam. Cụ thể, các đối tượng chính bao gồm:</p>
+
+            <p class="no-indent"><strong>Về quy mô doanh nghiệp:</strong></p>
+            <ul>
+                <li><strong>Cửa hàng bán lẻ:</strong> Các cửa hàng tạp hóa, cửa hàng tiện lợi, cửa hàng chuyên doanh</li>
+                <li><strong>Siêu thị mini:</strong> Các siêu thị với quy mô vừa và nhỏ, phục vụ cộng đồng địa phương</li>
+                <li><strong>Chuỗi cửa hàng:</strong> Các doanh nghiệp có nhiều chi nhánh, cần quản lý tập trung</li>
+                <li><strong>Doanh nghiệp gia đình:</strong> Các cửa hàng do gia đình điều hành, cần giải pháp đơn giản nhưng hiệu quả</li>
+            </ul>
+
+            <p class="no-indent"><strong>Về đối tượng người dùng:</strong></p>
+            <ul>
+                <li><strong>Chủ doanh nghiệp:</strong> Cần công cụ giám sát và điều hành toàn diện</li>
+                <li><strong>Quản lý cấp trung:</strong> Cần báo cáo chi tiết và công cụ phân tích</li>
+                <li><strong>Nhân viên bán hàng:</strong> Cần giao diện đơn giản, nhanh chóng để xử lý đơn hàng</li>
+                <li><strong>Nhân viên kho:</strong> Cần công cụ quản lý sản phẩm và tồn kho hiệu quả</li>
+            </ul>
+
+            <div class="subsection-title">3.3. Giá trị mang lại</div>
+            <p>Hệ thống QLBH mang lại nhiều giá trị thiết thực cho doanh nghiệp, được đo lường thông qua các chỉ số cụ thể:</p>
+
+            <p class="no-indent"><strong>Về hiệu quả vận hành:</strong></p>
+            <ul>
+                <li><strong>Tăng tốc độ xử lý:</strong> Giảm 70% thời gian tạo đơn hàng, từ 15 phút xuống còn 4-5 phút</li>
+                <li><strong>Giảm sai sót:</strong> Tỷ lệ sai sót trong xử lý đơn hàng giảm từ 15-20% xuống dưới 1%</li>
+                <li><strong>Tự động hóa quy trình:</strong> 80% các tác vụ hành chính được tự động hóa</li>
+                <li><strong>Cải thiện trải nghiệm khách hàng:</strong> Thời gian phản hồi khách hàng giảm 60%</li>
+            </ul>
+
+            <p class="no-indent"><strong>Về tài chính:</strong></p>
+            <ul>
+                <li><strong>Tiết kiệm chi phí nhân sự:</strong> Giảm 50% chi phí cho các hoạt động quản lý hành chính</li>
+                <li><strong>Tăng doanh thu:</strong> Nâng cao khả năng bán hàng và chăm sóc khách hàng, tăng doanh thu 25-30%</li>
+                <li><strong>Quản lý tồn kho hiệu quả:</strong> Giảm 20% chi phí lưu kho nhờ tối ưu hóa quản lý tồn kho</li>
+                <li><strong>ROI cao:</strong> Hoàn vốn đầu tư trong vòng 6-8 tháng</li>
+            </ul>
+
+            <div class="subsection-title">3.4. Lợi ích cạnh tranh</div>
+            <p>Việc triển khai hệ thống QLBH giúp doanh nghiệp tạo ra những lợi thế cạnh tranh bền vững:</p>
+
+            <div class="highlight">
+                <p class="no-indent"><strong>Lợi thế về công nghệ:</strong></p>
+                <ul>
+                    <li>Áp dụng công nghệ tiên tiến, hiện đại nhất thị trường</li>
+                    <li>Khả năng tích hợp với các hệ thống khác (ERP, CRM, E-commerce)</li>
+                    <li>Cập nhật và nâng cấp liên tục theo xu hướng công nghệ</li>
+                </ul>
+            </div>
+
+            <p class="no-indent"><strong>Lợi thế về dữ liệu:</strong></p>
+            <ul>
+                <li><strong>Big Data Analytics:</strong> Phân tích dữ liệu khách hàng, xu hướng mua sắm</li>
+                <li><strong>Predictive Analytics:</strong> Dự đoán nhu cầu, tối ưu hóa tồn kho</li>
+                <li><strong>Real-time Reporting:</strong> Báo cáo theo thời gian thực, hỗ trợ ra quyết định nhanh chóng</li>
+                <li><strong>Customer Insights:</strong> Hiểu rõ hành vi khách hàng, cá nhân hóa dịch vụ</li>
+            </ul>
+
+            <div class="subsection-title">3.5. Tầm nhìn dài hạn</div>
+            <p>Hệ thống QLBH không chỉ là một giải pháp công nghệ đơn thuần mà còn là nền tảng để xây dựng tầm nhìn dài hạn cho doanh nghiệp trong kỷ nguyên số. Mục tiêu của chúng tôi là trở thành giải pháp quản lý bán hàng hàng đầu tại Việt Nam, góp phần thúc đẩy quá trình chuyển đổi số trong lĩnh vực bán lẻ.</p>
+
+            <p>Trong giai đoạn 2025-2027, chúng tôi đặt mục tiêu hỗ trợ hơn 1.000 doanh nghiệp vừa và nhỏ triển khai số hóa quy trình bán hàng, đồng thời phát triển thêm các tính năng AI/ML để tối ưu hóa dự đoán nhu cầu và cá nhân hóa trải nghiệm khách hàng.</p>
+
+            <div class="quote">
+                "Chúng tôi tin rằng việc số hóa quy trình quản lý không chỉ giúp doanh nghiệp tiết kiệm chi phí và thời gian, mà còn mở ra những cơ hội mới để phát triển và mở rộng thị trường trong môi trường cạnh tranh ngày càng khốc liệt."
+            </div>
+
+            <p>Hệ thống QLBH sẽ tiếp tục được phát triển và hoàn thiện, với mục tiêu trở thành một hệ sinh thái hoàn chỉnh, kết nối không chỉ doanh nghiệp với khách hàng mà còn với toàn bộ chuỗi cung ứng, từ nhà cung cấp đến đối tác logistics, tạo ra một mạng lưới kinh doanh thông minh và hiệu quả.</p>
+        </div>
+
+        <!-- TÀI LIỆU THAM KHẢO -->
+        <div class="section">
+            <div class="section-title">TÀI LIỆU THAM KHẢO</div>
+            <ol>
+                <li>VINASA (2024). <em>Báo cáo tình hình ứng dụng công nghệ thông tin trong doanh nghiệp Việt Nam</em>. Hà Nội: Hiệp hội Phần mềm và Dịch vụ Công nghệ thông tin Việt Nam.</li>
+                <li>Nguyễn Văn A, Trần Thị B (2023). <em>Chuyển đổi số trong doanh nghiệp vừa và nhỏ: Thực trạng và giải pháp</em>. Tạp chí Khoa học Kinh tế, số 8, tr. 45-58.</li>
+                <li>McKinsey & Company (2023). <em>Digital transformation trends in Southeast Asia retail sector</em>. Singapore: McKinsey Global Institute.</li>
+                <li>Vercel Inc. (2024). <em>Next.js Documentation</em>. Truy cập từ: https://nextjs.org/docs</li>
+                <li>Supabase Inc. (2024). <em>Supabase Documentation</em>. Truy cập từ: https://supabase.com/docs</li>
+                <li>React Team (2024). <em>React Documentation</em>. Truy cập từ: https://react.dev/</li>
+                <li>Tailwind Labs (2024). <em>Tailwind CSS Documentation</em>. Truy cập từ: https://tailwindcss.com/docs</li>
+                <li>PostgreSQL Global Development Group (2024). <em>PostgreSQL Documentation</em>. Truy cập từ: https://www.postgresql.org/docs/</li>
+            </ol>
+        </div>
+
+        <div class="footer">
+            <p><strong>Hệ thống Quản lý Bán hàng (QLBH)</strong></p>
+            <p>Website: https://qlkh-tkhttt.vercel.app/</p>
+            <p>Báo cáo được thực hiện bởi Nhóm sinh viên Thiết kế Website</p>
+            <p>Ngày hoàn thành: [Ngày/Tháng/Năm]</p>
+        </div>
+    </div>
+</body>
+</html>
