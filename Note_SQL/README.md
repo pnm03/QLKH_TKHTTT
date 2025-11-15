@@ -27,6 +27,7 @@
 |------|-------|--------------|
 | **RECREATE_DATABASE_FROM_ORIGINAL.sql** | 🎯 **FILE CHÍNH** - Tạo lại toàn bộ database | Setup lần đầu hoặc reset database |
 | **DISABLE_RLS.sql** | 🔓 **TẮT RLS** - Tắt hết Row Level Security | Khi gặp lỗi permission trong dev |
+| **ADD_BRANCHES_LOCATION.sql** | 📍 Thêm latitude/longitude cho branches | Khi cần tính năng bản đồ |
 | **HUONG_DAN_TAO_LAI_DATABASE.md** | 📖 Hướng dẫn chi tiết từng bước | Đọc trước khi chạy SQL |
 | **DONG_BO_USER.sql** | 👥 Đồng bộ user từ auth.users | Khi cần sync lại users |
 | **database.txt** | 📋 Schema gốc đã hoạt động ổn định | Tham khảo cấu trúc database |
@@ -102,6 +103,7 @@
 | Lỗi "relation does not exist" | Chạy `RECREATE_DATABASE_FROM_ORIGINAL.sql` |
 | User không có trong users/accounts | Chạy `DONG_BO_USER.sql` |
 | Lỗi permission/RLS khi insert/update | Chạy `DISABLE_RLS.sql` 🔥 |
+| Lỗi "latitude column not found" branches | Chạy `ADD_BRANCHES_LOCATION.sql` 📍 |
 | Lỗi "hight column not found" | Schema đã đúng (`hight` không phải `height`) |
 | Không kết nối được Supabase | Kiểm tra `.env.local` (xem `SETUP_ENV.md`) |
 

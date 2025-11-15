@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ghi nhận Đơn hàng - Demo</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1><i class="fas fa-clipboard-list"></i> Ghi nhận Đơn hàng</h1>
+            <p>Quản lý và xử lý các đơn hàng mới</p>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-section">
+            <div class="filter-group">
+                <label>Trạng thái:</label>
+                <select id="statusFilter">
+                    <option value="">Tất cả</option>
+                    <option value="Chờ xác nhận" selected>Chờ xác nhận</option>
+                    <option value="Đã xác nhận">Đã xác nhận</option>
+                    <option value="Đã chuẩn bị xong">Đã chuẩn bị xong</option>
+                    <option value="Đang vận chuyển">Đang vận chuyển</option>
+                    <option value="Đã hủy">Đã hủy</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Loại đơn:</label>
+                <select id="typeFilter">
+                    <option value="">Tất cả</option>
+                    <option value="shipping">Có vận chuyển</option>
+                    <option value="pickup">Lấy tại chỗ</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <button class="btn-refresh" onclick="refreshOrders()">
+                    <i class="fas fa-sync-alt"></i> Làm mới
+                </button>
+            </div>
+        </div>
+
+        <!-- Orders List -->
+        <div class="orders-grid" id="ordersGrid">
+            <!-- Orders will be populated by JavaScript -->
+        </div>
+
+        <!-- Order Details Modal -->
+        <div id="orderModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2><i class="fas fa-file-invoice"></i> Chi tiết đơn hàng</h2>
+                    <span class="close" onclick="closeModal()">&times;</span>
+                </div>
+                <div class="modal-body" id="modalBody">
+                    <!-- Order details will be populated here -->
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-danger" onclick="rejectOrder()">
+                        <i class="fas fa-times"></i> Từ chối
+                    </button>
+                    <button class="btn btn-success" onclick="acceptOrder()">
+                        <i class="fas fa-check"></i> Chấp nhận
+                    </button>
+                    <button class="btn btn-primary" onclick="updateStatus()">
+                        <i class="fas fa-edit"></i> Cập nhật trạng thái
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Update Modal -->
+        <div id="statusModal" class="modal">
+            <div class="modal-content small">
+                <div class="modal-header">
+                    <h3>Cập nhật trạng thái</h3>
+                    <span class="close" onclick="closeStatusModal()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <select id="newStatus" class="status-select">
+                        <option value="Đã xác nhận">Đã xác nhận</option>
+                        <option value="Đã chuẩn bị xong">Đã chuẩn bị xong</option>
+                        <option value="Đang vận chuyển">Đang vận chuyển</option>
+                        <option value="Đã thanh toán">Đã thanh toán</option>
+                        <option value="Đơn hàng hoàn thành">Đơn hàng hoàn thành</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeStatusModal()">Hủy</button>
+                    <button class="btn btn-primary" onclick="confirmStatusUpdate()">Xác nhận</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

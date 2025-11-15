@@ -1,0 +1,57 @@
+frontend:
++ nextjs - framework
++ react - javascript -> chạy trên react
+--> nextjs -> được xây trên react
++ .js | .tsx (typtscript)
+
+CSDL: 
++ sqlsever -> máy cá nhân thôi
+muốn người khác có dữ liệu -> phải có file code
++ postgresql -> trên nền tảng suppabase
+muốn người khác dùng chung dữ liệu -> dùng API là đc -> chốt lại là dùng online đc
+
+Backend:
++ nextjs -> dùng để xây API
+
++ vercel: đây là nền tảng dùng để triển khai ứng dụng web
+    - localhost:3000
+    - sau triển khai: tkhttt.com
++ 
+
+
+
+import { NextRequest, NextResponse } from 'next/server'
+
+export async function POST(request: NextRequest) {
+  try {
+    const { code } = await request.json()
+
+    if (code === 'HelloVietNam') {
+      return NextResponse.json({
+        valid: true,
+        discount: 30,
+        message: 'Voucher hợp lệ - Giảm 30%'
+      })
+    } else {
+      return NextResponse.json({
+        valid: false,
+        message: 'Mã voucher không hợp lệ'
+      })
+    }
+
+  } catch (error) {
+    return NextResponse.json(
+      { error: 'Lỗi server' },
+      { status: 500 }
+    )
+  }
+}
+
+
+
+
+
+// Thêm vào phần khai báo state (gần dòng 50-60)
+const [voucherCode, setVoucherCode] = useState('')
+const [voucherDiscount, setVoucherDiscount] = useState(0)
+const [voucherApplied, setVoucherApplied] = useState(false)

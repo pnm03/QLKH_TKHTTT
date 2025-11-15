@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sơ đồ Trạng thái Đơn hàng và Thanh toán - Thống nhất</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #0066cc, #004499);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .code-container {
+            background: #f8f9fa;
+            border: 2px solid #0066cc;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .copy-button {
+            background: #0066cc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        
+        .copy-button:hover {
+            background: #0052a3;
+        }
+        
+        pre {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            line-height: 1.4;
+        }
+        
+        .note {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .note h3 {
+            color: #856404;
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔄 Sơ đồ Trạng thái Đơn hàng và Thanh toán</h1>
+            <p>Thống nhất với UC, AD và Sequence Diagrams - QLBH System</p>
+        </div>
+
+        <div class="content">
+            <div class="note">
+                <h3>📋 Thông tin sơ đồ</h3>
+                <ul>
+                    <li><strong>Đối tượng:</strong> Đơn hàng (Order) với trạng thái thanh toán</li>
+                    <li><strong>Thống nhất với:</strong> UC Tìm kiếm/Ghi nhận đơn hàng, AD Quản lý đơn hàng, Sequence Diagrams</li>
+                    <li><strong>Tích hợp:</strong> Trạng thái đơn hàng + Trạng thái thanh toán + Trạng thái vận chuyển</li>
+                    <li><strong>Dựa trên:</strong> Chức năng thực tế trong ứng dụng QLBH</li>
+                </ul>
+            </div>
+
+            <div class="code-container">
+                <button class="copy-button" onclick="copyCode()">📋 Sao chép PlantUML Code</button>
+                <pre><code id="plantUMLCode">@startuml
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam state {
+    BackgroundColor #E3F2FD
+    BorderColor #1976D2
+    FontColor #0D47A1
+    FontSize 12
+    FontStyle bold
+}
+
+title Sơ đồ Trạng thái: Đơn hàng và Thanh toán (Thống nhất UC/AD/Sequence)
+
+note top
+  <b>Thống nhất với:</b>
+  • UC: Tìm kiếm đơn hàng, Ghi nhận đơn hàng
+  • AD: Quản lý đơn hàng, Ghi nhận đơn hàng  
+  • Sequence: Thanh toán, Tìm kiếm, Bán hàng
+  
+  <b>Dựa trên chức năng thực tế:</b>
+  • Tạo đơn hàng (Quick Sale/Shipping)
+  • Thanh toán đơn chưa thanh toán
+  • Quản lý trạng thái vận chuyển
+end note
+
+[*] --> DangTao : Khách hàng đặt hàng
+
+state "Đang tạo" as DangTao {
+    DangTao : entry / Khởi tạo đơn hàng
+    DangTao : do / Thu thập thông tin
+    DangTao : exit / Validate dữ liệu
+}
+
+state "Chờ xác nhận" as ChoXacNhan {
+    ChoXacNhan : entry / Gửi thông báo cho nhân viên
+    ChoXacNhan : do / Chờ nhân viên xử lý
+}
+
+state "Chưa thanh toán" as ChuaThanhToan {
+    ChuaThanhToan : entry / Tạo record trong DB
+    ChuaThanhToan : do / Hiển thị trong danh sách chờ thanh toán
+    ChuaThanhToan : exit / Chuẩn bị thanh toán
+}
+
+state "Đang thanh toán" as DangThanhToan {
+    DangThanhToan : entry / Khởi tạo payment session
+    DangThanhToan : do / Xử lý với payment gateway
+    DangThanhToan : exit / Xác nhận kết quả
+}
+
+state "Đã thanh toán" as DaThanhToan {
+    DaThanhToan : entry / Cập nhật payment_method
+    DaThanhToan : do / Sẵn sàng vận chuyển
+}
+
+state "Đang vận chuyển" as DangVanChuyen {
+    state "Đang chuẩn bị" as DangChuanBi
+    state "Đang giao" as DangGiao
+    state "Đã giao" as DaGiao
+    
+    [*] --> DangChuanBi
+    DangChuanBi --> DangGiao : Shipper nhận hàng
+    DangGiao --> DaGiao : Giao thành công
+    DangGiao --> DangHoanVe : Giao thất bại
+}
+
+state "Đang hoàn về" as DangHoanVe {
+    DangHoanVe : entry / Thông báo khách hàng
+    DangHoanVe : do / Shipper hoàn hàng về kho
+}
+
+state "Đã hủy" as DaHuy {
+    DaHuy : entry / Hoàn tiền (nếu đã thanh toán)
+    DaHuy : do / Cập nhật tồn kho
+}
+
+state "Hoàn thành" as HoanThanh {
+    HoanThanh : entry / Ghi nhận doanh thu
+    HoanThanh : do / Có thể tạo đánh giá
+}
+
+state "Yêu cầu đổi trả" as YeuCauDoiTra {
+    state "Đang xử lý đổi trả" as DangXuLyDoiTra
+    state "Đã chấp nhận đổi trả" as DaChapNhanDoiTra  
+    state "Đã từ chối đổi trả" as DaTuChoiDoiTra
+    
+    [*] --> DangXuLyDoiTra
+    DangXuLyDoiTra --> DaChapNhanDoiTra : Chấp nhận [hàng còn tốt]
+    DangXuLyDoiTra --> DaTuChoiDoiTra : Từ chối [hàng hỏng/quá hạn]
+}
+
+' Transitions chính
+DangTao --> ChoXacNhan : Hoàn tất thông tin [thông tin hợp lệ]
+DangTao --> DaHuy : Hủy tạo [khách hàng hủy]
+
+ChoXacNhan --> ChuaThanhToan : Nhân viên chấp nhận [đơn hàng hợp lệ]
+ChoXacNhan --> DaHuy : Nhân viên từ chối [đơn hàng không hợp lệ]
+
+ChuaThanhToan --> DangThanhToan : Bắt đầu thanh toán
+ChuaThanhToan --> DaHuy : Hủy đơn [quá thời hạn]
+
+DangThanhToan --> DaThanhToan : Thanh toán thành công
+DangThanhToan --> ChuaThanhToan : Thanh toán thất bại [thử lại]
+DangThanhToan --> DaHuy : Hủy thanh toán [khách hàng hủy]
+
+' Xử lý COD
+ChuaThanhToan --> DangVanChuyen : COD [payment_method = "COD"]
+DaThanhToan --> DangVanChuyen : Chuyển sang vận chuyển
+
+' Vận chuyển
+DangVanChuyen --> HoanThanh : Giao thành công
+DangVanChuyen --> DangHoanVe : Giao thất bại
+DangHoanVe --> ChuaThanhToan : Hoàn về thành công [COD]
+DangHoanVe --> DaHuy : Hoàn về thành công [Đã thanh toán]
+
+' Đổi trả
+HoanThanh --> YeuCauDoiTra : Khách hàng yêu cầu đổi trả [trong thời hạn]
+YeuCauDoiTra --> HoanThanh : Hoàn tất đổi trả
+
+' Final states
+HoanThanh --> [*]
+DaHuy --> [*]
+
+note right of ChuaThanhToan
+  <b>Database Constraint:</b>
+  status = "Chưa thanh toán"
+  → payment_method = NULL
+  
+  <b>Hiển thị trong:</b>
+  • Danh sách đơn chờ thanh toán
+  • Tìm kiếm đơn hàng
+end note
+
+note right of DaThanhToan  
+  <b>Database Constraint:</b>
+  status = "Đã thanh toán"
+  → payment_method ≠ NULL
+  
+  <b>Auto Update:</b>
+  COD: Giao thành công → "Đã thanh toán"
+end note
+
+note bottom
+  <b>Triggers tự động:</b>
+  • Trừ stock_quantity khi tạo orderdetails
+  • Tính subtotal = quantity × unit_price  
+  • Auto xóa orderdetails khi xóa order
+  • Update payment_date khi thanh toán
+  
+  <b>Thống nhất với UC/AD:</b>
+  • Tìm kiếm đơn hàng: Tất cả trạng thái
+  • Ghi nhận đơn hàng: DangTao → ChoXacNhan
+  • Quản lý đơn hàng: Tất cả transitions
+end note
+
+@enduml</code></pre>
+            </div>
+
+            <div class="note">
+                <h3>🎯 Điểm thống nhất với các sơ đồ khác</h3>
+                <ul>
+                    <li><strong>UC Tìm kiếm đơn hàng:</strong> Tất cả trạng thái đều có thể tìm kiếm và xem chi tiết</li>
+                    <li><strong>UC Ghi nhận đơn hàng:</strong> Flow từ "Đang tạo" → "Chờ xác nhận" → "Chưa thanh toán"</li>
+                    <li><strong>AD Quản lý đơn hàng:</strong> Các decision nodes tương ứng với transitions</li>
+                    <li><strong>AD Ghi nhận đơn hàng:</strong> Swimlanes tương ứng với actors trong transitions</li>
+                    <li><strong>Sequence Diagrams:</strong> Các hàm như processPayment(), updateOrderStatus() tương ứng với transitions</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function copyCode() {
+            const code = document.getElementById('plantUMLCode').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                const button = document.querySelector('.copy-button');
+                button.textContent = '✅ Đã sao chép!';
+                setTimeout(() => {
+                    button.textContent = '📋 Sao chép PlantUML Code';
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

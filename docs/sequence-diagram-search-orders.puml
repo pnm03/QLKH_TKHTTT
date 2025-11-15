@@ -1,0 +1,257 @@
+@startuml
+!theme plain
+skinparam backgroundColor white
+skinparam sequenceParticipant underline
+skinparam sequenceParticipantBackgroundColor white
+skinparam sequenceParticipantBorderColor #0000FF
+skinparam sequenceActorBackgroundColor white
+skinparam sequenceActorBorderColor #0000FF
+skinparam sequenceLifeLineBackgroundColor white
+skinparam sequenceLifeLineBorderColor #0000FF
+skinparam sequenceArrowColor #0000FF
+skinparam sequenceGroupBackgroundColor white
+skinparam sequenceGroupBorderColor #0000FF
+skinparam sequenceGroupHeaderFontColor #0000FF
+skinparam sequenceDividerBackgroundColor white
+skinparam sequenceDividerBorderColor #0000FF
+skinparam noteBackgroundColor white
+skinparam noteBorderColor #0000FF
+skinparam noteFontColor black
+skinparam databaseBackgroundColor white
+skinparam databaseBorderColor #0000FF
+skinparam sequenceBoxBackgroundColor white
+skinparam sequenceBoxBorderColor #0000FF
+skinparam controlBorderColor  #6699FF
+skinparam boundaryBorderColor #6699FF
+skinparam controlBackgroundColor  white
+skinparam boundaryBackgroundColor white
+
+title Sơ đồ Tuần tự: Tìm kiếm Đơn hàng
+
+actor "Bộ phận\nBán hàng/Quản lý" as Manager
+boundary "Giao diện\nTìm kiếm" as UI
+database ":orders" as Orders
+database ":customers" as Customers
+database ":users" as Users
+database ":orderdetails" as OrderDetails
+database ":shippings" as Shippings
+database ":payments" as Payments
+database ":returns" as Returns
+database ":products" as Products
+control "DAM" as DAM
+database "QLBHDatabase" as CSDL
+
+== 1. Khởi tạo trang tìm kiếm ==
+Manager -> UI: 1: Truy cập trang tìm kiếm đơn hàng
+activate UI #6699FF
+UI -> Orders: 1.1: getAllOrders()
+activate Orders #6699FF
+Orders --> UI: 1.1.1: orders
+deactivate Orders
+
+UI -> Customers: 1.2: getCustomers(customerIds)
+activate Customers #6699FF
+Customers --> UI: 1.2.1: customers
+deactivate Customers
+
+UI -> Shippings: 1.3: getShippings(orderIds)
+activate Shippings #6699FF
+Shippings --> UI: 1.3.1: shippings
+deactivate Shippings
+
+UI -> Payments: 1.4: getPaymentMethods()
+activate Payments #6699FF
+Payments --> UI: 1.4.1: paymentMethods
+deactivate Payments
+
+UI --> Manager: 1.5: Hiển thị danh sách đơn hàng
+deactivate UI
+
+== 2. Tìm kiếm và lọc ==
+Manager -> UI: 2: Nhập từ khóa hoặc chọn bộ lọc\n(Từ khóa, trạng thái, thời gian,...)
+activate UI #6699FF
+
+UI -> Orders: 2.1: searchAndFilterOrders(criteria)
+activate Orders #6699FF
+Orders --> UI: 2.1.1: Orders
+deactivate Orders
+
+UI --> Manager: 2.2: Hiển thị kết quả lọc
+deactivate UI
+
+== 3. Xem chi tiết đơn hàng ==
+Manager -> UI: 3: Click vào một đơn hàng
+activate UI #6699FF
+UI -> UI: 3.1: setSelectedOrder(order)
+UI -> OrderDetails: 3.2: getOrderDetails(orderId)
+activate OrderDetails #6699FF
+OrderDetails --> UI: 3.2.1: orderDetails
+deactivate OrderDetails
+
+UI -> UI: 3.3: setShowOrderDetails(true)
+UI --> Manager: 3.4: Hiển thị popup chi tiết đơn hàng
+deactivate UI
+
+== 4. Chọn thao tác ==
+Manager -> UI: 4: Chọn hành động
+
+alt 1. Cập nhật thông tin đơn hàng
+  Manager -> UI: 4.1: Nhấn "Cập nhật thông tin"
+  activate UI #6699FF
+  UI -> UI: 4.1.1: showUpdateForm()
+  UI --> Manager: 4.1.2: Hiển thị form cập nhật
+  deactivate UI
+
+  Manager -> UI: 4.1.3: Điền thông tin và nhấn "Lưu"
+  activate UI #6699FF
+  UI -> UI: 4.1.4: validateUpdateData()
+
+  alt Dữ liệu hợp lệ
+    UI -> Orders: 4.1.5: updateOrder(orderId, updateData, fieldType)
+    activate Orders #6699FF
+    Orders -> DAM: 4.1.5.1: Cập nhật dữ liệu
+    activate DAM #6699FF
+    DAM -> CSDL: 4.1.5.1.1: Write Database
+    activate CSDL #6699FF
+    CSDL --> DAM: 4.1.5.1.2: Ghi thành công
+    deactivate CSDL
+    DAM --> Orders: 4.1.5.1.3: Cập nhật hoàn tất
+    deactivate DAM
+    Orders --> UI: 4.1.5.2: Hoàn thành cập nhật dữ liệu
+    UI -> Orders: 4.1.6: getAllOrders()
+    UI <-- Orders: 4.1.6.1: Orders
+    deactivate Orders
+    UI -> UI: 4.1.7: Làm mới đơn hàng
+    UI --> Manager: 4.1.8: Thông báo "Cập nhật thành công"
+  else Dữ liệu không hợp lệ
+    UI --> Manager: 4.1.9: Hiển thị lỗi
+  end
+  deactivate UI
+
+  alt 1.1. Xác nhận thanh toán
+    Manager -> UI: 4.1.10: Nhấn "Thanh toán"
+    activate UI #6699FF
+    UI --> Manager: 4.1.11: Popup chọn phương thức thanh toán
+    deactivate UI
+    
+    Manager -> UI: 4.1.12: Chọn phương thức thanh toán
+    activate UI #6699FF
+    UI -> Payments: 4.1.13: getPaymentMethod(paymentMethodId)
+    activate Payments #6699FF
+    Payments --> UI: 4.1.13.1: paymentMethodData
+    deactivate Payments
+    
+    UI -> Orders: 4.1.14: processPayment(orderId, paymentMethodId)
+    activate Orders #6699FF
+    Orders -> DAM: 4.1.14.1: Xử lý thanh toán
+    activate DAM #6699FF
+    DAM -> CSDL: 4.1.14.1.1: Write Database
+    activate CSDL #6699FF
+    CSDL --> DAM: 4.1.14.1.2: Ghi thành công
+    deactivate CSDL
+    DAM --> Orders: 4.1.14.1.3: Cập nhật hoàn tất
+    deactivate DAM
+    Orders --> UI: 4.1.14.2: success
+    deactivate Orders
+    
+    UI --> Manager: 4.1.15: Thông báo "Thanh toán thành công"
+    deactivate UI
+  end
+
+else 2. Xóa đơn hàng
+  Manager -> UI: 4.2: Nhấn "Xóa đơn hàng"
+  activate UI #6699FF
+  UI --> Manager: 4.2.1: Hiển thị popup xác nhận
+  deactivate UI
+
+  alt Xác nhận xóa
+    Manager -> UI: 4.2.2: Nhấn "Xác nhận"
+    activate UI #6699FF
+    UI -> Orders: 4.2.3: checkCanDelete(orderId)
+    activate Orders #6699FF
+    Orders --> UI: 4.2.3.1: trạng thái kiểm tra xóa
+    deactivate Orders
+    
+    alt Có thể xóa
+      UI -> OrderDetails: 4.2.4: deleteOrderDetails(orderId)
+      activate OrderDetails #6699FF
+      OrderDetails -> DAM: 4.2.4.1: Xóa chi tiết đơn hàng
+      activate DAM #6699FF
+      DAM -> CSDL: 4.2.4.1.1: Write Database
+      activate CSDL #6699FF
+      CSDL --> DAM: 4.2.4.1.2: Ghi thành công
+      deactivate CSDL
+      DAM --> OrderDetails: 4.2.4.1.3: Cập nhật hoàn tất
+      deactivate DAM
+      OrderDetails --> UI: 4.2.4.2: Hoàn thành xóa
+      deactivate OrderDetails
+      
+      UI -> Shippings: 4.2.5: deleteShippings(orderId)
+      activate Shippings #6699FF
+      Shippings -> DAM: 4.2.5.1: Xóa thông tin vận chuyển
+      activate DAM #6699FF
+      DAM -> CSDL: 4.2.5.1.1: Write Database
+      activate CSDL #6699FF
+      CSDL --> DAM: 4.2.5.1.2: Ghi thành công
+      deactivate CSDL
+      DAM --> Shippings: 4.2.5.1.3: Cập nhật hoàn tất
+      deactivate DAM
+      Shippings --> UI: 4.2.5.2: Hoàn thành xóa
+      deactivate Shippings
+      
+      UI -> Orders: 4.2.6: deleteOrder(orderId)
+      activate Orders #6699FF
+      Orders -> DAM: 4.2.6.1: Xóa đơn hàng
+      activate DAM #6699FF
+      DAM -> CSDL: 4.2.6.1.1: Write Database
+      activate CSDL #6699FF
+      CSDL --> DAM: 4.2.6.1.2: Ghi thành công
+      deactivate CSDL
+      DAM --> Orders: 4.2.6.1.3: Cập nhật hoàn tất
+      deactivate DAM
+      Orders --> UI: 4.2.6.2: Hoàn thành xóa 
+      UI -> Orders: 4.2.7: getAllOrders()
+      UI <-- Orders: 4.2.7.1: Orders
+      deactivate Orders
+
+      UI -> UI: 4.2.8: Làm mới danh sách
+
+      UI --> Manager: 4.2.9: Thông báo "Xóa đơn hàng thành công"
+    else Không thể xóa
+      UI --> Manager: 4.2.10: Thông báo lỗi "Không thể xóa đơn hàng"
+    end
+    deactivate UI
+  else Hủy xóa
+    Manager -> UI: 4.2.11: Nhấn "Hủy"
+    activate UI #6699FF
+    UI --> Manager: 4.2.12: Đóng popup
+    deactivate UI
+  end
+
+else 3. Xuất hóa đơn
+  Manager -> UI: 4.3: Nhấn "Xuất hóa đơn"
+  activate UI #6699FF
+  UI -> Orders: 4.3.1: getOrder(orderId)
+  activate Orders #6699FF
+  Orders --> UI: 4.3.1.1: orderData
+  deactivate Orders
+  UI -> OrderDetails: 4.3.2: getOrderDetails(orderId)
+  activate OrderDetails #6699FF
+  OrderDetails --> UI: 4.3.2.1: orderDetailsData
+  deactivate OrderDetails
+  UI -> UI: 4.3.3: generateInvoicePDF()
+  UI --> Manager: 4.3.4: Hiển thị bản PDF xem trước\n(Có thể tải xuống/in PDF hóa đơn)
+  deactivate UI
+
+else 4. Đóng popup
+  Manager -> UI: 4.4: Nhấn "Đóng" hoặc click ngoài popup
+  activate UI #6699FF
+  UI -> UI: 4.4.1: setShowOrderDetails(false)
+  UI --> Manager: 4.4.2: Đóng popup chi tiết
+  deactivate UI
+end
+
+@enduml
+
+
+

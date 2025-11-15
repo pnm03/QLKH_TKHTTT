@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Chức năng Voucher - Hệ thống QLBH</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .product-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .voucher-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 2px dashed #007bff;
+        }
+        .voucher-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .voucher-input input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .voucher-input button {
+            padding: 12px 20px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .voucher-input button:hover {
+            background: #218838;
+        }
+        .voucher-input button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .voucher-success {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #c3e6cb;
+        }
+        .calculation {
+            background: #e9ecef;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .calc-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 5px 0;
+        }
+        .calc-total {
+            border-top: 2px solid #007bff;
+            padding-top: 10px;
+            font-weight: bold;
+            font-size: 18px;
+            color: #007bff;
+        }
+        .discount-row {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .code-explanation {
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .step {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎫 Demo Chức năng Voucher - Hệ thống QLBH</h1>
+        
+        <h2>📦 Giỏ hàng mẫu:</h2>
+        <div class="product-item">
+            <span>📱 iPhone 15 Pro Max x 1</span>
+            <span>30,000,000 VNĐ</span>
+        </div>
+        <div class="product-item">
+            <span>💻 MacBook Air M2 x 1</span>
+            <span>25,000,000 VNĐ</span>
+        </div>
+        <div class="product-item">
+            <span>🎧 AirPods Pro x 2</span>
+            <span>12,000,000 VNĐ</span>
+        </div>
+
+        <!-- VOUCHER SECTION -->
+        <div class="voucher-section">
+            <h3>🎫 Nhập mã giảm giá:</h3>
+            <div class="voucher-input">
+                <input 
+                    type="text" 
+                    id="voucherCode" 
+                    placeholder="Nhập mã voucher (thử: HelloVietNam)"
+                    maxlength="20"
+                >
+                <button onclick="applyVoucher()" id="applyBtn">Áp dụng</button>
+            </div>
+            
+            <div id="voucherResult" style="display: none;"></div>
+        </div>
+
+        <!-- CALCULATION SECTION -->
+        <div class="calculation">
+            <h3>💰 Chi tiết thanh toán:</h3>
+            
+            <div class="calc-row">
+                <span>Tổng tiền hàng:</span>
+                <span id="totalAmount">67,000,000 VNĐ</span>
+            </div>
+            
+            <div class="calc-row discount-row" id="voucherDiscountRow" style="display: none;">
+                <span>Giảm voucher (<span id="discountPercent">0</span>%):</span>
+                <span id="voucherDiscountAmount">0 VNĐ</span>
+            </div>
+            
+            <div class="calc-row calc-total">
+                <span>THÀNH TIỀN:</span>
+                <span id="finalAmount">67,000,000 VNĐ</span>
+            </div>
+        </div>
+
+        <!-- CODE EXPLANATION -->
+        <div class="code-explanation">
+            <h3>🔍 Giải thích từng bước code:</h3>
+            
+            <div class="step">
+                <strong>Bước 1:</strong> User nhập mã "HelloVietNam" vào ô input
+                <br><code>document.getElementById('voucherCode').value</code> → Lấy giá trị từ ô input
+            </div>
+            
+            <div class="step">
+                <strong>Bước 2:</strong> Click nút "Áp dụng" → Gọi function <code>applyVoucher()</code>
+                <br>Function này sẽ kiểm tra mã voucher có đúng "HelloVietNam" không
+            </div>
+            
+            <div class="step">
+                <strong>Bước 3:</strong> Nếu đúng → Tính toán giảm giá 30%
+                <br><code>discountAmount = totalAmount * 30 / 100</code>
+                <br>Ví dụ: 67,000,000 × 30 ÷ 100 = 20,100,000 VNĐ
+            </div>
+            
+            <div class="step">
+                <strong>Bước 4:</strong> Cập nhật giao diện hiển thị số tiền mới
+                <br><code>finalAmount = totalAmount - discountAmount</code>
+                <br>67,000,000 - 20,100,000 = 46,900,000 VNĐ
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // BIẾN TOÀN CỤC (Global Variables)
+        let totalAmount = 67000000;        // Tổng tiền hàng (67 triệu)
+        let voucherApplied = false;        // Trạng thái đã áp dụng voucher chưa
+        let discountPercent = 0;           // Phần trăm giảm giá
+        let discountAmount = 0;            // Số tiền được giảm
+
+        // FUNCTION CHÍNH: ÁP DỤNG VOUCHER
+        function applyVoucher() {
+            console.log("🚀 Bắt đầu function applyVoucher()");
+            
+            // BƯỚC 1: Lấy mã voucher từ ô input
+            const voucherCode = document.getElementById('voucherCode').value;
+            console.log("📝 Mã voucher user nhập:", voucherCode);
+            
+            // BƯỚC 2: Kiểm tra user có nhập gì không
+            if (!voucherCode.trim()) {
+                alert('⚠️ Vui lòng nhập mã voucher!');
+                console.log("❌ User chưa nhập mã voucher");
+                return; // Dừng function tại đây
+            }
+            
+            // BƯỚC 3: Kiểm tra mã voucher có đúng không
+            if (voucherCode === 'HelloVietNam') {
+                console.log("✅ Mã voucher hợp lệ!");
+                
+                // BƯỚC 4: Cập nhật các biến
+                voucherApplied = true;          // Đánh dấu đã áp dụng
+                discountPercent = 30;           // Giảm 30%
+                discountAmount = totalAmount * discountPercent / 100;  // Tính số tiền giảm
+                
+                console.log("💰 Số tiền được giảm:", discountAmount);
+                
+                // BƯỚC 5: Cập nhật giao diện
+                updateUI();
+                
+                // BƯỚC 6: Hiển thị thông báo thành công
+                showVoucherSuccess();
+                
+                // BƯỚC 7: Vô hiệu hóa input và button
+                document.getElementById('voucherCode').disabled = true;
+                document.getElementById('applyBtn').disabled = true;
+                document.getElementById('applyBtn').textContent = 'Đã áp dụng';
+                
+            } else {
+                console.log("❌ Mã voucher không hợp lệ");
+                alert('❌ Mã voucher không hợp lệ! Thử: HelloVietNam');
+            }
+        }
+
+        // FUNCTION PHỤ: CẬP NHẬT GIAO DIỆN
+        function updateUI() {
+            console.log("🎨 Đang cập nhật giao diện...");
+            
+            // Hiển thị dòng giảm giá voucher
+            const voucherRow = document.getElementById('voucherDiscountRow');
+            voucherRow.style.display = 'flex';  // Hiện dòng giảm giá
+            
+            // Cập nhật phần trăm giảm giá
+            document.getElementById('discountPercent').textContent = discountPercent;
+            
+            // Cập nhật số tiền giảm (format có dấu phẩy)
+            document.getElementById('voucherDiscountAmount').textContent = 
+                '-' + formatCurrency(discountAmount);
+            
+            // Tính và hiển thị số tiền cuối cùng
+            const finalAmount = totalAmount - discountAmount;
+            document.getElementById('finalAmount').textContent = formatCurrency(finalAmount);
+            
+            console.log("✅ Giao diện đã được cập nhật");
+        }
+
+        // FUNCTION PHỤ: HIỂN thị THÔNG BÁO THÀNH CÔNG
+        function showVoucherSuccess() {
+            const resultDiv = document.getElementById('voucherResult');
+            resultDiv.innerHTML = `
+                <div class="voucher-success">
+                    ✅ Áp dụng voucher thành công!<br>
+                    🎉 Bạn được giảm ${discountPercent}% (${formatCurrency(discountAmount)})
+                </div>
+            `;
+            resultDiv.style.display = 'block';  // Hiển thị thông báo
+        }
+
+        // FUNCTION PHỤ: FORMAT TIỀN TỆ (Thêm dấu phẩy)
+        function formatCurrency(amount) {
+            // Chuyển số thành chuỗi và thêm dấu phẩy
+            return amount.toLocaleString('vi-VN') + ' VNĐ';
+        }
+
+        // DEMO: Thêm event listener cho Enter key
+        document.getElementById('voucherCode').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                applyVoucher();  // Gọi function khi nhấn Enter
+            }
+        });
+
+        // LOG: Thông báo trang đã load xong
+        console.log("🌟 Trang demo voucher đã sẵn sàng!");
+        console.log("💡 Thử nhập 'HelloVietNam' để test chức năng");
+    </script>
+</body>
+</html>

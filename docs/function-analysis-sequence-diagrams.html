@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phân tích Hàm trong Sơ đồ Tuần tự - QLBH System</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #0066cc, #004499);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        
+        .header p {
+            margin: 10px 0 0 0;
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .diagram-section {
+            margin-bottom: 50px;
+            border: 2px solid #0066cc;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .diagram-header {
+            background: #0066cc;
+            color: white;
+            padding: 20px;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        
+        .function-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0;
+        }
+        
+        .function-table th {
+            background: #f8f9fa;
+            color: #333;
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+            border-bottom: 2px solid #0066cc;
+        }
+        
+        .function-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e9ecef;
+            vertical-align: top;
+        }
+        
+        .function-table tr:hover {
+            background: #f8f9ff;
+        }
+        
+        .function-name {
+            font-family: 'Courier New', monospace;
+            background: #e3f2fd;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: #0066cc;
+        }
+        
+        .exists-in-project {
+            background: #e8f5e8;
+        }
+        
+        .not-exists-in-project {
+            background: #fff3cd;
+        }
+        
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        
+        .exists {
+            background: #28a745;
+            color: white;
+        }
+        
+        .missing {
+            background: #ffc107;
+            color: #333;
+        }
+        
+        .parameter {
+            font-style: italic;
+            color: #666;
+        }
+        
+        .summary {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .summary h3 {
+            color: #0066cc;
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Phân tích Hàm trong Sơ đồ Tuần tự</h1>
+            <p>Hệ thống Quản lý Bán hàng (QLBH) - Chi tiết các hàm được sử dụng</p>
+        </div>
+
+        <div class="content">
+            <div class="summary">
+                <h3>📋 Tổng quan</h3>
+                <ul>
+                    <li><strong>Số sơ đồ phân tích:</strong> 2 sơ đồ tuần tự</li>
+                    <li><strong>Tổng số hàm:</strong> 37 hàm</li>
+                    <li><strong>Hàm có trong dự án:</strong> 19 hàm (~51%)</li>
+                    <li><strong>Hàm cần triển khai:</strong> 18 hàm (~49%)</li>
+                </ul>
+            </div>
+
+            <!-- SƠ ĐỒ 1: TÌM KIẾM ĐƠN HÀNG -->
+            <div class="diagram-section">
+                <div class="diagram-header">
+                    🔍 Sơ đồ 1: Tìm kiếm Đơn hàng
+                </div>
+                <table class="function-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 5%">STT</th>
+                            <th style="width: 25%">Tên hàm</th>
+                            <th style="width: 60%">Giải thích hàm (bao gồm tham số)</th>
+                            <th style="width: 10%">Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="exists-in-project">
+                            <td>1</td>
+                            <td><span class="function-name">getAllOrders()</span></td>
+                            <td>
+                                <strong>Mục đích:</strong> Lấy tất cả đơn hàng từ cơ sở dữ liệu<br>
+                                <strong>Tham số:</strong> Không có<br>
+                                <strong>Trả về:</strong> Mảng tất cả đơn hàng (Order[])
+                            </td>
+                            <td><span class="status-badge exists">✅ Có</span></td>
+                        </tr>
+                        <tr class="exists-in-project">
+                            <td>2</td>
+                            <td><span class="function-name">getUsers(usersId)</span></td>
+                            <td>
+                                <strong>Mục đích:</strong> Lấy thông tin người dùng theo ID<br>
+                                <strong>Tham số:</strong> <span class="parameter">usersId</span> - Mã người dùng<br>
+                                <strong>Trả về:</strong> Thông tin người dùng (User)
+                            </td>
+                            <td><span class="status-badge exists">✅ Có</span></td>
+                        </tr>
+                        <tr class="exists-in-project">
+                            <td>3</td>
+                            <td><span class="function-name">getCustomers(customerIds)</span></td>
+                            <td>
+                                <strong>Mục đích:</strong> Lấy thông tin khách hàng theo ID<br>
+                                <strong>Tham số:</strong> <span class="parameter">customerIds</span> - Mã khách hàng<br>
+                                <strong>Trả về:</strong> Thông tin khách hàng (Customer)
+                            </td>
+                            <td><span class="status-badge exists">✅ Có</span></td>
+                        </tr>
+                        <tr class="exists-in-project">
+                            <td>4</td>
+                            <td><span class="function-name">getShippings(orderIds)</span></td>
+                            <td>
+                                <strong>Mục đích:</strong> Lấy thông tin vận chuyển theo đơn hàng<br>
+                                <strong>Tham số:</strong> <span class="parameter">orderIds</span> - Mã đơn hàng<br>
+                                <strong>Trả về:</strong> Thông tin vận chuyển (Shipping)
+                            </td>
+                            <td><span class="status-badge exists">✅ Có</span></td>
+                        </tr>
+                        <tr class="exists-in-project">
+                            <td>5</td>
+                            <td><span class="function-name">getPaymentMethods()</span></td>
+                            <td>
+                                <strong>Mục đích:</strong> Lấy danh sách tất cả phương thức thanh toán<br>
+                                <strong>Tham số:</strong> Không có<br>
+                                <strong>Trả về:</strong> Mảng phương thức thanh toán (PaymentMethod[])
+                            </td>
+                            <td><span class="status-badge exists">✅ Có</span></td>
+                        </tr>
+                        <tr class="exists-in-project">
+                            <td>6</td>
+                            <td><span class="function-name">formatOrdersData()</span></td>
+                            <td>
+                                <strong>Mục đích:</strong> Định dạng dữ liệu đơn hàng để hiển thị trên giao diện<br>
+                                <strong>Tham số:</strong> Không có (sử dụng dữ liệu từ state)<br>
+                                <strong>Trả về:</strong> Không có (cập nhật state)<br>
+                                <strong>Chức năng chi tiết:</strong><br>
+                                - Chuyển đổi định dạng ngày từ ISO sang dd/mm/yyyy<br>
+                                - Format số tiền từ 1000000 → "1.000.000 VNĐ"<br>
+                                - Chuyển status code thành text hiển thị<br>
+                                - Kết hợp thông tin từ nhiều bảng thành 1 object<br>
+                                <strong>Ví dụ:</strong><br>
+                                Input: {date: "2024-01-15T10:30:00Z", total: 500000, status: "pending"}<br>
+                                Output: {date: "15/01/2024", total: "500.000 VNĐ", status: "Chờ xử lý"}
+                            </td>
+                            <td><span class="status-badge exists">✅ Có</span></td>
+                        </tr>
+                        <tr class="exists-in-project">
+                            <td>7</td>
+                            <td><span class="function-name">setSearchCriteria(keyword, status, dateRange)</span></td>
+                            <td>
+                                <strong>Mục đích:</strong> Thiết lập các tiêu chí tìm kiếm đơn hàng<br>
+                                <strong>Tham số:</strong><br>
+                                - <span class="parameter">keyword</span> - Từ khóa tìm kiếm<br>
+                                - <span class="parameter">status</span> - Trạng thái đơn hàng<br>
+                                - <span class="parameter">dateRange</span> - Khoảng thời gian<br>
+                                <strong>Trả về:</strong> Không có (cập nhật state)<br>
+                                <strong>Chức năng:</strong> Gán dữ liệu cho biến criteria để hàm searchAndFilterOrders() sử dụng
+                            </td>
+                            <td><span class="status-badge exists">✅ Có</span></td>
+                        </tr>
+                        <tr class="exists-in-project">
+                            <td>8</td>
+                            <td><span class="function-name">searchAndFilterOrders(criteria)</span></td>
+                            <td>
+                                <strong>Mục đích:</strong> Tìm kiếm và lọc đơn hàng theo tiêu chí đã thiết lập<br>
+                                <strong>Tham số:</strong> <span class="parameter">criteria</span> - Tiêu chí tìm kiếm (nhận từ hàm setSearchCriteria)<br>
+                                <strong>Trả về:</strong> Mảng đơn hàng phù hợp (Order[])<br>
+                                <strong>Chức năng:</strong> Nhận dữ liệu criteria từ hàm setSearchCriteria() và thực hiện tìm kiếm
+                            </td>
+                            <td><span class="status-badge exists">✅ Có</span></td>
+                        </tr>
+                        <tr class="exists-in-project">
+                            <td>9</td>
+                            <td><span class="function-name">setSelectedOrder(order)</span></td>
+                            <td>
+                                <strong>Mục đích:</strong> Chọn một đơn hàng để xem chi tiết<br>
+                                <strong>Tham số:</strong> <span class="parameter">order</span> - Thông tin đơn hàng được chọn<br>
+                                <strong>Trả về:</strong> Không có (cập nhật state)<br>
+                                <strong>Chức năng:</strong> Gán dữ liệu cho biến selectedOrder để hàm getOrderDetails() sử dụng
+                            </td>
+                            <td><span class="status-badge exists">✅ Có</span></td>
+                        </tr>
+                        <tr class="exists-in-project">
+                            <td>10</td>
+                            <td><span class="function-name">getOrderDetails(orderId)</span></td>
+                            <td>
+                                <strong>Mục đích:</strong> Lấy chi tiết sản phẩm trong đơn hàng<br>
+                                <strong>Tham số:</strong> <span class="parameter">orderId</span> - Mã đơn hàng (nhận từ selectedOrder của hàm setSelectedOrder)<br>
+                                <strong>Trả về:</strong> Mảng chi tiết đơn hàng (OrderDetail[])<br>
+                                <strong>Chức năng:</strong> Nhận orderId từ hàm setSelectedOrder() và lấy chi tiết đơn hàng
+                            </td>
+                            <td><span class="status-badge exists">✅ Có</span></td>
+                        </tr>
+                        <tr class="exists-in-project">
+                            <td>11</td>
+                            <td><span class="function-name">setShowOrderDetails(show)</span></td>
+                            <td>
+                                <strong>Mục đích:</strong> Hiển thị hoặc ẩn popup chi tiết đơn hàng<br>
+                                <strong>Tham số:</strong> <span class="parameter">show</span> - true để hiển thị, false để ẩn<br>
+                                <strong>Trả về:</strong> Không có (cập nhật state)<br>
+                                <strong>Chức năng:</strong> Gán giá trị cho biến showOrderDetails để điều khiển hiển thị popup
+                            </td>
+                            <td><span class="status-badge exists">✅ Có</span></td>
+                        </tr>
+                        <tr class="exists-in-project">
+                            <td>12</td>
+                            <td><span class="function-name">showUpdateForm()</span></td>
+                            <td>
+                                <strong>Mục đích:</strong> Hiển thị form để cập nhật thông tin đơn hàng<br>
+                                <strong>Tham số:</strong> Không có<br>
+                                <strong>Trả về:</strong> Không có (cập nhật state)
+                            </td>
+                            <td><span class="status-badge exists">✅ Có</span></td>
+                        </tr>
+                        <tr class="exists-in-project">
+                            <td>13</td>
+                            <td><span class="function-name">validateUpdateData()</span></td>
+                            <td>
+                                <strong>Mục đích:</strong> Kiểm tra tính hợp lệ của dữ liệu cập nhật<br>
+                                <strong>Tham số:</strong> Không có (sử dụng dữ liệu từ form)<br>
+                                <strong>Trả về:</strong> true nếu hợp lệ, false nếu không hợp lệ
+                            </td>
+                            <td><span class="status-badge exists">✅ Có</span></td>
+                        </tr>
+                        <tr class="not-exists-in-project">
+                            <td>14</td>
+                            <td><span class="function-name">updateOrder(orderId, updateData)</span></td>
+                            <td>
+                                <strong>Mục đích:</strong> Cập nhật thông tin đơn hàng trong cơ sở dữ liệu<br>
+                                <strong>Tham số:</strong><br>
+                                - <span class="parameter">orderId</span> - Mã đơn hàng cần cập nhật<br>
+                                - <span class="parameter">updateData</span> - Dữ liệu mới để cập nhật<br>
+                                <strong>Trả về:</strong> true nếu thành công, false nếu thất bại
+                            </td>
+                            <td><span class="status-badge missing">⚠️ Cần tạo</span></td>
+                        </tr>
+                        <tr class="not-exists-in-project">
+                            <td>15</td>
+                            <td><span class="function-name">getPaymentMethod(paymentMethodId)</span></td>
+                            <td>
+                                <strong>Mục đích:</strong> Lấy thông tin chi tiết của một phương thức thanh toán<br>
+                                <strong>Tham số:</strong> <span class="parameter">paymentMethodId</span> - Mã phương thức thanh toán<br>
+                                <strong>Trả về:</strong> Thông tin phương thức thanh toán (PaymentMethod)
+                            </td>
+                            <td><span class="status-badge missing">⚠️ Cần tạo</span></td>
+                        </tr>
+                        <tr class="not-exists-in-project">
+                            <td>16</td>
+                            <td><span class="function-name">processPayment(orderId, paymentMethodId)</span></td>
+                            <td>
+                                <strong>Mục đích:</strong> Xử lý thanh toán cho đơn hàng<br>
+                                <strong>Tham số:</strong><br>
+                                - <span class="parameter">orderId</span> - Mã đơn hàng cần thanh toán<br>
+                                - <span class="parameter">paymentMethodId</span> - Mã phương thức thanh toán<br>
+                                <strong>Trả về:</strong> true nếu thanh toán thành công, false nếu thất bại<br>
+                                <strong>Chức năng chi tiết:</strong><br>
+                                - Kiểm tra đơn hàng có thể thanh toán không<br>
+                                - Validate phương thức thanh toán<br>
+                                - Gọi API gateway thanh toán (VNPay, Momo...)<br>
+                                - Cập nhật trạng thái thanh toán trong database<br>
+                                - Tạo record trong bảng payments<br>
+                                <strong>Ví dụ:</strong><br>
+                                processPayment("DH001", "vnpay") → Chuyển đến VNPay để thanh toán
+                            </td>
+                            <td><span class="status-badge missing">⚠️ Cần tạo</span></td>
+                        </tr>
+                        <tr class="not-exists-in-project">
+                            <td>17</td>
+                            <td><span class="function-name">checkCanDelete(orderId)</span></td>
+                            <td>
+                                <strong>Mục đích:</strong> Kiểm tra xem đơn hàng có thể xóa được không<br>
+                                <strong>Tham số:</strong> <span class="parameter">orderId</span> - Mã đơn hàng cần kiểm tra<br>
+                                <strong>Trả về:</strong> true nếu có thể xóa, false nếu không thể xóa
+                            </td>
+                            <td><span class="status-badge missing">⚠️ Cần tạo</span></td>
+                        </tr>
+                        <tr class="not-exists-in-project">
+                            <td>18</td>
+                            <td><span class="function-name">deleteOrderDetails(orderId)</span></td>
+                            <td>
+                                <strong>Mục đích:</strong> Xóa tất cả chi tiết sản phẩm của đơn hàng<br>
+                                <strong>Tham số:</strong> <span class="parameter">orderId</span> - Mã đơn hàng<br>
+                                <strong>Trả về:</strong> true nếu xóa thành công, false nếu thất bại
+                            </td>
+                            <td><span class="status-badge missing">⚠️ Cần tạo</span></td>
+                        </tr>
+                        <tr class="not-exists-in-project">
+                            <td>19</td>
+                            <td><span class="function-name">deleteShippings(orderId)</span></td>
+                            <td>
+                                <strong>Mục đích:</strong> Xóa thông tin vận chuyển của đơn hàng<br>
+                                <strong>Tham số:</strong> <span class="parameter">orderId</span> - Mã đơn hàng<br>
+                                <strong>Trả về:</strong> true nếu xóa thành công, false nếu thất bại
+                            </td>
+                            <td><span class="status-badge missing">⚠️ Cần tạo</span></td>
+                        </tr>
+                        <tr class="not-exists-in-project">
+                            <td>20</td>
+                            <td><span class="function-name">deleteOrder(orderId)</span></td>
+                            <td>
+                                <strong>Mục đích:</strong> Xóa đơn hàng chính khỏi cơ sở dữ liệu<br>
+                                <strong>Tham số:</strong> <span class="parameter">orderId</span> - Mã đơn hàng cần xóa<br>
+                                <strong>Trả về:</strong> true nếu xóa thành công, false nếu thất bại
+                            </td>
+                            <td><span class="status-badge missing">⚠️ Cần tạo</span></td>
+                        </tr>
+                        <tr class="not-exists-in-project">
+                            <td>21</td>
+                            <td><span class="function-name">getOrderForInvoice(orderId)</span></td>
+                            <td>
+                                <strong>Mục đích:</strong> Lấy đầy đủ thông tin đơn hàng để tạo hóa đơn<br>
+                                <strong>Tham số:</strong> <span class="parameter">orderId</span> - Mã đơn hàng<br>
+                                <strong>Trả về:</strong> Thông tin đầy đủ đơn hàng cho hóa đơn (OrderInvoiceData)
+                            </td>
+                            <td><span class="status-badge missing">⚠️ Cần tạo</span></td>
+                        </tr>
+                        <tr class="not-exists-in-project">
+                            <td>22</td>
+                            <td><span class="function-name">getOrderDetailsForInvoice(orderId)</span></td>
+                            <td>
+                                <strong>Mục đích:</strong> Lấy chi tiết sản phẩm để in trên hóa đơn<br>
+                                <strong>Tham số:</strong> <span class="parameter">orderId</span> - Mã đơn hàng<br>
+                                <strong>Trả về:</strong> Mảng chi tiết sản phẩm cho hóa đơn (OrderDetailInvoice[])
+                            </td>
+                            <td><span class="status-badge missing">⚠️ Cần tạo</span></td>
+                        </tr>
+                        <tr class="not-exists-in-project">
+                            <td>23</td>
+                            <td><span class="function-name">generateInvoicePDF()</span></td>
+                            <td>
+                                <strong>Mục đích:</strong> Tạo file PDF hóa đơn để tải xuống<br>
+                                <strong>Tham số:</strong> Không có (sử dụng dữ liệu từ state)<br>
+                                <strong>Trả về:</strong> Không có (tạo file PDF)<br>
+                                <strong>Chức năng chi tiết:</strong><br>
+                                - Lấy thông tin đơn hàng từ selectedOrder<br>
+                                - Tạo layout hóa đơn với logo, thông tin công ty<br>
+                                - Thêm bảng chi tiết sản phẩm, số lượng, giá<br>
+                                - Tính tổng tiền, thuế, phí vận chuyển<br>
+                                - Xuất file PDF và tự động tải về<br>
+                                <strong>Ví dụ:</strong> Tạo file "HoaDon_DH001_15012024.pdf"
+                            </td>
+                            <td><span class="status-badge missing">⚠️ Cần tạo</span></td>
+                        </tr>
+                        <tr class="not-exists-in-project">
+                            <td>24</td>
+                            <td><span class="function-name">createReturn(returnData)</span></td>
+                            <td>
+                                <strong>Mục đích:</strong> Tạo đơn hoàn trả hàng<br>
+                                <strong>Tham số:</strong> <span class="parameter">returnData</span> - Thông tin hoàn trả<br>
+                                <strong>Trả về:</strong> Mã đơn hoàn trả mới tạo (returnId)
+                            </td>
+                            <td><span class="status-badge missing">⚠️ Cần tạo</span></td>
+                        </tr>
+                        <tr class="not-exists-in-project">
+                            <td>25</td>
+                            <td><span class="function-name">restoreStock(productId, quantity)</span></td>
+                            <td>
+                                <strong>Mục đích:</strong> Khôi phục số lượng tồn kho khi hoàn trả<br>
+                                <strong>Tham số:</strong><br>
+                                - <span class="parameter">productId</span> - Mã sản phẩm<br>
+                                - <span class="parameter">quantity</span> - Số lượng cần khôi phục<br>
+                                <strong>Trả về:</strong> true nếu khôi phục thành công, false nếu thất bại
+                            </td>
+                            <td><span class="status-badge missing">⚠️ Cần tạo</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- SƠ ĐỒ 2: GHI NHẬN ĐƠN HÀNG -->
+            <div class="diagram-section">
+                <div class="diagram-header">
+                    📝 Sơ đồ 2: Ghi nhận Đơn hàng
+                </div>
+                <table class="function-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 5%">STT</th>
+                            <th style="width: 25%">Tên hàm</th>
+                            <th style="width: 60%">Giải thích hàm (bao gồm tham số)</th>
+                            <th style="width: 10%">Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="exists-in-project">
+                            <td>1</td>
+                            <td><span class="function-name">getOrders()</span></td>
+                            <td>
+                                <strong>Mục đích:</strong> Lấy danh sách đơn hàng mới nhất<br>
+                                <strong>Tham số:</strong> Không có<br>
+                                <strong>Trả về:</strong> Mảng đơn hàng mới (Order[])
+                            </td>
+                            <td><span class="status-badge exists">✅ Có</span></td>
+                        </tr>
+                        <tr class="exists-in-project">
+                            <td>2</td>
+                            <td><span class="function-name">getProducts(productsId)</span></td>
+                            <td>
+                                <strong>Mục đích:</strong> Lấy thông tin sản phẩm theo ID<br>
+                                <strong>Tham số:</strong> <span class="parameter">productsId</span> - Mã sản phẩm<br>
+                                <strong>Trả về:</strong> Thông tin sản phẩm (Product)
+                            </td>
+                            <td><span class="status-badge exists">✅ Có</span></td>
+                        </tr>
+                        <tr class="exists-in-project">
+                            <td>3</td>
+                            <td><span class="function-name">getCusomers(customerId)</span></td>
+                            <td>
+                                <strong>Mục đích:</strong> Lấy thông tin khách hàng theo ID<br>
+                                <strong>Tham số:</strong> <span class="parameter">customerId</span> - Mã khách hàng<br>
+                                <strong>Trả về:</strong> Thông tin khách hàng (Customer)<br>
+                                <strong>Ghi chú:</strong> Có lỗi chính tả "getCusomers" trong sơ đồ
+                            </td>
+                            <td><span class="status-badge exists">✅ Có</span></td>
+                        </tr>
+                        <tr class="exists-in-project">
+                            <td>4</td>
+                            <td><span class="function-name">getShippings(shippingsId)</span></td>
+                            <td>
+                                <strong>Mục đích:</strong> Lấy thông tin vận chuyển theo ID<br>
+                                <strong>Tham số:</strong> <span class="parameter">shippingsId</span> - Mã vận chuyển<br>
+                                <strong>Trả về:</strong> Thông tin vận chuyển (Shipping)
+                            </td>
+                            <td><span class="status-badge exists">✅ Có</span></td>
+                        </tr>
+                        <tr class="exists-in-project">
+                            <td>5</td>
+                            <td><span class="function-name">getOrderDetails(orderId)</span></td>
+                            <td>
+                                <strong>Mục đích:</strong> Lấy chi tiết sản phẩm trong đơn hàng cụ thể<br>
+                                <strong>Tham số:</strong> <span class="parameter">orderId</span> - Mã đơn hàng<br>
+                                <strong>Trả về:</strong> Mảng chi tiết đơn hàng (OrderDetail[])
+                            </td>
+                            <td><span class="status-badge exists">✅ Có</span></td>
+                        </tr>
+                        <tr class="not-exists-in-project">
+                            <td>6</td>
+                            <td><span class="function-name">rejectOrder(orderId, reason)</span></td>
+                            <td>
+                                <strong>Mục đích:</strong> Từ chối đơn hàng và ghi lý do<br>
+                                <strong>Tham số:</strong><br>
+                                - <span class="parameter">orderId</span> - Mã đơn hàng cần từ chối<br>
+                                - <span class="parameter">reason</span> - Lý do từ chối<br>
+                                <strong>Trả về:</strong> true nếu từ chối thành công, false nếu thất bại
+                            </td>
+                            <td><span class="status-badge missing">⚠️ Cần tạo</span></td>
+                        </tr>
+                        <tr class="not-exists-in-project">
+                            <td>7</td>
+                            <td><span class="function-name">acceptOrder(orderId)</span></td>
+                            <td>
+                                <strong>Mục đích:</strong> Chấp nhận đơn hàng và chuyển trạng thái<br>
+                                <strong>Tham số:</strong> <span class="parameter">orderId</span> - Mã đơn hàng cần chấp nhận<br>
+                                <strong>Trả về:</strong> true nếu chấp nhận thành công, false nếu thất bại
+                            </td>
+                            <td><span class="status-badge missing">⚠️ Cần tạo</span></td>
+                        </tr>
+                        <tr class="not-exists-in-project">
+                            <td>8</td>
+                            <td><span class="function-name">markOrderPrepared(orderId)</span></td>
+                            <td>
+                                <strong>Mục đích:</strong> Đánh dấu đơn hàng đã chuẩn bị xong<br>
+                                <strong>Tham số:</strong> <span class="parameter">orderId</span> - Mã đơn hàng<br>
+                                <strong>Trả về:</strong> true nếu cập nhật thành công, false nếu thất bại
+                            </td>
+                            <td><span class="status-badge missing">⚠️ Cần tạo</span></td>
+                        </tr>
+                        <tr class="exists-in-project">
+                            <td>9</td>
+                            <td><span class="function-name">createShipping(orderId, shippingInfo)</span></td>
+                            <td>
+                                <strong>Mục đích:</strong> Tạo đơn vận chuyển cho đơn hàng<br>
+                                <strong>Tham số:</strong><br>
+                                - <span class="parameter">orderId</span> - Mã đơn hàng<br>
+                                - <span class="parameter">shippingInfo</span> - Thông tin vận chuyển<br>
+                                <strong>Trả về:</strong> Mã đơn vận chuyển mới (shippingId)
+                            </td>
+                            <td><span class="status-badge exists">✅ Có</span></td>
+                        </tr>
+                        <tr class="not-exists-in-project">
+                            <td>10</td>
+                            <td><span class="function-name">updateOrderStatus(orderId, status)</span></td>
+                            <td>
+                                <strong>Mục đích:</strong> Cập nhật trạng thái của đơn hàng<br>
+                                <strong>Tham số:</strong><br>
+                                - <span class="parameter">orderId</span> - Mã đơn hàng<br>
+                                - <span class="parameter">status</span> - Trạng thái mới<br>
+                                <strong>Trả về:</strong> true nếu cập nhật thành công, false nếu thất bại
+                            </td>
+                            <td><span class="status-badge missing">⚠️ Cần tạo</span></td>
+                        </tr>
+                        <tr class="exists-in-project">
+                            <td>11</td>
+                            <td><span class="function-name">confirmPayment(orderId, paymentMethodId)</span></td>
+                            <td>
+                                <strong>Mục đích:</strong> Xác nhận thanh toán cho đơn hàng<br>
+                                <strong>Tham số:</strong><br>
+                                - <span class="parameter">orderId</span> - Mã đơn hàng<br>
+                                - <span class="parameter">paymentMethodId</span> - Mã phương thức thanh toán<br>
+                                <strong>Trả về:</strong> true nếu xác nhận thành công, false nếu thất bại
+                            </td>
+                            <td><span class="status-badge exists">✅ Có</span></td>
+                        </tr>
+                        <tr class="not-exists-in-project">
+                            <td>12</td>
+                            <td><span class="function-name">completeOrder(orderId)</span></td>
+                            <td>
+                                <strong>Mục đích:</strong> Hoàn thành đơn hàng và kết thúc quy trình<br>
+                                <strong>Tham số:</strong> <span class="parameter">orderId</span> - Mã đơn hàng<br>
+                                <strong>Trả về:</strong> true nếu hoàn thành thành công, false nếu thất bại
+                            </td>
+                            <td><span class="status-badge missing">⚠️ Cần tạo</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="summary">
+                <h3>📊 Thống kê tổng hợp</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <h4>🔍 Sơ đồ Tìm kiếm Đơn hàng:</h4>
+                        <ul>
+                            <li><strong>Tổng số hàm:</strong> 25 hàm</li>
+                            <li><strong>Có trong dự án:</strong> 13 hàm (52%)</li>
+                            <li><strong>Cần triển khai:</strong> 12 hàm (48%)</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4>📝 Sơ đồ Ghi nhận Đơn hàng:</h4>
+                        <ul>
+                            <li><strong>Tổng số hàm:</strong> 12 hàm</li>
+                            <li><strong>Có trong dự án:</strong> 6 hàm (50%)</li>
+                            <li><strong>Cần triển khai:</strong> 6 hàm (50%)</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <h4>🎯 Các hàm ưu tiên cần triển khai:</h4>
+                <ol>
+                    <li><code>updateOrder()</code> - Cập nhật thông tin đơn hàng</li>
+                    <li><code>processPayment()</code> - Xử lý thanh toán</li>
+                    <li><code>updateOrderStatus()</code> - Cập nhật trạng thái</li>
+                    <li><code>acceptOrder()</code> / <code>rejectOrder()</code> - Chấp nhận/từ chối đơn hàng</li>
+                    <li><code>generateInvoicePDF()</code> - Xuất hóa đơn PDF</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+
+
+
+

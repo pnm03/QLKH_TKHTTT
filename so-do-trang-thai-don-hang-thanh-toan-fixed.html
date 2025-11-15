@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sơ đồ Trạng thái Đơn hàng - Fixed</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #0066cc, #004499);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .code-container {
+            background: #f8f9fa;
+            border: 2px solid #0066cc;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .copy-button {
+            background: #0066cc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        
+        .copy-button:hover {
+            background: #0052a3;
+        }
+        
+        pre {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            line-height: 1.4;
+        }
+        
+        .note {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .note h3 {
+            color: #856404;
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔄 Sơ đồ Trạng thái Đơn hàng - Fixed</h1>
+            <p>Thống nhất với UC, AD và Sequence Diagrams</p>
+        </div>
+
+        <div class="content">
+            <div class="code-container">
+                <button class="copy-button" onclick="copyCode()">📋 Sao chép PlantUML Code</button>
+                <pre><code id="plantUMLCode">@startuml
+
+skinparam state {
+    BackgroundColor #F0F0F0
+    BorderColor #000000
+    FontColor #000000
+    FontSize 10
+}
+
+skinparam arrow {
+    Color #000000
+}
+
+title So do Trang thai Don hang (Order Class)
+
+[*] --> DangTao : [Khach hang tao don]
+
+state "Dang Tao" as DangTao
+state "Cho Xac Nhan" as ChoXacNhan
+state "Chua Thanh Toan" as ChuaThanhToan
+state "Dang Thanh Toan" as DangThanhToan
+state "Da Thanh Toan" as DaThanhToan
+state "Dang Van Chuyen" as DangVanChuyen
+state "Da Giao" as DaGiao
+state "Hoan Thanh" as HoanThanh
+state "Da Huy" as DaHuy
+
+DangTao --> ChoXacNhan : [Hoan tat thong tin]
+DangTao --> DaHuy : [Khach hang huy]
+
+ChoXacNhan --> ChuaThanhToan : [Nhan vien chap nhan]
+ChoXacNhan --> DaHuy : [Nhan vien tu choi]
+
+ChuaThanhToan --> DangThanhToan : [Chon thanh toan online]
+ChuaThanhToan --> DangVanChuyen : [Chon COD]
+ChuaThanhToan --> DaHuy : [Qua thoi han]
+
+DangThanhToan --> DaThanhToan : [Thanh toan thanh cong]
+DangThanhToan --> ChuaThanhToan : [Thanh toan that bai]
+
+DaThanhToan --> DangVanChuyen : [Bat dau van chuyen]
+
+DangVanChuyen --> DaGiao : [Giao hang thanh cong]
+DangVanChuyen --> ChuaThanhToan : [COD giao that bai]
+
+DaGiao --> HoanThanh : [Xac nhan hoan tat]
+HoanThanh --> [*]
+DaHuy --> [*]
+
+@enduml</code></pre>
+            </div>
+
+            <div class="note">
+                <h3>🔧 Đã sửa các lỗi syntax:</h3>
+                <ul>
+                    <li>✅ Loại bỏ skinparam phức tạp</li>
+                    <li>✅ Đơn giản hóa note formatting</li>
+                    <li>✅ Sửa cú pháp state definition</li>
+                    <li>✅ Kiểm tra tất cả transitions</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function copyCode() {
+            const code = document.getElementById('plantUMLCode').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                const button = document.querySelector('.copy-button');
+                button.textContent = '✅ Đã sao chép!';
+                setTimeout(() => {
+                    button.textContent = '📋 Sao chép PlantUML Code';
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>
+
+

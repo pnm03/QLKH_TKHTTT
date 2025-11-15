@@ -1,0 +1,222 @@
+@startuml
+!theme plain
+skinparam backgroundColor white
+skinparam sequenceParticipant underline
+skinparam sequenceParticipantBackgroundColor white
+skinparam sequenceParticipantBorderColor #0000FF
+skinparam sequenceActorBackgroundColor white
+skinparam sequenceActorBorderColor #0000FF
+skinparam sequenceLifeLineBackgroundColor white
+skinparam sequenceLifeLineBorderColor #0000FF
+skinparam sequenceArrowColor #0000FF
+skinparam sequenceGroupBackgroundColor white
+skinparam sequenceGroupBorderColor #0000FF
+skinparam sequenceGroupHeaderFontColor #0000FF
+skinparam sequenceDividerBackgroundColor white
+skinparam sequenceDividerBorderColor #0000FF
+skinparam noteBackgroundColor white
+skinparam noteBorderColor #0000FF
+skinparam noteFontColor black
+skinparam databaseBackgroundColor white
+skinparam databaseBorderColor #0000FF
+skinparam sequenceBoxBackgroundColor white
+skinparam sequenceBoxBorderColor #0000FF
+skinparam controlBorderColor  #6699FF
+skinparam boundaryBorderColor #6699FF
+skinparam controlBackgroundColor  white
+skinparam boundaryBackgroundColor white
+
+title Sơ đồ Tuần tự: Ghi nhận Đơn hàng
+
+actor "Bộ phận đơn hàng\nQuản lý" as Manager
+boundary "Giao diện" as UI
+database ":orders" as Orders
+database ":products" as Products
+database ":customers" as Customers
+database ":orderdetails" as OrderDetails
+database ":shippings" as Shippings
+control "DAM" as DAM
+database "QLBHDatabase" as CSDL
+
+== 1. Khách hàng đã đặt hàng ==
+note over Orders
+  Điều kiện đầu vào:
+  Khách hàng đã đặt hàng thành công
+  (qua web, điện thoại, hoặc nhân viên tạo hộ)
+  
+  Đơn hàng đã được lưu vào database:
+  - Bảng orders: thông tin đơn hàng
+  - Bảng orderdetails: chi tiết sản phẩm 
+end note
+
+== 2. Hiển thị danh sách đơn hàng mới ==
+Manager -> UI: 1: Xem danh sách đơn hàng
+activate UI #6699FF
+UI -> Orders: 1.1: getOrders()
+activate Orders #6699FF
+activate Products #6699FF
+Orders --> Products: 1.1.1: getProducts(productsrId)
+Orders <-- Products: 1.1.2: getProducts(productsId)
+deactivate Products
+activate Customers #6699FF
+Orders --> Customers: 1.1.3: getCusomers(customerId)
+Orders <-- Customers: 1.1.4: getCusomers(customerId)
+deactivate Customers
+activate Shippings #6699FF
+Orders --> Shippings: 1.1.5: getShippings(shippingsId)
+Orders <-- Shippings: 1.1.6: getShippings(shippingsId)
+deactivate Shippings
+Orders --> UI: 1.1.7: orders
+deactivate Orders
+UI --> Manager: 1.2: Hiển thị danh sách đơn hàng
+deactivate UI
+
+== 3. Xem chi tiết đơn hàng ==
+Manager -> UI: 2: Chọn đơn hàng cần xem
+activate UI #6699FF
+UI -> UI: 2.1: setSelectedOrder(order)
+UI -> OrderDetails: 2.2: getOrderDetails(orderId)
+activate OrderDetails #6699FF
+OrderDetails --> UI: 2.2.1: orderDetails
+deactivate OrderDetails
+UI -> UI: 2.3: setShowOrderDetails(true)
+UI --> Manager: 2.4: Hiển thị popup chi tiết đơn hàng
+deactivate UI
+
+Manager -> Manager: 2.5: Kiểm tra đơn hàng\n(đủ hàng, địa chỉ hợp lý, thông tin đầy đủ)
+
+alt Từ chối đơn hàng
+  Manager -> UI: 3: Nhấn "Từ chối đơn hàng"
+  activate UI #6699FF
+  UI -> Orders: 3.1: updateOrder(orderId, "Đã hủy", status)
+  activate Orders #6699FF
+  Orders -> DAM: 3.2: Thay đổi trạng thái\n"Đã hủy"
+  activate DAM #6699FF
+  DAM -> CSDL: 3.3: Write Database
+  activate CSDL #6699FF
+  CSDL --> DAM: 3.3.1: Ghi thành công
+  deactivate CSDL
+  DAM --> Orders: 3.2.1: Cập nhật hoàn tất
+  deactivate DAM
+  Orders --> UI: 3.1.2: Gửi yêu cầu thành công
+  deactivate Orders
+  UI --> Manager: 3.4: Thông báo "Đơn hàng đã được từ chối"
+  deactivate UI
+  
+else Chấp nhận đơn hàng
+  Manager -> UI: 4: Nhấn "Chấp nhận đơn hàng"
+  activate UI #6699FF
+  UI -> Orders: 4.1: updateOrder(orderId, "Đã xác nhận", status)
+  activate Orders #6699FF
+  Orders -> DAM: 4.1.1: Thay đổi trạng thái\n"Đã xác nhận"
+  activate DAM #6699FF
+  DAM -> CSDL: 4.1.1.1: Write Database
+  activate CSDL #6699FF
+  CSDL --> DAM: 4.1.1.2: Ghi thành công
+  deactivate CSDL
+  DAM --> Orders: 4.1.1.3: Cập nhật hoàn tất
+  deactivate DAM
+  Orders --> UI: 4.1.2: Gửi yêu cầu thành công
+  deactivate Orders
+  UI --> Manager: 4.2: Thông báo "Đơn hàng đã được chấp nhận"
+  deactivate UI
+  
+  == 4. Chuẩn bị đơn hàng ==
+  Manager -> Manager: 5: Chuẩn bị đơn hàng\n(lấy hàng, kiểm tra, đóng gói)
+  Manager -> UI: 5.1: Đánh dấu "Đã chuẩn bị xong"
+  activate UI #6699FF
+  UI -> Orders: 5.1.1: updateOrder(orderId, "Đã chuẩn bị xong", status)
+  activate Orders #6699FF
+  Orders -> DAM: 5.1.1.1: Thay đổi trạng thái\n"Đã chuẩn bị xong"
+  activate DAM #6699FF
+  DAM -> CSDL: 5.1.1.1.1: Write Database
+  activate CSDL #6699FF
+  CSDL --> DAM: 5.1.1.1.2: Ghi thành công
+  deactivate CSDL
+  DAM --> Orders: 5.1.1.1.3: Cập nhật hoàn tất
+  deactivate DAM
+  Orders --> UI: 5.1.1.2: Gửi yêu cầu thành công
+  deactivate Orders
+  UI --> Manager: 5.1.2: Thông báo "Đơn hàng đã chuẩn bị xong"
+  deactivate UI
+  
+  == 5. Xử lý vận chuyển hoặc giao tại chỗ ==
+  alt Đơn hàng có vận chuyển (is_shipping = true)
+    Manager -> UI: 6: Tạo đơn vận chuyển
+    activate UI #6699FF
+    UI -> Shippings: 6.1: createShipping(orderId, shippingInfo)
+    activate Shippings #6699FF
+    Shippings -> DAM: 6.1.1: Lưu Shippings
+    activate DAM #6699FF
+    DAM -> CSDL: 6.1.1.1: Write Database
+    activate CSDL #6699FF
+    CSDL --> DAM: 6.1.1.2: Ghi thành công
+    deactivate CSDL
+    DAM --> Shippings: 6.1.1.3: Cập nhật hoàn tất
+    deactivate DAM
+    Shippings --> UI: 6.1.2: shippings
+    deactivate Shippings
+    
+    UI -> Orders: 6.2: updateOrder(orderId, "Đang vận chuyển", status)
+    activate Orders #6699FF
+    Orders -> DAM: 6.2.1: Thay đổi trạng thái\n"Đang vận chuyển"
+    activate DAM #6699FF
+    DAM -> CSDL: 6.2.1.1: Write Database
+    activate CSDL #6699FF
+    CSDL --> DAM: 6.2.1.2: Ghi thành công
+    deactivate CSDL
+    DAM --> Orders: 6.2.1.3: Cập nhật hoàn tất
+    deactivate DAM
+    Orders --> UI: 6.2.2: Gửi yêu cầu thành công
+    deactivate Orders
+    UI --> Manager: 6.3: Thông báo "Đã tạo đơn vận chuyển"
+    deactivate UI
+    
+  else Không vận chuyển (is_shipping = false)
+    
+    Manager -> Manager: 7: Kiểm tra thông tin
+    Manager -> Manager: 7.1: Gửi hàng cho khách hàng
+    
+    alt Chưa thanh toán
+      Manager -> UI: 7.2: Yêu cầu thanh toán hoặc xác nhận đã thanh toán
+      activate UI #6699FF
+      UI -> Orders: 7.2.1: updateOrder(orderId, "Đã thanh toán", status)
+      activate Orders #6699FF
+      Orders -> DAM: 7.2.1.1: Thay đổi trạng thái\n"Đã thanh toán"
+      activate DAM #6699FF
+      DAM -> CSDL: 7.2.1.1.1: Write Database
+      activate CSDL #6699FF
+      CSDL --> DAM: 7.2.1.1.2: Ghi thành công
+      deactivate CSDL
+      DAM --> Orders: 7.2.1.1.3: Cập nhật hoàn tất
+      deactivate DAM
+      Orders --> UI: 7.2.1.2: Gửi yêu cầu thành công
+      deactivate Orders
+      UI --> Manager: 7.2.2: Thông báo "Đã xác nhận thanh toán"
+      deactivate UI
+    end
+    
+    Manager -> UI: 7.3: Đánh dấu hoàn thành đơn hàng
+    activate UI #6699FF
+    UI -> Orders: 7.3.1: updateOrder(orderId, "Đơn hàng hoàn thành", status)
+    activate Orders #6699FF
+    Orders -> DAM: 7.3.1.1: Thay đổi trạng thái\n"Đơn hàng hoàn thành"
+    activate DAM #6699FF
+    DAM -> CSDL: 7.3.1.1.1: Write Database
+    activate CSDL #6699FF
+    CSDL --> DAM: 7.3.1.1.2: Ghi thành công
+    deactivate CSDL
+    DAM --> Orders: 7.3.1.1.3: Cập nhật hoàn tất
+    deactivate DAM
+    Orders --> UI: 7.3.1.2: Gửi yêu cầu thành công
+    deactivate Orders
+    UI --> Manager: 7.3.2: Thông báo "Đơn hàng đã hoàn thành"
+    deactivate UI
+  end
+end
+
+@enduml
+
+
+
+
