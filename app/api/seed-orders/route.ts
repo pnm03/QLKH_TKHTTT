@@ -24,7 +24,7 @@ export async function GET() {
     }
     
     // Lấy danh sách phương thức thanh toán
-    const { data: payments, error: paymentsError } = await supabase
+    let { data: payments, error: paymentsError } = await supabase
       .from('payments')
       .select('payment_id')
       .limit(2)
