@@ -15,6 +15,13 @@ export async function POST(request: NextRequest) {
     // Sử dụng admin client với SUPABASE_SERVICE_ROLE_KEY có đầy đủ quyền
     // bỏ qua việc kiểm tra session/cookies
     const adminClient = createAdminClient();
+    
+    // Debug log an toàn để kiểm tra biến môi trường trên Vercel
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('CRITICAL: SUPABASE_SERVICE_ROLE_KEY is MISSING in environment variables!');
+    } else {
+      console.log('SUPABASE_SERVICE_ROLE_KEY is present (Length:', process.env.SUPABASE_SERVICE_ROLE_KEY.length, ')');
+    }
 
     // 1. Kiểm tra số điện thoại đã tồn tại chưa
     if (userData.phone) {
