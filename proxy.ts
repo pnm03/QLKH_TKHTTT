@@ -1,4 +1,4 @@
-﻿import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { createClient } from '@/utils/supabase/middleware';
 
@@ -68,7 +68,7 @@ function isApiRoute(pathname: string): boolean {
  * Middleware xac thuc
  * Kiem tra phien dang nhap va chuyen huong nguoi dung neu chua dang nhap
  */
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // Debug route - Log ra headers và cookies
   if (request.nextUrl.pathname === '/debug-auth') {
     console.log('DEBUG AUTH - Headers:', [...request.headers.entries()]);

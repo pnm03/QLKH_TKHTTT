@@ -1,15 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   typescript: {
     ignoreBuildErrors: true,
   },
-  experimental: {
-    forceSwcTransforms: true,
-  },
-  swcMinify: true,
   turbopack: {},
   webpack: (config, { isServer }) => {
     config.ignoreWarnings = [
