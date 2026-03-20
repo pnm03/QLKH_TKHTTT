@@ -16,7 +16,29 @@ export async function POST(request: NextRequest) {
     // bỏ qua việc kiểm tra session/cookies
     const adminClient = createAdminClient();
 
-    // 1. Tạo tài khoản auth bằng admin API
+    // 1. Kiểm tra số điện thoại đã tồn tại chưa
+    if (userData.phone) {
+      try {
+        const { data: existingPhoneData, error: phoneCheckError } = await adminClient
+          .from('users')
+          .select('user_id, full_name, email, phone')
+          .eq('phone', userData.phone)
+          .maybeSingle();
+
+        if (phoneCheckError) {
+          console.error('Lỗi khi kiểm tra số điện thoại:', phoneCheckError);
+        } else if (existingPhoneData) {
+          console.error('Số điện thoại đã tồn tại:', userData.phone);
+          return NextResponse.json({
+            error: `Số điện thoại ${userData.phone} đã được sử dụng bởi người dùng khác (${existingPhoneData.full_name})`
+          }, { status: 400 });
+        }
+      } catch (phoneError: any) {
+        console.error('Exception khi kiểm tra số điện thoại:', phoneError);
+      }
+    }
+
+    // 2. Tạo tài khoản auth bằng admin API
     console.log('Đang tạo người dùng mới với email:', userData.email);
 
     let userId;
@@ -57,28 +79,6 @@ export async function POST(request: NextRequest) {
         error: createUserError.message || 'Lỗi khi tạo người dùng với admin API',
         details: process.env.NODE_ENV === 'development' ? createUserError.stack : undefined
       }, { status: 500 });
-    }
-
-    // 2. Kiểm tra số điện thoại đã tồn tại chưa
-    if (userData.phone) {
-      try {
-        const { data: existingPhoneData, error: phoneCheckError } = await adminClient
-          .from('users')
-          .select('user_id, full_name, email, phone')
-          .eq('phone', userData.phone)
-          .maybeSingle();
-
-        if (phoneCheckError) {
-          console.error('Lỗi khi kiểm tra số điện thoại:', phoneCheckError);
-        } else if (existingPhoneData) {
-          console.error('Số điện thoại đã tồn tại:', userData.phone);
-          return NextResponse.json({
-            error: `Số điện thoại ${userData.phone} đã được sử dụng bởi người dùng khác (${existingPhoneData.full_name})`
-          }, { status: 400 });
-        }
-      } catch (phoneError: any) {
-        console.error('Exception khi kiểm tra số điện thoại:', phoneError);
-      }
     }
 
     // 3. Thêm vào bảng users nếu chưa tồn tại
