@@ -10,6 +10,7 @@ const nextConfig = {
     forceSwcTransforms: true,
   },
   swcMinify: true,
+  turbopack: {},
   webpack: (config, { isServer }) => {
     config.ignoreWarnings = [
       { module: /node_modules\/punycode/ }
