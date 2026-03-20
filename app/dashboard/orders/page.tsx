@@ -183,18 +183,25 @@ export default function OrdersPage() {
         <h1 className="text-2xl font-semibold text-gray-900">Quản lý đơn hàng</h1>
         <div className="flex space-x-3">
           <Link
-            href="/dashboard/orders/create"
-            className={`inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-${themeColor}-600 hover:bg-${themeColor}-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${themeColor}-500`}
+            href="/dashboard/orders/processing"
+            className={`inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500`}
           >
-            <PlusIcon className="h-5 w-5 mr-2" />
-            Tạo đơn hàng
+            <ClipboardDocumentListIcon className="h-5 w-5 mr-2" />
+            Ghi nhận đơn hàng
           </Link>
           <Link
             href="/dashboard/orders/search"
             className={`inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${themeColor}-500`}
           >
             <MagnifyingGlassIcon className="h-5 w-5 mr-2" />
-            Tìm kiếm
+            Tìm & xem đơn hàng
+          </Link>
+          <Link
+            href="/dashboard/orders/create"
+            className={`inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-${themeColor}-600 hover:bg-${themeColor}-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${themeColor}-500`}
+          >
+            <PlusIcon className="h-5 w-5 mr-2" />
+            Tạo đơn hàng
           </Link>
         </div>
       </div>

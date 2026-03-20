@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sơ Đồ Lớp - Hệ Thống QLBH</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 30px;
+        }
+        .info-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 5px solid #667eea;
+        }
+        .info-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        .info-section ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        .info-section li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .info-section li:last-child {
+            border-bottom: none;
+        }
+        .code-section {
+            margin-bottom: 30px;
+        }
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #2d3748;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px 10px 0 0;
+        }
+        .code-title {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        .copy-btn {
+            background: #48bb78;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+        .copy-btn:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+        }
+        .copy-btn.copied {
+            background: #4299e1;
+        }
+        .code-content {
+            background: #1a202c;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 0 0 10px 10px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.6;
+            white-space: pre;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .instructions {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .instructions h3 {
+            color: #856404;
+            margin-bottom: 15px;
+        }
+        .instructions ol {
+            padding-left: 20px;
+        }
+        .instructions li {
+            margin: 10px 0;
+            color: #856404;
+        }
+        .instructions a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .instructions a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Sơ Đồ Lớp (Class Diagram)</h1>
+            <p>Hệ thống Quản lý Bán hàng (QLBH System) - PlantUML Code</p>
+        </div>
+
+        <div class="content">
+            <div class="info-section">
+                <h3>📋 Thông tin Sơ đồ</h3>
+                <ul>
+                    <li><strong>Tổng số lớp:</strong> 12 lớp chính (tương ứng 12 bảng database)</li>
+                    <li><strong>Các lớp:</strong> Users, Accounts, Customers, Staff, Branches, Category, Products, Payments, Orders, Orderdetails, Shippings, Returns</li>
+                    <li><strong>Mối quan hệ:</strong> Association, Aggregation, Composition với multiplicity</li>
+                    <li><strong>Thuộc tính:</strong> Đầy đủ các trường với kiểu dữ liệu</li>
+                    <li><strong>Công cụ:</strong> PlantUML (có thể render online hoặc offline)</li>
+                </ul>
+            </div>
+
+            <div class="instructions">
+                <h3>🎯 Hướng dẫn sử dụng</h3>
+                <ol>
+                    <li>Click nút <strong>"📋 Copy PlantUML Code"</strong> bên dưới để copy toàn bộ mã</li>
+                    <li>Truy cập <a href="https://www.plantuml.com/plantuml/uml/" target="_blank">PlantUML Online Editor</a></li>
+                    <li>Dán mã vào ô bên trái và xem kết quả sơ đồ bên phải</li>
+                    <li>Có thể tải xuống dưới dạng PNG, SVG, hoặc PDF</li>
+                    <li>Hoặc sử dụng VS Code extension: <strong>PlantUML</strong> để xem trực tiếp</li>
+                </ol>
+            </div>
+
+            <div class="code-section">
+                <div class="code-header">
+                    <div class="code-title">🎨 PlantUML Code - Class Diagram</div>
+                    <button class="copy-btn" onclick="copyToClipboard('plantumlCode', this)">
+                        📋 Copy PlantUML Code
+                    </button>
+                </div>
+                <div class="code-content" id="plantumlCode">@startuml QLBH_Class_Diagram
+!theme cerulean-outline
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+title Sơ Đồ Lớp - Hệ Thống Quản Lý Bán Hàng (QLBH System)
+
+' ==================== BRANCHES ====================
+class Branches {
+  + branch_id : INT <<PK>>
+  + branch_name : VARCHAR(255) <<UNIQUE>>
+  + branch_address : VARCHAR(255)
+  + manager_id : UUID <<FK>>
+  + latitude : DECIMAL(10,8)
+  + longitude : DECIMAL(11,8)
+}
+
+' ==================== USERS ====================
+class Users {
+  + user_id : UUID <<PK>>
+  + branch_id : INT <<FK>>
+  + full_name : VARCHAR(255)
+  + email : VARCHAR(255) <<UNIQUE>>
+  + phone : VARCHAR(11)
+  + birth_date : DATE
+  + hometown : VARCHAR(255)
+  + created_at : TIMESTAMP
+  + updated_at : TIMESTAMP
+}
+
+' ==================== ACCOUNTS ====================
+class Accounts {
+  + id : UUID <<PK>>
+  + user_id : UUID <<FK, UNIQUE>>
+  + user_name : VARCHAR(50) <<UNIQUE>>
+  + password_hash : VARCHAR(255)
+  + role : VARCHAR(20)
+  + status : VARCHAR(20)
+  + last_login : TIMESTAMP
+  + create_at : TIMESTAMP
+  + update_at : TIMESTAMP
+  --
+  {field} role: admin, NVBH, NVK
+  {field} status: active, inactive, locked
+}
+
+' ==================== CUSTOMERS ====================
+class Customers {
+  + customer_id : UUID <<PK>>
+  + full_name : VARCHAR(255)
+  + phone : VARCHAR(11) <<UNIQUE>>
+  + email : VARCHAR(255) <<UNIQUE>>
+  + hometown : VARCHAR(255)
+  + created_at : TIMESTAMP
+  + updated_at : TIMESTAMP
+}
+
+' ==================== STAFF ====================
+class Staff {
+  + staff_id : INT <<PK>>
+  + user_id : UUID <<FK>>
+  + start_date : DATE
+  + end_date : DATE
+  + work_shift : VARCHAR(100)
+  + salary : DECIMAL(15,2)
+  + contract_type : VARCHAR(100)
+  + employment_status : VARCHAR(100)
+  + reports_to_user_id : UUID <<FK>>
+  --
+  {field} contract_type: full-time, part-time, contract
+  {field} employment_status: active, on-leave, terminated
+}
+
+' ==================== CATEGORY ====================
+class Category {
+  + category_id : INT <<PK>>
+  + name_category : VARCHAR(255) <<UNIQUE>>
+  + description_category : TEXT
+  + image_category : TEXT
+}
+
+' ==================== PRODUCTS ====================
+class Products {
+  + product_id : INT <<PK>>
+  + category_id : INT <<FK>>
+  + product_name : VARCHAR(255)
+  + description : TEXT
+  + color : VARCHAR(50)
+  + size : VARCHAR(50)
+  + price : DECIMAL(15,2)
+  + cost_price : DECIMAL(15,2)
+  + stock_quantity : INT
+  + image : TEXT
+  + created_at : TIMESTAMP
+  + updated_at : TIMESTAMP
+}
+
+' ==================== PAYMENTS ====================
+class Payments {
+  + payment_id : INT <<PK>>
+  + payment_method_name : VARCHAR(100)
+  + description : TEXT
+  + image : TEXT
+  + created_at : TIMESTAMP
+  + updated_at : TIMESTAMP
+}
+
+' ==================== ORDERS ====================
+class Orders {
+  + order_id : TEXT <<PK>>
+  + user_id : UUID <<FK>>
+  + customer_id : UUID <<FK>>
+  + order_date : TIMESTAMP
+  + price : DECIMAL(15,2)
+  + status : VARCHAR(50)
+  + payment_method : INT <<FK>>
+  + is_shipping : BOOLEAN
+  --
+  {field} status: Đã thanh toán, Chưa thanh toán
+  {field} order_id format: ORD-YYYYMMDD-XXXXX
+}
+
+' ==================== ORDERDETAILS ====================
+class Orderdetails {
+  + orderdetail_id : TEXT <<PK>>
+  + order_id : TEXT <<FK>>
+  + product_id : INT <<FK>>
+  + name_product : VARCHAR(255)
+  + name_check : VARCHAR(255)
+  + quantity : INT
+  + unit_price : DECIMAL(15,2)
+  + cost_price_at_sale : DECIMAL(15,2)
+  + subtotal : DECIMAL(15,2)
+  --
+  {field} subtotal = quantity * unit_price (auto)
+}
+
+' ==================== SHIPPINGS ====================
+class Shippings {
+  + shipping_id : TEXT <<PK>>
+  + order_id : TEXT <<FK, UNIQUE>>
+  + carrier : VARCHAR(255)
+  + tracking_num : VARCHAR(255) <<UNIQUE>>
+  + shipping_address : TEXT
+  + receiver_name : VARCHAR(255)
+  + receiver_phone : VARCHAR(11)
+  + shipping_cost : DECIMAL(10,2)
+  + actual_delivery_date : TIMESTAMP
+  + delivery_date : TIMESTAMP
+  + status : VARCHAR(50)
+  + created_at : TIMESTAMP
+  + weight : DECIMAL(10,3)
+  + unit_weight : VARCHAR(10)
+  + long : DECIMAL(10,2)
+  + wide : DECIMAL(10,2)
+  + hight : DECIMAL(10,2)
+  --
+  {field} status: Chưa giao hàng, Đang chuẩn bị,
+  {field}        Đang giao hàng, Đã giao hàng,
+  {field}        Đang hoàn về, Đã hủy
+}
+
+' ==================== RETURNS ====================
+class Returns {
+  + return_id : INT <<PK>>
+  + order_id : TEXT <<FK>>
+  + name_return : TEXT
+  + return_date : TIMESTAMP
+  + return_reason : TEXT
+  + refund_amount : DECIMAL(15,2)
+  + status : VARCHAR(50)
+  --
+  {field} status: đang xử lý, đã chấp nhận, đã từ chối
+}
+
+' ==================== RELATIONSHIPS ====================
+
+' Branches - Users (1 branch has many users)
+Branches "1" -- "0..*" Users : manages >
+Branches "1" -- "0..1" Users : managed by >
+
+' Users - Accounts (1-1 relationship)
+Users "1" -- "1" Accounts : has >
+
+' Users - Staff (1-1 relationship)
+Users "1" -- "0..1" Staff : is >
+
+' Staff - Users (self-reference for manager)
+Staff "0..*" -- "0..1" Users : reports to >
+
+' Category - Products (1 category has many products)
+Category "1" -- "0..*" Products : contains >
+
+' Users - Orders (1 user creates many orders)
+Users "0..1" -- "0..*" Orders : creates >
+
+' Customers - Orders (1 customer has many orders)
+Customers "0..1" -- "0..*" Orders : places >
+
+' Payments - Orders (1 payment method for many orders)
+Payments "0..1" -- "0..*" Orders : paid by >
+
+' Orders - Orderdetails (1 order has many details)
+Orders "1" *-- "1..*" Orderdetails : contains >
+
+' Products - Orderdetails (1 product in many order details)
+Products "1" -- "0..*" Orderdetails : ordered in >
+
+' Orders - Shippings (1-1 relationship)
+Orders "1" -- "0..1" Shippings : shipped via >
+
+' Orders - Returns (1 order can have many returns)
+Orders "1" -- "0..*" Returns : returned in >
+
+note right of Orders
+  Trigger: Auto update stock_quantity
+  when Orderdetails inserted
+end note
+
+note right of Orderdetails
+  Trigger: Auto calculate subtotal
+  = quantity * unit_price
+end note
+
+note right of Shippings
+  Auto update Orders.status to
+  "Đã thanh toán" when COD
+  delivery completed
+end note
+
+@enduml</div>
+            </div>
+
+            <div class="info-section">
+                <h3>💡 Lưu ý khi sử dụng</h3>
+                <ul>
+                    <li><strong>PlantUML Online:</strong> Truy cập <a href="https://www.plantuml.com/plantuml/uml/" target="_blank">https://www.plantuml.com/plantuml/uml/</a></li>
+                    <li><strong>VS Code Extension:</strong> Cài đặt extension "PlantUML" để xem trực tiếp trong VS Code</li>
+                    <li><strong>Export:</strong> Có thể xuất ra PNG, SVG, PDF, hoặc LaTeX</li>
+                    <li><strong>Chỉnh sửa:</strong> Có thể thay đổi theme bằng cách sửa dòng <code>!theme cerulean-outline</code></li>
+                    <li><strong>Themes khác:</strong> cerulean, bluegray, plain, sketchy-outline, toy, vibrant</li>
+                </ul>
+            </div>
+
+            <div class="info-section">
+                <h3>🔗 Các mối quan hệ trong sơ đồ</h3>
+                <ul>
+                    <li><strong>Branches ↔ Users:</strong> 1 chi nhánh có nhiều nhân viên, 1 chi nhánh có 1 quản lý</li>
+                    <li><strong>Users ↔ Accounts:</strong> 1-1 (mỗi user có 1 tài khoản)</li>
+                    <li><strong>Users ↔ Staff:</strong> 1-1 (user có thể là nhân viên)</li>
+                    <li><strong>Category ↔ Products:</strong> 1-nhiều (1 danh mục có nhiều sản phẩm)</li>
+                    <li><strong>Orders ↔ Orderdetails:</strong> 1-nhiều (composition - đơn hàng chứa chi tiết)</li>
+                    <li><strong>Orders ↔ Shippings:</strong> 1-1 (đơn hàng có thể có vận chuyển)</li>
+                    <li><strong>Orders ↔ Returns:</strong> 1-nhiều (đơn hàng có thể có nhiều yêu cầu trả)</li>
+                    <li><strong>Customers ↔ Orders:</strong> 1-nhiều (khách hàng đặt nhiều đơn)</li>
+                    <li><strong>Users ↔ Orders:</strong> 1-nhiều (nhân viên tạo nhiều đơn)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function copyToClipboard(elementId, button) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+
+            navigator.clipboard.writeText(text).then(() => {
+                // Change button text and style
+                const originalText = button.innerHTML;
+                button.innerHTML = '✅ Đã Copy!';
+                button.classList.add('copied');
+
+                // Reset after 2 seconds
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                alert('Không thể copy: ' + err);
+            });
+        }
+
+        // Add syntax highlighting effect
+        document.addEventListener('DOMContentLoaded', function() {
+            const codeContent = document.getElementById('plantumlCode');
+            const text = codeContent.textContent;
+
+            // Simple syntax highlighting
+            const highlighted = text
+                .replace(/(@startuml|@enduml|class|note|title)/g, '<span style="color: #ff79c6; font-weight: bold;">$1</span>')
+                .replace(/(INT|UUID|VARCHAR|TEXT|DECIMAL|TIMESTAMP|BOOLEAN|DATE)/g, '<span style="color: #8be9fd;">$1</span>')
+                .replace(/(<<PK>>|<<FK>>|<<UNIQUE>>)/g, '<span style="color: #50fa7b;">$1</span>')
+                .replace(/('[^']*')/g, '<span style="color: #f1fa8c;">$1</span>')
+                .replace(/(--)/g, '<span style="color: #6272a4;">$1</span>');
+
+            codeContent.innerHTML = highlighted;
+        });
+    </script>
+</body>
+</html>
+

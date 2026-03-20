@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class Diagram - QLBH System</title>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ startOnLoad: true });
+    </script>
+</head>
+<body>
+    <h1>Sơ đồ lớp hệ thống QLBH</h1>
+    <div class="mermaid">
+        classDiagram
+            class Users {
+                user_id
+                branch_id
+                full_name
+                email
+                phone
+                birth_date
+                hometown
+                created_at
+                updated_at
+            }
+            class Accounts {
+                id
+                user_id
+                user_name
+                password_hash
+                role
+                status
+                last_login
+                create_at
+                update_at
+            }
+            class Customers {
+                customer_id
+                full_name
+                phone
+                email
+                hometown
+                created_at
+                updated_at
+            }
+            class Staff {
+                staff_id
+                user_id
+                start_date
+                end_date
+                work_shift
+                salary
+                contract_type
+                employment_status
+                reports_to_user_id
+            }
+            class Branches {
+                branch_id
+                branch_name
+                branch_address
+                manager_id
+            }
+            class Category {
+                category_id
+                name_category
+                description_category
+                image_category
+            }
+            class Products {
+                product_id
+                category_id
+                product_name
+                description
+                color
+                size
+                price
+                stock_quantity
+                created_at
+                updated_at
+                image
+                cost_price
+            }
+            class Payments {
+                payment_id
+                payment_method_name
+                description
+                image
+                created_at
+                updated_at
+            }
+            class Orders {
+                order_id
+                user_id
+                customer_id
+                order_date
+                price
+                status
+                payment_method
+                is_shipping
+            }
+            class Orderdetails {
+                orderdetail_id
+                order_id
+                product_id
+                name_product
+                name_check
+                quantity
+                unit_price
+                subtotal
+                cost_price_at_sale
+            }
+            class Shippings {
+                shipping_id
+                order_id
+                carrier
+                tracking_num
+                shipping_address
+                shipping_cost
+                actual_delivery_date
+                delivery_date
+                status
+                created_at
+                weight
+                unit_weight
+                length
+                wide
+                height
+            }
+            class Returns {
+                name_return
+                return_id
+                order_id
+                return_date
+                return_reason
+                refund_amount
+                status
+            }
+
+            Users ||--o{ Accounts : user_id
+            Users ||--o{ Staff : user_id
+            Users ||--o{ Branches : manager_id
+            Users ||--o{ Orders : user_id
+            Branches ||--o{ Users : branch_id
+            Customers ||--o{ Orders : customer_id
+            Category ||--o{ Products : category_id
+            Products ||--o{ Orderdetails : product_id
+            Orders ||--o{ Orderdetails : order_id
+            Orders ||--|| Shippings : order_id
+            Orders ||--o{ Returns : order_id
+            Payments ||--o{ Orders : payment_method
+            Users ||--o{ Staff : reports_to_user_id
+    </div>
+</body>
+</html>

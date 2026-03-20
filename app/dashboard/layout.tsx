@@ -316,6 +316,7 @@ export default function DashboardLayout({
       current: activeNavItem === 'orders',
       children: [
         { name: language === 'vi' ? 'Tìm & Xem đơn hàng' : 'Find & View Orders', href: '/dashboard/orders/search', icon: null, current: pathname.includes('/dashboard/orders/search') },
+        { name: language === 'vi' ? 'Ghi nhận đơn hàng' : 'Order Processing', href: '/dashboard/orders/processing', icon: null, current: pathname.includes('/dashboard/orders/processing') },
         { name: language === 'vi' ? 'Đơn vận chuyển' : 'Shipping Orders', href: '/dashboard/orders/shipping', icon: null, current: pathname.includes('/dashboard/orders/shipping') },
         { name: language === 'vi' ? 'Thanh toán' : 'Payment', href: '/dashboard/payment', icon: null, current: pathname.includes('/dashboard/payment') },
       ]
