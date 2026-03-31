@@ -376,7 +376,7 @@ export default function SigninPage() {
         const { data: accountData, error: accountError } = await supabase
           .from('accounts')
           .select('status')
-          .eq('username', data.email)
+          .eq('user_name', data.email)
           .maybeSingle();
         
         // Kiểm tra lỗi cụ thể hơn
@@ -417,83 +417,49 @@ export default function SigninPage() {
       if (error) {
         console.warn('Lỗi đăng nhập:', error.message);
         
-        // Hiển thị thông báo lỗi cho người dùng
-        if (error.message.includes("Invalid login credentials")) {
-          // Sử dụng callback để đảm bảo state được cập nhật đúng
-          setAuthError(() => {
-            const errorMsg = 'Email hoặc mật khẩu không chính xác. Vui lòng thử lại.';
-            console.log('Đã đặt thông báo lỗi:', errorMsg);
-            return errorMsg;
-          });
-        } else {
-          setAuthError('Đăng nhập thất bại: ' + error.message);
-        }
-        
         try {
-          // Kiểm tra lại tài khoản để cập nhật số lần đăng nhập sai
-          const { data: accountCheck } = await supabase
-            .from('accounts')
-            .select('status')
-            .eq('username', data.email)
-            .maybeSingle();
-            
-            // Nếu tài khoản tồn tại
-            if (accountCheck) {
-              // Lấy giá trị từ state thay vì database
-              const currentAttempts = (loginAttempts[data.email] || 0) + 1;
-              
-              // Cập nhật state để theo dõi
-              setLoginAttempts({
-                ...loginAttempts,
-                [data.email]: currentAttempts
-              });
-              
-              // Nếu sai quá 3 lần, khóa tài khoản
-              if (currentAttempts >= 3) {
-                try {
-                  const { error: lockError } = await supabase
-                    .from('accounts')
-                    .update({ 
-                      status: 'locked'
-                    })
-                    .eq('username', data.email);
-                  
-                  if (!lockError) {
-                    console.log('Đã khóa tài khoản sau 3 lần đăng nhập sai:', data.email);
-                    setLockedAccountEmail(data.email);
-                    setShowLockedAccountPopup(true);
-                    
-                    // Reset số lần đăng nhập sai trong state
-                    const newLoginAttempts = { ...loginAttempts };
-                    delete newLoginAttempts[data.email];
-                    setLoginAttempts(newLoginAttempts);
-                  } else {
-                    console.error('Lỗi khi khóa tài khoản:', lockError);
-                  }
-                } catch (lockError) {
-                  console.error('Lỗi khi cập nhật trạng thái tài khoản:', lockError);
-                }
-              } else {
-                // Hiển thị số lần đăng nhập sai còn lại
-                const attemptsLeft = 3 - currentAttempts;
-                setAuthError(`Email hoặc mật khẩu không chính xác. Bạn còn ${attemptsLeft} lần thử trước khi tài khoản bị khóa.`);
-              }
+          // Gọi API để ghi nhận đăng nhập thất bại và kiểm tra khóa tài khoản
+          const response = await fetch('/api/auth/login-attempt', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: data.email, action: 'failed' })
+          });
+          
+          const attemptData = await response.json();
+          
+          if (attemptData.locked) {
+            console.log('Đã khóa tài khoản sau 3 lần đăng nhập sai:', data.email);
+            setLockedAccountEmail(data.email);
+            setShowLockedAccountPopup(true);
+            setIsLoading(false);
+            return;
+          } else {
+            // Xử lý thông báo theo yêu cầu mới
+            if (attemptData.currentAttempts === 2) {
+              setAuthError('Tài khoản hoặc mật khẩu không chính xác. Nhập sai thêm 1 lần nữa sẽ khóa tài khoản.');
+            } else {
+              setAuthError('Email hoặc mật khẩu không chính xác.');
             }
+          }
         } catch (attemptError) {
-          console.error('Lỗi khi kiểm tra số lần đăng nhập sai:', attemptError);
+          console.error('Lỗi khi ghi nhận đăng nhập sai:', attemptError);
+          setAuthError('Email hoặc mật khẩu không chính xác.');
         }
         
         setIsLoading(false);
-        
-        // Log state authError trước khi return
-        console.log('authError trước khi return:', authError);
         return;
       }
       
-      // Đăng nhập thành công - reset số lần đăng nhập sai trong state
-      const newLoginAttempts = { ...loginAttempts };
-      delete newLoginAttempts[data.email];
-      setLoginAttempts(newLoginAttempts);
+      // Đăng nhập thành công - gọi API reset số lần đăng nhập sai
+      try {
+        await fetch('/api/auth/login-attempt', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: data.email, action: 'success' })
+        });
+      } catch (resetError) {
+          console.error('Lỗi khi reset số lần đăng nhập sai:', resetError);
+      }
       
       console.log('Đăng nhập thành công!');
       
@@ -606,7 +572,7 @@ export default function SigninPage() {
         const { data: accountData, error: accountError } = await supabase
           .from('accounts')
           .select('status')
-          .eq('username', selectedAccount.email)
+          .eq('user_name', selectedAccount.email)
           .maybeSingle();
         
         // Kiểm tra lỗi cụ thể hơn
@@ -648,81 +614,49 @@ export default function SigninPage() {
       if (error) {
         console.warn('Lỗi đăng nhập với tài khoản đã lưu:', error.message);
         
-        // Hiển thị thông báo lỗi cho người dùng
-        if (error.message.includes("Invalid login credentials")) {
-          // Sử dụng callback để đảm bảo state được cập nhật đúng
-          setAuthError(() => {
-            const errorMsg = 'Mật khẩu không chính xác. Vui lòng thử lại.';
-            console.log('Đã đặt thông báo lỗi:', errorMsg);
-            return errorMsg;
-          });
-        } else {
-          setAuthError('Đăng nhập thất bại: ' + error.message);
-        }
-        
         try {
-          // Kiểm tra lại tài khoản để cập nhật số lần đăng nhập sai
-          const { data: accountCheck } = await supabase
-            .from('accounts')
-            .select('status')
-            .eq('username', selectedAccount.email)
-            .maybeSingle();
-            
-            // Nếu tài khoản tồn tại
-            if (accountCheck) {
-              // Lấy giá trị từ state thay vì database
-              const currentAttempts = (loginAttempts[selectedAccount.email] || 0) + 1;
-              
-              // Cập nhật state để theo dõi
-              setLoginAttempts({
-                ...loginAttempts,
-                [selectedAccount.email]: currentAttempts
-              });
-              
-              // Nếu sai quá 3 lần, khóa tài khoản
-              if (currentAttempts >= 3) {
-                try {
-                  const { error: lockError } = await supabase
-                    .from('accounts')
-                    .update({ 
-                      status: 'locked'
-                    })
-                    .eq('username', selectedAccount.email);
-                  
-                  if (!lockError) {
-                    console.log('Đã khóa tài khoản sau 3 lần đăng nhập sai:', selectedAccount.email);
-                    setLockedAccountEmail(selectedAccount.email);
-                    setShowPasswordPopup(false);
-                    setShowLockedAccountPopup(true);
-                    
-                    // Reset số lần đăng nhập sai trong state
-                    const newLoginAttempts = { ...loginAttempts };
-                    delete newLoginAttempts[selectedAccount.email];
-                    setLoginAttempts(newLoginAttempts);
-                  } else {
-                    console.error('Lỗi khi khóa tài khoản:', lockError);
-                  }
-                } catch (lockError) {
-                  console.error('Lỗi khi cập nhật trạng thái tài khoản:', lockError);
-                }
-              } else {
-                // Hiển thị số lần đăng nhập sai còn lại
-                const attemptsLeft = 3 - currentAttempts;
-                setAuthError(`Mật khẩu không chính xác. Bạn còn ${attemptsLeft} lần thử trước khi tài khoản bị khóa.`);
-              }
+          // Gọi API để ghi nhận đăng nhập thất bại và kiểm tra khóa tài khoản
+          const response = await fetch('/api/auth/login-attempt', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: selectedAccount.email, action: 'failed' })
+          });
+          
+          const attemptData = await response.json();
+          
+          if (attemptData.locked) {
+            console.log('Đã khóa tài khoản sau 3 lần đăng nhập sai:', selectedAccount.email);
+            setLockedAccountEmail(selectedAccount.email);
+            setShowPasswordPopup(false);
+            setShowLockedAccountPopup(true);
+            setIsLoading(false);
+            return;
+          } else {
+            if (attemptData.currentAttempts === 2) {
+              setAuthError('Tài khoản hoặc mật khẩu không chính xác. Nhập sai thêm 1 lần nữa sẽ khóa tài khoản.');
+            } else {
+              setAuthError('Mật khẩu không chính xác.');
             }
+          }
         } catch (attemptError) {
-          console.error('Lỗi khi kiểm tra số lần đăng nhập sai:', attemptError);
+          console.error('Lỗi khi ghi nhận đăng nhập sai:', attemptError);
+          setAuthError('Mật khẩu không chính xác.');
         }
         
         setIsLoading(false);
         return;
       }
       
-      // Đăng nhập thành công - reset số lần đăng nhập sai trong state
-      const newLoginAttempts = { ...loginAttempts };
-      delete newLoginAttempts[selectedAccount.email];
-      setLoginAttempts(newLoginAttempts);
+      // Đăng nhập thành công - reset số lần đăng nhập sai qua API
+      try {
+        await fetch('/api/auth/login-attempt', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: selectedAccount.email, action: 'success' })
+        });
+      } catch (resetError) {
+          console.error('Lỗi khi reset số lần đăng nhập sai:', resetError);
+      }
       
       console.log('Đăng nhập thành công!');
       

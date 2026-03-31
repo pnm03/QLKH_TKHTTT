@@ -135,7 +135,7 @@ export async function POST(request: NextRequest) {
           .from('accounts')
           .insert({
             user_id: userId,
-            username: userData.email,
+            user_name: userData.email,
             status: 'active',
             role: userData.role,
             password_hash: userData.password
